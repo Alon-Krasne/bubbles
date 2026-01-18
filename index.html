@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>בועות!</title>
+    <link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Game Canvas -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <h1 class="title">בועות!</h1>
+            <div class="setup-form">
+                <div class="input-group">
+                    <label>שחקן 1 (לוטם):</label>
+                    <input type="text" id="p1-name" value="לוטם" maxlength="10">
+                </div>
+                <div class="input-group">
+                    <label>שחקן 2 (תום):</label>
+                    <input type="text" id="p2-name" value="תום" maxlength="10">
+                </div>
+                <div class="timer-selection">
+                    <label>זמן משחק:</label>
+                    <div class="timer-options">
+                        <button class="timer-btn" data-time="30">30</button>
+                        <button class="timer-btn active" data-time="45">45</button>
+                        <button class="timer-btn" data-time="60">60</button>
+                    </div>
+                </div>
+                <button id="start-btn" class="main-btn">!התחל</button>
+            </div>
+            <div id="high-scores-preview">
+                <h3>שיאים קודמים:</h3>
+                <ul id="scores-list"></ul>
+            </div>
+        </div>
+
+        <!-- Game HUD -->
+        <div id="game-hud" class="screen">
+            <div class="hud-item score-container">
+                <span class="label">ניקוד:</span>
+                <span id="score-val">0</span>
+            </div>
+            <div class="hud-item timer-container">
+                <span id="timer-val">45</span>
+            </div>
+        </div>
+
+        <!-- End Screen -->
+        <div id="end-screen" class="screen">
+            <h2 class="end-title">!כל הכבוד</h2>
+            <div class="final-score">
+                <span>צברתם יחד</span>
+                <span id="final-score-val">0</span>
+                <span>נקודות!</span>
+            </div>
+            <div class="high-scores-full">
+                <h3>טבלת שיאים</h3>
+                <table id="full-scores-table">
+                    <thead>
+                        <tr>
+                            <th>מקום</th>
+                            <th>שמות</th>
+                            <th>ניקוד</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <button id="restart-btn" class="main-btn">?שחקו שוב</button>
+        </div>
+    </div>
+
+    <script src="src/game.js"></script>
+</body>
+</html>

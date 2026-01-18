@@ -1,0 +1,24 @@
+{
+  "name": "bubbles-game",
+  "version": "1.0.0",
+  "description": "בועות! - A cooperative bubble-catching game for two players",
+  "main": "index.html",
+  "scripts": {
+    "start": "open index.html",
+    "serve": "npx serve ."
+  },
+  "keywords": [
+    "game",
+    "kids",
+    "cooperative",
+    "bubbles",
+    "hebrew",
+    "canvas"
+  ],
+  "author": "Alon Krasne",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  }
+}
