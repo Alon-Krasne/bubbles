@@ -796,13 +796,24 @@ function loadHighScores() {
     const tableBody = document.querySelector('#full-scores-table tbody');
     
     if (list) list.innerHTML = scores.map(s => `<li>${s.names}: ${s.score}</li>`).join('');
-    if (tableBody) tableBody.innerHTML = scores.map((s, i) => `
-        <tr>
-            <td>${i + 1}</td>
-            <td>${s.names}</td>
-            <td>${s.score}</td>
-        </tr>
-    `).join('');
+
+    if (tableBody) {
+        const medalEmojis = ['🥇', '🥈', '🥉'];
+        const medalClasses = ['medal-gold', 'medal-silver', 'medal-bronze'];
+
+        tableBody.innerHTML = scores.map((s, i) => {
+            const medal = medalEmojis[i] || (i + 1);
+            const rowClass = medalClasses[i] || '';
+
+            return `
+                <tr class="${rowClass}">
+                    <td>${medal}</td>
+                    <td>${s.names}</td>
+                    <td>${s.score}</td>
+                </tr>
+            `;
+        }).join('');
+    }
 }
 
 // UI Handlers
