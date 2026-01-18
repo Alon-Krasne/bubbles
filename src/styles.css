@@ -105,7 +105,7 @@ canvas {
 }
 
 .input-group {
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
 
 .input-group label {
@@ -139,18 +139,15 @@ input[type="text"]:focus {
 }
 
 .color-picker {
-    position: relative;
-    width: 100%;
-    max-width: 280px;
-    margin: 0 auto;
-    padding: 36px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
     --player-color: #e0e0e0;
     --player-color-soft: rgba(0, 0, 0, 0.1);
 }
 
 .color-picker input[type="text"] {
-    position: relative;
-    z-index: 2;
     border-color: var(--player-color);
     background: linear-gradient(180deg, #fff, #fdf6f7);
     box-shadow:
@@ -165,29 +162,31 @@ input[type="text"]:focus {
         0 0 0 5px var(--player-color-soft);
 }
 
+.color-petals {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
 .color-petal {
-    position: absolute;
-    top: 50%;
-    left: 50%;
     width: 28px;
     height: 28px;
     border-radius: 50%;
     border: none;
     background: var(--petal-color);
     cursor: pointer;
-    z-index: 1;
-    transform: translate(-50%, -50%) rotate(var(--petal-angle)) translate(0, -72px);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: inset 0 2px 4px rgba(255,255,255,0.6), 0 3px 6px rgba(0,0,0,0.15);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: inset 0 2px 4px rgba(255,255,255,0.6), 0 2px 4px rgba(0,0,0,0.15);
 }
 
 .color-petal:hover {
-    transform: translate(-50%, -50%) rotate(var(--petal-angle)) translate(0, -72px) scale(1.08);
+    transform: scale(1.15);
 }
 
 .color-petal.is-selected {
-    box-shadow: 0 0 0 3px #fff, 0 0 12px var(--petal-color);
-    transform: translate(-50%, -50%) rotate(var(--petal-angle)) translate(0, -72px) scale(1.1);
+    box-shadow: 0 0 0 3px #fff, 0 0 10px var(--petal-color);
+    transform: scale(1.1);
 }
 
 .timer-selection {
