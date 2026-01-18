@@ -7,7 +7,8 @@
     "start": "open index.html",
     "serve": "bun --bun serve .",
     "bundle": "bun scripts/bundle.js",
-    "share": "bun scripts/bundle.js --open"
+    "share": "bun scripts/bundle.js --open",
+    "release": "npm version major --no-git-tag-version && bun run bundle"
   },
   "keywords": [
     "game",
