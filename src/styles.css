@@ -64,12 +64,85 @@ canvas {
     display: flex;
 }
 
+/* ==================== THEME TOGGLE ==================== */
+.theme-toggle {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 50px;
+    height: 50px;
+    border: none;
+    border-radius: 50%;
+    background: linear-gradient(145deg, rgba(255,255,255,0.9), rgba(240,245,255,0.8));
+    box-shadow: 
+        0 4px 15px rgba(0,0,0,0.1),
+        inset 0 2px 0 rgba(255,255,255,0.8);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    z-index: 100;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 
+        0 6px 20px rgba(0,0,0,0.15),
+        inset 0 2px 0 rgba(255,255,255,0.8);
+}
+
+.theme-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 26px;
+    transition: all 0.4s ease;
+}
+
+.sun-icon {
+    color: #FFB800;
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(0deg);
+}
+
+.moon-icon {
+    color: #8B9DC3;
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(-90deg);
+}
+
+body.dark-theme .theme-toggle {
+    background: linear-gradient(145deg, rgba(40,50,80,0.9), rgba(30,40,60,0.8));
+    box-shadow: 
+        0 4px 15px rgba(0,0,0,0.3),
+        inset 0 2px 0 rgba(100,120,180,0.3);
+}
+
+body.dark-theme .sun-icon {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(90deg);
+}
+
+body.dark-theme .moon-icon {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(0deg);
+}
+
 /* ==================== START SCREEN ==================== */
 #start-screen {
     background: linear-gradient(180deg, 
         rgba(30, 144, 255, 0.9) 0%, 
         rgba(135, 206, 235, 0.85) 50%,
         rgba(232, 244, 255, 0.8) 100%
+    );
+    transition: background 0.5s ease;
+}
+
+body.dark-theme #start-screen {
+    background: linear-gradient(180deg, 
+        rgba(10, 10, 32, 0.95) 0%, 
+        rgba(21, 21, 56, 0.9) 50%,
+        rgba(37, 37, 85, 0.85) 100%
     );
 }
 

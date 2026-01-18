@@ -25,14 +25,31 @@ let characters = [];
 let bubbles = [];
 let particles = [];
 
-// Colors
-const COLORS = {
-    skyTop: '#1e90ff',
-    skyMiddle: '#87CEEB', 
-    skyBottom: '#E8F4FF',
-    grassTop: '#90EE90',
-    grassMiddle: '#7EC850',
-    grassBottom: '#5a9e3a',
+// Theme
+let isDarkTheme = false;
+
+const THEMES = {
+    light: {
+        skyTop: '#1e90ff',
+        skyMiddle: '#87CEEB', 
+        skyBottom: '#E8F4FF',
+        grassTop: '#90EE90',
+        grassMiddle: '#7EC850',
+        grassBottom: '#5a9e3a',
+    },
+    dark: {
+        skyTop: '#0a0a20',
+        skyMiddle: '#151538',
+        skyBottom: '#252555',
+        grassTop: '#2a4a3a',
+        grassMiddle: '#1e3a2e',
+        grassBottom: '#152a22',
+    }
+};
+
+// Colors (will be updated based on theme)
+let COLORS = {
+    ...THEMES.light,
     pink: '#FF9EB5',
     pinkDark: '#E57A95',
     pinkLight: '#FFD4E0',
@@ -42,6 +59,24 @@ const COLORS = {
     sun: '#FFE066',
     sunGlow: '#FFF4B8'
 };
+
+function setTheme(dark) {
+    isDarkTheme = dark;
+    const theme = dark ? THEMES.dark : THEMES.light;
+    COLORS = { ...COLORS, ...theme };
+    localStorage.setItem('bubble_theme', dark ? 'dark' : 'light');
+    
+    // Regenerate stars for night mode (more of them)
+    initBackgroundStars();
+}
+
+function loadTheme() {
+    const saved = localStorage.getItem('bubble_theme');
+    if (saved === 'dark') {
+        isDarkTheme = true;
+        setTheme(true);
+    }
+}
 
 const PLAYER_COLOR_DEFAULTS = {
     p1: '#FF9EB5',
@@ -150,13 +185,17 @@ function initClouds() {
 // Initialize decorative floating elements
 function initBackgroundStars() {
     backgroundStars = [];
-    for (let i = 0; i < 15; i++) {
+    const starCount = isDarkTheme ? 60 : 15;
+    const maxSize = isDarkTheme ? 3 : 4;
+    
+    for (let i = 0; i < starCount; i++) {
         backgroundStars.push({
             x: Math.random() * canvas.width,
             y: Math.random() * (canvas.height - GROUND_HEIGHT - 100),
-            size: 2 + Math.random() * 4,
+            size: 1 + Math.random() * maxSize,
             twinkleSpeed: 0.02 + Math.random() * 0.03,
-            twinkleOffset: Math.random() * Math.PI * 2
+            twinkleOffset: Math.random() * Math.PI * 2,
+            brightness: 0.5 + Math.random() * 0.5
         });
     }
 }
@@ -542,8 +581,12 @@ function drawBackground() {
     ctx.fillStyle = skyGrad;
     ctx.fillRect(0, 0, canvas.width, canvas.height - GROUND_HEIGHT);
     
-    // Sun
-    drawSun();
+    // Sun or Moon
+    if (isDarkTheme) {
+        drawMoon();
+    } else {
+        drawSun();
+    }
     
     // Clouds
     drawClouds();
@@ -559,76 +602,410 @@ function drawSun() {
     const sunX = canvas.width - 120;
     const sunY = 100;
     const sunRadius = 50;
+    const pulse = Math.sin(animationTime * 0.03) * 0.15 + 1;
+    const slowPulse = Math.sin(animationTime * 0.015) * 0.1 + 1;
     
-    // Sun glow
-    const glowGrad = ctx.createRadialGradient(sunX, sunY, sunRadius * 0.5, sunX, sunY, sunRadius * 3);
-    glowGrad.addColorStop(0, 'rgba(255, 244, 184, 0.8)');
-    glowGrad.addColorStop(0.3, 'rgba(255, 224, 102, 0.3)');
-    glowGrad.addColorStop(1, 'rgba(255, 224, 102, 0)');
+    // Outer ethereal glow rings (pulsing halos)
+    for (let ring = 4; ring >= 1; ring--) {
+        const ringRadius = sunRadius * (1.5 + ring * 0.8) * slowPulse;
+        const ringAlpha = 0.08 - ring * 0.015;
+        const haloGrad = ctx.createRadialGradient(sunX, sunY, ringRadius * 0.7, sunX, sunY, ringRadius);
+        haloGrad.addColorStop(0, `rgba(255, 248, 220, ${ringAlpha})`);
+        haloGrad.addColorStop(0.5, `rgba(255, 223, 150, ${ringAlpha * 0.6})`);
+        haloGrad.addColorStop(1, 'rgba(255, 200, 100, 0)');
+        ctx.fillStyle = haloGrad;
+        ctx.beginPath();
+        ctx.arc(sunX, sunY, ringRadius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // Main warm glow
+    const glowGrad = ctx.createRadialGradient(sunX, sunY, sunRadius * 0.3, sunX, sunY, sunRadius * 2.5 * pulse);
+    glowGrad.addColorStop(0, 'rgba(255, 250, 220, 0.95)');
+    glowGrad.addColorStop(0.2, 'rgba(255, 240, 180, 0.7)');
+    glowGrad.addColorStop(0.5, 'rgba(255, 220, 130, 0.3)');
+    glowGrad.addColorStop(1, 'rgba(255, 200, 80, 0)');
     ctx.fillStyle = glowGrad;
-    ctx.fillRect(sunX - sunRadius * 3, sunY - sunRadius * 3, sunRadius * 6, sunRadius * 6);
+    ctx.beginPath();
+    ctx.arc(sunX, sunY, sunRadius * 2.5 * pulse, 0, Math.PI * 2);
+    ctx.fill();
     
-    // Sun rays
+    // Animated light rays (long, tapered, rotating)
     ctx.save();
     ctx.translate(sunX, sunY);
-    ctx.rotate(animationTime * 0.005);
+    ctx.rotate(animationTime * 0.004);
     
-    for (let i = 0; i < 12; i++) {
-        ctx.rotate(Math.PI / 6);
-        ctx.fillStyle = 'rgba(255, 240, 150, 0.3)';
+    for (let i = 0; i < 16; i++) {
+        const angle = (i / 16) * Math.PI * 2;
+        const rayLength = sunRadius * (1.8 + Math.sin(animationTime * 0.05 + i) * 0.4);
+        const rayWidth = 6 + Math.sin(animationTime * 0.03 + i * 0.5) * 2;
+        
+        ctx.save();
+        ctx.rotate(angle);
+        
+        const rayGrad = ctx.createLinearGradient(0, -sunRadius, 0, -sunRadius - rayLength);
+        rayGrad.addColorStop(0, 'rgba(255, 245, 180, 0.5)');
+        rayGrad.addColorStop(0.5, 'rgba(255, 230, 140, 0.2)');
+        rayGrad.addColorStop(1, 'rgba(255, 220, 100, 0)');
+        ctx.fillStyle = rayGrad;
+        
         ctx.beginPath();
-        ctx.moveTo(0, -sunRadius - 10);
-        ctx.lineTo(-8, -sunRadius - 40);
-        ctx.lineTo(8, -sunRadius - 40);
+        ctx.moveTo(-rayWidth, -sunRadius + 5);
+        ctx.quadraticCurveTo(0, -sunRadius - rayLength * 0.5, 0, -sunRadius - rayLength);
+        ctx.quadraticCurveTo(0, -sunRadius - rayLength * 0.5, rayWidth, -sunRadius + 5);
         ctx.closePath();
         ctx.fill();
+        
+        ctx.restore();
     }
     ctx.restore();
     
-    // Sun body
-    const sunGrad = ctx.createRadialGradient(sunX - 15, sunY - 15, 5, sunX, sunY, sunRadius);
-    sunGrad.addColorStop(0, '#FFF9E0');
-    sunGrad.addColorStop(0.5, COLORS.sun);
-    sunGrad.addColorStop(1, '#FFD700');
+    // Secondary sparkle rays (shorter, faster rotation)
+    ctx.save();
+    ctx.translate(sunX, sunY);
+    ctx.rotate(-animationTime * 0.008);
+    
+    for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2 + Math.PI / 16;
+        ctx.save();
+        ctx.rotate(angle);
+        
+        ctx.fillStyle = 'rgba(255, 255, 240, 0.25)';
+        ctx.beginPath();
+        ctx.moveTo(0, -sunRadius - 5);
+        ctx.lineTo(-3, -sunRadius - 25);
+        ctx.lineTo(0, -sunRadius - 35);
+        ctx.lineTo(3, -sunRadius - 25);
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.restore();
+    }
+    ctx.restore();
+    
+    // Sun body with layered gradients for depth
+    const sunGrad = ctx.createRadialGradient(sunX - 20, sunY - 20, 5, sunX, sunY, sunRadius);
+    sunGrad.addColorStop(0, '#FFFEF5');
+    sunGrad.addColorStop(0.3, '#FFF4C4');
+    sunGrad.addColorStop(0.7, '#FFE566');
+    sunGrad.addColorStop(1, '#FFCC00');
     
     ctx.fillStyle = sunGrad;
     ctx.beginPath();
     ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
     ctx.fill();
+    
+    // Inner highlight (makes it look 3D/spherical)
+    const highlightGrad = ctx.createRadialGradient(sunX - 18, sunY - 18, 2, sunX - 10, sunY - 10, sunRadius * 0.6);
+    highlightGrad.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+    highlightGrad.addColorStop(0.3, 'rgba(255, 255, 240, 0.4)');
+    highlightGrad.addColorStop(1, 'rgba(255, 255, 200, 0)');
+    ctx.fillStyle = highlightGrad;
+    ctx.beginPath();
+    ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Cute kawaii face on the sun
+    ctx.fillStyle = '#F5A623';
+    // Closed happy eyes (curved lines)
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#E8940F';
+    
+    // Left eye (happy arc)
+    ctx.beginPath();
+    ctx.arc(sunX - 15, sunY - 5, 8, Math.PI * 0.2, Math.PI * 0.8);
+    ctx.stroke();
+    
+    // Right eye (happy arc)  
+    ctx.beginPath();
+    ctx.arc(sunX + 15, sunY - 5, 8, Math.PI * 0.2, Math.PI * 0.8);
+    ctx.stroke();
+    
+    // Rosy cheeks
+    ctx.fillStyle = 'rgba(255, 150, 150, 0.4)';
+    ctx.beginPath();
+    ctx.ellipse(sunX - 28, sunY + 8, 8, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(sunX + 28, sunY + 8, 8, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Smile
+    ctx.strokeStyle = '#E8940F';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(sunX, sunY + 8, 12, Math.PI * 0.15, Math.PI * 0.85);
+    ctx.stroke();
+}
+
+function drawMoon() {
+    const moonX = canvas.width - 120;
+    const moonY = 100;
+    const moonRadius = 45;
+    const pulse = Math.sin(animationTime * 0.02) * 0.08 + 1;
+    
+    // Outer ethereal glow (dreamy blue-white)
+    for (let ring = 5; ring >= 1; ring--) {
+        const ringRadius = moonRadius * (1.2 + ring * 0.6) * pulse;
+        const ringAlpha = 0.06 - ring * 0.01;
+        const haloGrad = ctx.createRadialGradient(moonX, moonY, ringRadius * 0.5, moonX, moonY, ringRadius);
+        haloGrad.addColorStop(0, `rgba(200, 220, 255, ${ringAlpha})`);
+        haloGrad.addColorStop(0.5, `rgba(150, 180, 220, ${ringAlpha * 0.5})`);
+        haloGrad.addColorStop(1, 'rgba(100, 150, 200, 0)');
+        ctx.fillStyle = haloGrad;
+        ctx.beginPath();
+        ctx.arc(moonX, moonY, ringRadius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // Main moon glow
+    const glowGrad = ctx.createRadialGradient(moonX, moonY, moonRadius * 0.5, moonX, moonY, moonRadius * 2);
+    glowGrad.addColorStop(0, 'rgba(220, 230, 255, 0.4)');
+    glowGrad.addColorStop(0.5, 'rgba(180, 200, 240, 0.15)');
+    glowGrad.addColorStop(1, 'rgba(150, 180, 220, 0)');
+    ctx.fillStyle = glowGrad;
+    ctx.beginPath();
+    ctx.arc(moonX, moonY, moonRadius * 2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Moon body
+    const moonGrad = ctx.createRadialGradient(moonX - 15, moonY - 15, 5, moonX, moonY, moonRadius);
+    moonGrad.addColorStop(0, '#FFFFF8');
+    moonGrad.addColorStop(0.3, '#F5F5F0');
+    moonGrad.addColorStop(0.7, '#E8E8E0');
+    moonGrad.addColorStop(1, '#D8D8D0');
+    
+    ctx.fillStyle = moonGrad;
+    ctx.beginPath();
+    ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Moon craters (subtle)
+    ctx.fillStyle = 'rgba(200, 200, 190, 0.3)';
+    ctx.beginPath();
+    ctx.arc(moonX - 12, moonY - 8, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(moonX + 15, moonY + 5, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(moonX - 5, moonY + 15, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(moonX + 8, moonY - 18, 4, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Inner highlight
+    const highlightGrad = ctx.createRadialGradient(moonX - 18, moonY - 18, 2, moonX - 10, moonY - 10, moonRadius * 0.5);
+    highlightGrad.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+    highlightGrad.addColorStop(0.4, 'rgba(255, 255, 255, 0.2)');
+    highlightGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = highlightGrad;
+    ctx.beginPath();
+    ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Sleepy kawaii face
+    ctx.strokeStyle = 'rgba(180, 180, 170, 0.6)';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    
+    // Closed sleepy eyes (downward arcs)
+    ctx.beginPath();
+    ctx.arc(moonX - 12, moonY - 3, 6, Math.PI * 0.3, Math.PI * 0.7);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.arc(moonX + 12, moonY - 3, 6, Math.PI * 0.3, Math.PI * 0.7);
+    ctx.stroke();
+    
+    // Soft blush
+    ctx.fillStyle = 'rgba(255, 180, 200, 0.25)';
+    ctx.beginPath();
+    ctx.ellipse(moonX - 22, moonY + 5, 6, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(moonX + 22, moonY + 5, 6, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Gentle smile
+    ctx.strokeStyle = 'rgba(180, 180, 170, 0.5)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(moonX, moonY + 8, 8, Math.PI * 0.2, Math.PI * 0.8);
+    ctx.stroke();
 }
 
 function drawClouds() {
-    clouds.forEach(cloud => {
-        cloud.x += cloud.speed;
+    clouds.forEach((cloud, index) => {
+        // Parallax - clouds at different depths move at different speeds
+        const depthFactor = 0.5 + (index % 3) * 0.3;
+        cloud.x += cloud.speed * depthFactor;
         if (cloud.x > canvas.width + cloud.size * 2) {
             cloud.x = -cloud.size * 2;
         }
         
-        ctx.fillStyle = `rgba(255, 255, 255, ${cloud.opacity})`;
-        
-        // Draw fluffy cloud
         const cx = cloud.x;
         const cy = cloud.y;
         const s = cloud.size;
         
+        // Gentle bobbing animation
+        const bobY = cy + Math.sin(animationTime * 0.015 + index * 2) * 3;
+        
+        // Cloud shadow (offset below)
+        ctx.fillStyle = `rgba(180, 200, 220, ${cloud.opacity * 0.12})`;
         ctx.beginPath();
-        ctx.arc(cx, cy, s * 0.5, 0, Math.PI * 2);
-        ctx.arc(cx + s * 0.4, cy - s * 0.1, s * 0.4, 0, Math.PI * 2);
-        ctx.arc(cx + s * 0.8, cy, s * 0.35, 0, Math.PI * 2);
-        ctx.arc(cx + s * 0.3, cy + s * 0.2, s * 0.3, 0, Math.PI * 2);
-        ctx.arc(cx + s * 0.6, cy + s * 0.15, s * 0.35, 0, Math.PI * 2);
+        ctx.ellipse(cx + s * 0.5, bobY + s * 0.4, s * 0.8, s * 0.12, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Main cloud body with gradient for depth
+        const cloudGrad = ctx.createRadialGradient(cx + s * 0.3, bobY - s * 0.2, s * 0.1, cx + s * 0.5, bobY + s * 0.1, s);
+        cloudGrad.addColorStop(0, `rgba(255, 255, 255, ${cloud.opacity})`);
+        cloudGrad.addColorStop(0.5, `rgba(250, 252, 255, ${cloud.opacity * 0.95})`);
+        cloudGrad.addColorStop(1, `rgba(235, 245, 255, ${cloud.opacity * 0.7})`);
+        ctx.fillStyle = cloudGrad;
+        
+        // Draw organic cloud shape with bezier curves
+        ctx.beginPath();
+        ctx.moveTo(cx - s * 0.3, bobY + s * 0.15);
+        
+        // Left bulge
+        ctx.bezierCurveTo(
+            cx - s * 0.5, bobY + s * 0.1,
+            cx - s * 0.5, bobY - s * 0.2,
+            cx - s * 0.2, bobY - s * 0.25
+        );
+        
+        // First top bump
+        ctx.bezierCurveTo(
+            cx - s * 0.1, bobY - s * 0.45,
+            cx + s * 0.15, bobY - s * 0.5,
+            cx + s * 0.3, bobY - s * 0.35
+        );
+        
+        // Second top bump (tallest)
+        ctx.bezierCurveTo(
+            cx + s * 0.4, bobY - s * 0.55,
+            cx + s * 0.7, bobY - s * 0.5,
+            cx + s * 0.8, bobY - s * 0.3
+        );
+        
+        // Third top bump
+        ctx.bezierCurveTo(
+            cx + s * 0.95, bobY - s * 0.4,
+            cx + s * 1.15, bobY - s * 0.25,
+            cx + s * 1.1, bobY - s * 0.05
+        );
+        
+        // Right side down
+        ctx.bezierCurveTo(
+            cx + s * 1.2, bobY + s * 0.1,
+            cx + s * 1.1, bobY + s * 0.25,
+            cx + s * 0.9, bobY + s * 0.2
+        );
+        
+        // Bottom (flatter, gentle curves)
+        ctx.bezierCurveTo(
+            cx + s * 0.7, bobY + s * 0.28,
+            cx + s * 0.4, bobY + s * 0.25,
+            cx + s * 0.2, bobY + s * 0.22
+        );
+        
+        ctx.bezierCurveTo(
+            cx, bobY + s * 0.25,
+            cx - s * 0.15, bobY + s * 0.22,
+            cx - s * 0.3, bobY + s * 0.15
+        );
+        
+        ctx.closePath();
+        ctx.fill();
+        
+        // Highlight on top-left area
+        const shineGrad = ctx.createRadialGradient(cx + s * 0.1, bobY - s * 0.25, 0, cx + s * 0.2, bobY - s * 0.1, s * 0.5);
+        shineGrad.addColorStop(0, `rgba(255, 255, 255, ${cloud.opacity * 0.7})`);
+        shineGrad.addColorStop(0.5, `rgba(255, 255, 255, ${cloud.opacity * 0.2})`);
+        shineGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = shineGrad;
+        ctx.beginPath();
+        ctx.ellipse(cx + s * 0.15, bobY - s * 0.2, s * 0.35, s * 0.25, -0.3, 0, Math.PI * 2);
         ctx.fill();
     });
 }
 
 function drawBackgroundStars() {
-    backgroundStars.forEach(star => {
+    backgroundStars.forEach((star, i) => {
         const twinkle = (Math.sin(animationTime * star.twinkleSpeed + star.twinkleOffset) + 1) * 0.5;
-        ctx.fillStyle = `rgba(255, 255, 255, ${0.3 + twinkle * 0.5})`;
+        const size = star.size * (0.8 + twinkle * 0.5);
+        const baseAlpha = isDarkTheme ? 0.6 : 0.4;
+        const alpha = baseAlpha + twinkle * (isDarkTheme ? 0.4 : 0.6);
+        const brightness = star.brightness || 1;
         
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.size * (0.8 + twinkle * 0.4), 0, Math.PI * 2);
-        ctx.fill();
+        if (isDarkTheme) {
+            // Night mode: simple glowing dots with color tints
+            const colors = [
+                [255, 255, 255],    // white
+                [200, 220, 255],    // blue-white
+                [255, 240, 200],    // warm white
+                [220, 200, 255],    // purple tint
+            ];
+            const color = colors[i % colors.length];
+            
+            // Soft glow
+            const glowGrad = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, size * 4);
+            glowGrad.addColorStop(0, `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${alpha * brightness * 0.4})`);
+            glowGrad.addColorStop(0.5, `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${alpha * brightness * 0.1})`);
+            glowGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = glowGrad;
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, size * 4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Star core
+            ctx.fillStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${alpha * brightness})`;
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, size * 0.8, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            // Day mode: sparkle shapes
+            // Outer glow
+            const glowGrad = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, size * 3);
+            glowGrad.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.5})`);
+            glowGrad.addColorStop(0.5, `rgba(255, 250, 220, ${alpha * 0.2})`);
+            glowGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = glowGrad;
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, size * 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw 4-point sparkle shape
+            ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+            ctx.save();
+            ctx.translate(star.x, star.y);
+            ctx.rotate(animationTime * 0.01 + i);
+            
+            // Vertical spike
+            ctx.beginPath();
+            ctx.moveTo(0, -size * 1.5);
+            ctx.quadraticCurveTo(size * 0.3, 0, 0, size * 1.5);
+            ctx.quadraticCurveTo(-size * 0.3, 0, 0, -size * 1.5);
+            ctx.fill();
+            
+            // Horizontal spike
+            ctx.beginPath();
+            ctx.moveTo(-size * 1.5, 0);
+            ctx.quadraticCurveTo(0, size * 0.3, size * 1.5, 0);
+            ctx.quadraticCurveTo(0, -size * 0.3, -size * 1.5, 0);
+            ctx.fill();
+            
+            // Center bright dot
+            ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(1, alpha + 0.3)})`;
+            ctx.beginPath();
+            ctx.arc(0, 0, size * 0.4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+        }
     });
 }
 
@@ -720,6 +1097,10 @@ function createPoof(x, y, hue) {
 
 // Initialization
 function init() {
+    loadTheme();
+    if (isDarkTheme) {
+        document.body.classList.add('dark-theme');
+    }
     resize();
     initClouds();
     initBackgroundStars();
@@ -921,6 +1302,13 @@ document.querySelectorAll('.timer-btn').forEach(btn => {
         document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
     });
+});
+
+// Theme toggle
+document.getElementById('theme-toggle').addEventListener('click', () => {
+    const newTheme = !isDarkTheme;
+    setTheme(newTheme);
+    document.body.classList.toggle('dark-theme', newTheme);
 });
 
 init();
