@@ -43,6 +43,96 @@ const COLORS = {
     sunGlow: '#FFF4B8'
 };
 
+const PLAYER_COLOR_DEFAULTS = {
+    p1: '#FF9EB5',
+    p2: '#7EC8E8'
+};
+
+let p1Color = PLAYER_COLOR_DEFAULTS.p1;
+let p2Color = PLAYER_COLOR_DEFAULTS.p2;
+
+function clampColor(value) {
+    return Math.max(0, Math.min(255, value));
+}
+
+function hexToRgb(hex) {
+    const normalized = hex.replace('#', '');
+    const number = parseInt(normalized, 16);
+
+    return {
+        r: (number >> 16) & 255,
+        g: (number >> 8) & 255,
+        b: number & 255
+    };
+}
+
+function rgbToHex(r, g, b) {
+    return `#${[r, g, b].map(value => value.toString(16).padStart(2, '0')).join('')}`;
+}
+
+function adjustColor(hex, amount) {
+    const { r, g, b } = hexToRgb(hex);
+    const shift = Math.round(255 * amount);
+
+    return rgbToHex(
+        clampColor(r + shift),
+        clampColor(g + shift),
+        clampColor(b + shift)
+    );
+}
+
+function createColorVariants(baseColor) {
+    return {
+        base: baseColor,
+        dark: adjustColor(baseColor, -0.22),
+        light: adjustColor(baseColor, 0.22),
+        accent: adjustColor(baseColor, -0.12)
+    };
+}
+
+function savePlayerColors() {
+    localStorage.setItem('bubble_colors', JSON.stringify({ p1: p1Color, p2: p2Color }));
+}
+
+function applyPickerColor(picker, color) {
+    const { r, g, b } = hexToRgb(color);
+
+    picker.style.setProperty('--player-color', color);
+    picker.style.setProperty('--player-color-soft', `rgba(${r}, ${g}, ${b}, 0.25)`);
+
+    picker.querySelectorAll('.color-petal').forEach(petal => {
+        petal.classList.toggle('is-selected', petal.dataset.color === color);
+    });
+}
+
+function setupColorPickers() {
+    const savedColors = JSON.parse(localStorage.getItem('bubble_colors') || '{}');
+    p1Color = savedColors.p1 || PLAYER_COLOR_DEFAULTS.p1;
+    p2Color = savedColors.p2 || PLAYER_COLOR_DEFAULTS.p2;
+
+    document.querySelectorAll('.color-picker').forEach(picker => {
+        const player = picker.dataset.player;
+        const initialColor = player === '1' ? p1Color : p2Color;
+
+        applyPickerColor(picker, initialColor);
+
+        picker.querySelectorAll('.color-petal').forEach(petal => {
+            petal.addEventListener('click', () => {
+                const color = petal.dataset.color;
+
+                if (player === '1') {
+                    p1Color = color;
+                } else {
+                    p2Color = color;
+                }
+
+                applyPickerColor(picker, color);
+                savePlayerColors();
+            });
+        });
+    });
+}
+
 // Initialize clouds
 function initClouds() {
     clouds = [];
@@ -75,9 +165,11 @@ class Character {
     constructor(x, color, name, isGirl) {
         this.x = x;
         this.y = 0;
-        this.color = isGirl ? COLORS.pink : COLORS.blue;
-        this.colorDark = isGirl ? COLORS.pinkDark : COLORS.blueDark;
-        this.colorLight = isGirl ? COLORS.pinkLight : COLORS.blueLight;
+        const variants = createColorVariants(color);
+        this.color = variants.base;
+        this.colorDark = variants.dark;
+        this.colorLight = variants.light;
+        this.colorAccent = variants.accent;
         this.name = name;
         this.width = CHARACTER_SIZE;
         this.height = CHARACTER_SIZE;
@@ -207,8 +299,8 @@ class Character {
 
         // Bow for girl
         if (this.isGirl) {
-            ctx.fillStyle = '#FF6B8A';
-            ctx.strokeStyle = '#D94A6A';
+            ctx.fillStyle = this.colorAccent;
+            ctx.strokeStyle = this.colorDark;
             ctx.lineWidth = 2;
             
             // Left ribbon
@@ -637,6 +729,7 @@ function init() {
         initBackgroundStars();
     });
     setupControls();
+    setupColorPickers();
     loadHighScores();
     requestAnimationFrame(gameLoop);
 }
@@ -687,8 +780,8 @@ function startGame() {
     particles = [];
     
     characters = [
-        new Character(canvas.width * 0.3, COLORS.pink, p1Name, true),
-        new Character(canvas.width * 0.6, COLORS.blue, p2Name, false)
+        new Character(canvas.width * 0.3, p1Color, p1Name, true),
+        new Character(canvas.width * 0.6, p2Color, p2Name, false)
     ];
     resize();
 

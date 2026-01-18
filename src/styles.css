@@ -105,7 +105,7 @@ canvas {
 }
 
 .input-group {
-    margin-bottom: 20px;
+    margin-bottom: 30px;
 }
 
 .input-group label {
@@ -136,6 +136,58 @@ input[type="text"]:focus {
     box-shadow: 
         inset 0 2px 4px rgba(0,0,0,0.05),
         0 0 0 4px rgba(126, 200, 232, 0.3);
+}
+
+.color-picker {
+    position: relative;
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto;
+    padding: 36px 0;
+    --player-color: #e0e0e0;
+    --player-color-soft: rgba(0, 0, 0, 0.1);
+}
+
+.color-picker input[type="text"] {
+    position: relative;
+    z-index: 2;
+    border-color: var(--player-color);
+    background: linear-gradient(180deg, #fff, #fdf6f7);
+    box-shadow:
+        inset 0 2px 4px rgba(0,0,0,0.05),
+        0 0 0 4px var(--player-color-soft);
+}
+
+.color-picker input[type="text"]:focus {
+    border-color: var(--player-color);
+    box-shadow:
+        inset 0 2px 4px rgba(0,0,0,0.05),
+        0 0 0 5px var(--player-color-soft);
+}
+
+.color-petal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: var(--petal-color);
+    cursor: pointer;
+    z-index: 1;
+    transform: translate(-50%, -50%) rotate(var(--petal-angle)) translate(0, -72px);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: inset 0 2px 4px rgba(255,255,255,0.6), 0 3px 6px rgba(0,0,0,0.15);
+}
+
+.color-petal:hover {
+    transform: translate(-50%, -50%) rotate(var(--petal-angle)) translate(0, -72px) scale(1.08);
+}
+
+.color-petal.is-selected {
+    box-shadow: 0 0 0 3px #fff, 0 0 12px var(--petal-color);
+    transform: translate(-50%, -50%) rotate(var(--petal-angle)) translate(0, -72px) scale(1.1);
 }
 
 .timer-selection {
