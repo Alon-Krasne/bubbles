@@ -7,7 +7,7 @@
     "start": "open index.html",
     "serve": "bun --bun serve .",
     "bundle": "bun scripts/bundle.js",
-    "share": "bun scripts/bundle.js && open dist/bubbles.html"
+    "share": "bun scripts/bundle.js --open"
   },
   "keywords": [
     "game",

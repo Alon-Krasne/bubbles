@@ -48,7 +48,7 @@ bubbles/
 ├── scripts/
 │   └── bundle.js       # Bundles into single HTML
 ├── dist/
-│   └── bubbles.html    # Shareable bundled game
+│   └── bubbles_v<major>.html    # Shareable bundled game
 ├── package.json
 ├── README.md
 └── AGENTS.md
@@ -70,7 +70,7 @@ bubbles/
 
 ## How to Run
 - `bun run start` - Open game in browser
-- `bun run bundle` - Create `dist/bubbles.html`
+- `bun run bundle` - Create `dist/bubbles_v<major>.html`
 - `bun run share` - Bundle and open
 
 ## Key Design Decisions
