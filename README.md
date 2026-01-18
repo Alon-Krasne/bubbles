@@ -29,15 +29,17 @@ Catch as many bubbles as you can before time runs out! Both players share a sing
 
 ## Running the Game
 
-Simply open `index.html` in any modern browser:
+Simply open `index.html` in any modern browser (or use Bun scripts):
 
 ```bash
 # macOS
-open index.html
+bun run start
 
 # Or use a local server
-npx serve .
+bun run serve
 ```
+
+Requires Bun (`https://bun.sh`). If you prefer Node, you can still open `index.html` directly.
 
 ## Project Structure
 
