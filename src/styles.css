@@ -64,68 +64,76 @@ canvas {
     display: flex;
 }
 
-/* ==================== THEME TOGGLE ==================== */
-.theme-toggle {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    width: 50px;
-    height: 50px;
-    border: none;
-    border-radius: 50%;
-    background: linear-gradient(145deg, rgba(255,255,255,0.9), rgba(240,245,255,0.8));
-    box-shadow: 
-        0 4px 15px rgba(0,0,0,0.1),
-        inset 0 2px 0 rgba(255,255,255,0.8);
+/* ==================== MODE SELECTION (Day/Night) ==================== */
+.mode-selection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.mode-options {
+    display: flex;
+    gap: 12px;
+}
+
+.mode-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 24px;
+    border: 3px solid #e0e0e0;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #fff, #f8f8f8);
     cursor: pointer;
     transition: all 0.3s ease;
-    overflow: hidden;
-    z-index: 100;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
 }
 
-.theme-toggle:hover {
-    transform: scale(1.1);
-    box-shadow: 
-        0 6px 20px rgba(0,0,0,0.15),
-        inset 0 2px 0 rgba(255,255,255,0.8);
+.mode-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(0,0,0,0.12);
 }
 
-.theme-icon {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 26px;
-    transition: all 0.4s ease;
+.mode-btn.active {
+    border-color: var(--blue);
+    background: linear-gradient(180deg, #e8f4ff, #d4ebff);
+    box-shadow: 0 3px 10px rgba(126, 200, 232, 0.3);
 }
 
-.sun-icon {
+.mode-btn .mode-icon {
+    font-size: 28px;
+}
+
+.mode-btn[data-mode="day"] .mode-icon {
     color: #FFB800;
-    opacity: 1;
-    transform: translate(-50%, -50%) rotate(0deg);
 }
 
-.moon-icon {
+.mode-btn[data-mode="night"] .mode-icon {
     color: #8B9DC3;
-    opacity: 0;
-    transform: translate(-50%, -50%) rotate(-90deg);
 }
 
-body.dark-theme .theme-toggle {
-    background: linear-gradient(145deg, rgba(40,50,80,0.9), rgba(30,40,60,0.8));
-    box-shadow: 
-        0 4px 15px rgba(0,0,0,0.3),
-        inset 0 2px 0 rgba(100,120,180,0.3);
+.mode-btn .mode-label {
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
 }
 
-body.dark-theme .sun-icon {
-    opacity: 0;
-    transform: translate(-50%, -50%) rotate(90deg);
+body.dark-theme .mode-btn {
+    background: linear-gradient(180deg, rgba(40,50,80,0.9), rgba(30,40,60,0.8));
+    border-color: rgba(100, 120, 180, 0.3);
 }
 
-body.dark-theme .moon-icon {
-    opacity: 1;
-    transform: translate(-50%, -50%) rotate(0deg);
+body.dark-theme .mode-btn.active {
+    border-color: #8B9DC3;
+    background: linear-gradient(180deg, rgba(50,60,100,0.95), rgba(40,50,80,0.9));
+    box-shadow: 0 3px 10px rgba(139, 157, 195, 0.3);
+}
+
+body.dark-theme .mode-btn .mode-label {
+    color: #e0e8ff;
 }
 
 /* ==================== START SCREEN ==================== */

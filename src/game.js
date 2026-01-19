@@ -76,6 +76,12 @@ function loadTheme() {
         isDarkTheme = true;
         setTheme(true);
     }
+    
+    // Update mode buttons to reflect saved state
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        const isNight = btn.dataset.mode === 'night';
+        btn.classList.toggle('active', isNight === isDarkTheme);
+    });
 }
 
 const PLAYER_COLOR_DEFAULTS = {
@@ -127,6 +133,32 @@ function createColorVariants(baseColor) {
 
 function savePlayerColors() {
     localStorage.setItem('bubble_colors', JSON.stringify({ p1: p1Color, p2: p2Color }));
+}
+
+function savePlayerNames() {
+    localStorage.setItem('bubble_names', JSON.stringify({ p1: p1Name, p2: p2Name }));
+}
+
+function loadPlayerNames() {
+    const savedNames = JSON.parse(localStorage.getItem('bubble_names') || '{}');
+    p1Name = savedNames.p1 || "לוטם";
+    p2Name = savedNames.p2 || "תום";
+    
+    const p1Input = document.getElementById('p1-name');
+    const p2Input = document.getElementById('p2-name');
+    
+    if (p1Input) p1Input.value = p1Name;
+    if (p2Input) p2Input.value = p2Name;
+    
+    // Save names on input change
+    p1Input?.addEventListener('input', () => {
+        p1Name = p1Input.value || "לוטם";
+        savePlayerNames();
+    });
+    p2Input?.addEventListener('input', () => {
+        p2Name = p2Input.value || "תום";
+        savePlayerNames();
+    });
 }
 
 function applyPickerColor(picker, color) {
@@ -1111,6 +1143,7 @@ function init() {
     });
     setupControls();
     setupColorPickers();
+    loadPlayerNames();
     loadHighScores();
     requestAnimationFrame(gameLoop);
 }
@@ -1130,7 +1163,10 @@ function setupControls() {
     const keys = {};
     window.addEventListener('keydown', e => {
         keys[e.code] = true;
-        e.preventDefault();
+        // Only prevent default during gameplay (allow typing in inputs)
+        if (gameState === 'PLAYING') {
+            e.preventDefault();
+        }
     });
     window.addEventListener('keyup', e => keys[e.code] = false);
 
@@ -1304,11 +1340,16 @@ document.querySelectorAll('.timer-btn').forEach(btn => {
     });
 });
 
-// Theme toggle
-document.getElementById('theme-toggle').addEventListener('click', () => {
-    const newTheme = !isDarkTheme;
-    setTheme(newTheme);
-    document.body.classList.toggle('dark-theme', newTheme);
+// Mode selection (day/night)
+document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        const isNight = btn.dataset.mode === 'night';
+        setTheme(isNight);
+        document.body.classList.toggle('dark-theme', isNight);
+    });
 });
 
 init();

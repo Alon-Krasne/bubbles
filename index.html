@@ -13,10 +13,6 @@
 
         <!-- Start Screen -->
         <div id="start-screen" class="screen active">
-            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
-                <span class="theme-icon sun-icon">&#9728;</span>
-                <span class="theme-icon moon-icon">&#9790;</span>
-            </button>
             <h1 class="title">בועות!</h1>
             <div class="setup-form">
                 <div class="input-group">
@@ -49,6 +45,19 @@
                             <button type="button" class="color-petal" data-color="#7EC8E8" style="--petal-color: #7EC8E8;" aria-label="Sky Blue"></button>
                             <button type="button" class="color-petal" data-color="#B8E986" style="--petal-color: #B8E986;" aria-label="Lime"></button>
                         </div>
+                    </div>
+                </div>
+                <div class="mode-selection">
+                    <label>מצב משחק:</label>
+                    <div class="mode-options">
+                        <button class="mode-btn active" data-mode="day">
+                            <span class="mode-icon">☀</span>
+                            <span class="mode-label">יום</span>
+                        </button>
+                        <button class="mode-btn" data-mode="night">
+                            <span class="mode-icon">☾</span>
+                            <span class="mode-label">לילה</span>
+                        </button>
                     </div>
                 </div>
                 <div class="timer-selection">
