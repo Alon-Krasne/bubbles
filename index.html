@@ -13,112 +13,145 @@
 
         <!-- Start Screen -->
         <div id="start-screen" class="screen active">
-            <h1 class="title">בועות!</h1>
-            <div class="setup-form">
-                <div class="input-group">
-                    <label>שחקן 1: <span class="control-hint"><kbd>A</kbd> <kbd>D</kbd></span></label>
-                    <div class="player-customizer" data-player="1">
-                        <input type="text" id="p1-name" value="לוטם" maxlength="10">
-                        <div class="figure-picker">
-                            <button type="button" class="figure-btn is-selected" data-figure="blob" aria-label="Blob">
-                                <span class="figure-blob"></span>
-                            </button>
-                            <button type="button" class="figure-btn" data-figure="unicorn" aria-label="Unicorn">
-                                <img src="src/assets/unicorn.png" alt="Unicorn">
-                            </button>
-                            <button type="button" class="figure-btn" data-figure="dinosaur" aria-label="Dinosaur">
-                                <img src="src/assets/dinosaur.png" alt="Dinosaur">
-                            </button>
-                            <button type="button" class="figure-btn" data-figure="puppy" aria-label="Puppy">
-                                <img src="src/assets/puppy.png" alt="Puppy">
-                            </button>
-                            <button type="button" class="figure-btn" data-figure="princess" aria-label="Princess">
-                                <img src="src/assets/princess.png" alt="Princess">
-                            </button>
-                        </div>
-                        <div class="color-petals">
-                            <button type="button" class="color-petal" data-color="#FF9EB5" style="--petal-color: #FF9EB5;" aria-label="Pink"></button>
-                            <button type="button" class="color-petal" data-color="#C9A0DC" style="--petal-color: #C9A0DC;" aria-label="Purple"></button>
-                            <button type="button" class="color-petal" data-color="#FFB07C" style="--petal-color: #FFB07C;" aria-label="Coral"></button>
-                            <button type="button" class="color-petal" data-color="#98D9C2" style="--petal-color: #98D9C2;" aria-label="Mint"></button>
-                            <button type="button" class="color-petal" data-color="#FFDAB3" style="--petal-color: #FFDAB3;" aria-label="Peach"></button>
-                            <button type="button" class="color-petal" data-color="#B8A9DE" style="--petal-color: #B8A9DE;" aria-label="Lavender"></button>
-                            <button type="button" class="color-petal" data-color="#7EC8E8" style="--petal-color: #7EC8E8;" aria-label="Sky Blue"></button>
-                            <button type="button" class="color-petal" data-color="#B8E986" style="--petal-color: #B8E986;" aria-label="Lime"></button>
-                        </div>
-                    </div>
-                </div>
-                <div class="input-group">
-                    <label>שחקן 2: <span class="control-hint"><kbd>←</kbd> <kbd>→</kbd></span></label>
-                    <div class="player-customizer" data-player="2">
-                        <input type="text" id="p2-name" value="תום" maxlength="10">
-                        <div class="figure-picker">
-                            <button type="button" class="figure-btn is-selected" data-figure="blob" aria-label="Blob">
-                                <span class="figure-blob"></span>
-                            </button>
-                            <button type="button" class="figure-btn" data-figure="unicorn" aria-label="Unicorn">
-                                <img src="src/assets/unicorn.png" alt="Unicorn">
-                            </button>
-                            <button type="button" class="figure-btn" data-figure="dinosaur" aria-label="Dinosaur">
-                                <img src="src/assets/dinosaur.png" alt="Dinosaur">
-                            </button>
-                            <button type="button" class="figure-btn" data-figure="puppy" aria-label="Puppy">
-                                <img src="src/assets/puppy.png" alt="Puppy">
-                            </button>
-                            <button type="button" class="figure-btn" data-figure="princess" aria-label="Princess">
-                                <img src="src/assets/princess.png" alt="Princess">
-                            </button>
-                        </div>
-                        <div class="color-petals">
-                            <button type="button" class="color-petal" data-color="#FF9EB5" style="--petal-color: #FF9EB5;" aria-label="Pink"></button>
-                            <button type="button" class="color-petal" data-color="#C9A0DC" style="--petal-color: #C9A0DC;" aria-label="Purple"></button>
-                            <button type="button" class="color-petal" data-color="#FFB07C" style="--petal-color: #FFB07C;" aria-label="Coral"></button>
-                            <button type="button" class="color-petal" data-color="#98D9C2" style="--petal-color: #98D9C2;" aria-label="Mint"></button>
-                            <button type="button" class="color-petal" data-color="#FFDAB3" style="--petal-color: #FFDAB3;" aria-label="Peach"></button>
-                            <button type="button" class="color-petal" data-color="#B8A9DE" style="--petal-color: #B8A9DE;" aria-label="Lavender"></button>
-                            <button type="button" class="color-petal" data-color="#7EC8E8" style="--petal-color: #7EC8E8;" aria-label="Sky Blue"></button>
-                            <button type="button" class="color-petal" data-color="#B8E986" style="--petal-color: #B8E986;" aria-label="Lime"></button>
-                        </div>
-                    </div>
-                </div>
-                <div class="theme-selection">
-                    <label>עולם:</label>
-                    <div class="theme-options">
-                        <button class="theme-btn active" data-theme="classic" title="קלאסי">
-                            <span class="theme-icon">☀️</span>
-                            <span class="theme-label">קלאסי</span>
-                        </button>
-                        <button class="theme-btn" data-theme="imagine" title="ארץ דמיון">
-                            <span class="theme-icon">💎</span>
-                            <span class="theme-label">דמיון</span>
-                        </button>
-                        <button class="theme-btn" data-theme="unicorn" title="ארץ החד-קרן">
-                            <span class="theme-icon">🦄</span>
-                            <span class="theme-label">חד-קרן</span>
-                        </button>
-                        <button class="theme-btn" data-theme="dinosaur" title="ארץ הדינוזאורים">
-                            <span class="theme-icon">🦕</span>
-                            <span class="theme-label">דינו</span>
-                        </button>
-                        <button class="theme-btn" data-theme="castle" title="טירת החלומות">
-                            <span class="theme-icon">🏰</span>
-                            <span class="theme-label">טירה</span>
-                        </button>
-                    </div>
-                </div>
-                <div class="timer-selection">
-                    <label>זמן משחק:</label>
-                    <div class="timer-options">
-                        <button class="timer-btn" data-time="30">30</button>
-                        <button class="timer-btn active" data-time="45">45</button>
-                        <button class="timer-btn" data-time="60">60</button>
-                    </div>
-                </div>
-                <button id="start-btn" class="main-btn">!התחל</button>
+            <!-- Floating decorations -->
+            <div class="floating-decorations">
+                <div class="floating-bubble" style="--delay: 0s; --x: 10%; --size: 60px;"></div>
+                <div class="floating-bubble" style="--delay: 2s; --x: 25%; --size: 40px;"></div>
+                <div class="floating-bubble" style="--delay: 4s; --x: 75%; --size: 50px;"></div>
+                <div class="floating-bubble" style="--delay: 1s; --x: 85%; --size: 35px;"></div>
+                <div class="floating-star" style="--delay: 0.5s; --x: 15%; --y: 20%;"></div>
+                <div class="floating-star" style="--delay: 2.5s; --x: 80%; --y: 30%;"></div>
+                <div class="floating-star" style="--delay: 1.5s; --x: 60%; --y: 15%;"></div>
             </div>
-            <div id="high-scores-preview">
-                <h3>שיאים קודמים:</h3>
-                <ul id="scores-list"></ul>
+
+            <!-- Big bouncy title -->
+            <h1 class="game-title">
+                <span class="title-bubble title-bubble-1"></span>
+                <span class="title-text">בועות!</span>
+                <span class="title-bubble title-bubble-2"></span>
+            </h1>
+
+            <!-- Players as cute cloud bubbles -->
+            <div class="players-area">
+                <div class="player-bubble" data-player="1">
+                    <div class="player-name-bubble">
+                        <input type="text" id="p1-name" value="לוטם" maxlength="10" placeholder="שם...">
+                        <span class="name-bubble-tail"></span>
+                    </div>
+                    <div class="player-avatar-area">
+                        <div class="figure-picker">
+                            <button type="button" class="figure-btn is-selected" data-figure="blob" aria-label="Blob">
+                                <span class="figure-blob"></span>
+                            </button>
+                            <button type="button" class="figure-btn" data-figure="unicorn" aria-label="Unicorn">
+                                <img src="src/assets/unicorn.png" alt="Unicorn">
+                            </button>
+                            <button type="button" class="figure-btn" data-figure="dinosaur" aria-label="Dinosaur">
+                                <img src="src/assets/dinosaur.png" alt="Dinosaur">
+                            </button>
+                            <button type="button" class="figure-btn" data-figure="puppy" aria-label="Puppy">
+                                <img src="src/assets/puppy.png" alt="Puppy">
+                            </button>
+                            <button type="button" class="figure-btn" data-figure="princess" aria-label="Princess">
+                                <img src="src/assets/princess.png" alt="Princess">
+                            </button>
+                        </div>
+                        <div class="color-petals">
+                            <button type="button" class="color-petal" data-color="#FF9EB5" style="--petal-color: #FF9EB5;" aria-label="Pink"></button>
+                            <button type="button" class="color-petal" data-color="#C9A0DC" style="--petal-color: #C9A0DC;" aria-label="Purple"></button>
+                            <button type="button" class="color-petal" data-color="#FFB07C" style="--petal-color: #FFB07C;" aria-label="Coral"></button>
+                            <button type="button" class="color-petal" data-color="#98D9C2" style="--petal-color: #98D9C2;" aria-label="Mint"></button>
+                            <button type="button" class="color-petal" data-color="#FFDAB3" style="--petal-color: #FFDAB3;" aria-label="Peach"></button>
+                            <button type="button" class="color-petal" data-color="#B8A9DE" style="--petal-color: #B8A9DE;" aria-label="Lavender"></button>
+                            <button type="button" class="color-petal" data-color="#7EC8E8" style="--petal-color: #7EC8E8;" aria-label="Sky Blue"></button>
+                            <button type="button" class="color-petal" data-color="#B8E986" style="--petal-color: #B8E986;" aria-label="Lime"></button>
+                        </div>
+                    </div>
+                    <div class="player-keys"><kbd>A</kbd><kbd>D</kbd></div>
+                </div>
+
+                <div class="player-bubble" data-player="2">
+                    <div class="player-name-bubble">
+                        <input type="text" id="p2-name" value="תום" maxlength="10" placeholder="שם...">
+                        <span class="name-bubble-tail"></span>
+                    </div>
+                    <div class="player-avatar-area">
+                        <div class="figure-picker">
+                            <button type="button" class="figure-btn is-selected" data-figure="blob" aria-label="Blob">
+                                <span class="figure-blob"></span>
+                            </button>
+                            <button type="button" class="figure-btn" data-figure="unicorn" aria-label="Unicorn">
+                                <img src="src/assets/unicorn.png" alt="Unicorn">
+                            </button>
+                            <button type="button" class="figure-btn" data-figure="dinosaur" aria-label="Dinosaur">
+                                <img src="src/assets/dinosaur.png" alt="Dinosaur">
+                            </button>
+                            <button type="button" class="figure-btn" data-figure="puppy" aria-label="Puppy">
+                                <img src="src/assets/puppy.png" alt="Puppy">
+                            </button>
+                            <button type="button" class="figure-btn" data-figure="princess" aria-label="Princess">
+                                <img src="src/assets/princess.png" alt="Princess">
+                            </button>
+                        </div>
+                        <div class="color-petals">
+                            <button type="button" class="color-petal" data-color="#FF9EB5" style="--petal-color: #FF9EB5;" aria-label="Pink"></button>
+                            <button type="button" class="color-petal" data-color="#C9A0DC" style="--petal-color: #C9A0DC;" aria-label="Purple"></button>
+                            <button type="button" class="color-petal" data-color="#FFB07C" style="--petal-color: #FFB07C;" aria-label="Coral"></button>
+                            <button type="button" class="color-petal" data-color="#98D9C2" style="--petal-color: #98D9C2;" aria-label="Mint"></button>
+                            <button type="button" class="color-petal" data-color="#FFDAB3" style="--petal-color: #FFDAB3;" aria-label="Peach"></button>
+                            <button type="button" class="color-petal" data-color="#B8A9DE" style="--petal-color: #B8A9DE;" aria-label="Lavender"></button>
+                            <button type="button" class="color-petal" data-color="#7EC8E8" style="--petal-color: #7EC8E8;" aria-label="Sky Blue"></button>
+                            <button type="button" class="color-petal" data-color="#B8E986" style="--petal-color: #B8E986;" aria-label="Lime"></button>
+                        </div>
+                    </div>
+                    <div class="player-keys"><kbd>&#8594;</kbd><kbd>&#8592;</kbd></div>
+                </div>
+            </div>
+
+            <!-- Fun settings bubbles -->
+            <div class="fun-settings">
+                <!-- World/Theme selector as cute icons -->
+                <div class="setting-group">
+                    <span class="setting-label">🌍 עולם</span>
+                    <div class="world-picker">
+                        <button class="world-btn active" data-theme="classic" title="קלאסי">☀️</button>
+                        <button class="world-btn" data-theme="imagine" title="ארץ דמיון">💎</button>
+                        <button class="world-btn" data-theme="unicorn" title="ארץ החד-קרן">🦄</button>
+                        <button class="world-btn" data-theme="dinosaur" title="ארץ הדינוזאורים">🦕</button>
+                        <button class="world-btn" data-theme="castle" title="טירת החלומות">🏰</button>
+                    </div>
+                </div>
+
+                <!-- Timer as bouncy candy buttons -->
+                <div class="setting-group">
+                    <span class="setting-label">⏱️ זמן</span>
+                    <div class="timer-candy">
+                        <button class="candy-btn" data-time="30">30</button>
+                        <button class="candy-btn active" data-time="45">45</button>
+                        <button class="candy-btn" data-time="60">60</button>
+                    </div>
+                </div>
+
+                <!-- Trophy for high scores -->
+                <div class="setting-group">
+                    <span class="setting-label">🏆 שיאים</span>
+                    <button class="trophy-btn" id="show-scores-btn">🏆</button>
+                </div>
+            </div>
+
+            <!-- Big juicy play button -->
+            <button id="start-btn" class="play-button">
+                <span class="play-icon">▶</span>
+                <span class="play-text">!בואו נשחק</span>
+            </button>
+
+            <!-- Hidden high scores popup -->
+            <div id="scores-popup" class="scores-popup hidden">
+                <div class="popup-cloud">
+                    <button class="close-popup">✕</button>
+                    <h3>🏆 שיאים 🏆</h3>
+                    <ol id="scores-list"></ol>
+                </div>
             </div>
         </div>
 
@@ -160,7 +193,10 @@
                     <tbody></tbody>
                 </table>
             </div>
-            <button id="restart-btn" class="main-btn">?שחקו שוב</button>
+            <button id="restart-btn" class="play-button">
+                <span class="play-icon">🔄</span>
+                <span class="play-text">?שוב</span>
+            </button>
         </div>
     </div>
 

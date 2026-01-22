@@ -160,7 +160,7 @@ function loadTheme() {
     }
     
     // Update theme buttons to reflect saved state
-    document.querySelectorAll('.theme-btn').forEach(btn => {
+    document.querySelectorAll('.world-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.theme === currentTheme);
     });
 }
@@ -305,7 +305,7 @@ function setupColorPickers() {
     p1Color = savedColors.p1 || PLAYER_COLOR_DEFAULTS.p1;
     p2Color = savedColors.p2 || PLAYER_COLOR_DEFAULTS.p2;
 
-    document.querySelectorAll('.player-customizer').forEach(picker => {
+    document.querySelectorAll('.player-bubble').forEach(picker => {
         const player = picker.dataset.player;
         const initialColor = player === '1' ? p1Color : p2Color;
 
@@ -333,7 +333,7 @@ function setupFigurePickers() {
     p1Figure = savedFigures.p1 || PLAYER_FIGURE_DEFAULTS.p1;
     p2Figure = savedFigures.p2 || PLAYER_FIGURE_DEFAULTS.p2;
 
-    document.querySelectorAll('.player-customizer').forEach(customizer => {
+    document.querySelectorAll('.player-bubble').forEach(customizer => {
         const player = customizer.dataset.player;
         const initialFigure = player === '1' ? p1Figure : p2Figure;
 
@@ -1547,9 +1547,9 @@ function init() {
 
 // Setup theme selector buttons
 function setupThemeSelector() {
-    document.querySelectorAll('.theme-btn').forEach(btn => {
+    document.querySelectorAll('.world-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.world-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             setBackgroundTheme(btn.dataset.theme);
         });
@@ -1597,7 +1597,7 @@ function startGame() {
     p1Name = document.getElementById('p1-name').value || "לוטם";
     p2Name = document.getElementById('p2-name').value || "תום";
     
-    const activeTimeBtn = document.querySelector('.timer-btn.active');
+    const activeTimeBtn = document.querySelector('.candy-btn.active');
     timeLeft = parseInt(activeTimeBtn.dataset.time);
     
     score = 0;
@@ -1741,11 +1741,24 @@ document.getElementById('restart-btn').addEventListener('click', () => {
     document.getElementById('start-screen').classList.add('active');
 });
 
-document.querySelectorAll('.timer-btn').forEach(btn => {
+document.querySelectorAll('.candy-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-        document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.candy-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
     });
+});
+
+// Scores popup toggle
+document.getElementById('show-scores-btn')?.addEventListener('click', () => {
+    document.getElementById('scores-popup')?.classList.remove('hidden');
+});
+document.querySelector('.close-popup')?.addEventListener('click', () => {
+    document.getElementById('scores-popup')?.classList.add('hidden');
+});
+document.getElementById('scores-popup')?.addEventListener('click', (e) => {
+    if (e.target.id === 'scores-popup') {
+        e.target.classList.add('hidden');
+    }
 });
 
 // Theme selection is now handled via setupThemeSelector() in init()
