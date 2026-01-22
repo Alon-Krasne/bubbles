@@ -136,6 +136,122 @@ body.dark-theme .mode-btn .mode-label {
     color: #e0e8ff;
 }
 
+/* ==================== THEME SELECTION (World Selector) ==================== */
+.theme-selection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.theme-selection > label {
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--text);
+}
+
+.theme-options {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.theme-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 10px 12px;
+    border: 3px solid #e0e0e0;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #fff, #f8f8f8);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    min-width: 60px;
+}
+
+.theme-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+}
+
+.theme-btn.active {
+    border-color: var(--sun);
+    background: linear-gradient(180deg, #fffef0, #fff8d6);
+    box-shadow: 
+        0 0 0 3px rgba(255, 224, 102, 0.3),
+        0 4px 12px rgba(255, 215, 0, 0.25);
+    transform: scale(1.08);
+}
+
+.theme-btn .theme-icon {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.theme-btn .theme-label {
+    font-family: 'Rubik', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+}
+
+/* Theme-specific active states */
+.theme-btn[data-theme="classic"].active {
+    border-color: #FFB800;
+    background: linear-gradient(180deg, #fff9e6, #fff3cc);
+}
+
+.theme-btn[data-theme="imagine"].active {
+    border-color: #7fdbff;
+    background: linear-gradient(180deg, #f0faff, #e0f4ff);
+    box-shadow: 
+        0 0 0 3px rgba(127, 219, 255, 0.3),
+        0 4px 12px rgba(127, 219, 255, 0.25);
+}
+
+.theme-btn[data-theme="unicorn"].active {
+    border-color: #ff9ff3;
+    background: linear-gradient(180deg, #fff0fa, #ffe6f5);
+    box-shadow: 
+        0 0 0 3px rgba(255, 159, 243, 0.3),
+        0 4px 12px rgba(255, 159, 243, 0.25);
+}
+
+.theme-btn[data-theme="dinosaur"].active {
+    border-color: #7bed9f;
+    background: linear-gradient(180deg, #f0fff5, #e6ffed);
+    box-shadow: 
+        0 0 0 3px rgba(123, 237, 159, 0.3),
+        0 4px 12px rgba(123, 237, 159, 0.25);
+}
+
+.theme-btn[data-theme="castle"].active {
+    border-color: #a29bfe;
+    background: linear-gradient(180deg, #f5f3ff, #ece9ff);
+    box-shadow: 
+        0 0 0 3px rgba(162, 155, 254, 0.3),
+        0 4px 12px rgba(162, 155, 254, 0.25);
+}
+
+/* Dark theme support for theme buttons */
+body.dark-theme .theme-btn {
+    background: linear-gradient(180deg, rgba(40,50,80,0.9), rgba(30,40,60,0.8));
+    border-color: rgba(100, 120, 180, 0.3);
+}
+
+body.dark-theme .theme-btn .theme-label {
+    color: #e0e8ff;
+}
+
+body.dark-theme .theme-btn.active {
+    background: linear-gradient(180deg, rgba(60,50,100,0.95), rgba(50,40,80,0.9));
+}
+
 /* ==================== START SCREEN ==================== */
 #start-screen {
     background: linear-gradient(180deg, 

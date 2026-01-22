@@ -25,31 +25,85 @@ let characters = [];
 let bubbles = [];
 let particles = [];
 
-// Theme
-let isDarkTheme = false;
+// Theme system - Background worlds
+let currentTheme = 'classic';
+let isDarkTheme = false; // Keep for backward compatibility
 
-const THEMES = {
-    light: {
+// Background theme definitions
+const BACKGROUND_THEMES = {
+    classic: {
+        name: 'קלאסי',
+        icon: '☀️',
+        hasImage: false,
         skyTop: '#1e90ff',
         skyMiddle: '#87CEEB', 
         skyBottom: '#E8F4FF',
         grassTop: '#90EE90',
         grassMiddle: '#7EC850',
         grassBottom: '#5a9e3a',
+        dynamicElements: 'sparkles', // classic sparkles and sun
+        starCount: 15,
+        isDark: false
     },
-    dark: {
-        skyTop: '#0a0a20',
-        skyMiddle: '#151538',
-        skyBottom: '#252555',
-        grassTop: '#2a4a3a',
-        grassMiddle: '#1e3a2e',
-        grassBottom: '#152a22',
+    imagine: {
+        name: 'ארץ דמיון',
+        icon: '💎',
+        hasImage: true,
+        imagePath: 'src/assets/themes/imagine.jpg',
+        grassTop: '#a8e6cf',
+        grassMiddle: '#88d8b0',
+        grassBottom: '#6bc5a0',
+        dynamicElements: 'diamonds', // floating diamonds and sparkles
+        starCount: 20,
+        isDark: false
+    },
+    unicorn: {
+        name: 'ארץ החד-קרן',
+        icon: '🦄',
+        hasImage: true,
+        imagePath: 'src/assets/themes/unicorn.jpg',
+        grassTop: '#f8bbd9',
+        grassMiddle: '#f48fb1',
+        grassBottom: '#ec6a9c',
+        dynamicElements: 'hearts', // floating hearts and rainbow particles
+        starCount: 25,
+        isDark: false
+    },
+    dinosaur: {
+        name: 'ארץ הדינוזאורים',
+        icon: '🦕',
+        hasImage: true,
+        imagePath: 'src/assets/themes/dinosaur.jpg',
+        grassTop: '#aed581',
+        grassMiddle: '#8bc34a',
+        grassBottom: '#689f38',
+        dynamicElements: 'leaves', // drifting leaves and volcanic wisps
+        starCount: 10,
+        isDark: false
+    },
+    castle: {
+        name: 'טירת החלומות',
+        icon: '🏰',
+        hasImage: true,
+        imagePath: 'src/assets/themes/castle.jpg',
+        grassTop: '#7986cb',
+        grassMiddle: '#5c6bc0',
+        grassBottom: '#3f51b5',
+        dynamicElements: 'lanterns', // floating lanterns and shooting stars
+        starCount: 40,
+        isDark: true
     }
 };
 
+// Theme background images (loaded at init)
+const themeBackgroundImages = {};
+
+// Dynamic theme elements
+let themeElements = [];
+
 // Colors (will be updated based on theme)
 let COLORS = {
-    ...THEMES.light,
+    ...BACKGROUND_THEMES.classic,
     pink: '#FF9EB5',
     pinkDark: '#E57A95',
     pinkLight: '#FFD4E0',
@@ -60,28 +114,79 @@ let COLORS = {
     sunGlow: '#FFF4B8'
 };
 
-function setTheme(dark) {
-    isDarkTheme = dark;
-    const theme = dark ? THEMES.dark : THEMES.light;
-    COLORS = { ...COLORS, ...theme };
-    localStorage.setItem('bubble_theme', dark ? 'dark' : 'light');
+function loadThemeImages() {
+    Object.keys(BACKGROUND_THEMES).forEach(key => {
+        const theme = BACKGROUND_THEMES[key];
+        if (theme.hasImage) {
+            const img = new Image();
+            img.src = theme.imagePath;
+            themeBackgroundImages[key] = img;
+        }
+    });
+}
+
+function setBackgroundTheme(themeName) {
+    if (!BACKGROUND_THEMES[themeName]) return;
     
-    // Regenerate stars for night mode (more of them)
+    currentTheme = themeName;
+    const theme = BACKGROUND_THEMES[themeName];
+    isDarkTheme = theme.isDark;
+    
+    // Update colors
+    COLORS = { 
+        ...COLORS, 
+        skyTop: theme.skyTop || COLORS.skyTop,
+        skyMiddle: theme.skyMiddle || COLORS.skyMiddle,
+        skyBottom: theme.skyBottom || COLORS.skyBottom,
+        grassTop: theme.grassTop,
+        grassMiddle: theme.grassMiddle,
+        grassBottom: theme.grassBottom
+    };
+    
+    localStorage.setItem('bubble_background_theme', themeName);
+    
+    // Regenerate dynamic elements
+    initThemeElements();
     initBackgroundStars();
+    
+    // Update body class for dark themes
+    document.body.classList.toggle('dark-theme', theme.isDark);
 }
 
 function loadTheme() {
-    const saved = localStorage.getItem('bubble_theme');
-    if (saved === 'dark') {
-        isDarkTheme = true;
-        setTheme(true);
+    const saved = localStorage.getItem('bubble_background_theme');
+    if (saved && BACKGROUND_THEMES[saved]) {
+        setBackgroundTheme(saved);
     }
     
-    // Update mode buttons to reflect saved state
-    document.querySelectorAll('.mode-btn').forEach(btn => {
-        const isNight = btn.dataset.mode === 'night';
-        btn.classList.toggle('active', isNight === isDarkTheme);
+    // Update theme buttons to reflect saved state
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.theme === currentTheme);
     });
+}
+
+function initThemeElements() {
+    themeElements = [];
+    const theme = BACKGROUND_THEMES[currentTheme];
+    const count = theme.dynamicElements === 'lanterns' ? 12 : 
+                  theme.dynamicElements === 'diamonds' ? 15 :
+                  theme.dynamicElements === 'hearts' ? 18 :
+                  theme.dynamicElements === 'leaves' ? 20 : 10;
+    
+    for (let i = 0; i < count; i++) {
+        themeElements.push({
+            x: Math.random() * (canvas?.width || 800),
+            y: Math.random() * ((canvas?.height || 600) - GROUND_HEIGHT - 100),
+            size: 10 + Math.random() * 20,
+            speed: 0.3 + Math.random() * 0.5,
+            wobble: Math.random() * Math.PI * 2,
+            wobbleSpeed: 0.02 + Math.random() * 0.03,
+            rotation: Math.random() * Math.PI * 2,
+            rotationSpeed: 0.01 + Math.random() * 0.02,
+            alpha: 0.6 + Math.random() * 0.4,
+            hue: Math.random() * 60 - 30 // Color variation
+        });
+    }
 }
 
 const PLAYER_COLOR_DEFAULTS = {
@@ -693,29 +798,212 @@ class Particle {
 
 // Background Drawing
 function drawBackground() {
-    // Sky gradient
-    const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height - GROUND_HEIGHT);
-    skyGrad.addColorStop(0, COLORS.skyTop);
-    skyGrad.addColorStop(0.5, COLORS.skyMiddle);
-    skyGrad.addColorStop(1, COLORS.skyBottom);
-    ctx.fillStyle = skyGrad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height - GROUND_HEIGHT);
+    const theme = BACKGROUND_THEMES[currentTheme];
     
-    // Sun or Moon
-    if (isDarkTheme) {
-        drawMoon();
+    // Check if we have a theme background image
+    if (theme.hasImage && themeBackgroundImages[currentTheme]?.complete) {
+        // Draw the theme background image, scaled to cover
+        const img = themeBackgroundImages[currentTheme];
+        const scale = Math.max(canvas.width / img.width, (canvas.height - GROUND_HEIGHT) / img.height);
+        const scaledWidth = img.width * scale;
+        const scaledHeight = img.height * scale;
+        const x = (canvas.width - scaledWidth) / 2;
+        const y = 0;
+        
+        ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
     } else {
-        drawSun();
+        // Classic theme: draw sky gradient
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height - GROUND_HEIGHT);
+        skyGrad.addColorStop(0, COLORS.skyTop);
+        skyGrad.addColorStop(0.5, COLORS.skyMiddle);
+        skyGrad.addColorStop(1, COLORS.skyBottom);
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height - GROUND_HEIGHT);
+        
+        // Sun or Moon (only for classic theme)
+        if (isDarkTheme) {
+            drawMoon();
+        } else {
+            drawSun();
+        }
+        
+        // Clouds (only for classic theme)
+        drawClouds();
     }
     
-    // Clouds
-    drawClouds();
+    // Draw theme-specific dynamic elements
+    drawThemeElements();
     
-    // Floating sparkles
+    // Floating sparkles/stars
     drawBackgroundStars();
     
     // Grass
     drawGrass();
+}
+
+// Draw theme-specific animated elements
+function drawThemeElements() {
+    const theme = BACKGROUND_THEMES[currentTheme];
+    if (!theme.dynamicElements || theme.dynamicElements === 'sparkles') return;
+    
+    themeElements.forEach((el, i) => {
+        // Update element position
+        el.wobble += el.wobbleSpeed;
+        el.rotation += el.rotationSpeed;
+        el.y -= el.speed * 0.3; // Slow float upward
+        el.x += Math.sin(el.wobble) * 0.5; // Gentle side-to-side
+        
+        // Wrap around
+        if (el.y < -50) {
+            el.y = canvas.height - GROUND_HEIGHT - 50;
+            el.x = Math.random() * canvas.width;
+        }
+        if (el.x < -50) el.x = canvas.width + 50;
+        if (el.x > canvas.width + 50) el.x = -50;
+        
+        const pulse = 0.8 + Math.sin(animationTime * 0.05 + i) * 0.2;
+        
+        ctx.save();
+        ctx.translate(el.x, el.y);
+        ctx.rotate(el.rotation);
+        ctx.globalAlpha = el.alpha * pulse;
+        
+        switch (theme.dynamicElements) {
+            case 'diamonds':
+                drawDiamond(0, 0, el.size, el.hue);
+                break;
+            case 'hearts':
+                drawHeart(0, 0, el.size, el.hue);
+                break;
+            case 'leaves':
+                drawLeaf(0, 0, el.size, el.hue);
+                break;
+            case 'lanterns':
+                drawLantern(0, 0, el.size, el.hue);
+                break;
+        }
+        
+        ctx.restore();
+    });
+}
+
+// Floating diamond for "Imagine Lands" theme
+function drawDiamond(x, y, size, hueShift) {
+    const colors = [
+        `hsla(${180 + hueShift}, 70%, 80%, 0.9)`,
+        `hsla(${200 + hueShift}, 80%, 90%, 1)`,
+        `hsla(${160 + hueShift}, 60%, 70%, 0.8)`
+    ];
+    
+    // Diamond glow
+    const glow = ctx.createRadialGradient(x, y, 0, x, y, size * 2);
+    glow.addColorStop(0, `hsla(${180 + hueShift}, 100%, 90%, 0.4)`);
+    glow.addColorStop(1, 'transparent');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(x, y, size * 2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Diamond shape
+    ctx.fillStyle = colors[0];
+    ctx.beginPath();
+    ctx.moveTo(x, y - size);
+    ctx.lineTo(x + size * 0.7, y);
+    ctx.lineTo(x, y + size * 0.5);
+    ctx.lineTo(x - size * 0.7, y);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Highlight
+    ctx.fillStyle = colors[1];
+    ctx.beginPath();
+    ctx.moveTo(x, y - size);
+    ctx.lineTo(x + size * 0.3, y - size * 0.3);
+    ctx.lineTo(x, y);
+    ctx.lineTo(x - size * 0.3, y - size * 0.3);
+    ctx.closePath();
+    ctx.fill();
+}
+
+// Floating heart for "Unicorn Land" theme
+function drawHeart(x, y, size, hueShift) {
+    const hue = 330 + hueShift; // Pink/magenta range
+    
+    // Heart glow
+    const glow = ctx.createRadialGradient(x, y, 0, x, y, size * 2);
+    glow.addColorStop(0, `hsla(${hue}, 100%, 85%, 0.5)`);
+    glow.addColorStop(1, 'transparent');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(x, y, size * 2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Heart shape
+    ctx.fillStyle = `hsla(${hue}, 80%, 75%, 0.9)`;
+    ctx.beginPath();
+    const s = size * 0.6;
+    ctx.moveTo(x, y + s);
+    ctx.bezierCurveTo(x - s * 2, y - s * 0.5, x - s * 2, y - s * 2, x, y - s);
+    ctx.bezierCurveTo(x + s * 2, y - s * 2, x + s * 2, y - s * 0.5, x, y + s);
+    ctx.fill();
+    
+    // Highlight
+    ctx.fillStyle = `hsla(${hue}, 90%, 90%, 0.6)`;
+    ctx.beginPath();
+    ctx.arc(x - s * 0.4, y - s * 0.6, s * 0.3, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+// Drifting leaf for "Dinosaur Land" theme
+function drawLeaf(x, y, size, hueShift) {
+    const hue = 100 + hueShift; // Green range
+    
+    ctx.fillStyle = `hsla(${hue}, 60%, 50%, 0.8)`;
+    ctx.beginPath();
+    ctx.moveTo(x, y - size);
+    ctx.quadraticCurveTo(x + size, y - size * 0.3, x + size * 0.5, y + size * 0.3);
+    ctx.quadraticCurveTo(x, y + size * 0.5, x - size * 0.5, y + size * 0.3);
+    ctx.quadraticCurveTo(x - size, y - size * 0.3, x, y - size);
+    ctx.fill();
+    
+    // Leaf vein
+    ctx.strokeStyle = `hsla(${hue - 20}, 50%, 35%, 0.5)`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x, y - size * 0.8);
+    ctx.lineTo(x, y + size * 0.3);
+    ctx.stroke();
+}
+
+// Floating lantern for "Dream Castle" theme
+function drawLantern(x, y, size, hueShift) {
+    const pulse = Math.sin(animationTime * 0.08 + hueShift) * 0.3 + 0.7;
+    
+    // Lantern glow
+    const glow = ctx.createRadialGradient(x, y, 0, x, y, size * 3 * pulse);
+    glow.addColorStop(0, `rgba(255, 200, 100, ${0.6 * pulse})`);
+    glow.addColorStop(0.5, `rgba(255, 180, 80, ${0.3 * pulse})`);
+    glow.addColorStop(1, 'transparent');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(x, y, size * 3 * pulse, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Lantern body
+    ctx.fillStyle = `rgba(255, 220, 150, ${0.9 * pulse})`;
+    ctx.beginPath();
+    ctx.ellipse(x, y, size * 0.6, size * 0.8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Lantern top
+    ctx.fillStyle = 'rgba(139, 69, 19, 0.7)';
+    ctx.fillRect(x - size * 0.3, y - size, size * 0.6, size * 0.3);
+    
+    // Inner flame
+    ctx.fillStyle = `rgba(255, 255, 200, ${pulse})`;
+    ctx.beginPath();
+    ctx.arc(x, y, size * 0.25, 0, Math.PI * 2);
+    ctx.fill();
 }
 
 function drawSun() {
@@ -1217,6 +1505,7 @@ function createPoof(x, y, hue) {
 
 // Initialization
 function init() {
+    loadThemeImages();
     loadTheme();
     loadFigureImages();
     if (isDarkTheme) {
@@ -1225,17 +1514,31 @@ function init() {
     resize();
     initClouds();
     initBackgroundStars();
+    initThemeElements();
     window.addEventListener('resize', () => {
         resize();
         initClouds();
         initBackgroundStars();
+        initThemeElements();
     });
     setupControls();
     setupColorPickers();
     setupFigurePickers();
+    setupThemeSelector();
     loadPlayerNames();
     loadHighScores();
     requestAnimationFrame(gameLoop);
+}
+
+// Setup theme selector buttons
+function setupThemeSelector() {
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            setBackgroundTheme(btn.dataset.theme);
+        });
+    });
 }
 
 function resize() {
@@ -1430,16 +1733,6 @@ document.querySelectorAll('.timer-btn').forEach(btn => {
     });
 });
 
-// Mode selection (day/night)
-document.querySelectorAll('.mode-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        
-        const isNight = btn.dataset.mode === 'night';
-        setTheme(isNight);
-        document.body.classList.toggle('dark-theme', isNight);
-    });
-});
+// Theme selection is now handled via setupThemeSelector() in init()
 
 init();
