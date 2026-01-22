@@ -465,14 +465,27 @@ class Character {
     drawFigureImage() {
         const img = figureImages[this.figureType];
         if (img && img.complete) {
-            // Draw image with player-color glow for team identification
             const imgSize = this.width + 40;
             
-            // Player color glow (subtle aura)
-            ctx.shadowColor = this.color;
-            ctx.shadowBlur = 25;
+            // Animated pulsing aura in player's color
+            const pulse = 0.8 + Math.sin(animationTime * 0.08) * 0.2;
+            const auraSize = imgSize * 0.55 * pulse;
             
-            // Draw the transparent sprite
+            // Outer glow ring
+            const outerGlow = ctx.createRadialGradient(0, 5, auraSize * 0.3, 0, 5, auraSize);
+            outerGlow.addColorStop(0, this.color + '40'); // 25% opacity
+            outerGlow.addColorStop(0.5, this.color + '20'); // 12% opacity
+            outerGlow.addColorStop(1, 'transparent');
+            ctx.fillStyle = outerGlow;
+            ctx.beginPath();
+            ctx.arc(0, 5, auraSize, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Inner colored glow behind sprite
+            ctx.shadowColor = this.color;
+            ctx.shadowBlur = 30 * pulse;
+            
+            // Draw the sprite
             ctx.drawImage(img, -imgSize / 2, -imgSize / 2, imgSize, imgSize);
             
             ctx.shadowBlur = 0;
@@ -802,13 +815,15 @@ function drawBackground() {
     
     // Check if we have a theme background image
     if (theme.hasImage && themeBackgroundImages[currentTheme]?.complete) {
-        // Draw the theme background image, scaled to cover
+        // Draw the theme background image, scaled to cover full screen
         const img = themeBackgroundImages[currentTheme];
-        const scale = Math.max(canvas.width / img.width, (canvas.height - GROUND_HEIGHT) / img.height);
+        const targetHeight = canvas.height - GROUND_HEIGHT;
+        const scale = Math.max(canvas.width / img.width, targetHeight / img.height);
         const scaledWidth = img.width * scale;
         const scaledHeight = img.height * scale;
         const x = (canvas.width - scaledWidth) / 2;
-        const y = 0;
+        // Align bottom of image with top of grass
+        const y = targetHeight - scaledHeight;
         
         ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
     } else {

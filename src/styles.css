@@ -725,11 +725,11 @@ input[type="text"]:focus {
 }
 
 .hud-controls-p1 {
-    right: 25px;
+    left: 25px;
 }
 
 .hud-controls-p2 {
-    left: 25px;
+    right: 25px;
 }
 
 /* ==================== END SCREEN ==================== */
