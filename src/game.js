@@ -37,11 +37,6 @@ let fpsDisplay = 0;
 let clouds = [];
 let backgroundStars = [];
 
-// Offscreen canvas for static background caching
-let bgCanvas = null;
-let bgCtx = null;
-let bgCacheDirty = true; // Flag to rebuild cache when theme/size changes
-
 // Assets/Entities
 let characters = [];
 let bubbles = [];
@@ -165,9 +160,6 @@ function setBackgroundTheme(themeName) {
     };
     
     localStorage.setItem('bubble_background_theme', themeName);
-    
-    // Invalidate background cache
-    bgCacheDirty = true;
     
     // Regenerate dynamic elements
     initThemeElements();
@@ -1576,15 +1568,6 @@ function setupThemeSelector() {
 function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    
-    // Resize/create offscreen background canvas
-    if (!bgCanvas) {
-        bgCanvas = document.createElement('canvas');
-        bgCtx = bgCanvas.getContext('2d');
-    }
-    bgCanvas.width = canvas.width;
-    bgCanvas.height = canvas.height;
-    bgCacheDirty = true; // Force redraw of cached background
     
     if (characters.length > 0) {
         characters.forEach(c => {
