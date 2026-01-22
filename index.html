@@ -16,7 +16,7 @@
             <h1 class="title">בועות!</h1>
             <div class="setup-form">
                 <div class="input-group">
-                    <label>שחקן 1:</label>
+                    <label>שחקן 1: <span class="control-hint"><kbd>A</kbd> <kbd>D</kbd></span></label>
                     <div class="player-customizer" data-player="1">
                         <input type="text" id="p1-name" value="לוטם" maxlength="10">
                         <div class="figure-picker">
@@ -49,7 +49,7 @@
                     </div>
                 </div>
                 <div class="input-group">
-                    <label>שחקן 2:</label>
+                    <label>שחקן 2: <span class="control-hint"><kbd>←</kbd> <kbd>→</kbd></span></label>
                     <div class="player-customizer" data-player="2">
                         <input type="text" id="p2-name" value="תום" maxlength="10">
                         <div class="figure-picker">
@@ -130,6 +130,12 @@
             </div>
             <div class="hud-item timer-container">
                 <span id="timer-val">45</span>
+            </div>
+            <div class="hud-controls hud-controls-p1">
+                <kbd>A</kbd> <kbd>D</kbd>
+            </div>
+            <div class="hud-controls hud-controls-p2">
+                <kbd>←</kbd> <kbd>→</kbd>
             </div>
         </div>
 
