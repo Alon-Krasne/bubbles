@@ -24,6 +24,15 @@ const CHARACTER_SPEED = 8;
 const MAX_PARTICLES = 150;
 const PARTICLES_PER_POOF = 15;
 
+// Dev mode - enable with ?dev in URL or localStorage
+const DEV_MODE = new URLSearchParams(window.location.search).has('dev') || 
+                 localStorage.getItem('bubble_dev_mode') === 'true';
+
+// FPS tracking (dev mode only)
+let fpsLastTime = performance.now();
+let fpsFrameCount = 0;
+let fpsDisplay = 0;
+
 // Background elements
 let clouds = [];
 let backgroundStars = [];
@@ -1717,7 +1726,45 @@ function gameLoop() {
         }
     }
 
+    // FPS counter (dev mode only)
+    if (DEV_MODE) {
+        drawDevOverlay();
+    }
+
     requestAnimationFrame(gameLoop);
+}
+
+// Dev overlay with FPS and stats
+function drawDevOverlay() {
+    // Update FPS every 500ms
+    fpsFrameCount++;
+    const now = performance.now();
+    if (now - fpsLastTime >= 500) {
+        fpsDisplay = Math.round(fpsFrameCount / ((now - fpsLastTime) / 1000));
+        fpsFrameCount = 0;
+        fpsLastTime = now;
+    }
+    
+    // Count active particles
+    let activeParticles = 0;
+    for (let i = 0; i < particlePool.length; i++) {
+        if (particlePool[i].active) activeParticles++;
+    }
+    
+    // Draw overlay
+    ctx.save();
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(10, 10, 180, 70);
+    
+    ctx.font = '14px monospace';
+    ctx.fillStyle = fpsDisplay >= 55 ? '#4ade80' : fpsDisplay >= 30 ? '#fbbf24' : '#f87171';
+    ctx.fillText(`FPS: ${fpsDisplay}`, 20, 30);
+    
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillText(`Particles: ${activeParticles}/${particlePool.length}`, 20, 48);
+    ctx.fillText(`Bubbles: ${bubbles.length}`, 20, 66);
+    
+    ctx.restore();
 }
 
 // Persistence
