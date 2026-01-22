@@ -1,5 +1,20 @@
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+let canvas = null;
+let ctx = null;
+let onFrame = null;
+
+export const FIGURE_ASSET_URLS = {
+    unicorn: new URL('./assets/unicorn.png', import.meta.url).href,
+    dinosaur: new URL('./assets/dinosaur.png', import.meta.url).href,
+    puppy: new URL('./assets/puppy.png', import.meta.url).href,
+    princess: new URL('./assets/princess.png', import.meta.url).href
+};
+
+const THEME_ASSET_URLS = {
+    imagine: new URL('./assets/themes/imagine.jpg', import.meta.url).href,
+    unicorn: new URL('./assets/themes/unicorn.jpg', import.meta.url).href,
+    dinosaur: new URL('./assets/themes/dinosaur.jpg', import.meta.url).href,
+    castle: new URL('./assets/themes/castle.jpg', import.meta.url).href
+};
 
 // Cached DOM elements (avoid repeated lookups in game loop)
 let scoreValEl = null;
@@ -65,7 +80,7 @@ const BACKGROUND_THEMES = {
         name: 'ארץ דמיון',
         icon: '💎',
         hasImage: true,
-        imagePath: 'src/assets/themes/imagine.jpg',
+        imagePath: THEME_ASSET_URLS.imagine,
         grassTop: '#a8e6cf',
         grassMiddle: '#88d8b0',
         grassBottom: '#6bc5a0',
@@ -77,7 +92,7 @@ const BACKGROUND_THEMES = {
         name: 'ארץ החד-קרן',
         icon: '🦄',
         hasImage: true,
-        imagePath: 'src/assets/themes/unicorn.jpg',
+        imagePath: THEME_ASSET_URLS.unicorn,
         grassTop: '#f8bbd9',
         grassMiddle: '#f48fb1',
         grassBottom: '#ec6a9c',
@@ -89,7 +104,7 @@ const BACKGROUND_THEMES = {
         name: 'ארץ הדינוזאורים',
         icon: '🦕',
         hasImage: true,
-        imagePath: 'src/assets/themes/dinosaur.jpg',
+        imagePath: THEME_ASSET_URLS.dinosaur,
         grassTop: '#aed581',
         grassMiddle: '#8bc34a',
         grassBottom: '#689f38',
@@ -101,7 +116,7 @@ const BACKGROUND_THEMES = {
         name: 'טירת החלומות',
         icon: '🏰',
         hasImage: true,
-        imagePath: 'src/assets/themes/castle.jpg',
+        imagePath: THEME_ASSET_URLS.castle,
         grassTop: '#7986cb',
         grassMiddle: '#5c6bc0',
         grassBottom: '#3f51b5',
@@ -227,7 +242,7 @@ const FIGURE_TYPES = ['unicorn', 'dinosaur', 'puppy', 'princess'];
 function loadFigureImages() {
     FIGURE_TYPES.forEach(type => {
         const img = new Image();
-        img.src = `src/assets/${type}.png`;
+        img.src = FIGURE_ASSET_URLS[type];
         figureImages[type] = img;
     });
 }
@@ -1524,7 +1539,11 @@ function createPoof(x, y, hue) {
 }
 
 // Initialization
-function init() {
+export function initGame({ canvas: providedCanvas, ctx: providedCtx, onFrame: onFrameCallback }) {
+    canvas = providedCanvas;
+    ctx = providedCtx;
+    onFrame = onFrameCallback;
+
     // Cache DOM elements for game loop
     scoreValEl = document.getElementById('score-val');
     timerValEl = document.getElementById('timer-val');
@@ -1535,22 +1554,17 @@ function init() {
     if (isDarkTheme) {
         document.body.classList.add('dark-theme');
     }
-    resize();
+    resizeGame(canvas.width || window.innerWidth, canvas.height || window.innerHeight);
     initClouds();
     initBackgroundStars();
     initThemeElements();
-    window.addEventListener('resize', () => {
-        resize();
-        initClouds();
-        initBackgroundStars();
-        initThemeElements();
-    });
     setupControls();
     setupColorPickers();
     setupFigurePickers();
     setupThemeSelector();
     loadPlayerNames();
     loadHighScores();
+    bindUiHandlers();
     requestAnimationFrame(gameLoop);
 }
 
@@ -1565,9 +1579,10 @@ function setupThemeSelector() {
     });
 }
 
-function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+export function resizeGame(width, height) {
+    if (!canvas) return;
+    canvas.width = width;
+    canvas.height = height;
     
     if (characters.length > 0) {
         characters.forEach(c => {
@@ -1620,7 +1635,7 @@ function startGame() {
         new Character(canvas.width * 0.3, p1Color, p1Name, true, p1Figure),
         new Character(canvas.width * 0.6, p2Color, p2Name, false, p2Figure)
     ];
-    resize();
+    resizeGame(canvas.width, canvas.height);
 
     document.getElementById('start-screen').classList.remove('active');
     document.getElementById('end-screen').classList.remove('active');
@@ -1714,6 +1729,10 @@ function gameLoop() {
         drawDevOverlay();
     }
 
+    if (onFrame) {
+        onFrame();
+    }
+
     requestAnimationFrame(gameLoop);
 }
 
@@ -1785,33 +1804,32 @@ function loadHighScores() {
     }
 }
 
-// UI Handlers
-document.getElementById('start-btn').addEventListener('click', startGame);
-document.getElementById('restart-btn').addEventListener('click', () => {
-    document.getElementById('end-screen').classList.remove('active');
-    document.getElementById('start-screen').classList.add('active');
-});
-
-document.querySelectorAll('.candy-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.candy-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+function bindUiHandlers() {
+    document.getElementById('start-btn').addEventListener('click', startGame);
+    document.getElementById('restart-btn').addEventListener('click', () => {
+        document.getElementById('end-screen').classList.remove('active');
+        document.getElementById('start-screen').classList.add('active');
     });
-});
 
-// Scores popup toggle
-document.getElementById('show-scores-btn')?.addEventListener('click', () => {
-    document.getElementById('scores-popup')?.classList.remove('hidden');
-});
-document.querySelector('.close-popup')?.addEventListener('click', () => {
-    document.getElementById('scores-popup')?.classList.add('hidden');
-});
-document.getElementById('scores-popup')?.addEventListener('click', (e) => {
-    if (e.target.id === 'scores-popup') {
-        e.target.classList.add('hidden');
-    }
-});
+    document.querySelectorAll('.candy-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.candy-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+    });
 
-// Theme selection is now handled via setupThemeSelector() in init()
+    // Scores popup toggle
+    document.getElementById('show-scores-btn')?.addEventListener('click', () => {
+        document.getElementById('scores-popup')?.classList.remove('hidden');
+    });
+    document.querySelector('.close-popup')?.addEventListener('click', () => {
+        document.getElementById('scores-popup')?.classList.add('hidden');
+    });
+    document.getElementById('scores-popup')?.addEventListener('click', (e) => {
+        if (e.target.id === 'scores-popup') {
+            e.target.classList.add('hidden');
+        }
+    });
+}
 
-init();
+// Theme selection is now handled via setupThemeSelector() in initGame()

@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>בועות!</title>
-    <link rel="stylesheet" href="src/styles.css">
 </head>
 <body>
     <div id="game-container">
-        <!-- Game Canvas -->
-        <canvas id="gameCanvas"></canvas>
-
         <!-- Start Screen -->
         <div id="start-screen" class="screen active">
             <!-- Floating decorations -->
@@ -44,16 +40,16 @@
                                 <span class="figure-blob"></span>
                             </button>
                             <button type="button" class="figure-btn" data-figure="unicorn" aria-label="Unicorn">
-                                <img src="src/assets/unicorn.png" alt="Unicorn">
+                                <img alt="Unicorn">
                             </button>
                             <button type="button" class="figure-btn" data-figure="dinosaur" aria-label="Dinosaur">
-                                <img src="src/assets/dinosaur.png" alt="Dinosaur">
+                                <img alt="Dinosaur">
                             </button>
                             <button type="button" class="figure-btn" data-figure="puppy" aria-label="Puppy">
-                                <img src="src/assets/puppy.png" alt="Puppy">
+                                <img alt="Puppy">
                             </button>
                             <button type="button" class="figure-btn" data-figure="princess" aria-label="Princess">
-                                <img src="src/assets/princess.png" alt="Princess">
+                                <img alt="Princess">
                             </button>
                         </div>
                         <div class="color-petals">
@@ -81,16 +77,16 @@
                                 <span class="figure-blob"></span>
                             </button>
                             <button type="button" class="figure-btn" data-figure="unicorn" aria-label="Unicorn">
-                                <img src="src/assets/unicorn.png" alt="Unicorn">
+                                <img alt="Unicorn">
                             </button>
                             <button type="button" class="figure-btn" data-figure="dinosaur" aria-label="Dinosaur">
-                                <img src="src/assets/dinosaur.png" alt="Dinosaur">
+                                <img alt="Dinosaur">
                             </button>
                             <button type="button" class="figure-btn" data-figure="puppy" aria-label="Puppy">
-                                <img src="src/assets/puppy.png" alt="Puppy">
+                                <img alt="Puppy">
                             </button>
                             <button type="button" class="figure-btn" data-figure="princess" aria-label="Princess">
-                                <img src="src/assets/princess.png" alt="Princess">
+                                <img alt="Princess">
                             </button>
                         </div>
                         <div class="color-petals">
@@ -200,6 +196,6 @@
         </div>
     </div>
 
-    <script src="src/game.js"></script>
+    <script type="module" src="/src/main.js"></script>
 </body>
 </html>
