@@ -89,8 +89,27 @@ const PLAYER_COLOR_DEFAULTS = {
     p2: '#7EC8E8'
 };
 
+const PLAYER_FIGURE_DEFAULTS = {
+    p1: 'blob',
+    p2: 'blob'
+};
+
 let p1Color = PLAYER_COLOR_DEFAULTS.p1;
 let p2Color = PLAYER_COLOR_DEFAULTS.p2;
+let p1Figure = PLAYER_FIGURE_DEFAULTS.p1;
+let p2Figure = PLAYER_FIGURE_DEFAULTS.p2;
+
+// Figure images
+const figureImages = {};
+const FIGURE_TYPES = ['unicorn', 'dinosaur', 'puppy', 'princess'];
+
+function loadFigureImages() {
+    FIGURE_TYPES.forEach(type => {
+        const img = new Image();
+        img.src = `src/assets/${type}.png`;
+        figureImages[type] = img;
+    });
+}
 
 function clampColor(value) {
     return Math.max(0, Math.min(255, value));
@@ -135,6 +154,10 @@ function savePlayerColors() {
     localStorage.setItem('bubble_colors', JSON.stringify({ p1: p1Color, p2: p2Color }));
 }
 
+function savePlayerFigures() {
+    localStorage.setItem('bubble_figures', JSON.stringify({ p1: p1Figure, p2: p2Figure }));
+}
+
 function savePlayerNames() {
     localStorage.setItem('bubble_names', JSON.stringify({ p1: p1Name, p2: p2Name }));
 }
@@ -177,7 +200,7 @@ function setupColorPickers() {
     p1Color = savedColors.p1 || PLAYER_COLOR_DEFAULTS.p1;
     p2Color = savedColors.p2 || PLAYER_COLOR_DEFAULTS.p2;
 
-    document.querySelectorAll('.color-picker').forEach(picker => {
+    document.querySelectorAll('.player-customizer').forEach(picker => {
         const player = picker.dataset.player;
         const initialColor = player === '1' ? p1Color : p2Color;
 
@@ -195,6 +218,42 @@ function setupColorPickers() {
 
                 applyPickerColor(picker, color);
                 savePlayerColors();
+            });
+        });
+    });
+}
+
+function setupFigurePickers() {
+    const savedFigures = JSON.parse(localStorage.getItem('bubble_figures') || '{}');
+    p1Figure = savedFigures.p1 || PLAYER_FIGURE_DEFAULTS.p1;
+    p2Figure = savedFigures.p2 || PLAYER_FIGURE_DEFAULTS.p2;
+
+    document.querySelectorAll('.player-customizer').forEach(customizer => {
+        const player = customizer.dataset.player;
+        const initialFigure = player === '1' ? p1Figure : p2Figure;
+
+        // Set initial selection
+        customizer.querySelectorAll('.figure-btn').forEach(btn => {
+            btn.classList.toggle('is-selected', btn.dataset.figure === initialFigure);
+        });
+
+        // Handle clicks
+        customizer.querySelectorAll('.figure-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const figure = btn.dataset.figure;
+
+                if (player === '1') {
+                    p1Figure = figure;
+                } else {
+                    p2Figure = figure;
+                }
+
+                // Update selection UI
+                customizer.querySelectorAll('.figure-btn').forEach(b => {
+                    b.classList.toggle('is-selected', b.dataset.figure === figure);
+                });
+
+                savePlayerFigures();
             });
         });
     });
@@ -233,7 +292,7 @@ function initBackgroundStars() {
 }
 
 class Character {
-    constructor(x, color, name, isGirl) {
+    constructor(x, color, name, isGirl, figureType = 'blob') {
         this.x = x;
         this.y = 0;
         const variants = createColorVariants(color);
@@ -246,6 +305,7 @@ class Character {
         this.height = CHARACTER_SIZE;
         this.vx = 0;
         this.isGirl = isGirl;
+        this.figureType = figureType;
         this.bounceOffset = 0;
         this.squish = 1;
         this.targetSquish = 1;
@@ -285,6 +345,39 @@ class Character {
         ctx.fill();
         ctx.restore();
 
+        if (this.figureType === 'blob') {
+            this.drawBlob();
+        } else {
+            this.drawFigureImage();
+        }
+
+        ctx.restore();
+        
+        // Name tag (drawn outside of transform)
+        this.drawNameTag(centerX, this.y - 15);
+    }
+    
+    drawFigureImage() {
+        const img = figureImages[this.figureType];
+        if (img && img.complete) {
+            // Draw image with player-color glow for team identification
+            const imgSize = this.width + 40;
+            
+            // Player color glow (subtle aura)
+            ctx.shadowColor = this.color;
+            ctx.shadowBlur = 25;
+            
+            // Draw the transparent sprite
+            ctx.drawImage(img, -imgSize / 2, -imgSize / 2, imgSize, imgSize);
+            
+            ctx.shadowBlur = 0;
+        } else {
+            // Fallback to blob if image not loaded
+            this.drawBlob();
+        }
+    }
+    
+    drawBlob() {
         // Body glow
         ctx.shadowColor = this.color;
         ctx.shadowBlur = 20;
@@ -396,11 +489,6 @@ class Character {
             ctx.fill();
             ctx.stroke();
         }
-
-        ctx.restore();
-        
-        // Name tag (drawn outside of transform)
-        this.drawNameTag(centerX, this.y - 15);
     }
     
     drawNameTag(x, y) {
@@ -1130,6 +1218,7 @@ function createPoof(x, y, hue) {
 // Initialization
 function init() {
     loadTheme();
+    loadFigureImages();
     if (isDarkTheme) {
         document.body.classList.add('dark-theme');
     }
@@ -1143,6 +1232,7 @@ function init() {
     });
     setupControls();
     setupColorPickers();
+    setupFigurePickers();
     loadPlayerNames();
     loadHighScores();
     requestAnimationFrame(gameLoop);
@@ -1197,8 +1287,8 @@ function startGame() {
     particles = [];
     
     characters = [
-        new Character(canvas.width * 0.3, p1Color, p1Name, true),
-        new Character(canvas.width * 0.6, p2Color, p2Name, false)
+        new Character(canvas.width * 0.3, p1Color, p1Name, true, p1Figure),
+        new Character(canvas.width * 0.6, p2Color, p2Name, false, p2Figure)
     ];
     resize();
 
