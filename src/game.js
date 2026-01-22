@@ -1,6 +1,10 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+// Cached DOM elements (avoid repeated lookups in game loop)
+let scoreValEl = null;
+let timerValEl = null;
+
 // Game State
 let gameState = 'START';
 let score = 0;
@@ -16,14 +20,22 @@ const GROUND_HEIGHT = 120;
 const CHARACTER_SIZE = 80;
 const CHARACTER_SPEED = 8;
 
+// Performance config
+const MAX_PARTICLES = 150;
+const PARTICLES_PER_POOF = 15;
+
 // Background elements
 let clouds = [];
 let backgroundStars = [];
 
+// Offscreen canvas for static background caching
+let bgCanvas = null;
+let bgCtx = null;
+let bgCacheDirty = true; // Flag to rebuild cache when theme/size changes
+
 // Assets/Entities
 let characters = [];
 let bubbles = [];
-let particles = [];
 
 // Theme system - Background worlds
 let currentTheme = 'classic';
@@ -144,6 +156,9 @@ function setBackgroundTheme(themeName) {
     };
     
     localStorage.setItem('bubble_background_theme', themeName);
+    
+    // Invalidate background cache
+    bgCacheDirty = true;
     
     // Regenerate dynamic elements
     initThemeElements();
@@ -740,8 +755,27 @@ class Bubble {
     }
 }
 
+// Particle pool for object reuse (avoids GC pauses)
+const particlePool = [];
+
 class Particle {
-    constructor(x, y, hue) {
+    constructor() {
+        // Initialize with defaults - actual values set in reset()
+        this.x = 0;
+        this.y = 0;
+        this.hue = 0;
+        this.size = 0;
+        this.vx = 0;
+        this.vy = 0;
+        this.life = 0;
+        this.decay = 0;
+        this.type = 'circle';
+        this.rotation = 0;
+        this.rotationSpeed = 0;
+        this.active = false;
+    }
+    
+    reset(x, y, hue) {
         this.x = x;
         this.y = y;
         this.hue = hue;
@@ -755,6 +789,7 @@ class Particle {
         this.type = Math.random() > 0.5 ? 'star' : 'circle';
         this.rotation = Math.random() * Math.PI * 2;
         this.rotationSpeed = (Math.random() - 0.5) * 0.3;
+        this.active = true;
     }
 
     update() {
@@ -764,20 +799,24 @@ class Particle {
         this.vx *= 0.98;
         this.life -= this.decay;
         this.rotation += this.rotationSpeed;
+        
+        if (this.life <= 0) {
+            this.active = false;
+        }
     }
 
     draw() {
+        if (!this.active) return;
+        
         ctx.save();
         ctx.globalAlpha = this.life;
         ctx.translate(this.x, this.y);
         ctx.rotate(this.rotation);
         
-        const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size);
-        grad.addColorStop(0, `hsla(${this.hue}, 80%, 70%, 1)`);
-        grad.addColorStop(0.5, `hsla(${this.hue}, 70%, 60%, 0.8)`);
-        grad.addColorStop(1, `hsla(${this.hue}, 60%, 50%, 0)`);
-        
-        ctx.fillStyle = grad;
+        // Simplified drawing - no gradient for better performance
+        // Use solid color with slight transparency based on life
+        const lightness = 65 + this.life * 15;
+        ctx.fillStyle = `hsla(${this.hue}, 75%, ${lightness}%, ${this.life})`;
         
         if (this.type === 'star') {
             this.drawStar(0, 0, 5, this.size, this.size * 0.5);
@@ -792,7 +831,7 @@ class Particle {
     
     drawStar(cx, cy, spikes, outerRadius, innerRadius) {
         let rot = Math.PI / 2 * 3;
-        let step = Math.PI / spikes;
+        const step = Math.PI / spikes;
         
         ctx.beginPath();
         ctx.moveTo(cx, cy - outerRadius);
@@ -807,6 +846,28 @@ class Particle {
         ctx.closePath();
         ctx.fill();
     }
+}
+
+// Get a particle from the pool or create a new one
+function getParticle(x, y, hue) {
+    // First, try to find an inactive particle in the pool
+    for (let i = 0; i < particlePool.length; i++) {
+        if (!particlePool[i].active) {
+            particlePool[i].reset(x, y, hue);
+            return particlePool[i];
+        }
+    }
+    
+    // If pool is at max capacity, don't create more
+    if (particlePool.length >= MAX_PARTICLES) {
+        return null;
+    }
+    
+    // Create new particle and add to pool
+    const particle = new Particle();
+    particle.reset(x, y, hue);
+    particlePool.push(particle);
+    return particle;
 }
 
 // Background Drawing
@@ -1026,79 +1087,36 @@ function drawSun() {
     const sunY = 100;
     const sunRadius = 50;
     const pulse = Math.sin(animationTime * 0.03) * 0.15 + 1;
-    const slowPulse = Math.sin(animationTime * 0.015) * 0.1 + 1;
     
-    // Outer ethereal glow rings (pulsing halos)
-    for (let ring = 4; ring >= 1; ring--) {
-        const ringRadius = sunRadius * (1.5 + ring * 0.8) * slowPulse;
-        const ringAlpha = 0.08 - ring * 0.015;
-        const haloGrad = ctx.createRadialGradient(sunX, sunY, ringRadius * 0.7, sunX, sunY, ringRadius);
-        haloGrad.addColorStop(0, `rgba(255, 248, 220, ${ringAlpha})`);
-        haloGrad.addColorStop(0.5, `rgba(255, 223, 150, ${ringAlpha * 0.6})`);
-        haloGrad.addColorStop(1, 'rgba(255, 200, 100, 0)');
-        ctx.fillStyle = haloGrad;
-        ctx.beginPath();
-        ctx.arc(sunX, sunY, ringRadius, 0, Math.PI * 2);
-        ctx.fill();
-    }
-    
-    // Main warm glow
+    // Simplified: Single outer glow (was 4 halo rings)
     const glowGrad = ctx.createRadialGradient(sunX, sunY, sunRadius * 0.3, sunX, sunY, sunRadius * 2.5 * pulse);
     glowGrad.addColorStop(0, 'rgba(255, 250, 220, 0.95)');
-    glowGrad.addColorStop(0.2, 'rgba(255, 240, 180, 0.7)');
-    glowGrad.addColorStop(0.5, 'rgba(255, 220, 130, 0.3)');
+    glowGrad.addColorStop(0.3, 'rgba(255, 240, 180, 0.5)');
+    glowGrad.addColorStop(0.6, 'rgba(255, 220, 130, 0.2)');
     glowGrad.addColorStop(1, 'rgba(255, 200, 80, 0)');
     ctx.fillStyle = glowGrad;
     ctx.beginPath();
     ctx.arc(sunX, sunY, sunRadius * 2.5 * pulse, 0, Math.PI * 2);
     ctx.fill();
     
-    // Animated light rays (long, tapered, rotating)
+    // Simplified: 8 rays instead of 16 (no individual gradients)
     ctx.save();
     ctx.translate(sunX, sunY);
     ctx.rotate(animationTime * 0.004);
+    ctx.fillStyle = 'rgba(255, 245, 180, 0.35)';
     
-    for (let i = 0; i < 16; i++) {
-        const angle = (i / 16) * Math.PI * 2;
-        const rayLength = sunRadius * (1.8 + Math.sin(animationTime * 0.05 + i) * 0.4);
-        const rayWidth = 6 + Math.sin(animationTime * 0.03 + i * 0.5) * 2;
+    for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2;
+        const rayLength = sunRadius * 1.8;
+        const rayWidth = 6;
         
         ctx.save();
         ctx.rotate(angle);
-        
-        const rayGrad = ctx.createLinearGradient(0, -sunRadius, 0, -sunRadius - rayLength);
-        rayGrad.addColorStop(0, 'rgba(255, 245, 180, 0.5)');
-        rayGrad.addColorStop(0.5, 'rgba(255, 230, 140, 0.2)');
-        rayGrad.addColorStop(1, 'rgba(255, 220, 100, 0)');
-        ctx.fillStyle = rayGrad;
         
         ctx.beginPath();
         ctx.moveTo(-rayWidth, -sunRadius + 5);
-        ctx.quadraticCurveTo(0, -sunRadius - rayLength * 0.5, 0, -sunRadius - rayLength);
-        ctx.quadraticCurveTo(0, -sunRadius - rayLength * 0.5, rayWidth, -sunRadius + 5);
-        ctx.closePath();
-        ctx.fill();
-        
-        ctx.restore();
-    }
-    ctx.restore();
-    
-    // Secondary sparkle rays (shorter, faster rotation)
-    ctx.save();
-    ctx.translate(sunX, sunY);
-    ctx.rotate(-animationTime * 0.008);
-    
-    for (let i = 0; i < 8; i++) {
-        const angle = (i / 8) * Math.PI * 2 + Math.PI / 16;
-        ctx.save();
-        ctx.rotate(angle);
-        
-        ctx.fillStyle = 'rgba(255, 255, 240, 0.25)';
-        ctx.beginPath();
-        ctx.moveTo(0, -sunRadius - 5);
-        ctx.lineTo(-3, -sunRadius - 25);
-        ctx.lineTo(0, -sunRadius - 35);
-        ctx.lineTo(3, -sunRadius - 25);
+        ctx.lineTo(0, -sunRadius - rayLength);
+        ctx.lineTo(rayWidth, -sunRadius + 5);
         ctx.closePath();
         ctx.fill();
         
@@ -1168,28 +1186,14 @@ function drawMoon() {
     const moonRadius = 45;
     const pulse = Math.sin(animationTime * 0.02) * 0.08 + 1;
     
-    // Outer ethereal glow (dreamy blue-white)
-    for (let ring = 5; ring >= 1; ring--) {
-        const ringRadius = moonRadius * (1.2 + ring * 0.6) * pulse;
-        const ringAlpha = 0.06 - ring * 0.01;
-        const haloGrad = ctx.createRadialGradient(moonX, moonY, ringRadius * 0.5, moonX, moonY, ringRadius);
-        haloGrad.addColorStop(0, `rgba(200, 220, 255, ${ringAlpha})`);
-        haloGrad.addColorStop(0.5, `rgba(150, 180, 220, ${ringAlpha * 0.5})`);
-        haloGrad.addColorStop(1, 'rgba(100, 150, 200, 0)');
-        ctx.fillStyle = haloGrad;
-        ctx.beginPath();
-        ctx.arc(moonX, moonY, ringRadius, 0, Math.PI * 2);
-        ctx.fill();
-    }
-    
-    // Main moon glow
-    const glowGrad = ctx.createRadialGradient(moonX, moonY, moonRadius * 0.5, moonX, moonY, moonRadius * 2);
-    glowGrad.addColorStop(0, 'rgba(220, 230, 255, 0.4)');
-    glowGrad.addColorStop(0.5, 'rgba(180, 200, 240, 0.15)');
+    // Simplified: Single glow (was 5 halo rings + separate glow)
+    const glowGrad = ctx.createRadialGradient(moonX, moonY, moonRadius * 0.3, moonX, moonY, moonRadius * 2.5 * pulse);
+    glowGrad.addColorStop(0, 'rgba(220, 230, 255, 0.5)');
+    glowGrad.addColorStop(0.4, 'rgba(180, 200, 240, 0.2)');
     glowGrad.addColorStop(1, 'rgba(150, 180, 220, 0)');
     ctx.fillStyle = glowGrad;
     ctx.beginPath();
-    ctx.arc(moonX, moonY, moonRadius * 2, 0, Math.PI * 2);
+    ctx.arc(moonX, moonY, moonRadius * 2.5 * pulse, 0, Math.PI * 2);
     ctx.fill();
     
     // Moon body
@@ -1513,13 +1517,17 @@ function drawGrass() {
 }
 
 function createPoof(x, y, hue) {
-    for (let i = 0; i < 20; i++) {
-        particles.push(new Particle(x, y, hue));
+    for (let i = 0; i < PARTICLES_PER_POOF; i++) {
+        getParticle(x, y, hue);
     }
 }
 
 // Initialization
 function init() {
+    // Cache DOM elements for game loop
+    scoreValEl = document.getElementById('score-val');
+    timerValEl = document.getElementById('timer-val');
+    
     loadThemeImages();
     loadTheme();
     loadFigureImages();
@@ -1559,6 +1567,15 @@ function setupThemeSelector() {
 function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    
+    // Resize/create offscreen background canvas
+    if (!bgCanvas) {
+        bgCanvas = document.createElement('canvas');
+        bgCtx = bgCanvas.getContext('2d');
+    }
+    bgCanvas.width = canvas.width;
+    bgCanvas.height = canvas.height;
+    bgCacheDirty = true; // Force redraw of cached background
     
     if (characters.length > 0) {
         characters.forEach(c => {
@@ -1602,7 +1619,10 @@ function startGame() {
     
     score = 0;
     bubbles = [];
-    particles = [];
+    // Reset all particles in pool (mark inactive, don't deallocate)
+    for (let i = 0; i < particlePool.length; i++) {
+        particlePool[i].active = false;
+    }
     
     characters = [
         new Character(canvas.width * 0.3, p1Color, p1Name, true, p1Figure),
@@ -1616,13 +1636,13 @@ function startGame() {
     
     gameState = 'PLAYING';
     
-    document.getElementById('score-val').innerText = '0';
-    document.getElementById('timer-val').innerText = timeLeft;
+    scoreValEl.innerText = '0';
+    timerValEl.innerText = timeLeft;
 
     if (gameTimer) clearInterval(gameTimer);
     gameTimer = setInterval(() => {
         timeLeft--;
-        document.getElementById('timer-val').innerText = timeLeft;
+        timerValEl.innerText = timeLeft;
         if (timeLeft <= 0) endGame();
     }, 1000);
 }
@@ -1679,7 +1699,7 @@ function gameLoop() {
                 
                 if (dist < b.radius + c.width / 2) {
                     score++;
-                    document.getElementById('score-val').innerText = score;
+                    scoreValEl.innerText = score;
                     createPoof(b.x, b.y, b.hue);
                     bubbles.splice(i, 1);
                     break;
@@ -1687,12 +1707,13 @@ function gameLoop() {
             }
         }
 
-        // Particles
-        for (let i = particles.length - 1; i >= 0; i--) {
-            const p = particles[i];
-            p.update();
-            p.draw();
-            if (p.life <= 0) particles.splice(i, 1);
+        // Particles (using object pool - no splice needed)
+        for (let i = 0; i < particlePool.length; i++) {
+            const p = particlePool[i];
+            if (p.active) {
+                p.update();
+                p.draw();
+            }
         }
     }
 
