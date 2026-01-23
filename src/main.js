@@ -45,28 +45,53 @@ async function initPixiGame() {
     const sprite = new PIXI.Sprite(texture);
     app.stage.addChild(sprite);
 
-    const handleResize = () => {
+    const syncRendererSize = () => {
         const { width, height } = app.renderer;
         gameCanvas.width = width;
         gameCanvas.height = height;
         sprite.width = width;
         sprite.height = height;
+    };
+
+    const handleResize = () => {
+        syncRendererSize();
+        const { width, height } = app.renderer;
         resizeGame(width, height);
         rebuildBackgroundForResize();
         texture.update();
     };
 
     app.renderer.on('resize', handleResize);
-    handleResize();
+    syncRendererSize();
 
     initGame({
         canvas: gameCanvas,
         ctx: gameContext,
         onFrame: () => texture.update()
     });
+
+    handleResize();
 }
 
 applyFigureButtonImages();
 initPixiGame().catch((error) => {
     console.error('Failed to initialize Pixi game.', error);
+    const container = document.getElementById('game-container');
+    if (!container) return;
+
+    const errorScreen = document.createElement('div');
+    errorScreen.className = 'error-screen';
+    errorScreen.innerHTML = `
+        <div class="error-card">
+            <h2>אוי לא!</h2>
+            <p>המשחק לא הצליח להיטען. אפשר לרענן ולנסות שוב.</p>
+            <button type="button" class="error-retry">רענון מחדש</button>
+        </div>
+    `;
+
+    errorScreen.querySelector('.error-retry')?.addEventListener('click', () => {
+        window.location.reload();
+    });
+
+    container.appendChild(errorScreen);
 });
