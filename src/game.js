@@ -1591,6 +1591,13 @@ export function resizeGame(width, height) {
     }
 }
 
+export function rebuildBackgroundForResize() {
+    if (!canvas) return;
+    initClouds();
+    initBackgroundStars();
+    initThemeElements();
+}
+
 function setupControls() {
     const keys = {};
     window.addEventListener('keydown', e => {

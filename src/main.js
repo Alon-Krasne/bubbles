@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 import './styles.css';
-import { FIGURE_ASSET_URLS, initGame, resizeGame } from './game';
+import { FIGURE_ASSET_URLS, initGame, rebuildBackgroundForResize, resizeGame } from './game';
 
 function applyFigureButtonImages() {
     document.querySelectorAll('.figure-btn').forEach((button) => {
@@ -12,27 +12,28 @@ function applyFigureButtonImages() {
     });
 }
 
-function createPixiStage(container) {
-    const app = new PIXI.Application({
+async function createPixiStage(container) {
+    const app = new PIXI.Application();
+    await app.init({
         resizeTo: container,
         antialias: true,
         backgroundAlpha: 0
     });
 
-    app.view.setAttribute('aria-label', 'Bubbles game canvas');
-    app.view.setAttribute('role', 'img');
-    container.prepend(app.view);
+    app.canvas.setAttribute('aria-label', 'Bubbles game canvas');
+    app.canvas.setAttribute('role', 'img');
+    container.prepend(app.canvas);
 
     return app;
 }
 
-function initPixiGame() {
+async function initPixiGame() {
     const container = document.getElementById('game-container');
     if (!container) {
         throw new Error('Missing #game-container element.');
     }
 
-    const app = createPixiStage(container);
+    const app = await createPixiStage(container);
 
     const gameCanvas = document.createElement('canvas');
     const gameContext = gameCanvas.getContext('2d');
@@ -51,6 +52,7 @@ function initPixiGame() {
         sprite.width = width;
         sprite.height = height;
         resizeGame(width, height);
+        rebuildBackgroundForResize();
         texture.update();
     };
 
@@ -65,4 +67,6 @@ function initPixiGame() {
 }
 
 applyFigureButtonImages();
-initPixiGame();
+initPixiGame().catch((error) => {
+    console.error('Failed to initialize Pixi game.', error);
+});
