@@ -30,33 +30,28 @@ Catch as many bubbles as you can before time runs out! Both players share a sing
 
 ## Running the Game
 
-Simply open `index.html` in any modern browser, or use the bundled version from `dist/`:
+Run the Vite dev server for local development:
 
 ```bash
-# Open game directly (macOS)
-bun run start
+# Start the dev server
+bun run dev
 
-# Or use a local server
-bun run serve
+# Build for production
+bun run build
 
-# Create a single-file bundle for sharing
-bun run bundle
+# Preview the production build
+bun run preview
 ```
-
-The bundled file (`dist/bubbles_v5.html`) works offline - just send it to anyone!
 
 ## Project Structure
 
 ```
 bubbles/
-├── index.html          # Main game file
+├── index.html          # Vite entry HTML
 ├── src/
+│   ├── main.js         # PixiJS + game bootstrap
 │   ├── game.js         # Game engine & logic
 │   └── styles.css      # UI styling
-├── dist/
-│   └── bubbles_v5.html # Shareable bundled version
-├── scripts/
-│   └── bundle.js       # Bundling script
 ├── design/
 │   └── draft-v1.png    # Visual mockup
 └── docs/
@@ -77,9 +72,9 @@ bubbles/
 
 ## Tech Stack
 
+- Vite for dev/build tooling
+- PixiJS for rendering pipeline (canvas-backed)
 - Vanilla HTML5, CSS3, JavaScript (ES6+)
-- HTML5 Canvas for game rendering
-- No frameworks, no dependencies
 
 ## License
 

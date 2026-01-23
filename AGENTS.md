@@ -26,12 +26,11 @@
 - Visual effects only (no audio for now)
 
 ## Technical Stack
-- Vanilla HTML5
-- Vanilla CSS3 (no preprocessors)
+- HTML5 + CSS3 (no preprocessors)
 - Vanilla JavaScript (ES6+)
-- HTML5 Canvas for game rendering
-- No frameworks, no dependencies
-- Bundle script creates single shareable HTML file
+- Vite for dev server and production builds
+- PixiJS v8 for rendering pipeline
+- HTML5 Canvas drawn into a Pixi texture
 
 ## File Structure
 ```
@@ -39,6 +38,7 @@ bubbles/
 ├── index.html          # Main entry point
 ├── src/
 │   ├── game.js         # Game engine, classes, rendering
+│   ├── main.js         # Vite entry, Pixi bootstrap
 │   └── styles.css      # UI styling (screens, HUD)
 ├── design/
 │   └── draft-v1.png    # Approved visual mockup
@@ -58,8 +58,8 @@ bubbles/
 - Kid-friendly: Large touch targets, clear visuals, simple controls
 - Playful aesthetic: Kawaii style, soft pastels, bubbly UI
 - Hebrew-first: RTL layout, Hebrew fonts (Rubik, Secular One)
-- Lightweight: No frameworks, minimal bundle size
-- Shareable: Single HTML file works offline
+- Lightweight: Minimal bundle size, fast startup
+- Shareable: Vite build outputs static assets for easy hosting
 
 ## Coding Conventions
 - Game state managed via module-level variables
@@ -69,12 +69,12 @@ bubbles/
 - Hebrew text in UI, English in code/comments
 
 ## How to Run
-- `bun run start` - Open game in browser
-- `bun run bundle` - Create `dist/bubbles_v<major>.html`
-- `bun run share` - Bundle and open
+- `bun run dev` - Start Vite dev server
+- `bun run build` - Create production build in `dist/`
+- `bun run preview` - Preview the production build
 
 ## Key Design Decisions
-- Keep vanilla HTML/CSS/JS (no frameworks)
+- Use Vite + PixiJS while keeping the game loop in vanilla JS
 - Canvas for game, DOM for UI overlays (screens, HUD)
 - Cooperative (not competitive) to encourage sibling bonding
 - Bubbles fall DOWN (not up) to match the visual perspective

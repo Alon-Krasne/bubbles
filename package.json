@@ -4,11 +4,10 @@
   "description": "בועות! - A cooperative bubble-catching game for two players",
   "main": "index.html",
   "scripts": {
-    "start": "open index.html",
-    "serve": "bun --bun serve .",
-    "bundle": "bun scripts/bundle.js",
-    "share": "bun scripts/bundle.js --open",
-    "release": "npm version major --no-git-tag-version && bun run bundle"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "release": "npm version major --no-git-tag-version && bun run build"
   },
   "keywords": [
     "game",
@@ -20,6 +19,12 @@
   ],
   "author": "Alon Krasne",
   "license": "MIT",
+  "dependencies": {
+    "pixi.js": "^8.3.3"
+  },
+  "devDependencies": {
+    "vite": "^5.4.11"
+  },
   "repository": {
     "type": "git",
     "url": ""
