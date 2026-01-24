@@ -1,14 +1,12 @@
 #!/usr/bin/env node
 
 /**
- * Bundle script for בועות! game
- * Creates a single self-contained HTML file with embedded images
- * Uses version from package.json
+ * Build script for Cloudflare Pages deployment.
+ * Creates dist/index.html with embedded assets.
  */
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
 
 const ROOT = path.join(__dirname, '..');
 const SRC = path.join(ROOT, 'src');
@@ -40,18 +38,16 @@ let js = fs.readFileSync(path.join(SRC, 'game.js'), 'utf8');
 
 html = html.replace(/__VERSION__/g, `v${version}`);
 
-// Embed character figure images in JS
+// Embed character figure images in JS and HTML
 const figureTypes = ['unicorn', 'dinosaur', 'puppy', 'princess'];
 figureTypes.forEach(type => {
     const imagePath = path.join(ASSETS, `${type}.png`);
     if (fs.existsSync(imagePath)) {
         const dataUrl = imageToDataUrl(imagePath);
-        // Replace the image path in JS
         js = js.replace(
             new RegExp(`src/assets/${type}\\.png`, 'g'),
             dataUrl
         );
-        // Replace the image path in HTML
         html = html.replace(
             new RegExp(`src/assets/${type}\\.png`, 'g'),
             dataUrl
@@ -65,7 +61,6 @@ themeImages.forEach(theme => {
     const imagePath = path.join(ASSETS, 'themes', `${theme}.jpg`);
     if (fs.existsSync(imagePath)) {
         const dataUrl = imageToDataUrl(imagePath);
-        // Replace the image path in JS
         js = js.replace(
             new RegExp(`src/assets/themes/${theme}\\.jpg`, 'g'),
             dataUrl
@@ -90,20 +85,14 @@ if (!fs.existsSync(DIST)) {
 }
 
 // Write bundled file
-const outputFileName = `bubbles_v${version}.html`;
-const outputPath = path.join(DIST, outputFileName);
+const outputPath = path.join(DIST, 'index.html');
 fs.writeFileSync(outputPath, bundled);
 
 const fileSizeKB = (fs.statSync(outputPath).size / 1024).toFixed(1);
 const fileSizeMB = (fs.statSync(outputPath).size / 1024 / 1024).toFixed(2);
 
-console.log(`✅ Bundled game created: ${outputPath}`);
-console.log(`📦 File size: ${fileSizeKB} KB (${fileSizeMB} MB)`);
-console.log(`🔖 Version: v${version}`);
-console.log(`🖼️  Embedded images: ${figureTypes.length} figures + ${themeImages.length} themes`);
-
-if (process.argv.includes('--open')) {
-    execSync(`open "${outputPath}"`);
-}
-
-console.log(`\n🎮 Send this single file to anyone - it works offline!`);
+console.log(`Build complete: ${outputPath}`);
+console.log(`File size: ${fileSizeKB} KB (${fileSizeMB} MB)`);
+console.log(`Version: v${version}`);
+console.log(`Embedded images: ${figureTypes.length} figures + ${themeImages.length} themes`);
+console.log('\nDeploy dist/index.html to Cloudflare Pages.');
