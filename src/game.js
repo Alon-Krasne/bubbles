@@ -1639,6 +1639,14 @@ function startGame() {
     }, 1000);
 }
 
+function returnToStartScreen() {
+    gameState = 'START';
+    clearInterval(gameTimer);
+    document.getElementById('game-hud').classList.remove('active');
+    document.getElementById('end-screen').classList.remove('active');
+    document.getElementById('start-screen').classList.add('active');
+}
+
 function endGame() {
     gameState = 'END';
     clearInterval(gameTimer);
@@ -1788,8 +1796,10 @@ function loadHighScores() {
 // UI Handlers
 document.getElementById('start-btn').addEventListener('click', startGame);
 document.getElementById('restart-btn').addEventListener('click', () => {
-    document.getElementById('end-screen').classList.remove('active');
-    document.getElementById('start-screen').classList.add('active');
+    returnToStartScreen();
+});
+document.getElementById('home-btn').addEventListener('click', () => {
+    returnToStartScreen();
 });
 
 document.querySelectorAll('.candy-btn').forEach(btn => {
