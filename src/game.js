@@ -45,6 +45,9 @@ let bubbles = [];
 let currentTheme = 'classic';
 let isDarkTheme = false; // Keep for backward compatibility
 
+// Falling items mode: 'bubbles' or 'vegetables'
+let fallingItemsMode = 'bubbles';
+
 // Background theme definitions
 const BACKGROUND_THEMES = {
     classic: {
@@ -95,6 +98,42 @@ const BACKGROUND_THEMES = {
         grassBottom: '#689f38',
         dynamicElements: 'leaves', // drifting leaves and volcanic wisps
         starCount: 10,
+        isDark: false
+    },
+    blueworld: {
+        name: 'עולם הכחול',
+        icon: '💙',
+        hasImage: true,
+        imagePath: 'src/assets/themes/blue-world.png',
+        grassTop: '#7eb8d8',
+        grassMiddle: '#5a9fc8',
+        grassBottom: '#4080a8',
+        dynamicElements: 'diamonds', // floating blue diamonds and sparkles
+        starCount: 30,
+        isDark: false
+    },
+    offroad: {
+        name: 'עולם הג׳יפים',
+        icon: '🚙',
+        hasImage: true,
+        imagePath: 'src/assets/themes/4x4-cars.png',
+        grassTop: '#c9a86c',
+        grassMiddle: '#b8956a',
+        grassBottom: '#a67c52',
+        dynamicElements: 'leaves', // dust and leaves
+        starCount: 8,
+        isDark: false
+    },
+    rainbow: {
+        name: 'עולם הקשת',
+        icon: '🌈',
+        hasImage: true,
+        imagePath: 'src/assets/themes/rainbow-world.png',
+        grassTop: '#f8bbd9',
+        grassMiddle: '#b3e5fc',
+        grassBottom: '#c8e6c9',
+        dynamicElements: 'hearts', // rainbow hearts and sparkles
+        starCount: 35,
         isDark: false
     },
     castle: {
@@ -224,10 +263,18 @@ let p2Figure = PLAYER_FIGURE_DEFAULTS.p2;
 const figureImages = {};
 const FIGURE_TYPES = ['unicorn', 'dinosaur', 'puppy', 'princess'];
 
+// Explicit paths for bundler to find and replace with base64 data URLs
+const FIGURE_PATHS = {
+    unicorn: 'src/assets/unicorn.png',
+    dinosaur: 'src/assets/dinosaur.png',
+    puppy: 'src/assets/puppy.png',
+    princess: 'src/assets/princess.png'
+};
+
 function loadFigureImages() {
     FIGURE_TYPES.forEach(type => {
         const img = new Image();
-        img.src = `src/assets/${type}.png`;
+        img.src = FIGURE_PATHS[type];
         figureImages[type] = img;
     });
 }
@@ -663,9 +710,12 @@ class Character {
     }
 }
 
+// Vegetable types for the game
+const VEGETABLE_TYPES = ['carrot', 'broccoli', 'cucumber', 'tomato', 'corn', 'eggplant'];
+
 class Bubble {
     constructor() {
-        this.radius = 20 + Math.random() * 30;
+        this.radius = fallingItemsMode === 'bubbles' ? (20 + Math.random() * 30) : (25 + Math.random() * 25);
         this.x = this.radius + Math.random() * (canvas.width - this.radius * 2);
         this.y = -this.radius - Math.random() * 50;
         this.speed = 1.5 + Math.random() * 2;
@@ -674,6 +724,10 @@ class Bubble {
         this.wobble = Math.random() * Math.PI * 2;
         this.wobbleSpeed = 0.02 + Math.random() * 0.02;
         this.shimmer = 0;
+        this.rotation = Math.random() * Math.PI * 2;
+        this.rotationSpeed = (Math.random() - 0.5) * 0.05;
+        // Pick a random vegetable type (used only in vegetables mode)
+        this.vegType = VEGETABLE_TYPES[Math.floor(Math.random() * VEGETABLE_TYPES.length)];
     }
 
     update() {
@@ -681,6 +735,9 @@ class Bubble {
         this.wobble += this.wobbleSpeed;
         this.x += Math.sin(this.wobble) * this.drift;
         this.shimmer = (Math.sin(animationTime * 0.1 + this.wobble) + 1) * 0.5;
+        if (fallingItemsMode === 'vegetables') {
+            this.rotation += this.rotationSpeed;
+        }
         
         // Keep in bounds
         if (this.x < this.radius) this.x = this.radius;
@@ -688,6 +745,14 @@ class Bubble {
     }
 
     draw() {
+        if (fallingItemsMode === 'bubbles') {
+            this.drawBubble();
+        } else {
+            this.drawVegetable();
+        }
+    }
+    
+    drawBubble() {
         ctx.save();
         
         // Outer glow
@@ -753,6 +818,268 @@ class Bubble {
         ctx.stroke();
         
         ctx.restore();
+    }
+    
+    drawVegetable() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        
+        // Add a subtle shadow
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetY = 4;
+        
+        const size = this.radius;
+        
+        switch(this.vegType) {
+            case 'carrot':
+                this.drawCarrot(size);
+                break;
+            case 'broccoli':
+                this.drawBroccoli(size);
+                break;
+            case 'cucumber':
+                this.drawCucumber(size);
+                break;
+            case 'tomato':
+                this.drawTomato(size);
+                break;
+            case 'corn':
+                this.drawCorn(size);
+                break;
+            case 'eggplant':
+                this.drawEggplant(size);
+                break;
+        }
+        
+        ctx.restore();
+    }
+    
+    drawCarrot(size) {
+        // Orange carrot body (triangle-ish)
+        const grad = ctx.createLinearGradient(-size * 0.3, -size, size * 0.3, size);
+        grad.addColorStop(0, '#ff8c42');
+        grad.addColorStop(0.5, '#ff6b1a');
+        grad.addColorStop(1, '#e55b00');
+        
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(0, size);  // Tip
+        ctx.quadraticCurveTo(-size * 0.5, 0, -size * 0.35, -size * 0.6);
+        ctx.quadraticCurveTo(0, -size * 0.8, size * 0.35, -size * 0.6);
+        ctx.quadraticCurveTo(size * 0.5, 0, 0, size);
+        ctx.fill();
+        
+        // Carrot lines
+        ctx.strokeStyle = '#e55b00';
+        ctx.lineWidth = 1.5;
+        for (let i = 0; i < 3; i++) {
+            const yPos = -size * 0.3 + i * size * 0.35;
+            ctx.beginPath();
+            ctx.moveTo(-size * 0.2, yPos);
+            ctx.lineTo(size * 0.2, yPos);
+            ctx.stroke();
+        }
+        
+        // Green top
+        ctx.fillStyle = '#4caf50';
+        ctx.beginPath();
+        ctx.ellipse(0, -size * 0.7, size * 0.15, size * 0.3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#66bb6a';
+        ctx.beginPath();
+        ctx.ellipse(-size * 0.12, -size * 0.75, size * 0.1, size * 0.25, -0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(size * 0.12, -size * 0.75, size * 0.1, size * 0.25, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    drawBroccoli(size) {
+        // Brown stem
+        ctx.fillStyle = '#8d6e63';
+        ctx.beginPath();
+        ctx.roundRect(-size * 0.15, size * 0.1, size * 0.3, size * 0.6, 5);
+        ctx.fill();
+        
+        // Green florets (multiple circles)
+        const floretPositions = [
+            { x: 0, y: -size * 0.3, r: size * 0.4 },
+            { x: -size * 0.35, y: -size * 0.15, r: size * 0.3 },
+            { x: size * 0.35, y: -size * 0.15, r: size * 0.3 },
+            { x: -size * 0.2, y: -size * 0.5, r: size * 0.25 },
+            { x: size * 0.2, y: -size * 0.5, r: size * 0.25 },
+        ];
+        
+        floretPositions.forEach((f, i) => {
+            const grad = ctx.createRadialGradient(f.x - f.r * 0.3, f.y - f.r * 0.3, 0, f.x, f.y, f.r);
+            grad.addColorStop(0, '#81c784');
+            grad.addColorStop(0.7, '#4caf50');
+            grad.addColorStop(1, '#388e3c');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    }
+    
+    drawCucumber(size) {
+        // Dark green cucumber body
+        const grad = ctx.createLinearGradient(-size * 0.4, 0, size * 0.4, 0);
+        grad.addColorStop(0, '#2e7d32');
+        grad.addColorStop(0.3, '#4caf50');
+        grad.addColorStop(0.7, '#4caf50');
+        grad.addColorStop(1, '#2e7d32');
+        
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, size * 0.35, size * 0.9, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Bumps/texture
+        ctx.fillStyle = '#388e3c';
+        for (let i = 0; i < 6; i++) {
+            const angle = (i / 6) * Math.PI * 2;
+            const bx = Math.cos(angle) * size * 0.2;
+            const by = -size * 0.6 + i * size * 0.25;
+            ctx.beginPath();
+            ctx.arc(bx, by, size * 0.06, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Light ends
+        ctx.fillStyle = '#a5d6a7';
+        ctx.beginPath();
+        ctx.ellipse(0, -size * 0.85, size * 0.15, size * 0.08, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(0, size * 0.85, size * 0.12, size * 0.06, 0, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    drawTomato(size) {
+        // Red tomato body
+        const grad = ctx.createRadialGradient(-size * 0.3, -size * 0.3, 0, 0, 0, size * 0.9);
+        grad.addColorStop(0, '#ff6659');
+        grad.addColorStop(0.6, '#f44336');
+        grad.addColorStop(1, '#c62828');
+        
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.85, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Tomato indent at top
+        ctx.fillStyle = '#d32f2f';
+        ctx.beginPath();
+        ctx.ellipse(0, -size * 0.6, size * 0.3, size * 0.15, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Green stem/leaves
+        ctx.fillStyle = '#4caf50';
+        const leaves = 5;
+        for (let i = 0; i < leaves; i++) {
+            ctx.save();
+            ctx.rotate((i / leaves) * Math.PI * 2);
+            ctx.beginPath();
+            ctx.ellipse(0, -size * 0.7, size * 0.08, size * 0.2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+        
+        // Center stem
+        ctx.fillStyle = '#388e3c';
+        ctx.beginPath();
+        ctx.arc(0, -size * 0.65, size * 0.1, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Shine
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.beginPath();
+        ctx.ellipse(-size * 0.3, -size * 0.3, size * 0.2, size * 0.12, -Math.PI / 4, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    drawCorn(size) {
+        // Yellow corn body
+        const grad = ctx.createLinearGradient(-size * 0.4, 0, size * 0.4, 0);
+        grad.addColorStop(0, '#ffc107');
+        grad.addColorStop(0.5, '#ffeb3b');
+        grad.addColorStop(1, '#ffc107');
+        
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, size * 0.4, size * 0.85, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Corn kernels (grid pattern)
+        ctx.fillStyle = '#ffb300';
+        for (let row = -3; row <= 3; row++) {
+            for (let col = -1; col <= 1; col++) {
+                const kx = col * size * 0.22 + (row % 2 === 0 ? size * 0.11 : 0);
+                const ky = row * size * 0.2;
+                if (Math.abs(kx) < size * 0.35 && Math.abs(ky) < size * 0.75) {
+                    ctx.beginPath();
+                    ctx.ellipse(kx, ky, size * 0.09, size * 0.08, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+        
+        // Green husk at bottom
+        ctx.fillStyle = '#8bc34a';
+        ctx.beginPath();
+        ctx.moveTo(-size * 0.3, size * 0.7);
+        ctx.quadraticCurveTo(-size * 0.5, size * 1.1, -size * 0.2, size * 1);
+        ctx.quadraticCurveTo(0, size * 0.85, size * 0.2, size * 1);
+        ctx.quadraticCurveTo(size * 0.5, size * 1.1, size * 0.3, size * 0.7);
+        ctx.fill();
+        
+        // Brown silk at top
+        ctx.strokeStyle = '#8d6e63';
+        ctx.lineWidth = 1.5;
+        for (let i = 0; i < 5; i++) {
+            ctx.beginPath();
+            ctx.moveTo((i - 2) * size * 0.08, -size * 0.8);
+            ctx.quadraticCurveTo((i - 2) * size * 0.15, -size * 1.1, (i - 2) * size * 0.2, -size * 1);
+            ctx.stroke();
+        }
+    }
+    
+    drawEggplant(size) {
+        // Purple eggplant body
+        const grad = ctx.createRadialGradient(-size * 0.2, -size * 0.2, 0, 0, 0, size);
+        grad.addColorStop(0, '#9c27b0');
+        grad.addColorStop(0.6, '#7b1fa2');
+        grad.addColorStop(1, '#4a148c');
+        
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(0, size * 0.9);
+        ctx.quadraticCurveTo(-size * 0.6, size * 0.3, -size * 0.5, -size * 0.2);
+        ctx.quadraticCurveTo(-size * 0.4, -size * 0.6, 0, -size * 0.65);
+        ctx.quadraticCurveTo(size * 0.4, -size * 0.6, size * 0.5, -size * 0.2);
+        ctx.quadraticCurveTo(size * 0.6, size * 0.3, 0, size * 0.9);
+        ctx.fill();
+        
+        // Green cap
+        ctx.fillStyle = '#4caf50';
+        ctx.beginPath();
+        ctx.ellipse(0, -size * 0.6, size * 0.35, size * 0.15, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Stem
+        ctx.fillStyle = '#388e3c';
+        ctx.beginPath();
+        ctx.roundRect(-size * 0.08, -size * 0.9, size * 0.16, size * 0.35, 3);
+        ctx.fill();
+        
+        // Shine
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+        ctx.beginPath();
+        ctx.ellipse(-size * 0.2, -size * 0.1, size * 0.12, size * 0.35, -0.2, 0, Math.PI * 2);
+        ctx.fill();
     }
 }
 
@@ -1549,6 +1876,7 @@ function init() {
     setupColorPickers();
     setupFigurePickers();
     setupThemeSelector();
+    setupFallingItemsSelector();
     loadPlayerNames();
     loadHighScores();
     requestAnimationFrame(gameLoop);
@@ -1563,6 +1891,33 @@ function setupThemeSelector() {
             setBackgroundTheme(btn.dataset.theme);
         });
     });
+}
+
+// Set falling items mode (bubbles or vegetables)
+function setFallingItemsMode(mode) {
+    if (mode !== 'bubbles' && mode !== 'vegetables') return;
+    fallingItemsMode = mode;
+    localStorage.setItem('bubble_falling_items_mode', mode);
+}
+
+// Setup falling items selector buttons
+function setupFallingItemsSelector() {
+    document.querySelectorAll('.items-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.items-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            setFallingItemsMode(btn.dataset.items);
+        });
+    });
+    
+    // Restore saved preference
+    const savedMode = localStorage.getItem('bubble_falling_items_mode');
+    if (savedMode) {
+        fallingItemsMode = savedMode;
+        document.querySelectorAll('.items-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.items === savedMode);
+        });
+    }
 }
 
 function resize() {

@@ -38,34 +38,31 @@ let js = fs.readFileSync(path.join(SRC, 'game.js'), 'utf8');
 
 html = html.replace(/__VERSION__/g, `v${version}`);
 
-// Embed character figure images in JS and HTML
-const figureTypes = ['unicorn', 'dinosaur', 'puppy', 'princess'];
-figureTypes.forEach(type => {
-    const imagePath = path.join(ASSETS, `${type}.png`);
-    if (fs.existsSync(imagePath)) {
-        const dataUrl = imageToDataUrl(imagePath);
-        js = js.replace(
-            new RegExp(`src/assets/${type}\\.png`, 'g'),
-            dataUrl
-        );
-        html = html.replace(
-            new RegExp(`src/assets/${type}\\.png`, 'g'),
-            dataUrl
-        );
-    }
+// Dynamically find and embed all character figure images (.png files in assets root)
+const figureFiles = fs.readdirSync(ASSETS).filter(f => f.endsWith('.png'));
+figureFiles.forEach(file => {
+    const imagePath = path.join(ASSETS, file);
+    const dataUrl = imageToDataUrl(imagePath);
+    const relativePath = `src/assets/${file}`;
+    // Escape dots for regex
+    const escapedPath = relativePath.replace(/\./g, '\\.');
+    js = js.replace(new RegExp(escapedPath, 'g'), dataUrl);
+    html = html.replace(new RegExp(escapedPath, 'g'), dataUrl);
 });
 
-// Embed theme background images in JS (JPG format for smaller bundle)
-const themeImages = ['imagine', 'unicorn', 'dinosaur', 'castle'];
-themeImages.forEach(theme => {
-    const imagePath = path.join(ASSETS, 'themes', `${theme}.jpg`);
-    if (fs.existsSync(imagePath)) {
-        const dataUrl = imageToDataUrl(imagePath);
-        js = js.replace(
-            new RegExp(`src/assets/themes/${theme}\\.jpg`, 'g'),
-            dataUrl
-        );
-    }
+// Dynamically find and embed all theme background images (in assets/themes/)
+const themesDir = path.join(ASSETS, 'themes');
+const themeFiles = fs.readdirSync(themesDir).filter(f => 
+    f.endsWith('.png') || f.endsWith('.jpg') || f.endsWith('.jpeg') || f.endsWith('.webp')
+);
+themeFiles.forEach(file => {
+    const imagePath = path.join(themesDir, file);
+    const dataUrl = imageToDataUrl(imagePath);
+    const relativePath = `src/assets/themes/${file}`;
+    // Escape dots for regex
+    const escapedPath = relativePath.replace(/\./g, '\\.');
+    js = js.replace(new RegExp(escapedPath, 'g'), dataUrl);
+    html = html.replace(new RegExp(escapedPath, 'g'), dataUrl);
 });
 
 // Bundle into single HTML
@@ -94,5 +91,5 @@ const fileSizeMB = (fs.statSync(outputPath).size / 1024 / 1024).toFixed(2);
 console.log(`Build complete: ${outputPath}`);
 console.log(`File size: ${fileSizeKB} KB (${fileSizeMB} MB)`);
 console.log(`Version: v${version}`);
-console.log(`Embedded images: ${figureTypes.length} figures + ${themeImages.length} themes`);
+console.log(`Embedded images: ${figureFiles.length} figures + ${themeFiles.length} themes`);
 console.log('\nDeploy dist/index.html to Cloudflare Pages.');
