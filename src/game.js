@@ -263,10 +263,18 @@ let p2Figure = PLAYER_FIGURE_DEFAULTS.p2;
 const figureImages = {};
 const FIGURE_TYPES = ['unicorn', 'dinosaur', 'puppy', 'princess'];
 
+// Explicit paths for bundler to find and replace with base64 data URLs
+const FIGURE_PATHS = {
+    unicorn: 'src/assets/unicorn.png',
+    dinosaur: 'src/assets/dinosaur.png',
+    puppy: 'src/assets/puppy.png',
+    princess: 'src/assets/princess.png'
+};
+
 function loadFigureImages() {
     FIGURE_TYPES.forEach(type => {
         const img = new Image();
-        img.src = `src/assets/${type}.png`;
+        img.src = FIGURE_PATHS[type];
         figureImages[type] = img;
     });
 }
