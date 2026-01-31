@@ -262,30 +262,48 @@ function setupWorldCarousel() {
   const totalOriginal = originalCards.length;
   const themes = originalCards.map((card) => (card as HTMLElement).dataset.theme!);
 
-  // Clone cards for infinite effect: [clone-last, clone-second-last, ...originals..., clone-first, clone-second]
+  // Clone cards for infinite effect
+  // We want the track layout to be:
+  // [clone-of-6, clone-of-7, orig-0, orig-1, ..., orig-7, clone-of-0, clone-of-1]
+  // So when scrolling LEFT from orig-0, we see clone-of-7 (Castle), then snap to real orig-7
+  
+  // Prepend: first prepend clone-of-6, then prepend clone-of-7
+  // prepend(A) then prepend(B) results in [B, A, ...originals]
+  // So we prepend in order: 6, then 7 -> gives us [7, 6, ...] which is wrong
+  // We need to prepend 7 first, then 6 -> gives us [6, 7, ...]
+  const cloneSecondLast = originalCards[totalOriginal - 2].cloneNode(true) as HTMLElement;
+  cloneSecondLast.classList.add('carousel-clone');
+  cloneSecondLast.setAttribute('data-clone-of', String(totalOriginal - 2));
+  
+  const cloneLast = originalCards[totalOriginal - 1].cloneNode(true) as HTMLElement;
+  cloneLast.classList.add('carousel-clone');
+  cloneLast.setAttribute('data-clone-of', String(totalOriginal - 1));
+  
+  // Prepend in reverse order: last first, then second-to-last
+  // This gives us: [second-to-last, last, ...originals]
+  track.prepend(cloneLast);        // [7, orig-0, orig-1, ...]
+  track.prepend(cloneSecondLast);  // [6, 7, orig-0, orig-1, ...]
+  
+  // Append clones of first cards
+  const cloneFirst = originalCards[0].cloneNode(true) as HTMLElement;
+  cloneFirst.classList.add('carousel-clone');
+  cloneFirst.setAttribute('data-clone-of', '0');
+  track.append(cloneFirst);
+  
+  const cloneSecond = originalCards[1].cloneNode(true) as HTMLElement;
+  cloneSecond.classList.add('carousel-clone');
+  cloneSecond.setAttribute('data-clone-of', '1');
+  track.append(cloneSecond);
+
+  // Track layout is now:
+  // Index: 0=clone-of-6, 1=clone-of-7, 2=orig-0, 3=orig-1, ..., 9=orig-7, 10=clone-of-0, 11=clone-of-1
   const clonesPerSide = 2;
-  
-  // Clone last cards and prepend
-  for (let i = clonesPerSide - 1; i >= 0; i--) {
-    const clone = originalCards[totalOriginal - 1 - i].cloneNode(true) as HTMLElement;
-    clone.classList.add('carousel-clone');
-    clone.setAttribute('data-clone-of', String(totalOriginal - 1 - i));
-    track.prepend(clone);
-  }
-  
-  // Clone first cards and append
-  for (let i = 0; i < clonesPerSide; i++) {
-    const clone = originalCards[i].cloneNode(true) as HTMLElement;
-    clone.classList.add('carousel-clone');
-    clone.setAttribute('data-clone-of', String(i));
-    track.append(clone);
-  }
 
   // Get all cards including clones
   const allCards = Array.from(track.querySelectorAll('.carousel-card'));
   
   // Current position in the extended array (starts at first real card)
-  let currentPosition = clonesPerSide;
+  let currentPosition = clonesPerSide; // Start at orig-0 (index 2)
   let isAnimating = false;
   let touchStartX = 0;
   let touchEndX = 0;
@@ -308,6 +326,12 @@ function setupWorldCarousel() {
     return { cardWidth, gap, viewportWidth, cardFullWidth: cardWidth + gap };
   }
 
+  function getRealIndex(position: number): number {
+    // Convert position in extended array to real index (0 to totalOriginal-1)
+    const adjusted = position - clonesPerSide;
+    return ((adjusted % totalOriginal) + totalOriginal) % totalOriginal;
+  }
+
   function updateCarousel(animate = true) {
     if (!track || !viewport) return;
 
@@ -317,11 +341,10 @@ function setupWorldCarousel() {
     const startOffset = (viewportWidth - cardWidth) / 2;
     const translateX = startOffset - (currentPosition * cardFullWidth);
 
-    track.style.transition = animate ? 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)' : 'none';
+    track.style.transition = animate ? 'transform 0.4s ease-out' : 'none';
     track.style.transform = `translateX(${translateX}px)`;
 
-    // Get real index (0 to totalOriginal-1)
-    const realIndex = ((currentPosition - clonesPerSide) % totalOriginal + totalOriginal) % totalOriginal;
+    const realIndex = getRealIndex(currentPosition);
 
     // Update active states on ALL cards (including clones showing same theme)
     allCards.forEach((card) => {
@@ -343,13 +366,18 @@ function setupWorldCarousel() {
   }
 
   function snapToRealPosition() {
-    // If we're on a clone, instantly snap to the real card
-    const realIndex = ((currentPosition - clonesPerSide) % totalOriginal + totalOriginal) % totalOriginal;
-    const expectedPosition = realIndex + clonesPerSide;
+    // If we're on a clone (outside the real range), instantly snap to the equivalent real card
+    const minReal = clonesPerSide; // First real card position
+    const maxReal = clonesPerSide + totalOriginal - 1; // Last real card position
     
-    if (currentPosition !== expectedPosition) {
-      currentPosition = expectedPosition;
-      updateCarousel(false); // Instant snap, no animation
+    if (currentPosition < minReal) {
+      // We're on a prepended clone, snap to the real card at the end
+      currentPosition = currentPosition + totalOriginal;
+      updateCarousel(false);
+    } else if (currentPosition > maxReal) {
+      // We're on an appended clone, snap to the real card at the start
+      currentPosition = currentPosition - totalOriginal;
+      updateCarousel(false);
     }
   }
 
@@ -363,22 +391,15 @@ function setupWorldCarousel() {
     // Trigger mascot bounce
     triggerMascotBounce();
 
-    // After animation, snap to real position if on a clone
+    // After animation completes, snap to real position if on a clone
     setTimeout(() => {
       snapToRealPosition();
       isAnimating = false;
-    }, 350);
+    }, 420); // Slightly longer than animation duration
   }
 
   function goToSlide(realIndex: number) {
-    // Go to the real card position (not clone)
     const targetPosition = realIndex + clonesPerSide;
-    
-    // Find shortest path considering wrap-around
-    const currentReal = ((currentPosition - clonesPerSide) % totalOriginal + totalOriginal) % totalOriginal;
-    const diff = realIndex - currentReal;
-    
-    // Use direct path if clicking dots
     goToPosition(targetPosition);
   }
 
