@@ -105,22 +105,84 @@
                 </div>
             </div>
 
-            <!-- Fun settings bubbles -->
-            <div class="fun-settings">
-                <!-- World/Theme selector as cute icons -->
-                <div class="setting-group">
-                    <span class="setting-label">🌍 עולם</span>
-                    <div class="world-picker">
-                        <button class="world-btn active" data-theme="classic" title="קלאסי">☀️</button>
-                        <button class="world-btn" data-theme="imagine" title="ארץ דמיון">💎</button>
-                        <button class="world-btn" data-theme="unicorn" title="ארץ החד-קרן">🦄</button>
-                        <button class="world-btn" data-theme="dinosaur" title="ארץ הדינוזאורים">🦕</button>
-                        <button class="world-btn" data-theme="blueworld" title="עולם הכחול">💙</button>
-                        <button class="world-btn" data-theme="offroad" title="עולם הג׳יפים">🚙</button>
-                        <button class="world-btn" data-theme="rainbow" title="עולם הקשת">🌈</button>
-                        <button class="world-btn" data-theme="castle" title="טירת החלומות">🏰</button>
+            <!-- World Carousel with Mascots -->
+            <div class="world-carousel-section">
+                <span class="carousel-label">בחרו עולם</span>
+                <div class="carousel-with-mascots">
+                    <div class="mascot mascot-blue" aria-hidden="true">
+                        <img src="src/assets/mascot-blue.png" alt="">
+                    </div>
+                    <div class="world-carousel">
+                    <button class="carousel-arrow carousel-prev" aria-label="Previous world">
+                        <span>‹</span>
+                    </button>
+                    <div class="carousel-viewport">
+                        <div class="carousel-track">
+                            <div class="carousel-card active" data-theme="classic">
+                                <div class="card-glow"></div>
+                                <img src="src/assets/carousel/classic.png" alt="קלאסי">
+                                <span class="card-name">קלאסי</span>
+                            </div>
+                            <div class="carousel-card" data-theme="imagine">
+                                <div class="card-glow"></div>
+                                <img src="src/assets/carousel/imagine.png" alt="ארץ דמיון">
+                                <span class="card-name">ארץ דמיון</span>
+                            </div>
+                            <div class="carousel-card" data-theme="unicorn">
+                                <div class="card-glow"></div>
+                                <img src="src/assets/carousel/unicorn.png" alt="ארץ החד-קרן">
+                                <span class="card-name">ארץ החד-קרן</span>
+                            </div>
+                            <div class="carousel-card" data-theme="dinosaur">
+                                <div class="card-glow"></div>
+                                <img src="src/assets/carousel/dinosaur.png" alt="ארץ הדינוזאורים">
+                                <span class="card-name">ארץ הדינוזאורים</span>
+                            </div>
+                            <div class="carousel-card" data-theme="blueworld">
+                                <div class="card-glow"></div>
+                                <img src="src/assets/carousel/blueworld.png" alt="עולם הכחול">
+                                <span class="card-name">עולם הכחול</span>
+                            </div>
+                            <div class="carousel-card" data-theme="offroad">
+                                <div class="card-glow"></div>
+                                <img src="src/assets/carousel/offroad.png" alt="עולם הג׳יפים">
+                                <span class="card-name">עולם הג׳יפים</span>
+                            </div>
+                            <div class="carousel-card" data-theme="rainbow">
+                                <div class="card-glow"></div>
+                                <img src="src/assets/carousel/rainbow.png" alt="עולם הקשת">
+                                <span class="card-name">עולם הקשת</span>
+                            </div>
+                            <div class="carousel-card" data-theme="castle">
+                                <div class="card-glow"></div>
+                                <img src="src/assets/carousel/castle.png" alt="טירת החלומות">
+                                <span class="card-name">טירת החלומות</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-arrow carousel-next" aria-label="Next world">
+                        <span>›</span>
+                    </button>
+                    </div>
+                    <div class="mascot mascot-pink" aria-hidden="true">
+                        <img src="src/assets/mascot-pink.png" alt="">
                     </div>
                 </div>
+                <!-- Carousel dots indicator -->
+                <div class="carousel-dots">
+                    <button class="carousel-dot active" data-index="0" aria-label="Classic"></button>
+                    <button class="carousel-dot" data-index="1" aria-label="Imagine"></button>
+                    <button class="carousel-dot" data-index="2" aria-label="Unicorn"></button>
+                    <button class="carousel-dot" data-index="3" aria-label="Dinosaur"></button>
+                    <button class="carousel-dot" data-index="4" aria-label="Blue World"></button>
+                    <button class="carousel-dot" data-index="5" aria-label="Offroad"></button>
+                    <button class="carousel-dot" data-index="6" aria-label="Rainbow"></button>
+                    <button class="carousel-dot" data-index="7" aria-label="Castle"></button>
+                </div>
+            </div>
+
+            <!-- Fun settings bubbles -->
+            <div class="fun-settings">
 
                 <!-- Falling items selector -->
                 <div class="setting-group">

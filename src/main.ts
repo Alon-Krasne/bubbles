@@ -131,7 +131,10 @@ function setupUI() {
     });
   });
 
-  // World/theme picker
+  // World Carousel
+  setupWorldCarousel();
+
+  // World/theme picker (legacy - kept for compatibility)
   document.querySelectorAll('.world-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.world-btn').forEach((b) => b.classList.remove('active'));
@@ -243,6 +246,208 @@ function loadHighScores() {
       })
       .join('');
   }
+}
+
+// ==================== WORLD CAROUSEL ====================
+function setupWorldCarousel() {
+  const track = document.querySelector('.carousel-track') as HTMLElement;
+  const cards = document.querySelectorAll('.carousel-card');
+  const dots = document.querySelectorAll('.carousel-dot');
+  const prevBtn = document.querySelector('.carousel-prev');
+  const nextBtn = document.querySelector('.carousel-next');
+  const viewport = document.querySelector('.carousel-viewport') as HTMLElement;
+
+  if (!track || cards.length === 0) return;
+
+  let currentIndex = 0;
+  let isAnimating = false;
+  let touchStartX = 0;
+  let touchEndX = 0;
+  let previewTimeout: number | null = null;
+
+  // Get theme names for matching saved preference
+  const themes = Array.from(cards).map((card) => (card as HTMLElement).dataset.theme);
+
+  // Load saved theme and set initial index
+  const savedTheme = localStorage.getItem('bubble_background_theme');
+  if (savedTheme) {
+    const savedIndex = themes.indexOf(savedTheme);
+    if (savedIndex !== -1) {
+      currentIndex = savedIndex;
+    }
+  }
+
+  function updateCarousel(animate = true) {
+    if (!track || !viewport) return;
+
+    // Calculate card width + gap
+    const card = cards[0] as HTMLElement;
+    const cardWidth = card.offsetWidth;
+    const gap = parseInt(getComputedStyle(track).gap) || 15;
+
+    // Calculate offset to center the active card in the viewport
+    const viewportWidth = viewport.offsetWidth;
+    const cardFullWidth = cardWidth + gap;
+    
+    // Center the current card in the viewport
+    // Start position: first card at center = (viewportWidth - cardWidth) / 2
+    // For each subsequent card, we need to shift by cardFullWidth
+    const startOffset = (viewportWidth - cardWidth) / 2;
+    const translateX = startOffset - (currentIndex * cardFullWidth);
+
+    track.style.transition = animate ? 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)' : 'none';
+    track.style.transform = `translateX(${translateX}px)`;
+
+    // Update active states
+    cards.forEach((card, index) => {
+      card.classList.toggle('active', index === currentIndex);
+    });
+
+    dots.forEach((dot, index) => {
+      dot.classList.toggle('active', index === currentIndex);
+    });
+
+    // Update theme
+    const theme = themes[currentIndex] || 'classic';
+    gameApp.setTheme(theme);
+    localStorage.setItem('bubble_background_theme', theme);
+  }
+
+  function goToSlide(index: number) {
+    if (isAnimating) return;
+    isAnimating = true;
+
+    currentIndex = ((index % cards.length) + cards.length) % cards.length;
+    updateCarousel();
+
+    // Trigger mascot bounce animation
+    triggerMascotBounce();
+
+    setTimeout(() => {
+      isAnimating = false;
+    }, 500);
+  }
+
+  function triggerMascotBounce() {
+    const mascots = document.querySelectorAll('.mascot');
+    mascots.forEach((mascot) => {
+      mascot.classList.remove('bounce');
+      // Force reflow to restart animation
+      void (mascot as HTMLElement).offsetWidth;
+      mascot.classList.add('bounce');
+    });
+
+    // Remove bounce class after animation completes
+    setTimeout(() => {
+      mascots.forEach((mascot) => mascot.classList.remove('bounce'));
+    }, 600);
+  }
+
+  function goNext() {
+    goToSlide(currentIndex + 1);
+  }
+
+  function goPrev() {
+    goToSlide(currentIndex - 1);
+  }
+
+  // Preview theme on hover (with debounce)
+  function previewTheme(theme: string) {
+    if (previewTimeout) {
+      clearTimeout(previewTimeout);
+    }
+    previewTimeout = window.setTimeout(() => {
+      gameApp.setTheme(theme);
+    }, 150);
+  }
+
+  function cancelPreview() {
+    if (previewTimeout) {
+      clearTimeout(previewTimeout);
+      previewTimeout = null;
+    }
+    // Restore selected theme
+    const selectedTheme = themes[currentIndex] || 'classic';
+    gameApp.setTheme(selectedTheme);
+  }
+
+  // Click handlers
+  prevBtn?.addEventListener('click', goPrev);
+  nextBtn?.addEventListener('click', goNext);
+
+  // Card click handlers
+  cards.forEach((card, index) => {
+    card.addEventListener('click', () => {
+      goToSlide(index);
+    });
+
+    // Hover preview
+    card.addEventListener('mouseenter', () => {
+      const theme = (card as HTMLElement).dataset.theme || 'classic';
+      previewTheme(theme);
+    });
+
+    card.addEventListener('mouseleave', () => {
+      cancelPreview();
+    });
+  });
+
+  // Dot click handlers
+  dots.forEach((dot, index) => {
+    dot.addEventListener('click', () => {
+      goToSlide(index);
+    });
+  });
+
+  // Touch support
+  viewport?.addEventListener(
+    'touchstart',
+    (e) => {
+      touchStartX = e.touches[0].clientX;
+    },
+    { passive: true }
+  );
+
+  viewport?.addEventListener(
+    'touchmove',
+    (e) => {
+      touchEndX = e.touches[0].clientX;
+    },
+    { passive: true }
+  );
+
+  viewport?.addEventListener('touchend', () => {
+    const diff = touchStartX - touchEndX;
+    const threshold = 50;
+
+    if (Math.abs(diff) > threshold) {
+      if (diff > 0) {
+        // In RTL, swipe left goes to previous
+        goPrev();
+      } else {
+        // In RTL, swipe right goes to next
+        goNext();
+      }
+    }
+  });
+
+  // Keyboard support (when carousel is focused)
+  document.addEventListener('keydown', (e) => {
+    // Only handle when start screen is active
+    if (!document.getElementById('start-screen')?.classList.contains('active')) return;
+
+    // Don't handle if user is typing in an input
+    if (document.activeElement?.tagName === 'INPUT') return;
+
+    if (e.key === 'ArrowRight') {
+      goPrev(); // RTL - right goes to previous
+    } else if (e.key === 'ArrowLeft') {
+      goNext(); // RTL - left goes to next
+    }
+  });
+
+  // Initialize
+  updateCarousel(false);
 }
 
 // Game callbacks
