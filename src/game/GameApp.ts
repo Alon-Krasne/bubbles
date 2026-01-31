@@ -61,13 +61,18 @@ export class GameApp {
   private setupStage() {
     if (!this.app) return;
 
-    // Background layer (sky, sun, clouds, grass)
+    // Background layer (sky, sun, clouds, grass, weather particles)
     this.background = new BackgroundScene();
     this.app.stage.addChild(this.background);
 
     // Game scene layer (characters, bubbles, particles)
     this.gameScene = new GameScene();
     this.app.stage.addChild(this.gameScene);
+
+    // Wire up bubble catch to trigger weather particle burst
+    this.gameScene.onBubbleCatch = (x, y) => {
+      this.background?.burstAt(x, y);
+    };
 
     // Dev overlay
     if (this.devMode) {
@@ -183,8 +188,9 @@ export class GameApp {
 
     const bubbles = this.gameScene?.getBubbleCount() ?? 0;
     const particles = this.gameScene?.getParticleCount() ?? 0;
+    const weather = this.background?.getWeatherParticleCount() ?? 0;
 
-    this.devOverlay!.text = `FPS: ${this.fpsDisplay}\nBubbles: ${bubbles}\nParticles: ${particles}`;
+    this.devOverlay!.text = `FPS: ${this.fpsDisplay}\nBubbles: ${bubbles}\nParticles: ${particles}\nWeather: ${weather}`;
     this.devOverlay!.style.fill = this.fpsDisplay >= 55 ? 0x4ade80 : this.fpsDisplay >= 30 ? 0xfbbf24 : 0xf87171;
   }
 

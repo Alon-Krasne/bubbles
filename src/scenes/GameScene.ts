@@ -23,6 +23,9 @@ export class GameScene extends Container {
 
   public score = 0;
 
+  // Callback for weather particle burst on catch
+  public onBubbleCatch?: (x: number, y: number) => void;
+
   constructor() {
     super();
 
@@ -102,6 +105,8 @@ export class GameScene extends Container {
         if (dist < b.radius + c.charWidth / 2) {
           this.score++;
           this.particles.emitPoof(b.x, b.y, b.getHue());
+          // Trigger weather particle burst
+          this.onBubbleCatch?.(b.x, b.y);
           b.destroy();
           this.bubbles.splice(i, 1);
           break;

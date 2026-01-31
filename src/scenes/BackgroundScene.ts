@@ -1,6 +1,7 @@
 import { Container, Graphics, Sprite, Texture, Assets } from 'pixi.js';
 import { GROUND_HEIGHT } from '../game/config';
 import { getTheme, ThemeDefinition } from '../game/themes';
+import { WeatherParticles } from './WeatherParticles';
 
 interface Cloud {
   x: number;
@@ -10,25 +11,15 @@ interface Cloud {
   opacity: number;
 }
 
-interface Star {
-  x: number;
-  y: number;
-  size: number;
-  twinkleSpeed: number;
-  twinkleOffset: number;
-  brightness: number;
-}
-
 export class BackgroundScene extends Container {
   private skyGraphics: Graphics;
   private themeSprite: Sprite | null = null;
   private sunContainer: Container;
   private cloudsContainer: Container;
-  private starsContainer: Container;
+  private weatherParticles: WeatherParticles;
   private grassGraphics: Graphics;
 
   private clouds: Cloud[] = [];
-  private stars: Star[] = [];
   private animationTime = 0;
 
   private currentTheme: ThemeDefinition;
@@ -50,8 +41,9 @@ export class BackgroundScene extends Container {
     this.cloudsContainer = new Container();
     this.addChild(this.cloudsContainer);
 
-    this.starsContainer = new Container();
-    this.addChild(this.starsContainer);
+    // Weather particles (replaces old star system)
+    this.weatherParticles = new WeatherParticles();
+    this.addChild(this.weatherParticles);
 
     this.grassGraphics = new Graphics();
     this.addChild(this.grassGraphics);
@@ -61,7 +53,9 @@ export class BackgroundScene extends Container {
     this.screenWidth = width;
     this.screenHeight = height;
     this.initClouds();
-    this.initStars();
+    this.weatherParticles.resize(width, height);
+    // Initialize weather particles with current theme config
+    this.weatherParticles.setConfig(this.currentTheme.weather);
     this.draw();
   }
 
@@ -77,7 +71,8 @@ export class BackgroundScene extends Container {
       }
     }
 
-    this.initStars();
+    // Update weather particles for new theme
+    this.weatherParticles.setConfig(this.currentTheme.weather);
     this.draw();
   }
 
@@ -122,23 +117,6 @@ export class BackgroundScene extends Container {
     }
   }
 
-  private initStars() {
-    this.stars = [];
-    const count = this.currentTheme.isDark ? 60 : this.currentTheme.starCount;
-    const maxSize = this.currentTheme.isDark ? 3 : 4;
-
-    for (let i = 0; i < count; i++) {
-      this.stars.push({
-        x: Math.random() * this.screenWidth,
-        y: Math.random() * (this.screenHeight - GROUND_HEIGHT - 100),
-        size: 1 + Math.random() * maxSize,
-        twinkleSpeed: 0.02 + Math.random() * 0.03,
-        twinkleOffset: Math.random() * Math.PI * 2,
-        brightness: 0.5 + Math.random() * 0.5,
-      });
-    }
-  }
-
   update(deltaTime: number) {
     this.animationTime += deltaTime;
 
@@ -151,6 +129,9 @@ export class BackgroundScene extends Container {
       }
     });
 
+    // Update weather particles
+    this.weatherParticles.update(deltaTime);
+
     this.draw();
   }
 
@@ -159,7 +140,6 @@ export class BackgroundScene extends Container {
     this.positionThemeSprite();
     this.drawSun();
     this.drawClouds();
-    this.drawStars();
     this.drawGrass();
   }
 
@@ -308,28 +288,6 @@ export class BackgroundScene extends Container {
     this.cloudsContainer.addChild(cloudGraphics);
   }
 
-  private drawStars() {
-    this.starsContainer.removeChildren();
-
-    const starGraphics = new Graphics();
-
-    this.stars.forEach((star) => {
-      const twinkle = (Math.sin(this.animationTime * star.twinkleSpeed + star.twinkleOffset) + 1) * 0.5;
-      const size = star.size * (0.8 + twinkle * 0.5);
-      const alpha = (this.currentTheme.isDark ? 0.6 : 0.4) + twinkle * 0.4;
-
-      // Simple star/sparkle
-      starGraphics.circle(star.x, star.y, size);
-      starGraphics.fill({ color: 0xffffff, alpha: alpha * star.brightness });
-
-      // Glow
-      starGraphics.circle(star.x, star.y, size * 2);
-      starGraphics.fill({ color: 0xffffff, alpha: alpha * 0.2 });
-    });
-
-    this.starsContainer.addChild(starGraphics);
-  }
-
   private drawGrass() {
     const groundY = this.screenHeight - GROUND_HEIGHT;
     const theme = this.currentTheme;
@@ -431,5 +389,14 @@ export class BackgroundScene extends Container {
     const b = Math.round(b1 + (b2 - b1) * t);
 
     return (r << 16) | (g << 8) | b;
+  }
+
+  // Burst weather particles at a position (called when bubble is caught)
+  burstAt(x: number, y: number) {
+    this.weatherParticles.burst(x, y);
+  }
+
+  getWeatherParticleCount(): number {
+    return this.weatherParticles.getActiveCount();
   }
 }

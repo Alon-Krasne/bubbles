@@ -7,7 +7,8 @@ import offroadImg from '../assets/themes/4x4-cars.png';
 import rainbowImg from '../assets/themes/rainbow-world.png';
 import castleImg from '../assets/themes/castle.jpg';
 
-export type DynamicElementType = 'sparkles' | 'diamonds' | 'hearts' | 'leaves' | 'lanterns';
+import { WeatherConfig, ParticleBehavior, ParticleShape } from '../scenes/WeatherParticles';
+import { WEATHER_PARTICLE_COUNT } from './config';
 
 export interface ThemeDefinition {
   name: string;
@@ -20,9 +21,8 @@ export interface ThemeDefinition {
   grassTop: number;
   grassMiddle: number;
   grassBottom: number;
-  dynamicElements: DynamicElementType;
-  starCount: number;
   isDark: boolean;
+  weather: WeatherConfig;
 }
 
 export const THEMES: Record<string, ThemeDefinition> = {
@@ -36,9 +36,18 @@ export const THEMES: Record<string, ThemeDefinition> = {
     grassTop: 0x90ee90,
     grassMiddle: 0x7ec850,
     grassBottom: 0x5a9e3a,
-    dynamicElements: 'sparkles',
-    starCount: 15,
     isDark: false,
+    weather: {
+      particleCount: WEATHER_PARTICLE_COUNT,
+      colors: [0xffffff, 0xffd700, 0xffb6c1],
+      sizeRange: [3, 6],
+      behavior: 'float-up',
+      speed: [0.3, 0.6],
+      opacity: [0.4, 0.8],
+      glow: true,
+      shape: 'star',
+      rotates: true,
+    },
   },
   imagine: {
     name: 'ארץ דמיון',
@@ -51,9 +60,18 @@ export const THEMES: Record<string, ThemeDefinition> = {
     grassTop: 0xa8e6cf,
     grassMiddle: 0x88d8b0,
     grassBottom: 0x6bc5a0,
-    dynamicElements: 'diamonds',
-    starCount: 20,
     isDark: false,
+    weather: {
+      particleCount: WEATHER_PARTICLE_COUNT,
+      colors: [0xff6b6b, 0xfeca57, 0x48dbfb, 0x1dd1a1, 0xff9ff3, 0x54a0ff],
+      sizeRange: [4, 8],
+      behavior: 'fall-down',
+      speed: [0.4, 0.8],
+      opacity: [0.5, 0.9],
+      glow: false,
+      shape: 'diamond',
+      rotates: true,
+    },
   },
   unicorn: {
     name: 'ארץ החד-קרן',
@@ -66,9 +84,18 @@ export const THEMES: Record<string, ThemeDefinition> = {
     grassTop: 0xf8bbd9,
     grassMiddle: 0xf48fb1,
     grassBottom: 0xec6a9c,
-    dynamicElements: 'hearts',
-    starCount: 25,
     isDark: false,
+    weather: {
+      particleCount: WEATHER_PARTICLE_COUNT,
+      colors: [0xff69b4, 0x9370db, 0xffd700, 0xffffff],
+      sizeRange: [3, 7],
+      behavior: 'spiral',
+      speed: [0.3, 0.5],
+      opacity: [0.5, 0.9],
+      glow: true,
+      shape: ['star', 'heart'],
+      rotates: true,
+    },
   },
   dinosaur: {
     name: 'ארץ הדינוזאורים',
@@ -81,9 +108,18 @@ export const THEMES: Record<string, ThemeDefinition> = {
     grassTop: 0xaed581,
     grassMiddle: 0x8bc34a,
     grassBottom: 0x689f38,
-    dynamicElements: 'leaves',
-    starCount: 10,
     isDark: false,
+    weather: {
+      particleCount: Math.floor(WEATHER_PARTICLE_COUNT * 0.7),
+      colors: [0x8bc34a, 0xff9800, 0x795548, 0xa5d6a7],
+      sizeRange: [5, 10],
+      behavior: 'fall-down',
+      speed: [0.2, 0.5],
+      opacity: [0.6, 0.9],
+      glow: false,
+      shape: 'leaf',
+      rotates: true,
+    },
   },
   blueworld: {
     name: 'עולם הכחול',
@@ -96,9 +132,18 @@ export const THEMES: Record<string, ThemeDefinition> = {
     grassTop: 0x7eb8d8,
     grassMiddle: 0x5a9fc8,
     grassBottom: 0x4080a8,
-    dynamicElements: 'diamonds',
-    starCount: 30,
     isDark: false,
+    weather: {
+      particleCount: WEATHER_PARTICLE_COUNT,
+      colors: [0x87ceeb, 0xe0f7fa, 0xffffff, 0xb3e5fc],
+      sizeRange: [3, 8],
+      behavior: 'rise-wobble',
+      speed: [0.2, 0.4],
+      opacity: [0.3, 0.7],
+      glow: true,
+      shape: 'circle',
+      rotates: false,
+    },
   },
   offroad: {
     name: 'עולם הג׳יפים',
@@ -111,9 +156,18 @@ export const THEMES: Record<string, ThemeDefinition> = {
     grassTop: 0xc9a86c,
     grassMiddle: 0xb8956a,
     grassBottom: 0xa67c52,
-    dynamicElements: 'leaves',
-    starCount: 8,
     isDark: false,
+    weather: {
+      particleCount: Math.floor(WEATHER_PARTICLE_COUNT * 0.6),
+      colors: [0xd4a574, 0xf5deb3, 0xfff8dc, 0xffe4b5],
+      sizeRange: [2, 5],
+      behavior: 'drift',
+      speed: [0.15, 0.35],
+      opacity: [0.3, 0.6],
+      glow: false,
+      shape: 'circle',
+      rotates: false,
+    },
   },
   rainbow: {
     name: 'עולם הקשת',
@@ -126,9 +180,19 @@ export const THEMES: Record<string, ThemeDefinition> = {
     grassTop: 0xf8bbd9,
     grassMiddle: 0xb3e5fc,
     grassBottom: 0xc8e6c9,
-    dynamicElements: 'hearts',
-    starCount: 35,
     isDark: false,
+    weather: {
+      particleCount: WEATHER_PARTICLE_COUNT,
+      colors: [0xff0000], // Will be overridden by hueCycle
+      sizeRange: [3, 6],
+      behavior: 'float-up',
+      speed: [0.25, 0.5],
+      opacity: [0.5, 0.85],
+      glow: true,
+      shape: 'star',
+      rotates: true,
+      hueCycle: true,
+    },
   },
   castle: {
     name: 'טירת החלומות',
@@ -141,9 +205,19 @@ export const THEMES: Record<string, ThemeDefinition> = {
     grassTop: 0x7986cb,
     grassMiddle: 0x5c6bc0,
     grassBottom: 0x3f51b5,
-    dynamicElements: 'lanterns',
-    starCount: 40,
     isDark: true,
+    weather: {
+      particleCount: Math.floor(WEATHER_PARTICLE_COUNT * 0.8),
+      colors: [0xffd54f, 0x81d4fa, 0xffffff],
+      sizeRange: [4, 9],
+      behavior: 'wander',
+      speed: [0.1, 0.3],
+      opacity: [0.4, 0.9],
+      glow: true,
+      pulseGlow: true,
+      shape: 'circle',
+      rotates: false,
+    },
   },
 };
 
