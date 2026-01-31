@@ -107,6 +107,8 @@ export class GameScene extends Container {
           this.particles.emitPoof(b.x, b.y, b.getHue());
           // Trigger weather particle burst
           this.onBubbleCatch?.(b.x, b.y);
+          // Play celebrate animation on the catching character
+          c.playCelebrate();
           b.destroy();
           this.bubbles.splice(i, 1);
           break;
