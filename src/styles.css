@@ -1,4 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;800&family=Secular+One&display=swap');
+/* Self-hosted fonts for offline support */
+@font-face {
+  font-family: 'Rubik';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('./assets/fonts/rubik.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Secular One';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./assets/fonts/secular-one.woff2') format('woff2');
+}
 
 :root {
     --pink: #FF9EB5;

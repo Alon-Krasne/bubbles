@@ -1,11 +1,11 @@
 // Theme background image imports
-import imagineImg from '../assets/themes/imagine.jpg';
-import unicornImg from '../assets/themes/unicorn.jpg';
-import dinosaurImg from '../assets/themes/dinosaur.jpg';
-import blueworldImg from '../assets/themes/blue-world.png';
-import offroadImg from '../assets/themes/4x4-cars.png';
-import rainbowImg from '../assets/themes/rainbow-world.png';
-import castleImg from '../assets/themes/castle.jpg';
+import imagineImg from '../assets/themes/imagine.webp';
+import unicornImg from '../assets/themes/unicorn.webp';
+import dinosaurImg from '../assets/themes/dinosaur.webp';
+import blueworldImg from '../assets/themes/blue-world.webp';
+import offroadImg from '../assets/themes/4x4-cars.webp';
+import rainbowImg from '../assets/themes/rainbow-world.webp';
+import castleImg from '../assets/themes/castle.webp';
 
 import { WeatherConfig, ParticleBehavior, ParticleShape } from '../scenes/WeatherParticles';
 import { WEATHER_PARTICLE_COUNT } from './config';
