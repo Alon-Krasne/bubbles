@@ -78,12 +78,8 @@ canvas {
 
 /* ==================== START SCREEN ==================== */
 #start-screen {
-    background: linear-gradient(180deg, 
-        #7BC8F6 0%,
-        #A8DAFF 40%,
-        #D4EDFF 70%,
-        #FFF5E6 100%
-    );
+    /* Transparent background - PIXI canvas provides animated background */
+    background: transparent;
     gap: 15px;
     justify-content: center;
     padding: 15px;
@@ -1131,12 +1127,8 @@ canvas {
 
 /* ==================== END SCREEN ==================== */
 #end-screen {
-    background: linear-gradient(180deg, 
-        #7BC8F6 0%,
-        #A8DAFF 40%,
-        #D4EDFF 70%,
-        #FFF5E6 100%
-    );
+    /* Transparent background - PIXI canvas provides animated background */
+    background: transparent;
 }
 
 .end-title {
