@@ -41,7 +41,9 @@ async function initPixiGame() {
         throw new Error('Unable to create 2D canvas context.');
     }
 
-    const texture = PIXI.Texture.from(gameCanvas);
+    // Pixi v8: Use CanvasSource for dynamic canvas textures that update every frame
+    const canvasSource = new PIXI.CanvasSource({ resource: gameCanvas });
+    const texture = new PIXI.Texture({ source: canvasSource });
     const sprite = new PIXI.Sprite(texture);
     app.stage.addChild(sprite);
 
@@ -51,6 +53,8 @@ async function initPixiGame() {
         gameCanvas.height = height;
         sprite.width = width;
         sprite.height = height;
+        // Resize invalidates the source, so mark it for update
+        canvasSource.resize(width, height);
     };
 
     const handleResize = () => {
@@ -58,7 +62,7 @@ async function initPixiGame() {
         const { width, height } = app.renderer;
         resizeGame(width, height);
         rebuildBackgroundForResize();
-        texture.update();
+        canvasSource.update();
     };
 
     app.renderer.on('resize', handleResize);
@@ -67,7 +71,7 @@ async function initPixiGame() {
     initGame({
         canvas: gameCanvas,
         ctx: gameContext,
-        onFrame: () => texture.update()
+        onFrame: () => canvasSource.update()
     });
 
     handleResize();
