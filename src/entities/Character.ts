@@ -1,11 +1,48 @@
-import { Container, Graphics, Sprite, Text, Texture, Assets } from 'pixi.js';
+import { Container, Graphics, Sprite, Text, Texture, Assets, AnimatedSprite } from 'pixi.js';
+import { GlowFilter, DropShadowFilter } from 'pixi-filters';
 import { CHARACTER_SIZE, CHARACTER_SPEED, GROUND_HEIGHT } from '../game/config';
 
-// Figure sprite imports
+// Figure sprite imports (static fallbacks)
 import unicornImg from '../assets/unicorn.png';
 import dinosaurImg from '../assets/dinosaur.png';
 import puppyImg from '../assets/puppy.png';
 import princessImg from '../assets/princess.png';
+
+// Animated unicorn frames
+import unicornIdle1 from '../assets/characters/unicorn/unicorn_idle_1.png';
+import unicornIdle2 from '../assets/characters/unicorn/unicorn_idle_2.png';
+import unicornWalk1 from '../assets/characters/unicorn/unicorn_walk_1.png';
+import unicornWalk2 from '../assets/characters/unicorn/unicorn_walk_2.png';
+import unicornWalk3 from '../assets/characters/unicorn/unicorn_walk_3.png';
+import unicornCelebrate1 from '../assets/characters/unicorn/unicorn_celebrate_1.png';
+import unicornCelebrate2 from '../assets/characters/unicorn/unicorn_celebrate_2.png';
+
+// Animated puppy frames
+import puppyIdle1 from '../assets/characters/puppy/puppy_idle_1.png';
+import puppyIdle2 from '../assets/characters/puppy/puppy_idle_2.png';
+import puppyWalk1 from '../assets/characters/puppy/puppy_walk_1.png';
+import puppyWalk2 from '../assets/characters/puppy/puppy_walk_2.png';
+import puppyWalk3 from '../assets/characters/puppy/puppy_walk_3.png';
+import puppyCelebrate1 from '../assets/characters/puppy/puppy_celebrate_1.png';
+import puppyCelebrate2 from '../assets/characters/puppy/puppy_celebrate_2.png';
+
+// Animated dinosaur frames
+import dinosaurIdle1 from '../assets/characters/dinosaur/dinosaur_idle_1.png';
+import dinosaurIdle2 from '../assets/characters/dinosaur/dinosaur_idle_2.png';
+import dinosaurWalk1 from '../assets/characters/dinosaur/dinosaur_walk_1.png';
+import dinosaurWalk2 from '../assets/characters/dinosaur/dinosaur_walk_2.png';
+import dinosaurWalk3 from '../assets/characters/dinosaur/dinosaur_walk_3.png';
+import dinosaurCelebrate1 from '../assets/characters/dinosaur/dinosaur_celebrate_1.png';
+import dinosaurCelebrate2 from '../assets/characters/dinosaur/dinosaur_celebrate_2.png';
+
+// Animated princess frames
+import princessIdle1 from '../assets/characters/princess/princess_idle_1.png';
+import princessIdle2 from '../assets/characters/princess/princess_idle_2.png';
+import princessWalk1 from '../assets/characters/princess/princess_walk_1.png';
+import princessWalk2 from '../assets/characters/princess/princess_walk_2.png';
+import princessWalk3 from '../assets/characters/princess/princess_walk_3.png';
+import princessCelebrate1 from '../assets/characters/princess/princess_celebrate_1.png';
+import princessCelebrate2 from '../assets/characters/princess/princess_celebrate_2.png';
 
 export type FigureType = 'blob' | 'unicorn' | 'dinosaur' | 'puppy' | 'princess';
 
@@ -14,6 +51,30 @@ const FIGURE_PATHS: Record<string, string> = {
   dinosaur: dinosaurImg,
   puppy: puppyImg,
   princess: princessImg,
+};
+
+// Animation frame definitions for animated characters
+const ANIMATED_FRAMES: Record<string, { idle: string[]; walk: string[]; celebrate: string[] }> = {
+  unicorn: {
+    idle: [unicornIdle1, unicornIdle2, unicornIdle1],
+    walk: [unicornWalk1, unicornWalk2, unicornWalk3, unicornWalk2],
+    celebrate: [unicornCelebrate1, unicornCelebrate2],
+  },
+  puppy: {
+    idle: [puppyIdle1, puppyIdle2, puppyIdle1],
+    walk: [puppyWalk1, puppyWalk2, puppyWalk3, puppyWalk2],
+    celebrate: [puppyCelebrate1, puppyCelebrate2],
+  },
+  dinosaur: {
+    idle: [dinosaurIdle1, dinosaurIdle2, dinosaurIdle1],
+    walk: [dinosaurWalk1, dinosaurWalk2, dinosaurWalk3, dinosaurWalk2],
+    celebrate: [dinosaurCelebrate1, dinosaurCelebrate2],
+  },
+  princess: {
+    idle: [princessIdle1, princessIdle2, princessIdle1],
+    walk: [princessWalk1, princessWalk2, princessWalk3, princessWalk2],
+    celebrate: [princessCelebrate1, princessCelebrate2],
+  },
 };
 
 export interface CharacterConfig {
@@ -43,6 +104,8 @@ function adjustColor(hex: number, amount: number): number {
   return rgbToHex(r + shift, g + shift, b + shift);
 }
 
+type AnimationState = 'idle' | 'walk' | 'celebrate';
+
 export class Character extends Container {
   private body: Container;
   private nameTag: Text;
@@ -56,6 +119,12 @@ export class Character extends Container {
   private isGirl: boolean;
   private figureType: FigureType;
   private figureSprite: Sprite | null = null;
+
+  // Animated sprite support
+  private animatedSprite: AnimatedSprite | null = null;
+  private animations: Record<AnimationState, Texture[]> | null = null;
+  private currentAnim: AnimationState = 'idle';
+  private glowFilter: GlowFilter | null = null;
 
   public vx = 0;
   private bounceOffset = 0;
@@ -107,6 +176,8 @@ export class Character extends Container {
     // Build the body
     if (this.figureType === 'blob') {
       this.buildBlobBody();
+    } else if (ANIMATED_FRAMES[this.figureType]) {
+      this.loadAnimatedSprite();
     } else {
       this.loadFigureSprite();
     }
@@ -194,6 +265,71 @@ export class Character extends Container {
     this.body.addChild(blob);
   }
 
+  private async loadAnimatedSprite() {
+    const frameDefs = ANIMATED_FRAMES[this.figureType];
+    if (!frameDefs) {
+      this.loadFigureSprite();
+      return;
+    }
+
+    try {
+      // Load all textures
+      const loadTextures = async (paths: string[]): Promise<Texture[]> => {
+        const textures: Texture[] = [];
+        for (const path of paths) {
+          const texture = await Assets.load(path);
+          textures.push(texture);
+        }
+        return textures;
+      };
+
+      const [idleTextures, walkTextures, celebrateTextures] = await Promise.all([
+        loadTextures(frameDefs.idle),
+        loadTextures(frameDefs.walk),
+        loadTextures(frameDefs.celebrate),
+      ]);
+
+      this.animations = {
+        idle: idleTextures,
+        walk: walkTextures,
+        celebrate: celebrateTextures,
+      };
+
+      // Create AnimatedSprite with idle animation
+      this.animatedSprite = new AnimatedSprite(idleTextures);
+      this.animatedSprite.anchor.set(0.5);
+      this.animatedSprite.width = this.charWidth + 40;
+      this.animatedSprite.height = this.charWidth + 40;
+      this.animatedSprite.animationSpeed = 0.08;
+      this.animatedSprite.play();
+
+      // Add magical glow filter
+      this.glowFilter = new GlowFilter({
+        distance: 15,
+        outerStrength: 1.5,
+        innerStrength: 0,
+        color: this.baseColor,
+        quality: 0.3,
+      });
+
+      // Add drop shadow filter
+      const shadowFilter = new DropShadowFilter({
+        offset: { x: 0, y: 8 },
+        blur: 3,
+        alpha: 0.3,
+        color: 0x000000,
+      });
+
+      this.animatedSprite.filters = [shadowFilter, this.glowFilter];
+
+      this.body.addChild(this.animatedSprite);
+      this.currentAnim = 'idle';
+    } catch (e) {
+      console.warn('Failed to load animated sprite, falling back to static:', this.figureType, e);
+      this.loadFigureSprite();
+    }
+  }
+
   private async loadFigureSprite() {
     const path = FIGURE_PATHS[this.figureType];
     if (!path) {
@@ -226,6 +362,31 @@ export class Character extends Container {
     this.shadow.fill({ color: 0x000000, alpha: 0.15 });
   }
 
+  private setAnimation(anim: AnimationState) {
+    if (!this.animatedSprite || !this.animations || this.currentAnim === anim) return;
+
+    this.animatedSprite.textures = this.animations[anim];
+    this.animatedSprite.loop = anim !== 'celebrate';
+    this.animatedSprite.gotoAndPlay(0);
+    this.currentAnim = anim;
+
+    // When celebrate finishes, return to idle
+    if (anim === 'celebrate') {
+      this.animatedSprite.onComplete = () => {
+        this.setAnimation('idle');
+      };
+    } else {
+      this.animatedSprite.onComplete = undefined;
+    }
+  }
+
+  /** Play the celebration animation (called when catching a bubble) */
+  playCelebrate() {
+    if (this.animations) {
+      this.setAnimation('celebrate');
+    }
+  }
+
   update(deltaTime: number, screenWidth: number, screenHeight: number) {
     this.animationTime += deltaTime;
 
@@ -253,6 +414,28 @@ export class Character extends Container {
 
     // Update shadow position
     this.shadow.y = -this.bounceOffset;
+
+    // Update animation state based on velocity (only if not celebrating)
+    if (this.animatedSprite && this.animations && this.currentAnim !== 'celebrate') {
+      const isMoving = Math.abs(this.vx) > 10;
+      if (isMoving && this.currentAnim !== 'walk') {
+        this.setAnimation('walk');
+      } else if (!isMoving && this.currentAnim !== 'idle') {
+        this.setAnimation('idle');
+      }
+
+      // Flip sprite based on direction
+      if (this.vx < -10) {
+        this.animatedSprite.scale.x = -Math.abs(this.animatedSprite.scale.x);
+      } else if (this.vx > 10) {
+        this.animatedSprite.scale.x = Math.abs(this.animatedSprite.scale.x);
+      }
+    }
+
+    // Animate glow pulse
+    if (this.glowFilter) {
+      this.glowFilter.outerStrength = 1.2 + Math.sin(this.animationTime * 0.1) * 0.6;
+    }
   }
 
   setVelocity(vx: number) {
