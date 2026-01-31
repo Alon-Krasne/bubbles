@@ -597,6 +597,49 @@ canvas {
     transform: scale(1.1);
 }
 
+/* Items picker (bubbles vs vegetables) */
+.items-picker {
+    display: flex;
+    gap: 8px;
+    background: rgba(255,255,255,0.7);
+    padding: 8px 12px;
+    border-radius: 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.items-btn {
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #FFF 0%, #F0F0F0 100%);
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 3px 0 #D0D0D0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.items-btn:hover {
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 0 6px 0 #D0D0D0, 0 10px 20px rgba(0,0,0,0.15);
+}
+
+.items-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #D0D0D0;
+}
+
+.items-btn.active {
+    background: linear-gradient(180deg, var(--candy-yellow) 0%, #FFD700 100%);
+    box-shadow: 
+        0 3px 0 #D4A800,
+        0 0 20px rgba(255,215,0,0.5);
+    transform: scale(1.1);
+}
+
 /* Timer candy buttons */
 .timer-candy {
     display: flex;
@@ -742,6 +785,23 @@ canvas {
     text-shadow: 0 3px 0 rgba(0,0,0,0.2);
 }
 
+.version-badge {
+    position: absolute;
+    bottom: 18px;
+    left: 18px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.75);
+    color: var(--text);
+    font-family: 'Rubik', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    z-index: 2;
+    pointer-events: none;
+}
+
 /* ==================== SCORES POPUP ==================== */
 .scores-popup {
     position: fixed;
@@ -847,6 +907,35 @@ canvas {
     justify-content: flex-start;
     pointer-events: none;
     background: transparent;
+}
+
+.hud-home-btn {
+    position: absolute;
+    top: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow:
+        0 6px 14px rgba(0, 0, 0, 0.12),
+        inset 0 2px 0 rgba(255, 255, 255, 0.7);
+    font-size: 22px;
+    cursor: pointer;
+    pointer-events: auto;
+    opacity: 0.85;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.hud-home-btn:hover {
+    transform: translateX(-50%) scale(1.05);
+    opacity: 1;
+}
+
+.hud-home-btn:active {
+    transform: translateX(-50%) scale(0.96);
 }
 
 .hud-item {
@@ -1099,7 +1188,7 @@ td {
         padding: 3px 10px;
     }
     
-    .world-btn, .candy-btn {
+    .world-btn, .candy-btn, .items-btn {
         width: 42px;
         height: 42px;
         font-size: 18px;

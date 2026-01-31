@@ -114,7 +114,19 @@
                         <button class="world-btn" data-theme="imagine" title="ארץ דמיון">💎</button>
                         <button class="world-btn" data-theme="unicorn" title="ארץ החד-קרן">🦄</button>
                         <button class="world-btn" data-theme="dinosaur" title="ארץ הדינוזאורים">🦕</button>
+                        <button class="world-btn" data-theme="blueworld" title="עולם הכחול">💙</button>
+                        <button class="world-btn" data-theme="offroad" title="עולם הג׳יפים">🚙</button>
+                        <button class="world-btn" data-theme="rainbow" title="עולם הקשת">🌈</button>
                         <button class="world-btn" data-theme="castle" title="טירת החלומות">🏰</button>
+                    </div>
+                </div>
+
+                <!-- Falling items selector -->
+                <div class="setting-group">
+                    <span class="setting-label">🎯 פריטים</span>
+                    <div class="items-picker">
+                        <button class="items-btn active" data-items="bubbles" title="בועות">🫧</button>
+                        <button class="items-btn" data-items="vegetables" title="ירקות">🥕</button>
                     </div>
                 </div>
 
@@ -141,6 +153,8 @@
                 <span class="play-text">!בואו נשחק</span>
             </button>
 
+            <div class="version-badge" id="version-badge">__VERSION__</div>
+
             <!-- Hidden high scores popup -->
             <div id="scores-popup" class="scores-popup hidden">
                 <div class="popup-cloud">
@@ -160,6 +174,9 @@
             <div class="hud-item timer-container">
                 <span id="timer-val">45</span>
             </div>
+            <button id="home-btn" class="hud-home-btn" type="button" aria-label="חזרה למסך הפתיחה" title="חזרה למסך הפתיחה">
+                🏠
+            </button>
             <div class="hud-controls hud-controls-p1">
                 <kbd>D</kbd> <kbd>A</kbd>
             </div>
@@ -190,8 +207,8 @@
                 </table>
             </div>
             <button id="restart-btn" class="play-button">
+                <span class="play-text">שוב?</span>
                 <span class="play-icon">🔄</span>
-                <span class="play-text">?שוב</span>
             </button>
         </div>
     </div>

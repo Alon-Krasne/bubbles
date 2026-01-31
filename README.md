@@ -1,5 +1,7 @@
 # בועות! (Bubbles!)
 
+[![Play Now](https://img.shields.io/badge/Play%20Now-bubbles--by5.pages.dev-blue?style=for-the-badge)](https://bubbles-by5.pages.dev/)
+
 A cooperative 2-player bubble-catching game for kids.
 
 ![Game Screenshot](design/draft-v1.png)
@@ -43,6 +45,8 @@ bun run build
 bun run preview
 ```
 
+The bundled file (`dist/bubbles_v{version}.html`) works offline - just send it to anyone!
+
 ## Project Structure
 
 ```
@@ -52,6 +56,10 @@ bubbles/
 │   ├── main.js         # PixiJS + game bootstrap
 │   ├── game.js         # Game engine & logic
 │   └── styles.css      # UI styling
+├── dist/
+│   └── bubbles_v{version}.html # Shareable bundled version
+├── scripts/
+│   └── bundle.js       # Bundling script
 ├── design/
 │   └── draft-v1.png    # Visual mockup
 └── docs/
@@ -75,6 +83,14 @@ bubbles/
 - Vite for dev/build tooling
 - PixiJS for rendering pipeline (canvas-backed)
 - Vanilla HTML5, CSS3, JavaScript (ES6+)
+
+## Deployment
+
+Hosted on [Cloudflare Pages](https://pages.cloudflare.com/) at **https://bubbles-by5.pages.dev/**
+
+- Auto-deploys on merge to `main`
+- Build command: `npm run build`
+- Output directory: `dist/`
 
 ## License
 

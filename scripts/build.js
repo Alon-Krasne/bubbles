@@ -1,14 +1,12 @@
 #!/usr/bin/env node
 
 /**
- * Bundle script for בועות! game
- * Creates a single self-contained HTML file with embedded images
- * Uses version from package.json
+ * Build script for Cloudflare Pages deployment.
+ * Creates dist/index.html with embedded assets.
  */
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
 
 const ROOT = path.join(__dirname, '..');
 const SRC = path.join(ROOT, 'src');
@@ -84,20 +82,14 @@ if (!fs.existsSync(DIST)) {
 }
 
 // Write bundled file
-const outputFileName = `bubbles_v${version}.html`;
-const outputPath = path.join(DIST, outputFileName);
+const outputPath = path.join(DIST, 'index.html');
 fs.writeFileSync(outputPath, bundled);
 
 const fileSizeKB = (fs.statSync(outputPath).size / 1024).toFixed(1);
 const fileSizeMB = (fs.statSync(outputPath).size / 1024 / 1024).toFixed(2);
 
-console.log(`✅ Bundled game created: ${outputPath}`);
-console.log(`📦 File size: ${fileSizeKB} KB (${fileSizeMB} MB)`);
-console.log(`🔖 Version: v${version}`);
-console.log(`🖼️  Embedded images: ${figureFiles.length} figures + ${themeFiles.length} themes`);
-
-if (process.argv.includes('--open')) {
-    execSync(`open "${outputPath}"`);
-}
-
-console.log(`\n🎮 Send this single file to anyone - it works offline!`);
+console.log(`Build complete: ${outputPath}`);
+console.log(`File size: ${fileSizeKB} KB (${fileSizeMB} MB)`);
+console.log(`Version: v${version}`);
+console.log(`Embedded images: ${figureFiles.length} figures + ${themeFiles.length} themes`);
+console.log('\nDeploy dist/index.html to Cloudflare Pages.');

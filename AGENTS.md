@@ -78,3 +78,21 @@ bubbles/
 - Canvas for game, DOM for UI overlays (screens, HUD)
 - Cooperative (not competitive) to encourage sibling bonding
 - Bubbles fall DOWN (not up) to match the visual perspective
+
+## Versioning
+- Version is stored in `package.json` and displayed in the UI on the start screen
+- Use semantic versioning: `MAJOR.MINOR.PATCH`
+  - **MAJOR**: Breaking changes or major redesigns
+  - **MINOR**: New features (e.g., new theme, new game mode)
+  - **PATCH**: Bug fixes, small tweaks, refactors
+
+### Agent Directive: Version Bumping
+When completing work on a PR, you MUST:
+1. Determine the appropriate version bump based on your changes
+2. Run `npm version <major|minor|patch> --no-git-tag-version` to bump the version
+3. Include the version bump in your commit
+
+### PR Review Directive
+When reviewing a PR, verify that:
+1. The version has been bumped appropriately for the changes
+2. If not bumped, request the author to bump the version or do it yourself before approving
