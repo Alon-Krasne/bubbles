@@ -1,4 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;800&family=Secular+One&display=swap');
+/* Self-hosted fonts for offline support */
+@font-face {
+  font-family: 'Rubik';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('./assets/fonts/rubik.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Secular One';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./assets/fonts/secular-one.woff2') format('woff2');
+}
 
 :root {
     --pink: #FF9EB5;
@@ -801,49 +816,6 @@ canvas {
     box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
-/* World picker (legacy - hidden but kept for reference) */
-.world-picker {
-    display: none;
-    gap: 8px;
-    background: rgba(255,255,255,0.7);
-    padding: 8px 12px;
-    border-radius: 30px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.world-btn {
-    width: 48px;
-    height: 48px;
-    border: none;
-    border-radius: 50%;
-    background: linear-gradient(180deg, #FFF 0%, #F0F0F0 100%);
-    font-size: 24px;
-    cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 0 3px 0 #D0D0D0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.world-btn:hover {
-    transform: translateY(-3px) scale(1.1);
-    box-shadow: 0 6px 0 #D0D0D0, 0 10px 20px rgba(0,0,0,0.15);
-}
-
-.world-btn:active {
-    transform: translateY(2px);
-    box-shadow: 0 1px 0 #D0D0D0;
-}
-
-.world-btn.active {
-    background: linear-gradient(180deg, var(--candy-yellow) 0%, #FFD700 100%);
-    box-shadow: 
-        0 3px 0 #D4A800,
-        0 0 20px rgba(255,215,0,0.5);
-    transform: scale(1.1);
-}
-
 /* Items picker (bubbles vs vegetables) */
 .items-picker {
     display: flex;
@@ -1464,7 +1436,7 @@ td {
         padding: 3px 10px;
     }
     
-    .world-btn, .candy-btn, .items-btn {
+    .candy-btn, .items-btn {
         width: 42px;
         height: 42px;
         font-size: 18px;
@@ -1501,7 +1473,7 @@ td {
         height: 28px;
     }
     
-    .world-picker, .timer-candy {
+    .timer-candy {
         padding: 6px 10px;
     }
 }

@@ -3,46 +3,46 @@ import { GlowFilter, DropShadowFilter } from 'pixi-filters';
 import { CHARACTER_SIZE, CHARACTER_SPEED, GROUND_HEIGHT } from '../game/config';
 
 // Figure sprite imports (static fallbacks)
-import unicornImg from '../assets/unicorn.png';
-import dinosaurImg from '../assets/dinosaur.png';
-import puppyImg from '../assets/puppy.png';
-import princessImg from '../assets/princess.png';
+import unicornImg from '../assets/unicorn.webp';
+import dinosaurImg from '../assets/dinosaur.webp';
+import puppyImg from '../assets/puppy.webp';
+import princessImg from '../assets/princess.webp';
 
 // Animated unicorn frames
-import unicornIdle1 from '../assets/characters/unicorn/unicorn_idle_1.png';
-import unicornIdle2 from '../assets/characters/unicorn/unicorn_idle_2.png';
-import unicornWalk1 from '../assets/characters/unicorn/unicorn_walk_1.png';
-import unicornWalk2 from '../assets/characters/unicorn/unicorn_walk_2.png';
-import unicornWalk3 from '../assets/characters/unicorn/unicorn_walk_3.png';
-import unicornCelebrate1 from '../assets/characters/unicorn/unicorn_celebrate_1.png';
-import unicornCelebrate2 from '../assets/characters/unicorn/unicorn_celebrate_2.png';
+import unicornIdle1 from '../assets/characters/unicorn/unicorn_idle_1.webp';
+import unicornIdle2 from '../assets/characters/unicorn/unicorn_idle_2.webp';
+import unicornWalk1 from '../assets/characters/unicorn/unicorn_walk_1.webp';
+import unicornWalk2 from '../assets/characters/unicorn/unicorn_walk_2.webp';
+import unicornWalk3 from '../assets/characters/unicorn/unicorn_walk_3.webp';
+import unicornCelebrate1 from '../assets/characters/unicorn/unicorn_celebrate_1.webp';
+import unicornCelebrate2 from '../assets/characters/unicorn/unicorn_celebrate_2.webp';
 
 // Animated puppy frames
-import puppyIdle1 from '../assets/characters/puppy/puppy_idle_1.png';
-import puppyIdle2 from '../assets/characters/puppy/puppy_idle_2.png';
-import puppyWalk1 from '../assets/characters/puppy/puppy_walk_1.png';
-import puppyWalk2 from '../assets/characters/puppy/puppy_walk_2.png';
-import puppyWalk3 from '../assets/characters/puppy/puppy_walk_3.png';
-import puppyCelebrate1 from '../assets/characters/puppy/puppy_celebrate_1.png';
-import puppyCelebrate2 from '../assets/characters/puppy/puppy_celebrate_2.png';
+import puppyIdle1 from '../assets/characters/puppy/puppy_idle_1.webp';
+import puppyIdle2 from '../assets/characters/puppy/puppy_idle_2.webp';
+import puppyWalk1 from '../assets/characters/puppy/puppy_walk_1.webp';
+import puppyWalk2 from '../assets/characters/puppy/puppy_walk_2.webp';
+import puppyWalk3 from '../assets/characters/puppy/puppy_walk_3.webp';
+import puppyCelebrate1 from '../assets/characters/puppy/puppy_celebrate_1.webp';
+import puppyCelebrate2 from '../assets/characters/puppy/puppy_celebrate_2.webp';
 
 // Animated dinosaur frames
-import dinosaurIdle1 from '../assets/characters/dinosaur/dinosaur_idle_1.png';
-import dinosaurIdle2 from '../assets/characters/dinosaur/dinosaur_idle_2.png';
-import dinosaurWalk1 from '../assets/characters/dinosaur/dinosaur_walk_1.png';
-import dinosaurWalk2 from '../assets/characters/dinosaur/dinosaur_walk_2.png';
-import dinosaurWalk3 from '../assets/characters/dinosaur/dinosaur_walk_3.png';
-import dinosaurCelebrate1 from '../assets/characters/dinosaur/dinosaur_celebrate_1.png';
-import dinosaurCelebrate2 from '../assets/characters/dinosaur/dinosaur_celebrate_2.png';
+import dinosaurIdle1 from '../assets/characters/dinosaur/dinosaur_idle_1.webp';
+import dinosaurIdle2 from '../assets/characters/dinosaur/dinosaur_idle_2.webp';
+import dinosaurWalk1 from '../assets/characters/dinosaur/dinosaur_walk_1.webp';
+import dinosaurWalk2 from '../assets/characters/dinosaur/dinosaur_walk_2.webp';
+import dinosaurWalk3 from '../assets/characters/dinosaur/dinosaur_walk_3.webp';
+import dinosaurCelebrate1 from '../assets/characters/dinosaur/dinosaur_celebrate_1.webp';
+import dinosaurCelebrate2 from '../assets/characters/dinosaur/dinosaur_celebrate_2.webp';
 
 // Animated princess frames
-import princessIdle1 from '../assets/characters/princess/princess_idle_1.png';
-import princessIdle2 from '../assets/characters/princess/princess_idle_2.png';
-import princessWalk1 from '../assets/characters/princess/princess_walk_1.png';
-import princessWalk2 from '../assets/characters/princess/princess_walk_2.png';
-import princessWalk3 from '../assets/characters/princess/princess_walk_3.png';
-import princessCelebrate1 from '../assets/characters/princess/princess_celebrate_1.png';
-import princessCelebrate2 from '../assets/characters/princess/princess_celebrate_2.png';
+import princessIdle1 from '../assets/characters/princess/princess_idle_1.webp';
+import princessIdle2 from '../assets/characters/princess/princess_idle_2.webp';
+import princessWalk1 from '../assets/characters/princess/princess_walk_1.webp';
+import princessWalk2 from '../assets/characters/princess/princess_walk_2.webp';
+import princessWalk3 from '../assets/characters/princess/princess_walk_3.webp';
+import princessCelebrate1 from '../assets/characters/princess/princess_celebrate_1.webp';
+import princessCelebrate2 from '../assets/characters/princess/princess_celebrate_2.webp';
 
 export type FigureType = 'blob' | 'unicorn' | 'dinosaur' | 'puppy' | 'princess';
 
