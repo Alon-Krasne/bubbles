@@ -6,7 +6,7 @@ import { viteSingleFile } from 'vite-plugin-singlefile';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-  base: './',
+  base: '/bubbles/',
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version || '0.0.0'),
   },
