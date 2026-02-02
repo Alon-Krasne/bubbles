@@ -3,6 +3,16 @@ import { GameApp } from './game/GameApp';
 import { FigureType } from './entities/Character';
 import { FallingItemMode } from './entities/Bubble';
 
+// Default player names (can be overridden via URL params: ?p1=Name&p2=Name)
+const DEFAULT_P1_NAME = 'לוטם';
+const DEFAULT_P2_NAME = 'תום';
+
+// Get URL parameters
+function getUrlParam(key: string): string | null {
+  const params = new URLSearchParams(window.location.search);
+  return params.get(key);
+}
+
 // Version badge
 const versionBadge = document.getElementById('version-badge');
 if (versionBadge) {
@@ -13,8 +23,9 @@ if (versionBadge) {
 const gameApp = new GameApp();
 
 // Player state (will be updated by UI)
-let p1Name = localStorage.getItem('bubble_p1_name') || 'לוטם';
-let p2Name = localStorage.getItem('bubble_p2_name') || 'תום';
+// Priority: URL param > localStorage > default
+let p1Name = getUrlParam('p1') || localStorage.getItem('bubble_p1_name') || DEFAULT_P1_NAME;
+let p2Name = getUrlParam('p2') || localStorage.getItem('bubble_p2_name') || DEFAULT_P2_NAME;
 let p1Color = 0xff9eb5;
 let p2Color = 0x7ec8e8;
 let p1Figure: FigureType = 'blob';
@@ -63,7 +74,7 @@ function setupUI() {
   if (p1Input) {
     p1Input.value = p1Name;
     p1Input.addEventListener('input', () => {
-      p1Name = p1Input.value || 'לוטם';
+      p1Name = p1Input.value || DEFAULT_P1_NAME;
       localStorage.setItem('bubble_names', JSON.stringify({ p1: p1Name, p2: p2Name }));
     });
   }
@@ -71,7 +82,7 @@ function setupUI() {
   if (p2Input) {
     p2Input.value = p2Name;
     p2Input.addEventListener('input', () => {
-      p2Name = p2Input.value || 'תום';
+      p2Name = p2Input.value || DEFAULT_P2_NAME;
       localStorage.setItem('bubble_names', JSON.stringify({ p1: p1Name, p2: p2Name }));
     });
   }
@@ -266,7 +277,7 @@ function setupWorldCarousel() {
   // We want the track layout to be:
   // [clone-of-6, clone-of-7, orig-0, orig-1, ..., orig-7, clone-of-0, clone-of-1]
   // So when scrolling LEFT from orig-0, we see clone-of-7 (Castle), then snap to real orig-7
-  
+
   // Prepend: first prepend clone-of-6, then prepend clone-of-7
   // prepend(A) then prepend(B) results in [B, A, ...originals]
   // So we prepend in order: 6, then 7 -> gives us [7, 6, ...] which is wrong
@@ -274,22 +285,22 @@ function setupWorldCarousel() {
   const cloneSecondLast = originalCards[totalOriginal - 2].cloneNode(true) as HTMLElement;
   cloneSecondLast.classList.add('carousel-clone');
   cloneSecondLast.setAttribute('data-clone-of', String(totalOriginal - 2));
-  
+
   const cloneLast = originalCards[totalOriginal - 1].cloneNode(true) as HTMLElement;
   cloneLast.classList.add('carousel-clone');
   cloneLast.setAttribute('data-clone-of', String(totalOriginal - 1));
-  
+
   // Prepend in reverse order: last first, then second-to-last
   // This gives us: [second-to-last, last, ...originals]
   track.prepend(cloneLast);        // [7, orig-0, orig-1, ...]
   track.prepend(cloneSecondLast);  // [6, 7, orig-0, orig-1, ...]
-  
+
   // Append clones of first cards
   const cloneFirst = originalCards[0].cloneNode(true) as HTMLElement;
   cloneFirst.classList.add('carousel-clone');
   cloneFirst.setAttribute('data-clone-of', '0');
   track.append(cloneFirst);
-  
+
   const cloneSecond = originalCards[1].cloneNode(true) as HTMLElement;
   cloneSecond.classList.add('carousel-clone');
   cloneSecond.setAttribute('data-clone-of', '1');
@@ -301,7 +312,7 @@ function setupWorldCarousel() {
 
   // Get all cards including clones
   const allCards = Array.from(track.querySelectorAll('.carousel-card'));
-  
+
   // Current position in the extended array (starts at first real card)
   let currentPosition = clonesPerSide; // Start at orig-0 (index 2)
   let isAnimating = false;
@@ -336,7 +347,7 @@ function setupWorldCarousel() {
     if (!track || !viewport) return;
 
     const { cardWidth, viewportWidth, cardFullWidth } = getCardMetrics();
-    
+
     // Center the current card
     const startOffset = (viewportWidth - cardWidth) / 2;
     const translateX = startOffset - (currentPosition * cardFullWidth);
@@ -369,7 +380,7 @@ function setupWorldCarousel() {
     // If we're on a clone (outside the real range), instantly snap to the equivalent real card
     const minReal = clonesPerSide; // First real card position
     const maxReal = clonesPerSide + totalOriginal - 1; // Last real card position
-    
+
     if (currentPosition < minReal) {
       // We're on a prepended clone, snap to the real card at the end
       currentPosition = currentPosition + totalOriginal;
