@@ -9,6 +9,7 @@ export default defineConfig({
   base: '/bubbles/',
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version || '0.0.0'),
+    __PASSWORD_HASH__: JSON.stringify(process.env.SITE_PASSWORD_HASH || ''),
   },
   plugins: [
     viteSingleFile({

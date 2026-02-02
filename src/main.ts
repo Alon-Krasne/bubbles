@@ -2,6 +2,7 @@ import './styles.css';
 import { GameApp } from './game/GameApp';
 import { FigureType } from './entities/Character';
 import { FallingItemMode } from './entities/Bubble';
+import { initPasswordGate } from './password-gate';
 
 // Default player names (can be overridden via URL params: ?p1=Name&p2=Name)
 const DEFAULT_P1_NAME = 'לוטם';
@@ -526,9 +527,11 @@ gameApp.onGameEnd = (score) => {
   showEndScreen(score);
 };
 
-// Initialize
-gameApp.init().then(() => {
-  loadPreferences();
-  setupUI();
-  loadHighScores();
+// Initialize with password protection
+initPasswordGate().then(() => {
+  gameApp.init().then(() => {
+    loadPreferences();
+    setupUI();
+    loadHighScores();
+  });
 });

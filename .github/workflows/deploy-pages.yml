@@ -36,7 +36,14 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npm run build
+        env:
+          SITE_PASSWORD_HASH: ${{ secrets.SITE_PASSWORD && hashFiles('.github/workflows/deploy-pages.yml') != '' && '' || '' }}
+        run: |
+          # Hash the password using SHA-256
+          if [ -n "${{ secrets.SITE_PASSWORD }}" ]; then
+            export SITE_PASSWORD_HASH=$(echo -n "${{ secrets.SITE_PASSWORD }}" | tr '[:upper:]' '[:lower:]' | sha256sum | cut -d' ' -f1)
+          fi
+          npm run build
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
