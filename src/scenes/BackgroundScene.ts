@@ -223,7 +223,8 @@ export class BackgroundScene extends Container {
     const sunX = this.screenWidth - 120;
     const sunY = 100;
     const sunRadius = 50;
-    const pulse = Math.sin(this.animationTime * 0.03) * 0.15 + 1;
+    const excitement = this.systems.getExcitement();
+    const pulse = Math.sin(this.animationTime * 0.03) * (0.15 + excitement * 0.08) + 1;
 
     const sunGraphics = new Graphics();
 
@@ -274,7 +275,7 @@ export class BackgroundScene extends Container {
         sunGraphics.lineTo(x2, y2);
         sunGraphics.lineTo(x1 + px, y1 + py);
         sunGraphics.closePath();
-        sunGraphics.fill({ color: 0xfff5b4, alpha: 0.35 });
+        sunGraphics.fill({ color: 0xfff5b4, alpha: 0.35 + excitement * 0.15 });
       }
 
       // Kawaii face - use separate Graphics for strokes
@@ -291,9 +292,9 @@ export class BackgroundScene extends Container {
 
       // Rosy cheeks
       sunGraphics.circle(sunX - 28, sunY + 8, 6);
-      sunGraphics.fill({ color: 0xff9696, alpha: 0.4 });
+      sunGraphics.fill({ color: 0xff9696, alpha: 0.4 + excitement * 0.2 });
       sunGraphics.circle(sunX + 28, sunY + 8, 6);
-      sunGraphics.fill({ color: 0xff9696, alpha: 0.4 });
+      sunGraphics.fill({ color: 0xff9696, alpha: 0.4 + excitement * 0.2 });
 
       // Smile - add to faceGraphics
       faceGraphics.arc(sunX, sunY + 8, 12, Math.PI * 0.15, Math.PI * 0.85);

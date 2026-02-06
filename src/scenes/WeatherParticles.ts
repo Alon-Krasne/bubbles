@@ -53,6 +53,7 @@ export class WeatherParticles extends Container {
   private screenHeight = 600;
   private animationTime = 0;
   private windStrength = 0.5;
+  private excitement = 0;
 
   constructor() {
     super();
@@ -106,6 +107,10 @@ export class WeatherParticles extends Container {
 
   setWindStrength(strength: number) {
     this.windStrength = Math.max(0, Math.min(1.2, strength));
+  }
+
+  setExcitement(value: number) {
+    this.excitement = Math.max(0, Math.min(1, value));
   }
 
   private initAmbientParticles() {
@@ -285,7 +290,8 @@ export class WeatherParticles extends Container {
       } else {
         // Ambient particle - fade in
         if (p.alpha < p.targetAlpha) {
-          p.alpha = Math.min(p.alpha + 0.02 * deltaTime, p.targetAlpha);
+          const fadeInSpeed = 0.02 + this.excitement * 0.01;
+          p.alpha = Math.min(p.alpha + fadeInSpeed * deltaTime, p.targetAlpha);
         }
       }
 
@@ -385,12 +391,13 @@ export class WeatherParticles extends Container {
 
       // Draw glow effect first (behind particle)
       if (glow) {
-        let glowAlpha = p.alpha * 0.46;
+        const excitementBoost = 1 + this.excitement * 0.5;
+        let glowAlpha = p.alpha * 0.46 * excitementBoost;
         if (pulseGlow) {
           glowAlpha *= 0.6 + Math.sin(this.animationTime * 0.05 + p.glowPulseOffset) * 0.4;
         }
-        this.graphics.circle(p.x, p.y, p.size * 3.2);
-        this.graphics.fill({ color: p.color, alpha: glowAlpha });
+        this.graphics.circle(p.x, p.y, p.size * (3.2 + this.excitement * 1.1));
+        this.graphics.fill({ color: p.color, alpha: Math.min(1, glowAlpha) });
       }
 
       // Draw particle shape
