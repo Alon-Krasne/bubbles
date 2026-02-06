@@ -3,6 +3,8 @@ import { GROUND_HEIGHT } from '../game/config';
 import { getTheme, ThemeDefinition } from '../game/themes';
 import { BackgroundSystem, QualityTier } from '../systems/background/BackgroundSystem';
 import { Cloud } from '../systems/background/CloudLayerSystem';
+import { IntroSequenceController } from '../systems/background/IntroSequenceController';
+import { IntroEffectRenderer } from './background/IntroEffectRenderer';
 
 export class BackgroundScene extends Container {
   private skyGraphics: Graphics;
@@ -15,12 +17,9 @@ export class BackgroundScene extends Container {
   private clouds: Cloud[] = [];
   private animationTime = 0;
 
-  private introActive = false;
-  private introElapsed = 0;
-  private introDuration = 140;
-  private introOnComplete: (() => void) | null = null;
-
   private readonly systems: BackgroundSystem;
+  private readonly introController = new IntroSequenceController();
+  private readonly introRenderer: IntroEffectRenderer;
   private currentTheme: ThemeDefinition;
   private screenWidth = 800;
   private screenHeight = 600;
@@ -48,6 +47,7 @@ export class BackgroundScene extends Container {
 
     this.introContainer = new Container();
     this.addChild(this.introContainer);
+    this.introRenderer = new IntroEffectRenderer(this.introContainer);
 
     this.applyDevToggles();
   }
@@ -116,33 +116,21 @@ export class BackgroundScene extends Container {
   }
 
   startIntro(onComplete: () => void) {
-    this.introActive = true;
-    this.introElapsed = 0;
-    this.introOnComplete = onComplete;
+    this.introController.start(onComplete);
   }
 
   skipIntro() {
-    if (!this.introActive) return;
-
-    this.introElapsed = this.introDuration;
-    this.finishIntro();
+    this.introController.skip();
   }
 
   isIntroPlaying(): boolean {
-    return this.introActive;
+    return this.introController.isPlaying();
   }
 
   update(deltaTime: number) {
     this.animationTime += deltaTime;
     this.systems.update(this.clouds, deltaTime, this.screenWidth, this.screenHeight);
-
-    if (this.introActive) {
-      this.introElapsed += deltaTime;
-      if (this.introElapsed >= this.introDuration) {
-        this.finishIntro();
-      }
-    }
-
+    this.introController.update(deltaTime);
     this.draw();
   }
 
@@ -390,62 +378,17 @@ export class BackgroundScene extends Container {
   }
 
   private drawIntroEffects() {
-    this.introContainer.removeChildren();
-
-    if (!this.introActive) return;
-
-    const progress = Math.max(0, Math.min(1, this.introElapsed / this.introDuration));
-    const cometGraphics = new Graphics();
-
-    const startX = this.screenWidth + 120;
-    const endX = this.screenWidth * 0.45;
-    const startY = -80;
-    const endY = this.screenHeight * 0.28;
-
-    const cometX = startX + (endX - startX) * progress;
-    const cometY = startY + (endY - startY) * progress;
-    const trailCount = 7;
-
-    for (let i = 0; i < trailCount; i++) {
-      const t = i / trailCount;
-      const tx = cometX + t * 140;
-      const ty = cometY - t * 70;
-      const alpha = (1 - t) * 0.22;
-      cometGraphics.circle(tx, ty, 16 - t * 12);
-      cometGraphics.fill({ color: 0xfff8dd, alpha });
+    if (!this.introController.isPlaying()) {
+      this.introRenderer.clear();
+      return;
     }
 
-    cometGraphics.circle(cometX, cometY, 16);
-    cometGraphics.fill({ color: 0xffffff, alpha: 0.95 });
-    cometGraphics.circle(cometX, cometY, 28);
-    cometGraphics.fill({ color: 0xffe3ff, alpha: 0.4 });
-
-    if (progress > 0.72) {
-      const landing = (progress - 0.72) / 0.28;
-      const pulse = 1 + Math.sin(this.animationTime * 0.25) * 0.1;
-      const centerX = this.screenWidth * 0.5;
-      const centerY = this.screenHeight - GROUND_HEIGHT - 22;
-
-      cometGraphics.circle(centerX, centerY, 40 * landing * pulse);
-      cometGraphics.fill({ color: 0xfff7c7, alpha: 0.35 * (1 - landing * 0.4) });
-
-      cometGraphics.circle(centerX, centerY, 20 * landing);
-      cometGraphics.fill({ color: 0xffffff, alpha: 0.45 * (1 - landing * 0.5) });
-    }
-
-    this.introContainer.addChild(cometGraphics);
-  }
-
-  private finishIntro() {
-    this.introActive = false;
-    this.introElapsed = 0;
-    this.introContainer.removeChildren();
-
-    if (!this.introOnComplete) return;
-
-    const onComplete = this.introOnComplete;
-    this.introOnComplete = null;
-    onComplete();
+    this.introRenderer.render(
+      this.introController.getProgress(),
+      this.animationTime,
+      this.screenWidth,
+      this.screenHeight
+    );
   }
 
   private lerpColor(c1: number, c2: number, t: number): number {
