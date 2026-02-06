@@ -192,17 +192,18 @@ export class BackgroundScene extends Container {
     this.atmosphereGraphics.clear();
 
     if (this.currentTheme.hasImage) return;
-
     const skyHeight = this.screenHeight - GROUND_HEIGHT;
     const windStrength = this.systems.getWindStrength();
     const excitement = this.systems.getExcitement();
+    const mood = this.currentTheme.mood?.atmosphere ?? 1;
+    const excitementScale = this.currentTheme.mood?.excitement ?? 1;
     const breath = 0.5 + Math.sin(this.animationTime * 0.012) * 0.5;
 
-    const topGlowAlpha = 0.04 + breath * 0.03 + excitement * 0.05;
+    const topGlowAlpha = (0.04 + breath * 0.03 + excitement * 0.05 * excitementScale) * mood;
     this.atmosphereGraphics.circle(this.screenWidth * 0.78, 90, 180 + windStrength * 40);
     this.atmosphereGraphics.fill({ color: this.currentTheme.isDark ? 0xc9dcff : 0xfff6d9, alpha: topGlowAlpha });
 
-    const horizonAlpha = 0.05 + windStrength * 0.04 + breath * 0.03 + excitement * 0.05;
+    const horizonAlpha = (0.05 + windStrength * 0.04 + breath * 0.03 + excitement * 0.05 * excitementScale) * mood;
     const strips = 10;
     for (let i = 0; i < strips; i++) {
       const t = i / strips;
@@ -313,7 +314,8 @@ export class BackgroundScene extends Container {
     const cloudGraphics = new Graphics();
 
     const layerAlpha = [0.78, 0.9, 1.05] as const;
-    const windPulse = 0.94 + Math.sin(this.animationTime * 0.01) * 0.06;
+    const cloudMood = this.currentTheme.mood?.clouds ?? 1;
+    const windPulse = (0.94 + Math.sin(this.animationTime * 0.01) * 0.06) * cloudMood;
 
     this.clouds.forEach((cloud) => {
       const cx = cloud.x;
