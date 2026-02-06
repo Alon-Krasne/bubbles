@@ -1,11 +1,22 @@
-import { Container, Graphics } from 'pixi.js';
+import { Container, Graphics, Text } from 'pixi.js';
 import { GROUND_HEIGHT } from '../../game/config';
 
 export class IntroEffectRenderer {
   private readonly graphics = new Graphics();
+  private readonly skipHint = new Text({
+    text: 'לחצו על כל מקש כדי לדלג',
+    style: {
+      fontFamily: 'Rubik, Assistant, Arial, sans-serif',
+      fontSize: 16,
+      fill: 0xffffff,
+      stroke: { color: 0x2d3436, width: 3 },
+    },
+  });
 
   constructor(parent: Container) {
+    this.skipHint.anchor.set(0.5);
     parent.addChild(this.graphics);
+    parent.addChild(this.skipHint);
   }
 
   render(progress: number, animationTime: number, screenWidth: number, screenHeight: number) {
@@ -15,14 +26,19 @@ export class IntroEffectRenderer {
     this.drawCometTrail(comet.x, comet.y);
     this.drawCometHead(comet.x, comet.y);
 
-    if (progress <= 0.72) return;
+    if (progress > 0.72) {
+      const landing = (progress - 0.72) / 0.28;
+      this.drawLandingBurst(landing, animationTime, screenWidth, screenHeight);
+    }
 
-    const landing = (progress - 0.72) / 0.28;
-    this.drawLandingBurst(landing, animationTime, screenWidth, screenHeight);
+    this.skipHint.x = screenWidth * 0.5;
+    this.skipHint.y = screenHeight - 42;
+    this.skipHint.alpha = 0.35 + Math.sin(animationTime * 0.08) * 0.2;
   }
 
   clear() {
     this.graphics.clear();
+    this.skipHint.alpha = 0;
   }
 
   private getCometPosition(progress: number, screenWidth: number, screenHeight: number) {
