@@ -85,6 +85,8 @@ export class BackgroundSystem {
   }
 
   burstAt(x: number, y: number) {
+    this.windController.triggerGust();
+
     if (!this.toggles.particles) return;
     this.ambientParticleSystem.burst(x, y);
   }
