@@ -124,7 +124,7 @@ export class BackgroundScene extends Container {
 
   startIntro(onComplete: () => void) {
     this.introSettlingFrames = 0;
-    this.introRenderer.setVariant(Math.random() > 0.5 ? 1 : 0);
+    this.introRenderer.setVariant(Math.floor(Math.random() * 3) as 0 | 1 | 2);
 
     this.introController.start(() => {
       this.introSettlingFrames = this.introSettlingDuration;
@@ -465,8 +465,8 @@ export class BackgroundScene extends Container {
   }
 
   // Burst weather particles at a position (called when bubble is caught)
-  burstAt(x: number, y: number) {
-    this.systems.burstAt(x, y);
+  burstAt(x: number, y: number, intensity = 1) {
+    this.systems.burstAt(x, y, intensity);
   }
 
   getWeatherParticleCount(): number {

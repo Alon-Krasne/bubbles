@@ -3,7 +3,14 @@ import { GROUND_HEIGHT } from '../../game/config';
 
 export class IntroEffectRenderer {
   private readonly graphics = new Graphics();
-  private variant: 0 | 1 = 0;
+  private variant: 0 | 1 | 2 = 0;
+  private readonly unicorn = new Text({
+    text: '🦄',
+    style: {
+      fontFamily: 'Segoe UI Emoji, Apple Color Emoji, Rubik, sans-serif',
+      fontSize: 44,
+    },
+  });
   private readonly skipHint = new Text({
     text: 'לחצו על כל מקש כדי לדלג',
     style: {
@@ -16,24 +23,32 @@ export class IntroEffectRenderer {
 
   constructor(parent: Container) {
     this.skipHint.anchor.set(0.5);
+    this.unicorn.anchor.set(0.5);
+    this.unicorn.alpha = 0;
     parent.addChild(this.graphics);
+    parent.addChild(this.unicorn);
     parent.addChild(this.skipHint);
   }
 
-  setVariant(variant: 0 | 1) {
+  setVariant(variant: 0 | 1 | 2) {
     this.variant = variant;
   }
 
   render(progress: number, animationTime: number, screenWidth: number, screenHeight: number) {
     this.graphics.clear();
 
-    const comet = this.getCometPosition(progress, screenWidth, screenHeight);
-    this.drawCometTrail(comet.x, comet.y);
-    this.drawCometHead(comet.x, comet.y);
+    if (this.variant === 2) {
+      this.renderUnicornFlyby(progress, animationTime, screenWidth, screenHeight);
+    } else {
+      this.unicorn.alpha = 0;
+      const comet = this.getCometPosition(progress, screenWidth, screenHeight);
+      this.drawCometTrail(comet.x, comet.y);
+      this.drawCometHead(comet.x, comet.y);
 
-    if (progress > 0.72) {
-      const landing = (progress - 0.72) / 0.28;
-      this.drawLandingBurst(landing, animationTime, screenWidth, screenHeight);
+      if (progress > 0.72) {
+        const landing = (progress - 0.72) / 0.28;
+        this.drawLandingBurst(landing, animationTime, screenWidth, screenHeight);
+      }
     }
 
     this.skipHint.x = screenWidth * 0.5;
@@ -43,6 +58,7 @@ export class IntroEffectRenderer {
 
   renderSettlingPulse(progress: number, animationTime: number, screenWidth: number, screenHeight: number) {
     this.graphics.clear();
+    this.unicorn.alpha = 0;
     this.skipHint.alpha = 0;
 
     const centerX = screenWidth * 0.5;
@@ -56,7 +72,39 @@ export class IntroEffectRenderer {
 
   clear() {
     this.graphics.clear();
+    this.unicorn.alpha = 0;
     this.skipHint.alpha = 0;
+  }
+
+  private renderUnicornFlyby(progress: number, animationTime: number, screenWidth: number, screenHeight: number) {
+    const fromLeft = Math.sin(animationTime * 0.001) > -0.2;
+    const startX = fromLeft ? -100 : screenWidth + 100;
+    const endX = fromLeft ? screenWidth * 0.55 : screenWidth * 0.45;
+    const startY = screenHeight * 0.38;
+    const endY = screenHeight * 0.24;
+
+    const x = startX + (endX - startX) * progress;
+    const y = startY + (endY - startY) * progress + Math.sin(progress * Math.PI * 2) * 16;
+
+    for (let i = 0; i < 10; i++) {
+      const t = i / 10;
+      const tx = x + (fromLeft ? -1 : 1) * t * 95;
+      const ty = y + t * 18;
+      const alpha = (1 - t) * 0.2;
+
+      this.graphics.circle(tx, ty, 10 - t * 7);
+      this.graphics.fill({ color: 0xffecff, alpha });
+    }
+
+    this.unicorn.x = x;
+    this.unicorn.y = y;
+    this.unicorn.alpha = 0.8 + Math.sin(animationTime * 0.08) * 0.2;
+    this.unicorn.scale.set(0.95 + Math.sin(animationTime * 0.1) * 0.05);
+
+    if (progress > 0.68) {
+      const landing = (progress - 0.68) / 0.32;
+      this.drawLandingBurst(landing, animationTime, screenWidth, screenHeight);
+    }
   }
 
   private getCometPosition(progress: number, screenWidth: number, screenHeight: number) {

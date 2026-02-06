@@ -220,14 +220,15 @@ export class WeatherParticles extends Container {
   }
 
   // Burst effect when bubble is caught
-  burst(x: number, y: number) {
+  burst(x: number, y: number, intensity = 1) {
     if (!this.config) return;
 
+    const burstCount = Math.min(22, Math.max(8, Math.round(BURST_PARTICLE_COUNT * intensity)));
     let emitted = 0;
     const colors = this.config.colors;
     const shapes = Array.isArray(this.config.shape) ? this.config.shape : [this.config.shape];
 
-    for (let i = 0; i < this.particles.length && emitted < BURST_PARTICLE_COUNT; i++) {
+    for (let i = 0; i < this.particles.length && emitted < burstCount; i++) {
       const p = this.particles[i];
       if (!p.active || p.lifetime > 0) {
         // Reuse inactive or find burst slot
@@ -240,8 +241,8 @@ export class WeatherParticles extends Container {
         p.shape = shapes[Math.floor(Math.random() * shapes.length)];
 
         // Radial burst velocity
-        const angle = (emitted / BURST_PARTICLE_COUNT) * Math.PI * 2 + Math.random() * 0.3;
-        const speed = 3 + Math.random() * 4;
+        const angle = (emitted / burstCount) * Math.PI * 2 + Math.random() * 0.3;
+        const speed = 3 + Math.random() * (4 + intensity * 1.2);
         p.vx = Math.cos(angle) * speed;
         p.vy = Math.sin(angle) * speed;
 

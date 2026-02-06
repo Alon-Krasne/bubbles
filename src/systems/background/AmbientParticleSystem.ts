@@ -20,8 +20,8 @@ export class AmbientParticleSystem {
     this.particles.update(deltaTime);
   }
 
-  burst(x: number, y: number) {
-    this.particles.burst(x, y);
+  burst(x: number, y: number, intensity = 1) {
+    this.particles.burst(x, y, intensity);
   }
 
   getActiveCount(): number {

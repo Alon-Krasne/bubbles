@@ -91,12 +91,13 @@ export class BackgroundSystem {
     }
   }
 
-  burstAt(x: number, y: number) {
-    this.windController.triggerGust();
-    this.excitement = Math.min(1, this.excitement + 0.18);
+  burstAt(x: number, y: number, intensity = 1) {
+    const normalized = Math.max(0.6, Math.min(1.8, intensity));
+    this.windController.triggerGust(0.14 * normalized);
+    this.excitement = Math.min(1, this.excitement + 0.13 * normalized);
 
     if (!this.toggles.particles) return;
-    this.ambientParticleSystem.burst(x, y);
+    this.ambientParticleSystem.burst(x, y, normalized);
   }
 
   getParticleCount(): number {

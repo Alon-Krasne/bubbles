@@ -43,11 +43,12 @@ export class GameScene extends Container {
 
   private revealFramesRemaining = 0;
   private readonly revealDuration = 24;
+  private catchMoments: number[] = [];
 
   public score = 0;
 
   // Callback for weather particle burst on catch
-  public onBubbleCatch?: (x: number, y: number) => void;
+  public onBubbleCatch?: (x: number, y: number, intensity: number) => void;
 
   constructor() {
     super();
@@ -104,6 +105,7 @@ export class GameScene extends Container {
       PROFILE_BY_FIGURE[p1Config.figureType],
       PROFILE_BY_FIGURE[p2Config.figureType],
     ];
+    this.catchMoments = [];
   }
 
   setFallingItemsMode(mode: FallingItemMode) {
@@ -141,8 +143,8 @@ export class GameScene extends Container {
         if (dist < b.radius + c.charWidth / 2) {
           this.score++;
           this.particles.emitPoof(b.x, b.y, b.getHue());
-          // Trigger weather particle burst
-          this.onBubbleCatch?.(b.x, b.y);
+          const catchIntensity = this.registerCatchAndGetIntensity();
+          this.onBubbleCatch?.(b.x, b.y, catchIntensity);
           // Play celebrate animation on the catching character
           c.playCelebrate();
           b.destroy();
@@ -200,6 +202,17 @@ export class GameScene extends Container {
     });
   }
 
+  private registerCatchAndGetIntensity(): number {
+    this.catchMoments.push(this.animationTime);
+
+    const windowSize = 90;
+    const cutoff = this.animationTime - windowSize;
+    this.catchMoments = this.catchMoments.filter((moment) => moment >= cutoff);
+
+    const streakCount = this.catchMoments.length;
+    return Math.min(1.8, 1 + streakCount * 0.12);
+  }
+
   clear() {
     this.characters.forEach((c) => c.destroy());
     this.characters = [];
@@ -208,6 +221,7 @@ export class GameScene extends Container {
     this.movementTargets = [0, 0];
     this.movementCurrent = [0, 0];
     this.revealFramesRemaining = 0;
+    this.catchMoments = [];
   }
 
   getBubbleCount(): number {

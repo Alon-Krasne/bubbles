@@ -71,9 +71,9 @@ export class GameApp {
     this.gameScene = new GameScene();
     this.app.stage.addChild(this.gameScene);
 
-    // Wire up bubble catch to trigger weather particle burst
-    this.gameScene.onBubbleCatch = (x, y) => {
-      this.background?.burstAt(x, y);
+    // Wire up bubble catch to trigger reactive background burst
+    this.gameScene.onBubbleCatch = (x, y, intensity) => {
+      this.background?.burstAt(x, y, intensity);
     };
 
     // Dev overlay
