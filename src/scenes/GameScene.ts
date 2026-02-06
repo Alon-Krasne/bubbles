@@ -41,6 +41,9 @@ export class GameScene extends Container {
     PROFILE_BY_FIGURE.blob,
   ];
 
+  private revealFramesRemaining = 0;
+  private readonly revealDuration = 24;
+
   public score = 0;
 
   // Callback for weather particle burst on catch
@@ -88,6 +91,12 @@ export class GameScene extends Container {
     this.characters.push(p1, p2);
     this.addChild(p1);
     this.addChild(p2);
+
+    this.revealFramesRemaining = this.revealDuration;
+    this.characters.forEach((character) => {
+      character.alpha = 0;
+      character.scale.set(0.86);
+    });
 
     this.movementTargets = [0, 0];
     this.movementCurrent = [0, 0];
@@ -144,6 +153,7 @@ export class GameScene extends Container {
     }
 
     this.applyMovementSmoothing(deltaTime);
+    this.updateCharacterReveal(deltaTime);
 
     // Update characters
     this.characters.forEach((c) => {
@@ -175,6 +185,21 @@ export class GameScene extends Container {
     }
   }
 
+  private updateCharacterReveal(deltaTime: number) {
+    if (this.revealFramesRemaining <= 0) return;
+
+    this.revealFramesRemaining = Math.max(0, this.revealFramesRemaining - deltaTime);
+    const progress = 1 - this.revealFramesRemaining / this.revealDuration;
+    const eased = 1 - (1 - progress) * (1 - progress);
+
+    this.characters.forEach((character) => {
+      character.alpha = eased;
+      const settle = Math.sin(progress * Math.PI) * 0.04 * (1 - progress);
+      const pop = 0.86 + eased * 0.14 + settle;
+      character.scale.set(pop);
+    });
+  }
+
   clear() {
     this.characters.forEach((c) => c.destroy());
     this.characters = [];
@@ -182,6 +207,7 @@ export class GameScene extends Container {
     this.bubbles = [];
     this.movementTargets = [0, 0];
     this.movementCurrent = [0, 0];
+    this.revealFramesRemaining = 0;
   }
 
   getBubbleCount(): number {
