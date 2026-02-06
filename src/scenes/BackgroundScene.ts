@@ -8,6 +8,7 @@ import { IntroEffectRenderer } from './background/IntroEffectRenderer';
 
 export class BackgroundScene extends Container {
   private skyGraphics: Graphics;
+  private atmosphereGraphics: Graphics;
   private themeSprite: Sprite | null = null;
   private sunContainer: Container;
   private cloudsContainer: Container;
@@ -36,6 +37,9 @@ export class BackgroundScene extends Container {
     // Create layers in order (back to front)
     this.skyGraphics = new Graphics();
     this.addChild(this.skyGraphics);
+
+    this.atmosphereGraphics = new Graphics();
+    this.addChild(this.atmosphereGraphics);
 
     this.sunContainer = new Container();
     this.addChild(this.sunContainer);
@@ -149,6 +153,7 @@ export class BackgroundScene extends Container {
   private draw() {
     this.drawSky();
     this.positionThemeSprite();
+    this.drawAtmosphere();
     this.drawSun();
     this.drawClouds();
     this.drawGrass();
@@ -178,6 +183,31 @@ export class BackgroundScene extends Container {
 
       this.skyGraphics.rect(0, y, this.screenWidth, h);
       this.skyGraphics.fill(color);
+    }
+  }
+
+  private drawAtmosphere() {
+    this.atmosphereGraphics.clear();
+
+    if (this.currentTheme.hasImage) return;
+
+    const skyHeight = this.screenHeight - GROUND_HEIGHT;
+    const windStrength = this.systems.getWindStrength();
+    const breath = 0.5 + Math.sin(this.animationTime * 0.012) * 0.5;
+
+    const topGlowAlpha = 0.04 + breath * 0.03;
+    this.atmosphereGraphics.circle(this.screenWidth * 0.78, 90, 180 + windStrength * 40);
+    this.atmosphereGraphics.fill({ color: this.currentTheme.isDark ? 0xc9dcff : 0xfff6d9, alpha: topGlowAlpha });
+
+    const horizonAlpha = 0.05 + windStrength * 0.04 + breath * 0.03;
+    const strips = 10;
+    for (let i = 0; i < strips; i++) {
+      const t = i / strips;
+      const y = skyHeight * (0.72 + t * 0.28);
+      const h = (skyHeight * 0.28) / strips + 1;
+      const alpha = horizonAlpha * (1 - t) * 0.9;
+      this.atmosphereGraphics.rect(0, y, this.screenWidth, h);
+      this.atmosphereGraphics.fill({ color: this.currentTheme.isDark ? 0xb3c8ff : 0xfff0d4, alpha });
     }
   }
 
@@ -278,23 +308,29 @@ export class BackgroundScene extends Container {
 
     const cloudGraphics = new Graphics();
 
+    const layerAlpha = [0.78, 0.9, 1.05] as const;
+    const windPulse = 0.94 + Math.sin(this.animationTime * 0.01) * 0.06;
+
     this.clouds.forEach((cloud) => {
       const cx = cloud.x;
       const bobY = cloud.y + this.systems.cloudSystem.getBobbingOffset(cloud);
       const s = cloud.size;
+      const alpha = cloud.opacity * layerAlpha[cloud.layer] * windPulse;
 
-      // Simplified cloud shape using circles
+      cloudGraphics.circle(cx, bobY + s * 0.1, s * 0.42);
+      cloudGraphics.fill({ color: 0xdde7ff, alpha: alpha * 0.2 });
+
       cloudGraphics.circle(cx, bobY, s * 0.4);
-      cloudGraphics.fill({ color: 0xffffff, alpha: cloud.opacity });
+      cloudGraphics.fill({ color: 0xffffff, alpha });
 
       cloudGraphics.circle(cx + s * 0.3, bobY - s * 0.1, s * 0.35);
-      cloudGraphics.fill({ color: 0xffffff, alpha: cloud.opacity });
+      cloudGraphics.fill({ color: 0xffffff, alpha });
 
       cloudGraphics.circle(cx + s * 0.6, bobY, s * 0.3);
-      cloudGraphics.fill({ color: 0xffffff, alpha: cloud.opacity });
+      cloudGraphics.fill({ color: 0xffffff, alpha });
 
       cloudGraphics.circle(cx - s * 0.25, bobY + s * 0.05, s * 0.25);
-      cloudGraphics.fill({ color: 0xffffff, alpha: cloud.opacity });
+      cloudGraphics.fill({ color: 0xffffff, alpha });
     });
 
     this.cloudsContainer.addChild(cloudGraphics);
