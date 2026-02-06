@@ -98,11 +98,15 @@ export class GameApp {
 
     window.addEventListener('keydown', (e) => {
       keys[e.code] = true;
-      // Only prevent default during gameplay
-      if (this.state.phase === 'PLAYING') {
-        if (['KeyA', 'KeyD', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
-          e.preventDefault();
-        }
+
+      if (this.state.phase === 'INTRO') {
+        this.background?.skipIntro();
+        e.preventDefault();
+        return;
+      }
+
+      if (this.state.phase === 'PLAYING' && ['KeyA', 'KeyD', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+        e.preventDefault();
       }
     });
 
@@ -199,28 +203,39 @@ export class GameApp {
   startGame(p1Config: PlayerConfig, p2Config: PlayerConfig, duration: number) {
     if (!this.gameScene) return;
 
-    this.state.setPhase('PLAYING');
-    this.state.score = 0;
-    this.state.timeLeft = duration;
-
-    this.gameScene.startGame(p1Config, p2Config);
-
-    // Start timer
     if (this.gameTimer) {
       clearInterval(this.gameTimer);
+      this.gameTimer = null;
     }
 
-    this.gameTimer = window.setInterval(() => {
-      this.state.timeLeft--;
-      this.onTimeChange?.(this.state.timeLeft);
-
-      if (this.state.timeLeft <= 0) {
-        this.endGame();
-      }
-    }, 1000);
-
+    this.state.score = 0;
+    this.state.timeLeft = duration;
+    this.state.setPhase('INTRO');
     this.onScoreChange?.(0);
     this.onTimeChange?.(duration);
+
+    const beginPlaying = () => {
+      if (!this.gameScene) return;
+
+      this.state.setPhase('PLAYING');
+      this.gameScene.startGame(p1Config, p2Config);
+
+      this.gameTimer = window.setInterval(() => {
+        this.state.timeLeft--;
+        this.onTimeChange?.(this.state.timeLeft);
+
+        if (this.state.timeLeft <= 0) {
+          this.endGame();
+        }
+      }, 1000);
+    };
+
+    if (!this.background) {
+      beginPlaying();
+      return;
+    }
+
+    this.background.startIntro(beginPlaying);
   }
 
   endGame() {
@@ -229,6 +244,7 @@ export class GameApp {
       this.gameTimer = null;
     }
 
+    this.background?.skipIntro();
     this.state.setPhase('END');
     this.gameScene?.clear();
     this.onGameEnd?.(this.state.score);
@@ -240,6 +256,7 @@ export class GameApp {
       this.gameTimer = null;
     }
 
+    this.background?.skipIntro();
     this.state.setPhase('START');
     this.gameScene?.clear();
   }

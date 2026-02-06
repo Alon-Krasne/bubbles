@@ -1,4 +1,4 @@
-export type GamePhase = 'START' | 'PLAYING' | 'END';
+export type GamePhase = 'START' | 'INTRO' | 'PLAYING' | 'END';
 
 export class GameState {
   phase: GamePhase = 'START';
