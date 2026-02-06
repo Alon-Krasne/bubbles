@@ -18,11 +18,11 @@ interface MovementProfile {
 }
 
 const PROFILE_BY_FIGURE: Record<FigureType, MovementProfile> = {
-  blob: { accel: 0.12, decel: 0.2 },
-  unicorn: { accel: 0.1, decel: 0.18 },
-  dinosaur: { accel: 0.16, decel: 0.24 },
-  puppy: { accel: 0.14, decel: 0.2 },
-  princess: { accel: 0.11, decel: 0.19 },
+  blob: { accel: 0.065, decel: 0.1 },
+  unicorn: { accel: 0.055, decel: 0.09 },
+  dinosaur: { accel: 0.08, decel: 0.12 },
+  puppy: { accel: 0.07, decel: 0.1 },
+  princess: { accel: 0.06, decel: 0.095 },
 };
 
 export class GameScene extends Container {
@@ -144,6 +144,11 @@ export class GameScene extends Container {
         if (dist < b.radius + c.charWidth / 2) {
           this.score++;
           this.particles.emitPoof(b.x, b.y, b.getHue());
+          this.particles.emitCelebrationSparkles(
+            c.x + c.charWidth / 2,
+            c.y + c.charHeight * 0.35,
+            c.getColorHue()
+          );
           const catchResult = this.registerCatchAndGetIntensity();
           this.onBubbleCatch?.(b.x, b.y, catchResult.intensity);
           // Play celebrate animation on the catching character

@@ -5,8 +5,9 @@ import { FallingItemMode } from './entities/Bubble';
 
 // Version badge
 const versionBadge = document.getElementById('version-badge');
+const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0';
 if (versionBadge) {
-  versionBadge.textContent = `v${__APP_VERSION__}`;
+  versionBadge.textContent = `v${appVersion}`;
 }
 
 // Initialize game
@@ -258,60 +259,105 @@ function setupWorldCarousel() {
 
   if (!track || !viewport) return;
 
-  const realCards = Array.from(track.querySelectorAll('.carousel-card')) as HTMLElement[];
-  if (realCards.length === 0) return;
+  const originalCards = Array.from(track.querySelectorAll('.carousel-card')) as HTMLElement[];
+  if (originalCards.length === 0) return;
 
-  const cloneFirst = realCards[0].cloneNode(true) as HTMLElement;
-  const cloneLast = realCards[realCards.length - 1].cloneNode(true) as HTMLElement;
-  cloneFirst.dataset.clone = '1';
-  cloneLast.dataset.clone = '1';
+  const totalOriginal = originalCards.length;
+  const themes = originalCards.map((card) => card.dataset.theme || 'classic');
 
-  track.prepend(cloneLast);
-  track.append(cloneFirst);
+  // Clone enough cards on each side so the looping is seamless.
+  // We need at least ceil(viewportWidth / cardWidth / 2) + 1 clones per side.
+  // With 8 themes at ~125px cards in a ~800px viewport, 3 clones per side is safe.
+  const CLONES_PER_SIDE = 3;
+
+  // Prepend in reverse so they end up in correct order: [..., n-3, n-2, n-1]
+  for (let i = CLONES_PER_SIDE - 1; i >= 0; i--) {
+    const idx = ((totalOriginal - CLONES_PER_SIDE + i) % totalOriginal + totalOriginal) % totalOriginal;
+    const clone = originalCards[idx].cloneNode(true) as HTMLElement;
+    clone.classList.add('carousel-clone');
+    clone.dataset.cloneOf = String(idx);
+    track.prepend(clone);
+  }
+  for (let i = 0; i < CLONES_PER_SIDE; i++) {
+    const idx = i % totalOriginal;
+    const clone = originalCards[idx].cloneNode(true) as HTMLElement;
+    clone.classList.add('carousel-clone');
+    clone.dataset.cloneOf = String(idx);
+    track.append(clone);
+  }
 
   const allCards = Array.from(track.querySelectorAll('.carousel-card')) as HTMLElement[];
-  const themes = realCards.map((card) => card.dataset.theme || 'classic');
 
-  let currentIndex = 0;
-  let displayIndex = 1;
+  // Position tracks from the first real card (index = CLONES_PER_SIDE)
+  let currentPosition = CLONES_PER_SIDE; // index into allCards
   let isAnimating = false;
   let touchStartX = 0;
   let touchEndX = 0;
   let previewTimeout: number | null = null;
+  const ANIM_DURATION = 380;
 
   const savedTheme = localStorage.getItem('bubble_background_theme');
   if (savedTheme) {
-    const savedIndex = themes.indexOf(savedTheme);
-    if (savedIndex !== -1) {
-      currentIndex = savedIndex;
-      displayIndex = currentIndex + 1;
+    const savedIdx = themes.indexOf(savedTheme);
+    if (savedIdx !== -1) {
+      currentPosition = savedIdx + CLONES_PER_SIDE;
     }
   }
 
-  function updateTrackPosition(animate: boolean) {
+  function getRealIndex(): number {
+    return ((currentPosition - CLONES_PER_SIDE) % totalOriginal + totalOriginal) % totalOriginal;
+  }
+
+  function getCardMetrics() {
     const card = allCards[0];
     const cardWidth = card.offsetWidth;
     const gap = parseInt(getComputedStyle(track).gap) || 15;
     const viewportWidth = viewport.offsetWidth;
-    const startOffset = (viewportWidth - cardWidth) / 2;
-    const translateX = startOffset - displayIndex * (cardWidth + gap);
+    return { cardWidth, gap, viewportWidth, fullWidth: cardWidth + gap };
+  }
 
-    track.style.transition = animate ? 'transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94)' : 'none';
+  function updateTrackPosition(animate: boolean) {
+    const { cardWidth, viewportWidth, fullWidth } = getCardMetrics();
+    const startOffset = (viewportWidth - cardWidth) / 2;
+    const translateX = startOffset - currentPosition * fullWidth;
+
+    track.style.transition = animate
+      ? `transform ${ANIM_DURATION}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`
+      : 'none';
     track.style.transform = `translateX(${translateX}px)`;
   }
 
   function applySelectionState() {
-    realCards.forEach((card, index) => {
-      card.classList.toggle('active', index === currentIndex);
+    const realIdx = getRealIndex();
+
+    // Highlight matching cards (real + clones)
+    allCards.forEach((card) => {
+      const cloneOf = card.dataset.cloneOf;
+      const cardIdx = cloneOf != null ? parseInt(cloneOf) : originalCards.indexOf(card);
+      card.classList.toggle('active', cardIdx === realIdx);
     });
 
     dots.forEach((dot, index) => {
-      dot.classList.toggle('active', index === currentIndex);
+      dot.classList.toggle('active', index === realIdx);
     });
 
-    const theme = themes[currentIndex] || 'classic';
+    const theme = themes[realIdx] || 'classic';
     gameApp.setTheme(theme);
     localStorage.setItem('bubble_background_theme', theme);
+  }
+
+  function snapToRealRange() {
+    // If we've scrolled into clone territory, silently jump back to the real range
+    const minReal = CLONES_PER_SIDE;
+    const maxReal = CLONES_PER_SIDE + totalOriginal - 1;
+
+    if (currentPosition < minReal) {
+      currentPosition += totalOriginal;
+      updateTrackPosition(false);
+    } else if (currentPosition > maxReal) {
+      currentPosition -= totalOriginal;
+      updateTrackPosition(false);
+    }
   }
 
   function triggerMascotBounce() {
@@ -321,56 +367,42 @@ function setupWorldCarousel() {
       void (mascot as HTMLElement).offsetWidth;
       mascot.classList.add('bounce');
     });
-
     setTimeout(() => {
       mascots.forEach((mascot) => mascot.classList.remove('bounce'));
-    }, 600);
+    }, 500);
   }
 
-  function goToSlide(nextIndex: number) {
+  function goToPosition(newPos: number) {
     if (isAnimating) return;
-
     isAnimating = true;
-    currentIndex = ((nextIndex % realCards.length) + realCards.length) % realCards.length;
-    displayIndex = currentIndex + 1;
-
+    currentPosition = newPos;
     updateTrackPosition(true);
     applySelectionState();
     triggerMascotBounce();
+
+    setTimeout(() => {
+      snapToRealRange();
+      isAnimating = false;
+    }, ANIM_DURATION + 20);
   }
 
   function goNext() {
-    if (isAnimating) return;
-
-    isAnimating = true;
-    displayIndex += 1;
-    currentIndex = (currentIndex + 1) % realCards.length;
-
-    updateTrackPosition(true);
-    applySelectionState();
-    triggerMascotBounce();
+    goToPosition(currentPosition + 1);
   }
 
   function goPrev() {
-    if (isAnimating) return;
+    goToPosition(currentPosition - 1);
+  }
 
-    isAnimating = true;
-    displayIndex -= 1;
-    currentIndex = (currentIndex - 1 + realCards.length) % realCards.length;
-
-    updateTrackPosition(true);
-    applySelectionState();
-    triggerMascotBounce();
+  function goToSlide(realIdx: number) {
+    goToPosition(realIdx + CLONES_PER_SIDE);
   }
 
   function previewTheme(theme: string) {
-    if (previewTimeout) {
-      clearTimeout(previewTimeout);
-    }
-
+    if (previewTimeout) clearTimeout(previewTimeout);
     previewTimeout = window.setTimeout(() => {
       gameApp.setTheme(theme);
-    }, 120);
+    }, 150);
   }
 
   function cancelPreview() {
@@ -378,73 +410,45 @@ function setupWorldCarousel() {
       clearTimeout(previewTimeout);
       previewTimeout = null;
     }
-
-    const selectedTheme = themes[currentIndex] || 'classic';
-    gameApp.setTheme(selectedTheme);
+    gameApp.setTheme(themes[getRealIndex()] || 'classic');
   }
-
-  track.addEventListener('transitionend', () => {
-    if (displayIndex === 0) {
-      displayIndex = realCards.length;
-      updateTrackPosition(false);
-    } else if (displayIndex === realCards.length + 1) {
-      displayIndex = 1;
-      updateTrackPosition(false);
-    }
-
-    isAnimating = false;
-  });
 
   prevBtn?.addEventListener('click', goPrev);
   nextBtn?.addEventListener('click', goNext);
 
-  realCards.forEach((card, index) => {
+  allCards.forEach((card, index) => {
     card.addEventListener('click', () => {
-      goToSlide(index);
+      const cloneOf = card.dataset.cloneOf;
+      if (cloneOf != null) {
+        goToSlide(parseInt(cloneOf));
+      } else {
+        goToPosition(index);
+      }
     });
 
     card.addEventListener('mouseenter', () => {
-      const theme = card.dataset.theme || 'classic';
-      previewTheme(theme);
+      previewTheme(card.dataset.theme || 'classic');
     });
 
     card.addEventListener('mouseleave', cancelPreview);
   });
 
   dots.forEach((dot, index) => {
-    dot.addEventListener('click', () => {
-      goToSlide(index);
-    });
+    dot.addEventListener('click', () => goToSlide(index));
   });
 
-  viewport.addEventListener(
-    'touchstart',
-    (e) => {
-      touchStartX = e.touches[0].clientX;
-    },
-    { passive: true }
-  );
-
-  viewport.addEventListener(
-    'touchmove',
-    (e) => {
-      touchEndX = e.touches[0].clientX;
-    },
-    { passive: true }
-  );
-
+  viewport.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  viewport.addEventListener('touchmove', (e) => { touchEndX = e.touches[0].clientX; }, { passive: true });
   viewport.addEventListener('touchend', () => {
     const diff = touchStartX - touchEndX;
-    if (Math.abs(diff) < 50) return;
-
-    if (diff > 0) goPrev();
-    else goNext();
+    if (Math.abs(diff) > 50) {
+      diff > 0 ? goPrev() : goNext();
+    }
   });
 
   document.addEventListener('keydown', (e) => {
     if (!document.getElementById('start-screen')?.classList.contains('active')) return;
     if (document.activeElement?.tagName === 'INPUT') return;
-
     if (e.key === 'ArrowRight') goPrev();
     else if (e.key === 'ArrowLeft') goNext();
   });
