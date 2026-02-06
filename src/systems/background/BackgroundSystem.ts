@@ -31,6 +31,7 @@ export class BackgroundSystem {
   };
 
   private windStrength = 0.5;
+  private excitement = 0;
   private qualityTier: QualityTier = 'high';
   private baseWeatherConfig: WeatherConfig | null = null;
 
@@ -48,6 +49,10 @@ export class BackgroundSystem {
 
   getWindStrength(): number {
     return this.windStrength;
+  }
+
+  getExcitement(): number {
+    return this.excitement;
   }
 
   resize(width: number, height: number) {
@@ -69,7 +74,9 @@ export class BackgroundSystem {
   }
 
   update(clouds: Cloud[], deltaTime: number, screenWidth: number, screenHeight: number) {
-    this.windStrength = this.windController.update(deltaTime);
+    const baseWind = this.windController.update(deltaTime);
+    this.excitement = Math.max(0, this.excitement - 0.004 * deltaTime);
+    this.windStrength = Math.min(1.2, baseWind + this.excitement * 0.18);
 
     if (this.toggles.clouds) {
       this.cloudLayerSystem.update(clouds, deltaTime, screenWidth, screenHeight, this.windStrength);
@@ -86,6 +93,7 @@ export class BackgroundSystem {
 
   burstAt(x: number, y: number) {
     this.windController.triggerGust();
+    this.excitement = Math.min(1, this.excitement + 0.18);
 
     if (!this.toggles.particles) return;
     this.ambientParticleSystem.burst(x, y);

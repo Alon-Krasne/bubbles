@@ -195,13 +195,14 @@ export class BackgroundScene extends Container {
 
     const skyHeight = this.screenHeight - GROUND_HEIGHT;
     const windStrength = this.systems.getWindStrength();
+    const excitement = this.systems.getExcitement();
     const breath = 0.5 + Math.sin(this.animationTime * 0.012) * 0.5;
 
-    const topGlowAlpha = 0.04 + breath * 0.03;
+    const topGlowAlpha = 0.04 + breath * 0.03 + excitement * 0.05;
     this.atmosphereGraphics.circle(this.screenWidth * 0.78, 90, 180 + windStrength * 40);
     this.atmosphereGraphics.fill({ color: this.currentTheme.isDark ? 0xc9dcff : 0xfff6d9, alpha: topGlowAlpha });
 
-    const horizonAlpha = 0.05 + windStrength * 0.04 + breath * 0.03;
+    const horizonAlpha = 0.05 + windStrength * 0.04 + breath * 0.03 + excitement * 0.05;
     const strips = 10;
     for (let i = 0; i < strips; i++) {
       const t = i / strips;

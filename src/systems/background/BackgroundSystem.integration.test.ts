@@ -43,3 +43,19 @@ test('BackgroundSystem respects cloud toggle', () => {
 
   assert.equal(cloud.x, 100);
 });
+
+test('BackgroundSystem excitement increases on burst and decays over time', () => {
+  const system = new BackgroundSystem();
+
+  system.burstAt(100, 100);
+  const afterBurst = system.getExcitement();
+
+  for (let i = 0; i < 120; i++) {
+    system.update([], 1, 1200, 700);
+  }
+
+  const afterDecay = system.getExcitement();
+
+  assert.ok(afterBurst > 0);
+  assert.ok(afterDecay < afterBurst);
+});
