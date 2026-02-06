@@ -15,7 +15,8 @@ export class AmbientParticleSystem {
     this.particles.setConfig(config);
   }
 
-  update(deltaTime: number) {
+  update(deltaTime: number, windStrength: number) {
+    this.particles.setWindStrength(windStrength);
     this.particles.update(deltaTime);
   }
 

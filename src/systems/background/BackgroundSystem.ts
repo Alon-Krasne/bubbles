@@ -60,7 +60,7 @@ export class BackgroundSystem {
     }
 
     if (this.toggles.particles) {
-      this.ambientParticleSystem.update(deltaTime);
+      this.ambientParticleSystem.update(deltaTime, this.windStrength);
     }
   }
 

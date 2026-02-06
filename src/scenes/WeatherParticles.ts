@@ -51,6 +51,7 @@ export class WeatherParticles extends Container {
   private screenWidth = 800;
   private screenHeight = 600;
   private animationTime = 0;
+  private windStrength = 0.5;
 
   constructor() {
     super();
@@ -100,6 +101,10 @@ export class WeatherParticles extends Container {
   setConfig(config: WeatherConfig) {
     this.config = config;
     this.initAmbientParticles();
+  }
+
+  setWindStrength(strength: number) {
+    this.windStrength = Math.max(0, Math.min(1.2, strength));
   }
 
   private initAmbientParticles() {
@@ -310,43 +315,38 @@ export class WeatherParticles extends Container {
   private updateParticlePosition(p: WeatherParticle, deltaTime: number, dt: number) {
     if (!this.config) return;
 
+    const windDrift = (this.windStrength - 0.2) * 0.18 * deltaTime;
+
     switch (this.config.behavior) {
       case 'float-up':
-        p.x += p.vx * deltaTime;
+        p.x += p.vx * deltaTime + windDrift;
         p.y += p.vy * deltaTime;
-        // Gentle horizontal drift
         p.x += Math.sin(this.animationTime * 0.02 + p.wobbleOffset) * 0.3;
         break;
 
       case 'fall-down':
-        p.x += p.vx * deltaTime;
+        p.x += p.vx * deltaTime + windDrift * 1.2;
         p.y += p.vy * deltaTime;
-        // Sway side to side
         p.x += Math.sin(this.animationTime * 0.03 + p.wobbleOffset) * 0.5;
         break;
 
       case 'drift':
-        p.x += p.vx * deltaTime;
+        p.x += p.vx * deltaTime + windDrift * 1.3;
         p.y += p.vy * deltaTime;
-        // Slow vertical bob
         p.y += Math.sin(this.animationTime * 0.01 + p.wobbleOffset) * 0.2;
-        // Wrap horizontally
         if (p.x < -20) p.x = this.screenWidth + 20;
         if (p.x > this.screenWidth + 20) p.x = -20;
         break;
 
-      case 'wander':
-        // Firefly-like wandering
+      case 'wander': {
         p.wanderAngle += (Math.random() - 0.5) * 0.1 * deltaTime;
         const wanderSpeed = 0.3;
         p.vx += Math.cos(p.wanderAngle) * wanderSpeed * dt;
         p.vy += Math.sin(p.wanderAngle) * wanderSpeed * dt;
-        // Damping
         p.vx *= 0.98;
         p.vy *= 0.98;
-        p.x += p.vx * deltaTime;
+        p.x += p.vx * deltaTime + windDrift * 0.35;
         p.y += p.vy * deltaTime;
-        // Keep in bounds
         const margin = 50;
         const skyH = this.screenHeight - GROUND_HEIGHT;
         if (p.x < margin) p.vx += 0.1;
@@ -354,18 +354,19 @@ export class WeatherParticles extends Container {
         if (p.y < margin) p.vy += 0.1;
         if (p.y > skyH - margin) p.vy -= 0.1;
         break;
+      }
 
-      case 'spiral':
+      case 'spiral': {
         p.spiralAngle += 0.05 * deltaTime;
         const spiralRadius = 15 + Math.sin(p.age * 2) * 5;
-        p.x += Math.cos(p.spiralAngle) * spiralRadius * 0.05 * deltaTime;
+        p.x += Math.cos(p.spiralAngle) * spiralRadius * 0.05 * deltaTime + windDrift;
         p.y += p.vy * deltaTime;
         break;
+      }
 
       case 'rise-wobble':
         p.y += p.vy * deltaTime;
-        // Wobble side to side
-        p.x += Math.sin(this.animationTime * 0.04 + p.wobbleOffset) * 0.8;
+        p.x += Math.sin(this.animationTime * 0.04 + p.wobbleOffset) * 0.8 + windDrift;
         break;
     }
   }
