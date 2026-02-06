@@ -1,7 +1,7 @@
 import { Container, Graphics, Sprite, Assets } from 'pixi.js';
 import { GROUND_HEIGHT } from '../game/config';
 import { getTheme, ThemeDefinition } from '../game/themes';
-import { BackgroundSystem } from '../systems/background/BackgroundSystem';
+import { BackgroundSystem, QualityTier } from '../systems/background/BackgroundSystem';
 import { Cloud } from '../systems/background/CloudLayerSystem';
 
 export class BackgroundScene extends Container {
@@ -67,14 +67,20 @@ export class BackgroundScene extends Container {
     // Load theme background image if needed
     if (this.currentTheme.hasImage && this.currentTheme.imagePath) {
       this.loadThemeImage(this.currentTheme.imagePath);
-    } else {
-      if (this.themeSprite) {
-        this.themeSprite.visible = false;
-      }
+    } else if (this.themeSprite) {
+      this.themeSprite.visible = false;
     }
 
     this.systems.setWeatherConfig(this.currentTheme.weather);
     this.draw();
+  }
+
+  setQualityTier(tier: QualityTier) {
+    this.systems.setQualityTier(tier);
+  }
+
+  getQualityTier(): QualityTier {
+    return this.systems.getQualityTier();
   }
 
   private async loadThemeImage(path: string) {
@@ -478,5 +484,10 @@ export class BackgroundScene extends Container {
       grass: !disableGrass,
       particles: !disableParticles,
     });
+
+    const qualityParam = params.get('quality') ?? localStorage.getItem('bubble_quality');
+    if (qualityParam === 'high' || qualityParam === 'medium' || qualityParam === 'low') {
+      this.setQualityTier(qualityParam);
+    }
   }
 }

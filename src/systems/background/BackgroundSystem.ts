@@ -10,6 +10,14 @@ interface ToggleState {
   particles: boolean;
 }
 
+export type QualityTier = 'high' | 'medium' | 'low';
+
+const PARTICLE_QUALITY_MULTIPLIER: Record<QualityTier, number> = {
+  high: 1,
+  medium: 0.72,
+  low: 0.45,
+};
+
 export class BackgroundSystem {
   private readonly cloudLayerSystem = new CloudLayerSystem();
   private readonly grassSwaySystem = new GrassSwaySystem();
@@ -23,6 +31,8 @@ export class BackgroundSystem {
   };
 
   private windStrength = 0.5;
+  private qualityTier: QualityTier = 'high';
+  private baseWeatherConfig: WeatherConfig | null = null;
 
   get cloudSystem(): CloudLayerSystem {
     return this.cloudLayerSystem;
@@ -45,7 +55,17 @@ export class BackgroundSystem {
   }
 
   setWeatherConfig(config: WeatherConfig) {
-    this.ambientParticleSystem.setConfig(config);
+    this.baseWeatherConfig = config;
+    this.applyWeatherConfig();
+  }
+
+  setQualityTier(tier: QualityTier) {
+    this.qualityTier = tier;
+    this.applyWeatherConfig();
+  }
+
+  getQualityTier(): QualityTier {
+    return this.qualityTier;
   }
 
   update(clouds: Cloud[], deltaTime: number, screenWidth: number, screenHeight: number) {
@@ -75,5 +95,15 @@ export class BackgroundSystem {
 
   setToggles(next: Partial<ToggleState>) {
     this.toggles = { ...this.toggles, ...next };
+  }
+
+  private applyWeatherConfig() {
+    if (!this.baseWeatherConfig) return;
+
+    const multiplier = PARTICLE_QUALITY_MULTIPLIER[this.qualityTier];
+    this.ambientParticleSystem.setConfig({
+      ...this.baseWeatherConfig,
+      particleCount: Math.max(8, Math.round(this.baseWeatherConfig.particleCount * multiplier)),
+    });
   }
 }

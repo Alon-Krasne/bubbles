@@ -25,6 +25,8 @@ export class GameApp {
   private fpsFrames = 0;
   private fpsLastTime = 0;
   private fpsDisplay = 0;
+  private lowFpsWindows = 0;
+  private highFpsWindows = 0;
 
   async init() {
     // Check dev mode
@@ -188,14 +190,47 @@ export class GameApp {
       this.fpsDisplay = Math.round(this.fpsFrames / ((now - this.fpsLastTime) / 1000));
       this.fpsFrames = 0;
       this.fpsLastTime = now;
+      this.autoTuneQuality();
     }
 
     const bubbles = this.gameScene?.getBubbleCount() ?? 0;
     const particles = this.gameScene?.getParticleCount() ?? 0;
     const weather = this.background?.getWeatherParticleCount() ?? 0;
+    const quality = this.background?.getQualityTier() ?? 'high';
 
-    this.devOverlay!.text = `FPS: ${this.fpsDisplay}\nBubbles: ${bubbles}\nParticles: ${particles}\nWeather: ${weather}`;
+    this.devOverlay!.text = `FPS: ${this.fpsDisplay}\nQuality: ${quality}\nBubbles: ${bubbles}\nParticles: ${particles}\nWeather: ${weather}`;
     this.devOverlay!.style.fill = this.fpsDisplay >= 55 ? 0x4ade80 : this.fpsDisplay >= 30 ? 0xfbbf24 : 0xf87171;
+  }
+
+  private autoTuneQuality() {
+    if (!this.background) return;
+
+    const current = this.background.getQualityTier();
+
+    if (this.fpsDisplay < 42) {
+      this.lowFpsWindows++;
+      this.highFpsWindows = 0;
+    } else if (this.fpsDisplay > 56) {
+      this.highFpsWindows++;
+      this.lowFpsWindows = 0;
+    } else {
+      this.lowFpsWindows = 0;
+      this.highFpsWindows = 0;
+    }
+
+    if (this.lowFpsWindows >= 4) {
+      if (current === 'high') this.background.setQualityTier('medium');
+      if (current === 'medium') this.background.setQualityTier('low');
+      this.lowFpsWindows = 0;
+      return;
+    }
+
+    if (!this.devMode || this.highFpsWindows < 8) return;
+
+    if (current === 'low') this.background.setQualityTier('medium');
+    else if (current === 'medium') this.background.setQualityTier('high');
+
+    this.highFpsWindows = 0;
   }
 
   // Public API for UI integration
