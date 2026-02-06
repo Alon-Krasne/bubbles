@@ -29,12 +29,15 @@ export class GameApp {
   private lowFpsWindows = 0;
   private highFpsWindows = 0;
   private screenShake: ScreenShakeState = { framesRemaining: 0, magnitude: 0, x: 0, y: 0 };
+  private screenShakeEnabled = true;
 
   async init() {
     // Check dev mode
-    this.devMode =
-      new URLSearchParams(window.location.search).has('dev') ||
-      localStorage.getItem('bubble_dev_mode') === 'true';
+    const params = new URLSearchParams(window.location.search);
+    this.devMode = params.has('dev') || localStorage.getItem('bubble_dev_mode') === 'true';
+
+    const shakeParam = params.get('shake') ?? localStorage.getItem('bubble_screen_shake');
+    this.screenShakeEnabled = shakeParam !== '0';
 
     const app = new Application();
     await app.init({
@@ -76,6 +79,8 @@ export class GameApp {
     // Wire up bubble catch to trigger reactive background burst
     this.gameScene.onBubbleCatch = (x, y, intensity) => {
       this.background?.burstAt(x, y, intensity);
+
+      if (!this.screenShakeEnabled) return;
       this.screenShake = startScreenShake({ state: this.screenShake, intensity: intensity - 0.6 });
     };
 
@@ -119,6 +124,13 @@ export class GameApp {
 
       if (this.devMode && e.code === 'KeyE') {
         this.background?.burstAt(window.innerWidth * 0.5, window.innerHeight * 0.32, 1.6);
+        e.preventDefault();
+        return;
+      }
+
+      if (this.devMode && e.code === 'KeyS') {
+        this.screenShakeEnabled = !this.screenShakeEnabled;
+        localStorage.setItem('bubble_screen_shake', this.screenShakeEnabled ? '1' : '0');
         e.preventDefault();
         return;
       }
@@ -203,6 +215,13 @@ export class GameApp {
   private applyScreenShake(deltaTime: number) {
     if (!this.app) return;
 
+    if (!this.screenShakeEnabled) {
+      this.app.stage.x = 0;
+      this.app.stage.y = 0;
+      this.screenShake = { framesRemaining: 0, magnitude: 0, x: 0, y: 0 };
+      return;
+    }
+
     this.screenShake = stepScreenShake({ state: this.screenShake, deltaTime });
     this.app.stage.x = this.screenShake.x;
     this.app.stage.y = this.screenShake.y;
@@ -225,7 +244,7 @@ export class GameApp {
     const quality = this.background?.getQualityTier() ?? 'high';
     const excitement = this.background?.getExcitement() ?? 0;
 
-    this.devOverlay!.text = `FPS: ${this.fpsDisplay}\nQuality: ${quality}\nExcitement: ${excitement.toFixed(2)}\nBubbles: ${bubbles}\nParticles: ${particles}\nWeather: ${weather}`;
+    this.devOverlay!.text = `FPS: ${this.fpsDisplay}\nQuality: ${quality}\nShake: ${this.screenShakeEnabled ? 'on' : 'off'}\nExcitement: ${excitement.toFixed(2)}\nBubbles: ${bubbles}\nParticles: ${particles}\nWeather: ${weather}`;
     this.devOverlay!.style.fill = this.fpsDisplay >= 55 ? 0x4ade80 : this.fpsDisplay >= 30 ? 0xfbbf24 : 0xf87171;
   }
 

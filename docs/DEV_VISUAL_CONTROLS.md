@@ -12,6 +12,7 @@ Use these while tuning animations/background.
 ## Keyboard (dev mode)
 - `Q` — cycle quality tier (`high -> medium -> low -> high`)
 - `E` — trigger a strong manual background burst (for VFX tuning)
+- `S` — toggle screen shake on/off (dev)
 - Any key during intro — skip intro sequence
 
 ## Persisted localStorage keys
@@ -20,3 +21,4 @@ Use these while tuning animations/background.
 - `bubble_bg_clouds`
 - `bubble_bg_grass`
 - `bubble_bg_particles`
+- `bubble_screen_shake`
