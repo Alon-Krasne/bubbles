@@ -1,4 +1,4 @@
-import { Container, Text } from 'pixi.js';
+import { Container } from 'pixi.js';
 import { Character, FigureType } from '../entities/Character';
 import { Bubble, FallingItemMode } from '../entities/Bubble';
 import { ParticleSystem } from '../entities/Particle';
@@ -29,9 +29,6 @@ export class GameScene extends Container {
   private characters: Character[] = [];
   private bubbles: Bubble[] = [];
   private particles: ParticleSystem;
-  private comboText: Text;
-  private comboFramesRemaining = 0;
-  private comboTargetX = 0;
 
   private screenWidth = 800;
   private screenHeight = 600;
@@ -59,25 +56,11 @@ export class GameScene extends Container {
 
     this.particles = new ParticleSystem();
     this.addChild(this.particles);
-
-    this.comboText = new Text({
-      text: '',
-      style: {
-        fontFamily: 'Secular One, Rubik, Arial, sans-serif',
-        fontSize: 42,
-        fill: 0xfff7b0,
-        stroke: { color: 0x7a4d00, width: 5 },
-      },
-    });
-    this.comboText.anchor.set(0.5);
-    this.comboText.alpha = 0;
-    this.addChild(this.comboText);
   }
 
   resize(width: number, height: number) {
     this.screenWidth = width;
     this.screenHeight = height;
-    this.comboText.y = Math.min(160, this.screenHeight * 0.22);
   }
 
   startGame(p1Config: PlayerConfig, p2Config: PlayerConfig) {
@@ -163,10 +146,6 @@ export class GameScene extends Container {
           this.particles.emitPoof(b.x, b.y, b.getHue());
           const catchResult = this.registerCatchAndGetIntensity();
           this.onBubbleCatch?.(b.x, b.y, catchResult.intensity);
-
-          if (catchResult.streakCount >= 3) {
-            this.showCombo(catchResult.streakCount, b.x);
-          }
           // Play celebrate animation on the catching character
           c.playCelebrate();
           b.destroy();
@@ -178,7 +157,6 @@ export class GameScene extends Container {
 
     this.applyMovementSmoothing(deltaTime);
     this.updateCharacterReveal(deltaTime);
-    this.updateComboText(deltaTime);
 
     // Update characters
     this.characters.forEach((c) => {
@@ -235,32 +213,6 @@ export class GameScene extends Container {
     return result;
   }
 
-  private showCombo(streakCount: number, x: number) {
-    this.comboFramesRemaining = 44;
-    this.comboTargetX = x;
-    this.comboText.x = x;
-    this.comboText.y = Math.min(160, this.screenHeight * 0.22);
-    this.comboText.alpha = 1;
-    this.comboText.scale.set(0.75);
-    this.comboText.text = `קומבו x${streakCount}`;
-  }
-
-  private updateComboText(deltaTime: number) {
-    if (this.comboFramesRemaining <= 0) {
-      this.comboText.alpha = 0;
-      return;
-    }
-
-    this.comboFramesRemaining = Math.max(0, this.comboFramesRemaining - deltaTime);
-    const progress = 1 - this.comboFramesRemaining / 44;
-    const eased = 1 - (1 - progress) * (1 - progress);
-
-    this.comboText.x += (this.comboTargetX - this.comboText.x) * 0.12 * deltaTime;
-    this.comboText.y -= 0.24 * deltaTime;
-    this.comboText.alpha = Math.max(0, 1 - progress * 0.85);
-    this.comboText.scale.set(0.75 + eased * 0.45);
-  }
-
   clear() {
     this.characters.forEach((c) => c.destroy());
     this.characters = [];
@@ -270,8 +222,6 @@ export class GameScene extends Container {
     this.movementCurrent = [0, 0];
     this.revealFramesRemaining = 0;
     this.catchMoments = [];
-    this.comboFramesRemaining = 0;
-    this.comboText.alpha = 0;
   }
 
   getBubbleCount(): number {
