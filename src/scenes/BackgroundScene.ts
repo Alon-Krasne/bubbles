@@ -20,6 +20,9 @@ export class BackgroundScene extends Container {
   private readonly systems: BackgroundSystem;
   private readonly introController = new IntroSequenceController();
   private readonly introRenderer: IntroEffectRenderer;
+
+  private introSettlingFrames = 0;
+  private readonly introSettlingDuration = 42;
   private currentTheme: ThemeDefinition;
   private screenWidth = 800;
   private screenHeight = 600;
@@ -116,7 +119,11 @@ export class BackgroundScene extends Container {
   }
 
   startIntro(onComplete: () => void) {
-    this.introController.start(onComplete);
+    this.introSettlingFrames = 0;
+    this.introController.start(() => {
+      this.introSettlingFrames = this.introSettlingDuration;
+      onComplete();
+    });
   }
 
   skipIntro() {
@@ -131,6 +138,11 @@ export class BackgroundScene extends Container {
     this.animationTime += deltaTime;
     this.systems.update(this.clouds, deltaTime, this.screenWidth, this.screenHeight);
     this.introController.update(deltaTime);
+
+    if (this.introSettlingFrames > 0) {
+      this.introSettlingFrames = Math.max(0, this.introSettlingFrames - deltaTime);
+    }
+
     this.draw();
   }
 
@@ -378,17 +390,23 @@ export class BackgroundScene extends Container {
   }
 
   private drawIntroEffects() {
-    if (!this.introController.isPlaying()) {
-      this.introRenderer.clear();
+    if (this.introController.isPlaying()) {
+      this.introRenderer.render(
+        this.introController.getProgress(),
+        this.animationTime,
+        this.screenWidth,
+        this.screenHeight
+      );
       return;
     }
 
-    this.introRenderer.render(
-      this.introController.getProgress(),
-      this.animationTime,
-      this.screenWidth,
-      this.screenHeight
-    );
+    if (this.introSettlingFrames > 0) {
+      const progress = 1 - this.introSettlingFrames / this.introSettlingDuration;
+      this.introRenderer.renderSettlingPulse(progress, this.animationTime, this.screenWidth, this.screenHeight);
+      return;
+    }
+
+    this.introRenderer.clear();
   }
 
   private lerpColor(c1: number, c2: number, t: number): number {

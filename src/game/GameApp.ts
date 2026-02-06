@@ -103,6 +103,7 @@ export class GameApp {
 
       if (this.state.phase === 'INTRO') {
         this.background?.skipIntro();
+        keys[e.code] = false;
         e.preventDefault();
         return;
       }

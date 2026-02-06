@@ -36,6 +36,19 @@ export class IntroEffectRenderer {
     this.skipHint.alpha = 0.35 + Math.sin(animationTime * 0.08) * 0.2;
   }
 
+  renderSettlingPulse(progress: number, animationTime: number, screenWidth: number, screenHeight: number) {
+    this.graphics.clear();
+    this.skipHint.alpha = 0;
+
+    const centerX = screenWidth * 0.5;
+    const centerY = screenHeight - GROUND_HEIGHT - 22;
+    const alpha = Math.max(0, 0.26 * (1 - progress));
+    const radius = 26 + progress * 54 + Math.sin(animationTime * 0.15) * 2;
+
+    this.graphics.circle(centerX, centerY, radius);
+    this.graphics.fill({ color: 0xfff7c7, alpha });
+  }
+
   clear() {
     this.graphics.clear();
     this.skipHint.alpha = 0;
