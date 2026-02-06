@@ -412,11 +412,15 @@ export class WeatherParticles extends Container {
       case 'circle':
         g.circle(p.x, p.y, p.size);
         g.fill({ color: p.color, alpha: p.alpha });
+        g.circle(p.x - p.size * 0.25, p.y - p.size * 0.25, Math.max(0.8, p.size * 0.35));
+        g.fill({ color: 0xffffff, alpha: p.alpha * 0.35 });
         break;
 
       case 'star':
         g.star(p.x, p.y, 5, p.size, p.size * 0.5, p.rotation);
         g.fill({ color: p.color, alpha: p.alpha });
+        g.star(p.x, p.y, 5, p.size, p.size * 0.5, p.rotation);
+        g.stroke({ color: 0xffffff, alpha: p.alpha * 0.35, width: 1 });
         break;
 
       case 'heart':
