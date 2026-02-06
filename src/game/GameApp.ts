@@ -220,7 +220,7 @@ export class GameApp {
   }
 
   private autoTuneQuality() {
-    if (!this.background) return;
+    if (!this.background || this.state.phase !== 'PLAYING') return;
 
     const current = this.background.getQualityTier();
 
