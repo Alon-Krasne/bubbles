@@ -3,6 +3,7 @@ import { Character, FigureType } from '../entities/Character';
 import { Bubble, FallingItemMode } from '../entities/Bubble';
 import { ParticleSystem } from '../entities/Particle';
 import { BUBBLE_SPAWN_RATE } from '../game/config';
+import { registerCatchAndComputeIntensity } from './gameplay/catchIntensity';
 
 export interface PlayerConfig {
   name: string;
@@ -10,6 +11,19 @@ export interface PlayerConfig {
   figureType: FigureType;
   isGirl: boolean;
 }
+
+interface MovementProfile {
+  accel: number;
+  decel: number;
+}
+
+const PROFILE_BY_FIGURE: Record<FigureType, MovementProfile> = {
+  blob: { accel: 0.065, decel: 0.1 },
+  unicorn: { accel: 0.055, decel: 0.09 },
+  dinosaur: { accel: 0.08, decel: 0.12 },
+  puppy: { accel: 0.07, decel: 0.1 },
+  princess: { accel: 0.06, decel: 0.095 },
+};
 
 export class GameScene extends Container {
   private characters: Character[] = [];
@@ -21,10 +35,21 @@ export class GameScene extends Container {
   private animationTime = 0;
   private fallingItemsMode: FallingItemMode = 'bubbles';
 
+  private movementTargets = [0, 0];
+  private movementCurrent = [0, 0];
+  private movementProfiles: MovementProfile[] = [
+    PROFILE_BY_FIGURE.blob,
+    PROFILE_BY_FIGURE.blob,
+  ];
+
+  private revealFramesRemaining = 0;
+  private readonly revealDuration = 24;
+  private catchMoments: number[] = [];
+
   public score = 0;
 
   // Callback for weather particle burst on catch
-  public onBubbleCatch?: (x: number, y: number) => void;
+  public onBubbleCatch?: (x: number, y: number, intensity: number) => void;
 
   constructor() {
     super();
@@ -68,6 +93,20 @@ export class GameScene extends Container {
     this.characters.push(p1, p2);
     this.addChild(p1);
     this.addChild(p2);
+
+    this.revealFramesRemaining = this.revealDuration;
+    this.characters.forEach((character) => {
+      character.alpha = 0;
+      character.scale.set(0.86);
+    });
+
+    this.movementTargets = [0, 0];
+    this.movementCurrent = [0, 0];
+    this.movementProfiles = [
+      PROFILE_BY_FIGURE[p1Config.figureType],
+      PROFILE_BY_FIGURE[p2Config.figureType],
+    ];
+    this.catchMoments = [];
   }
 
   setFallingItemsMode(mode: FallingItemMode) {
@@ -105,8 +144,13 @@ export class GameScene extends Container {
         if (dist < b.radius + c.charWidth / 2) {
           this.score++;
           this.particles.emitPoof(b.x, b.y, b.getHue());
-          // Trigger weather particle burst
-          this.onBubbleCatch?.(b.x, b.y);
+          this.particles.emitCelebrationSparkles(
+            c.x + c.charWidth / 2,
+            c.y + c.charHeight * 0.35,
+            c.getColorHue()
+          );
+          const catchResult = this.registerCatchAndGetIntensity();
+          this.onBubbleCatch?.(b.x, b.y, catchResult.intensity);
           // Play celebrate animation on the catching character
           c.playCelebrate();
           b.destroy();
@@ -115,6 +159,9 @@ export class GameScene extends Container {
         }
       }
     }
+
+    this.applyMovementSmoothing(deltaTime);
+    this.updateCharacterReveal(deltaTime);
 
     // Update characters
     this.characters.forEach((c) => {
@@ -128,9 +175,47 @@ export class GameScene extends Container {
   }
 
   setPlayerVelocity(playerIndex: number, vx: number) {
-    if (this.characters[playerIndex]) {
-      this.characters[playerIndex].setVelocity(vx);
+    if (!this.characters[playerIndex]) return;
+    this.movementTargets[playerIndex] = Math.max(-1, Math.min(1, vx));
+  }
+
+  private applyMovementSmoothing(deltaTime: number) {
+    for (let i = 0; i < this.characters.length; i++) {
+      const profile = this.movementProfiles[i] ?? PROFILE_BY_FIGURE.blob;
+      const target = this.movementTargets[i] ?? 0;
+      const current = this.movementCurrent[i] ?? 0;
+
+      const accel = target === 0 ? profile.decel : profile.accel;
+      const next = current + (target - current) * accel * deltaTime;
+
+      this.movementCurrent[i] = Math.abs(next) < 0.01 ? 0 : next;
+      this.characters[i].setVelocity(this.movementCurrent[i]);
     }
+  }
+
+  private updateCharacterReveal(deltaTime: number) {
+    if (this.revealFramesRemaining <= 0) return;
+
+    this.revealFramesRemaining = Math.max(0, this.revealFramesRemaining - deltaTime);
+    const progress = 1 - this.revealFramesRemaining / this.revealDuration;
+    const eased = 1 - (1 - progress) * (1 - progress);
+
+    this.characters.forEach((character) => {
+      character.alpha = eased;
+      const settle = Math.sin(progress * Math.PI) * 0.04 * (1 - progress);
+      const pop = 0.86 + eased * 0.14 + settle;
+      character.scale.set(pop);
+    });
+  }
+
+  private registerCatchAndGetIntensity() {
+    const result = registerCatchAndComputeIntensity({
+      catchMoments: this.catchMoments,
+      now: this.animationTime,
+    });
+
+    this.catchMoments = result.catchMoments;
+    return result;
   }
 
   clear() {
@@ -138,6 +223,10 @@ export class GameScene extends Container {
     this.characters = [];
     this.bubbles.forEach((b) => b.destroy());
     this.bubbles = [];
+    this.movementTargets = [0, 0];
+    this.movementCurrent = [0, 0];
+    this.revealFramesRemaining = 0;
+    this.catchMoments = [];
   }
 
   getBubbleCount(): number {

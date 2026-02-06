@@ -60,6 +60,32 @@ export class ParticleSystem extends Container {
     }
   }
 
+  emitCelebrationSparkles(x: number, y: number, hue: number) {
+    let emitted = 0;
+
+    for (let i = 0; i < this.particles.length && emitted < Math.floor(PARTICLES_PER_POOF * 0.65); i++) {
+      const p = this.particles[i];
+      if (!p.active) {
+        const angle = -Math.PI / 2 + (Math.random() - 0.5) * 1.25;
+        const speed = 2 + Math.random() * 4;
+
+        p.x = x + (Math.random() - 0.5) * 18;
+        p.y = y - 6 + (Math.random() - 0.5) * 10;
+        p.hue = (hue + (Math.random() - 0.5) * 35 + 360) % 360;
+        p.size = 2 + Math.random() * 3.5;
+        p.vx = Math.cos(angle) * speed;
+        p.vy = Math.sin(angle) * speed;
+        p.life = 1;
+        p.decay = 0.03 + Math.random() * 0.03;
+        p.type = 'star';
+        p.rotation = Math.random() * Math.PI * 2;
+        p.rotationSpeed = (Math.random() - 0.5) * 0.35;
+        p.active = true;
+        emitted++;
+      }
+    }
+  }
+
   private resetParticle(p: ParticleData, x: number, y: number, hue: number) {
     p.x = x;
     p.y = y;

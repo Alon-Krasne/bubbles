@@ -1,5 +1,6 @@
 import { Container, Graphics } from 'pixi.js';
 import { GROUND_HEIGHT } from '../game/config';
+import { drawDiamond, drawHeart, drawLeaf } from './weather/shapeDrawers';
 
 export type ParticleBehavior = 'float-up' | 'fall-down' | 'drift' | 'wander' | 'spiral' | 'rise-wobble';
 export type ParticleShape = 'circle' | 'star' | 'heart' | 'leaf' | 'diamond';
@@ -41,7 +42,7 @@ interface WeatherParticle {
 }
 
 const MAX_WEATHER_PARTICLES = 150;
-const BURST_PARTICLE_COUNT = 10;
+const BURST_PARTICLE_COUNT = 14;
 
 export class WeatherParticles extends Container {
   private particles: WeatherParticle[] = [];
@@ -51,6 +52,8 @@ export class WeatherParticles extends Container {
   private screenWidth = 800;
   private screenHeight = 600;
   private animationTime = 0;
+  private windStrength = 0.5;
+  private excitement = 0;
 
   constructor() {
     super();
@@ -102,6 +105,14 @@ export class WeatherParticles extends Container {
     this.initAmbientParticles();
   }
 
+  setWindStrength(strength: number) {
+    this.windStrength = Math.max(0, Math.min(1.2, strength));
+  }
+
+  setExcitement(value: number) {
+    this.excitement = Math.max(0, Math.min(1, value));
+  }
+
   private initAmbientParticles() {
     if (!this.config) return;
 
@@ -137,7 +148,8 @@ export class WeatherParticles extends Container {
 
     // Opacity
     const [minAlpha, maxAlpha] = this.config.opacity;
-    p.targetAlpha = minAlpha + Math.random() * (maxAlpha - minAlpha);
+    const targetAlpha = minAlpha + Math.random() * (maxAlpha - minAlpha);
+    p.targetAlpha = Math.min(1, targetAlpha * 1.18);
     p.alpha = randomY ? p.targetAlpha : 0; // Fade in if spawning at edge
 
     // Velocity based on behavior
@@ -213,14 +225,15 @@ export class WeatherParticles extends Container {
   }
 
   // Burst effect when bubble is caught
-  burst(x: number, y: number) {
+  burst(x: number, y: number, intensity = 1) {
     if (!this.config) return;
 
+    const burstCount = Math.min(22, Math.max(8, Math.round(BURST_PARTICLE_COUNT * intensity)));
     let emitted = 0;
     const colors = this.config.colors;
     const shapes = Array.isArray(this.config.shape) ? this.config.shape : [this.config.shape];
 
-    for (let i = 0; i < this.particles.length && emitted < BURST_PARTICLE_COUNT; i++) {
+    for (let i = 0; i < this.particles.length && emitted < burstCount; i++) {
       const p = this.particles[i];
       if (!p.active || p.lifetime > 0) {
         // Reuse inactive or find burst slot
@@ -233,8 +246,8 @@ export class WeatherParticles extends Container {
         p.shape = shapes[Math.floor(Math.random() * shapes.length)];
 
         // Radial burst velocity
-        const angle = (emitted / BURST_PARTICLE_COUNT) * Math.PI * 2 + Math.random() * 0.3;
-        const speed = 3 + Math.random() * 4;
+        const angle = (emitted / burstCount) * Math.PI * 2 + Math.random() * 0.3;
+        const speed = 3 + Math.random() * (4 + intensity * 1.2);
         p.vx = Math.cos(angle) * speed;
         p.vy = Math.sin(angle) * speed;
 
@@ -277,7 +290,8 @@ export class WeatherParticles extends Container {
       } else {
         // Ambient particle - fade in
         if (p.alpha < p.targetAlpha) {
-          p.alpha = Math.min(p.alpha + 0.02 * deltaTime, p.targetAlpha);
+          const fadeInSpeed = 0.02 + this.excitement * 0.01;
+          p.alpha = Math.min(p.alpha + fadeInSpeed * deltaTime, p.targetAlpha);
         }
       }
 
@@ -310,43 +324,38 @@ export class WeatherParticles extends Container {
   private updateParticlePosition(p: WeatherParticle, deltaTime: number, dt: number) {
     if (!this.config) return;
 
+    const windDrift = (this.windStrength - 0.2) * 0.18 * deltaTime;
+
     switch (this.config.behavior) {
       case 'float-up':
-        p.x += p.vx * deltaTime;
+        p.x += p.vx * deltaTime + windDrift;
         p.y += p.vy * deltaTime;
-        // Gentle horizontal drift
         p.x += Math.sin(this.animationTime * 0.02 + p.wobbleOffset) * 0.3;
         break;
 
       case 'fall-down':
-        p.x += p.vx * deltaTime;
+        p.x += p.vx * deltaTime + windDrift * 1.2;
         p.y += p.vy * deltaTime;
-        // Sway side to side
         p.x += Math.sin(this.animationTime * 0.03 + p.wobbleOffset) * 0.5;
         break;
 
       case 'drift':
-        p.x += p.vx * deltaTime;
+        p.x += p.vx * deltaTime + windDrift * 1.3;
         p.y += p.vy * deltaTime;
-        // Slow vertical bob
         p.y += Math.sin(this.animationTime * 0.01 + p.wobbleOffset) * 0.2;
-        // Wrap horizontally
         if (p.x < -20) p.x = this.screenWidth + 20;
         if (p.x > this.screenWidth + 20) p.x = -20;
         break;
 
-      case 'wander':
-        // Firefly-like wandering
+      case 'wander': {
         p.wanderAngle += (Math.random() - 0.5) * 0.1 * deltaTime;
         const wanderSpeed = 0.3;
         p.vx += Math.cos(p.wanderAngle) * wanderSpeed * dt;
         p.vy += Math.sin(p.wanderAngle) * wanderSpeed * dt;
-        // Damping
         p.vx *= 0.98;
         p.vy *= 0.98;
-        p.x += p.vx * deltaTime;
+        p.x += p.vx * deltaTime + windDrift * 0.35;
         p.y += p.vy * deltaTime;
-        // Keep in bounds
         const margin = 50;
         const skyH = this.screenHeight - GROUND_HEIGHT;
         if (p.x < margin) p.vx += 0.1;
@@ -354,18 +363,19 @@ export class WeatherParticles extends Container {
         if (p.y < margin) p.vy += 0.1;
         if (p.y > skyH - margin) p.vy -= 0.1;
         break;
+      }
 
-      case 'spiral':
+      case 'spiral': {
         p.spiralAngle += 0.05 * deltaTime;
         const spiralRadius = 15 + Math.sin(p.age * 2) * 5;
-        p.x += Math.cos(p.spiralAngle) * spiralRadius * 0.05 * deltaTime;
+        p.x += Math.cos(p.spiralAngle) * spiralRadius * 0.05 * deltaTime + windDrift;
         p.y += p.vy * deltaTime;
         break;
+      }
 
       case 'rise-wobble':
         p.y += p.vy * deltaTime;
-        // Wobble side to side
-        p.x += Math.sin(this.animationTime * 0.04 + p.wobbleOffset) * 0.8;
+        p.x += Math.sin(this.animationTime * 0.04 + p.wobbleOffset) * 0.8 + windDrift;
         break;
     }
   }
@@ -381,12 +391,13 @@ export class WeatherParticles extends Container {
 
       // Draw glow effect first (behind particle)
       if (glow) {
-        let glowAlpha = p.alpha * 0.3;
+        const excitementBoost = 1 + this.excitement * 0.5;
+        let glowAlpha = p.alpha * 0.46 * excitementBoost;
         if (pulseGlow) {
-          glowAlpha *= 0.5 + Math.sin(this.animationTime * 0.05 + p.glowPulseOffset) * 0.5;
+          glowAlpha *= 0.6 + Math.sin(this.animationTime * 0.05 + p.glowPulseOffset) * 0.4;
         }
-        this.graphics.circle(p.x, p.y, p.size * 2.5);
-        this.graphics.fill({ color: p.color, alpha: glowAlpha });
+        this.graphics.circle(p.x, p.y, p.size * (3.2 + this.excitement * 1.1));
+        this.graphics.fill({ color: p.color, alpha: Math.min(1, glowAlpha) });
       }
 
       // Draw particle shape
@@ -401,101 +412,29 @@ export class WeatherParticles extends Container {
       case 'circle':
         g.circle(p.x, p.y, p.size);
         g.fill({ color: p.color, alpha: p.alpha });
+        g.circle(p.x - p.size * 0.25, p.y - p.size * 0.25, Math.max(0.8, p.size * 0.35));
+        g.fill({ color: 0xffffff, alpha: p.alpha * 0.35 });
         break;
 
       case 'star':
         g.star(p.x, p.y, 5, p.size, p.size * 0.5, p.rotation);
         g.fill({ color: p.color, alpha: p.alpha });
+        g.star(p.x, p.y, 5, p.size, p.size * 0.5, p.rotation);
+        g.stroke({ color: 0xffffff, alpha: p.alpha * 0.35, width: 1 });
         break;
 
       case 'heart':
-        this.drawHeart(p.x, p.y, p.size, p.rotation, p.color, p.alpha);
+        drawHeart(this.graphics, p.x, p.y, p.size, p.rotation, p.color, p.alpha);
         break;
 
       case 'leaf':
-        this.drawLeaf(p.x, p.y, p.size, p.rotation, p.color, p.alpha);
+        drawLeaf(this.graphics, p.x, p.y, p.size, p.rotation, p.color, p.alpha);
         break;
 
       case 'diamond':
-        this.drawDiamond(p.x, p.y, p.size, p.rotation, p.color, p.alpha);
+        drawDiamond(this.graphics, p.x, p.y, p.size, p.rotation, p.color, p.alpha);
         break;
     }
-  }
-
-  private drawHeart(cx: number, cy: number, size: number, rotation: number, color: number, alpha: number) {
-    const g = this.graphics;
-    const s = size * 0.8;
-
-    // Save transform state by calculating rotated points
-    const cos = Math.cos(rotation);
-    const sin = Math.sin(rotation);
-    const rotate = (x: number, y: number): [number, number] => [
-      cx + x * cos - y * sin,
-      cy + x * sin + y * cos,
-    ];
-
-    // Heart shape using bezier curves
-    const [topX, topY] = rotate(0, -s * 0.3);
-    const [leftTopX, leftTopY] = rotate(-s, -s * 0.8);
-    const [leftMidX, leftMidY] = rotate(-s, 0);
-    const [bottomX, bottomY] = rotate(0, s);
-    const [rightMidX, rightMidY] = rotate(s, 0);
-    const [rightTopX, rightTopY] = rotate(s, -s * 0.8);
-
-    g.moveTo(topX, topY);
-    g.bezierCurveTo(leftTopX, leftTopY, leftMidX, leftMidY, bottomX, bottomY);
-    g.bezierCurveTo(rightMidX, rightMidY, rightTopX, rightTopY, topX, topY);
-    g.fill({ color, alpha });
-  }
-
-  private drawLeaf(cx: number, cy: number, size: number, rotation: number, color: number, alpha: number) {
-    const g = this.graphics;
-
-    // Simple oval leaf
-    const cos = Math.cos(rotation);
-    const sin = Math.sin(rotation);
-
-    // Ellipse approximation with bezier
-    const w = size * 0.4;
-    const h = size;
-
-    const rotate = (x: number, y: number): [number, number] => [
-      cx + x * cos - y * sin,
-      cy + x * sin + y * cos,
-    ];
-
-    const [topX, topY] = rotate(0, -h);
-    const [rightX, rightY] = rotate(w, 0);
-    const [bottomX, bottomY] = rotate(0, h);
-    const [leftX, leftY] = rotate(-w, 0);
-
-    g.moveTo(topX, topY);
-    g.quadraticCurveTo(rightX, rightY, bottomX, bottomY);
-    g.quadraticCurveTo(leftX, leftY, topX, topY);
-    g.fill({ color, alpha });
-  }
-
-  private drawDiamond(cx: number, cy: number, size: number, rotation: number, color: number, alpha: number) {
-    const g = this.graphics;
-
-    const cos = Math.cos(rotation);
-    const sin = Math.sin(rotation);
-    const rotate = (x: number, y: number): [number, number] => [
-      cx + x * cos - y * sin,
-      cy + x * sin + y * cos,
-    ];
-
-    const [topX, topY] = rotate(0, -size);
-    const [rightX, rightY] = rotate(size * 0.6, 0);
-    const [bottomX, bottomY] = rotate(0, size);
-    const [leftX, leftY] = rotate(-size * 0.6, 0);
-
-    g.moveTo(topX, topY);
-    g.lineTo(rightX, rightY);
-    g.lineTo(bottomX, bottomY);
-    g.lineTo(leftX, leftY);
-    g.closePath();
-    g.fill({ color, alpha });
   }
 
   private hslToHex(h: number, s: number, l: number): number {

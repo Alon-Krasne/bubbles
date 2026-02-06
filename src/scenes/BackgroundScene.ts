@@ -1,27 +1,29 @@
-import { Container, Graphics, Sprite, Texture, Assets } from 'pixi.js';
+import { Container, Graphics, Sprite, Assets } from 'pixi.js';
 import { GROUND_HEIGHT } from '../game/config';
 import { getTheme, ThemeDefinition } from '../game/themes';
-import { WeatherParticles } from './WeatherParticles';
-
-interface Cloud {
-  x: number;
-  y: number;
-  size: number;
-  speed: number;
-  opacity: number;
-}
+import { BackgroundSystem, QualityTier } from '../systems/background/BackgroundSystem';
+import { Cloud } from '../systems/background/CloudLayerSystem';
+import { IntroSequenceController } from '../systems/background/IntroSequenceController';
+import { IntroEffectRenderer } from './background/IntroEffectRenderer';
 
 export class BackgroundScene extends Container {
   private skyGraphics: Graphics;
+  private atmosphereGraphics: Graphics;
   private themeSprite: Sprite | null = null;
   private sunContainer: Container;
   private cloudsContainer: Container;
-  private weatherParticles: WeatherParticles;
   private grassGraphics: Graphics;
+  private introContainer: Container;
 
   private clouds: Cloud[] = [];
   private animationTime = 0;
 
+  private readonly systems: BackgroundSystem;
+  private readonly introController = new IntroSequenceController();
+  private readonly introRenderer: IntroEffectRenderer;
+
+  private introSettlingFrames = 0;
+  private readonly introSettlingDuration = 42;
   private currentTheme: ThemeDefinition;
   private screenWidth = 800;
   private screenHeight = 600;
@@ -30,10 +32,14 @@ export class BackgroundScene extends Container {
     super();
 
     this.currentTheme = getTheme('classic');
+    this.systems = new BackgroundSystem();
 
     // Create layers in order (back to front)
     this.skyGraphics = new Graphics();
     this.addChild(this.skyGraphics);
+
+    this.atmosphereGraphics = new Graphics();
+    this.addChild(this.atmosphereGraphics);
 
     this.sunContainer = new Container();
     this.addChild(this.sunContainer);
@@ -41,21 +47,24 @@ export class BackgroundScene extends Container {
     this.cloudsContainer = new Container();
     this.addChild(this.cloudsContainer);
 
-    // Weather particles (replaces old star system)
-    this.weatherParticles = new WeatherParticles();
-    this.addChild(this.weatherParticles);
+    this.addChild(this.systems.particles.getContainer());
 
     this.grassGraphics = new Graphics();
     this.addChild(this.grassGraphics);
+
+    this.introContainer = new Container();
+    this.addChild(this.introContainer);
+    this.introRenderer = new IntroEffectRenderer(this.introContainer);
+
+    this.applyDevToggles();
   }
 
   resize(width: number, height: number) {
     this.screenWidth = width;
     this.screenHeight = height;
     this.initClouds();
-    this.weatherParticles.resize(width, height);
-    // Initialize weather particles with current theme config
-    this.weatherParticles.setConfig(this.currentTheme.weather);
+    this.systems.resize(width, height);
+    this.systems.setWeatherConfig(this.currentTheme.weather);
     this.draw();
   }
 
@@ -65,15 +74,20 @@ export class BackgroundScene extends Container {
     // Load theme background image if needed
     if (this.currentTheme.hasImage && this.currentTheme.imagePath) {
       this.loadThemeImage(this.currentTheme.imagePath);
-    } else {
-      if (this.themeSprite) {
-        this.themeSprite.visible = false;
-      }
+    } else if (this.themeSprite) {
+      this.themeSprite.visible = false;
     }
 
-    // Update weather particles for new theme
-    this.weatherParticles.setConfig(this.currentTheme.weather);
+    this.systems.setWeatherConfig(this.currentTheme.weather);
     this.draw();
+  }
+
+  setQualityTier(tier: QualityTier) {
+    this.systems.setQualityTier(tier);
+  }
+
+  getQualityTier(): QualityTier {
+    return this.systems.getQualityTier();
   }
 
   private async loadThemeImage(path: string) {
@@ -105,32 +119,35 @@ export class BackgroundScene extends Container {
   }
 
   private initClouds() {
-    this.clouds = [];
-    for (let i = 0; i < 8; i++) {
-      this.clouds.push({
-        x: Math.random() * this.screenWidth,
-        y: 50 + Math.random() * 200,
-        size: 40 + Math.random() * 80,
-        speed: 0.2 + Math.random() * 0.3,
-        opacity: 0.4 + Math.random() * 0.4,
-      });
-    }
+    this.clouds = this.systems.cloudSystem.createInitialClouds(this.screenWidth, this.screenHeight);
+  }
+
+  startIntro(onComplete: () => void) {
+    this.introSettlingFrames = 0;
+    this.introRenderer.setVariant(Math.floor(Math.random() * 3) as 0 | 1 | 2);
+
+    this.introController.start(() => {
+      this.introSettlingFrames = this.introSettlingDuration;
+      onComplete();
+    });
+  }
+
+  skipIntro() {
+    this.introController.skip();
+  }
+
+  isIntroPlaying(): boolean {
+    return this.introController.isPlaying();
   }
 
   update(deltaTime: number) {
     this.animationTime += deltaTime;
+    this.systems.update(this.clouds, deltaTime, this.screenWidth, this.screenHeight);
+    this.introController.update(deltaTime);
 
-    // Update clouds
-    this.clouds.forEach((cloud, i) => {
-      const depthFactor = 0.5 + (i % 3) * 0.3;
-      cloud.x += cloud.speed * depthFactor * deltaTime;
-      if (cloud.x > this.screenWidth + cloud.size * 2) {
-        cloud.x = -cloud.size * 2;
-      }
-    });
-
-    // Update weather particles
-    this.weatherParticles.update(deltaTime);
+    if (this.introSettlingFrames > 0) {
+      this.introSettlingFrames = Math.max(0, this.introSettlingFrames - deltaTime);
+    }
 
     this.draw();
   }
@@ -138,9 +155,11 @@ export class BackgroundScene extends Container {
   private draw() {
     this.drawSky();
     this.positionThemeSprite();
+    this.drawAtmosphere();
     this.drawSun();
     this.drawClouds();
     this.drawGrass();
+    this.drawIntroEffects();
   }
 
   private drawSky() {
@@ -169,6 +188,33 @@ export class BackgroundScene extends Container {
     }
   }
 
+  private drawAtmosphere() {
+    this.atmosphereGraphics.clear();
+
+    if (this.currentTheme.hasImage) return;
+    const skyHeight = this.screenHeight - GROUND_HEIGHT;
+    const windStrength = this.systems.getWindStrength();
+    const excitement = this.systems.getExcitement();
+    const mood = this.currentTheme.mood?.atmosphere ?? 1;
+    const excitementScale = this.currentTheme.mood?.excitement ?? 1;
+    const breath = 0.5 + Math.sin(this.animationTime * 0.012) * 0.5;
+
+    const topGlowAlpha = (0.04 + breath * 0.03 + excitement * 0.05 * excitementScale) * mood;
+    this.atmosphereGraphics.circle(this.screenWidth * 0.78, 90, 180 + windStrength * 40);
+    this.atmosphereGraphics.fill({ color: this.currentTheme.isDark ? 0xc9dcff : 0xfff6d9, alpha: topGlowAlpha });
+
+    const horizonAlpha = (0.05 + windStrength * 0.04 + breath * 0.03 + excitement * 0.05 * excitementScale) * mood;
+    const strips = 10;
+    for (let i = 0; i < strips; i++) {
+      const t = i / strips;
+      const y = skyHeight * (0.72 + t * 0.28);
+      const h = (skyHeight * 0.28) / strips + 1;
+      const alpha = horizonAlpha * (1 - t) * 0.9;
+      this.atmosphereGraphics.rect(0, y, this.screenWidth, h);
+      this.atmosphereGraphics.fill({ color: this.currentTheme.isDark ? 0xb3c8ff : 0xfff0d4, alpha });
+    }
+  }
+
   private drawSun() {
     this.sunContainer.removeChildren();
 
@@ -178,7 +224,8 @@ export class BackgroundScene extends Container {
     const sunX = this.screenWidth - 120;
     const sunY = 100;
     const sunRadius = 50;
-    const pulse = Math.sin(this.animationTime * 0.03) * 0.15 + 1;
+    const excitement = this.systems.getExcitement();
+    const pulse = Math.sin(this.animationTime * 0.03) * (0.15 + excitement * 0.08) + 1;
 
     const sunGraphics = new Graphics();
 
@@ -229,7 +276,7 @@ export class BackgroundScene extends Container {
         sunGraphics.lineTo(x2, y2);
         sunGraphics.lineTo(x1 + px, y1 + py);
         sunGraphics.closePath();
-        sunGraphics.fill({ color: 0xfff5b4, alpha: 0.35 });
+        sunGraphics.fill({ color: 0xfff5b4, alpha: 0.35 + excitement * 0.15 });
       }
 
       // Kawaii face - use separate Graphics for strokes
@@ -246,9 +293,9 @@ export class BackgroundScene extends Container {
 
       // Rosy cheeks
       sunGraphics.circle(sunX - 28, sunY + 8, 6);
-      sunGraphics.fill({ color: 0xff9696, alpha: 0.4 });
+      sunGraphics.fill({ color: 0xff9696, alpha: 0.4 + excitement * 0.2 });
       sunGraphics.circle(sunX + 28, sunY + 8, 6);
-      sunGraphics.fill({ color: 0xff9696, alpha: 0.4 });
+      sunGraphics.fill({ color: 0xff9696, alpha: 0.4 + excitement * 0.2 });
 
       // Smile - add to faceGraphics
       faceGraphics.arc(sunX, sunY + 8, 12, Math.PI * 0.15, Math.PI * 0.85);
@@ -266,23 +313,30 @@ export class BackgroundScene extends Container {
 
     const cloudGraphics = new Graphics();
 
-    this.clouds.forEach((cloud, index) => {
-      const cx = cloud.x;
-      const bobY = cloud.y + Math.sin(this.animationTime * 0.015 + index * 2) * 3;
-      const s = cloud.size;
+    const layerAlpha = [0.78, 0.9, 1.05] as const;
+    const cloudMood = this.currentTheme.mood?.clouds ?? 1;
+    const windPulse = (0.94 + Math.sin(this.animationTime * 0.01) * 0.06) * cloudMood;
 
-      // Simplified cloud shape using circles
+    this.clouds.forEach((cloud) => {
+      const cx = cloud.x;
+      const bobY = cloud.y + this.systems.cloudSystem.getBobbingOffset(cloud);
+      const s = cloud.size;
+      const alpha = cloud.opacity * layerAlpha[cloud.layer] * windPulse;
+
+      cloudGraphics.circle(cx, bobY + s * 0.1, s * 0.42);
+      cloudGraphics.fill({ color: 0xdde7ff, alpha: alpha * 0.2 });
+
       cloudGraphics.circle(cx, bobY, s * 0.4);
-      cloudGraphics.fill({ color: 0xffffff, alpha: cloud.opacity });
+      cloudGraphics.fill({ color: 0xffffff, alpha });
 
       cloudGraphics.circle(cx + s * 0.3, bobY - s * 0.1, s * 0.35);
-      cloudGraphics.fill({ color: 0xffffff, alpha: cloud.opacity });
+      cloudGraphics.fill({ color: 0xffffff, alpha });
 
       cloudGraphics.circle(cx + s * 0.6, bobY, s * 0.3);
-      cloudGraphics.fill({ color: 0xffffff, alpha: cloud.opacity });
+      cloudGraphics.fill({ color: 0xffffff, alpha });
 
       cloudGraphics.circle(cx - s * 0.25, bobY + s * 0.05, s * 0.25);
-      cloudGraphics.fill({ color: 0xffffff, alpha: cloud.opacity });
+      cloudGraphics.fill({ color: 0xffffff, alpha });
     });
 
     this.cloudsContainer.addChild(cloudGraphics);
@@ -312,10 +366,12 @@ export class BackgroundScene extends Container {
       this.grassGraphics.fill(color);
     }
 
+    const windStrength = this.systems.getWindStrength();
+
     // Wavy top edge
     this.grassGraphics.moveTo(0, groundY);
     for (let x = 0; x <= this.screenWidth; x += 20) {
-      const waveY = groundY + Math.sin(x * 0.05 + this.animationTime * 0.02) * 5;
+      const waveY = groundY + this.systems.grassSystem.getTopEdgeWave(x);
       this.grassGraphics.lineTo(x, waveY);
     }
     this.grassGraphics.lineTo(this.screenWidth, groundY + 20);
@@ -326,7 +382,7 @@ export class BackgroundScene extends Container {
     // Grass blades
     for (let x = 10; x < this.screenWidth; x += 30) {
       const bladeHeight = 15 + Math.sin(x) * 8;
-      const sway = Math.sin(this.animationTime * 0.03 + x * 0.1) * 3;
+      const sway = this.systems.grassSystem.getBladeSway(x, windStrength);
 
       this.grassGraphics.moveTo(x, groundY + 5);
       this.grassGraphics.quadraticCurveTo(
@@ -352,7 +408,7 @@ export class BackgroundScene extends Container {
     const flowerColors = [0xffb6c1, 0x87ceeb, 0xffd700, 0xdda0dd];
     for (let x = 50; x < this.screenWidth; x += 150) {
       const flowerY = groundY + 15;
-      const bobble = Math.sin(this.animationTime * 0.05 + x) * 2;
+      const bobble = this.systems.grassSystem.getFlowerBob(x);
 
       // Stem
       this.grassGraphics.moveTo(x, flowerY + 10);
@@ -375,6 +431,26 @@ export class BackgroundScene extends Container {
     }
   }
 
+  private drawIntroEffects() {
+    if (this.introController.isPlaying()) {
+      this.introRenderer.render(
+        this.introController.getProgress(),
+        this.animationTime,
+        this.screenWidth,
+        this.screenHeight
+      );
+      return;
+    }
+
+    if (this.introSettlingFrames > 0) {
+      const progress = 1 - this.introSettlingFrames / this.introSettlingDuration;
+      this.introRenderer.renderSettlingPulse(progress, this.animationTime, this.screenWidth, this.screenHeight);
+      return;
+    }
+
+    this.introRenderer.clear();
+  }
+
   private lerpColor(c1: number, c2: number, t: number): number {
     const r1 = (c1 >> 16) & 0xff;
     const g1 = (c1 >> 8) & 0xff;
@@ -392,11 +468,33 @@ export class BackgroundScene extends Container {
   }
 
   // Burst weather particles at a position (called when bubble is caught)
-  burstAt(x: number, y: number) {
-    this.weatherParticles.burst(x, y);
+  burstAt(x: number, y: number, intensity = 1) {
+    this.systems.burstAt(x, y, intensity);
   }
 
   getWeatherParticleCount(): number {
-    return this.weatherParticles.getActiveCount();
+    return this.systems.getParticleCount();
+  }
+
+  getExcitement(): number {
+    return this.systems.getExcitement();
+  }
+
+  private applyDevToggles() {
+    const params = new URLSearchParams(window.location.search);
+    const disableClouds = params.get('bgClouds') === '0' || localStorage.getItem('bubble_bg_clouds') === '0';
+    const disableGrass = params.get('bgGrass') === '0' || localStorage.getItem('bubble_bg_grass') === '0';
+    const disableParticles = params.get('bgParticles') === '0' || localStorage.getItem('bubble_bg_particles') === '0';
+
+    this.systems.setToggles({
+      clouds: !disableClouds,
+      grass: !disableGrass,
+      particles: !disableParticles,
+    });
+
+    const qualityParam = params.get('quality') ?? localStorage.getItem('bubble_quality');
+    if (qualityParam === 'high' || qualityParam === 'medium' || qualityParam === 'low') {
+      this.setQualityTier(qualityParam);
+    }
   }
 }

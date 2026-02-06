@@ -4,6 +4,7 @@ import { BackgroundScene } from '../scenes/BackgroundScene';
 import { GameScene, PlayerConfig } from '../scenes/GameScene';
 import { FigureType } from '../entities/Character';
 import { FallingItemMode } from '../entities/Bubble';
+import { ScreenShakeState, startScreenShake, stepScreenShake } from './effects/screenShake';
 
 export class GameApp {
   private app: Application | null = null;
@@ -25,12 +26,18 @@ export class GameApp {
   private fpsFrames = 0;
   private fpsLastTime = 0;
   private fpsDisplay = 0;
+  private lowFpsWindows = 0;
+  private highFpsWindows = 0;
+  private screenShake: ScreenShakeState = { framesRemaining: 0, magnitude: 0, x: 0, y: 0 };
+  private screenShakeEnabled = true;
 
   async init() {
     // Check dev mode
-    this.devMode =
-      new URLSearchParams(window.location.search).has('dev') ||
-      localStorage.getItem('bubble_dev_mode') === 'true';
+    const params = new URLSearchParams(window.location.search);
+    this.devMode = params.has('dev') || localStorage.getItem('bubble_dev_mode') === 'true';
+
+    const shakeParam = params.get('shake') ?? localStorage.getItem('bubble_screen_shake');
+    this.screenShakeEnabled = shakeParam !== '0';
 
     const app = new Application();
     await app.init({
@@ -69,9 +76,12 @@ export class GameApp {
     this.gameScene = new GameScene();
     this.app.stage.addChild(this.gameScene);
 
-    // Wire up bubble catch to trigger weather particle burst
-    this.gameScene.onBubbleCatch = (x, y) => {
-      this.background?.burstAt(x, y);
+    // Wire up bubble catch to trigger reactive background burst
+    this.gameScene.onBubbleCatch = (x, y, intensity) => {
+      this.background?.burstAt(x, y, intensity);
+
+      if (!this.screenShakeEnabled) return;
+      this.screenShake = startScreenShake({ state: this.screenShake, intensity: intensity - 0.6 });
     };
 
     // Dev overlay
@@ -98,11 +108,35 @@ export class GameApp {
 
     window.addEventListener('keydown', (e) => {
       keys[e.code] = true;
-      // Only prevent default during gameplay
-      if (this.state.phase === 'PLAYING') {
-        if (['KeyA', 'KeyD', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
-          e.preventDefault();
-        }
+
+      if (this.state.phase === 'INTRO') {
+        this.background?.skipIntro();
+        keys[e.code] = false;
+        e.preventDefault();
+        return;
+      }
+
+      if (this.devMode && e.code === 'KeyQ') {
+        this.cycleQualityTier();
+        e.preventDefault();
+        return;
+      }
+
+      if (this.devMode && e.code === 'KeyE') {
+        this.background?.burstAt(window.innerWidth * 0.5, window.innerHeight * 0.32, 1.6);
+        e.preventDefault();
+        return;
+      }
+
+      if (this.devMode && e.code === 'KeyS') {
+        this.screenShakeEnabled = !this.screenShakeEnabled;
+        localStorage.setItem('bubble_screen_shake', this.screenShakeEnabled ? '1' : '0');
+        e.preventDefault();
+        return;
+      }
+
+      if (this.state.phase === 'PLAYING' && ['KeyA', 'KeyD', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+        e.preventDefault();
       }
     });
 
@@ -169,11 +203,28 @@ export class GameApp {
         }
       }
 
+      this.applyScreenShake(dt);
+
       // Dev overlay
       if (this.devMode && this.devOverlay) {
         this.updateDevOverlay();
       }
     });
+  }
+
+  private applyScreenShake(deltaTime: number) {
+    if (!this.app) return;
+
+    if (!this.screenShakeEnabled) {
+      this.app.stage.x = 0;
+      this.app.stage.y = 0;
+      this.screenShake = { framesRemaining: 0, magnitude: 0, x: 0, y: 0 };
+      return;
+    }
+
+    this.screenShake = stepScreenShake({ state: this.screenShake, deltaTime });
+    this.app.stage.x = this.screenShake.x;
+    this.app.stage.y = this.screenShake.y;
   }
 
   private updateDevOverlay() {
@@ -184,14 +235,60 @@ export class GameApp {
       this.fpsDisplay = Math.round(this.fpsFrames / ((now - this.fpsLastTime) / 1000));
       this.fpsFrames = 0;
       this.fpsLastTime = now;
+      this.autoTuneQuality();
     }
 
     const bubbles = this.gameScene?.getBubbleCount() ?? 0;
     const particles = this.gameScene?.getParticleCount() ?? 0;
     const weather = this.background?.getWeatherParticleCount() ?? 0;
+    const quality = this.background?.getQualityTier() ?? 'high';
+    const excitement = this.background?.getExcitement() ?? 0;
 
-    this.devOverlay!.text = `FPS: ${this.fpsDisplay}\nBubbles: ${bubbles}\nParticles: ${particles}\nWeather: ${weather}`;
+    this.devOverlay!.text = `FPS: ${this.fpsDisplay}\nQuality: ${quality}\nShake: ${this.screenShakeEnabled ? 'on' : 'off'}\nExcitement: ${excitement.toFixed(2)}\nBubbles: ${bubbles}\nParticles: ${particles}\nWeather: ${weather}`;
     this.devOverlay!.style.fill = this.fpsDisplay >= 55 ? 0x4ade80 : this.fpsDisplay >= 30 ? 0xfbbf24 : 0xf87171;
+  }
+
+  private cycleQualityTier() {
+    if (!this.background) return;
+
+    const current = this.background.getQualityTier();
+    const next = current === 'high' ? 'medium' : current === 'medium' ? 'low' : 'high';
+
+    this.background.setQualityTier(next);
+    localStorage.setItem('bubble_quality', next);
+  }
+
+  private autoTuneQuality() {
+    if (!this.background || this.state.phase !== 'PLAYING') return;
+
+    const current = this.background.getQualityTier();
+
+    if (this.fpsDisplay < 42) {
+      this.lowFpsWindows++;
+      this.highFpsWindows = 0;
+    } else if (this.fpsDisplay > 56) {
+      this.highFpsWindows++;
+      this.lowFpsWindows = 0;
+    } else {
+      this.lowFpsWindows = 0;
+      this.highFpsWindows = 0;
+    }
+
+    if (this.lowFpsWindows >= 4) {
+      if (current === 'high') this.background.setQualityTier('medium');
+      if (current === 'medium') this.background.setQualityTier('low');
+      localStorage.setItem('bubble_quality', this.background.getQualityTier());
+      this.lowFpsWindows = 0;
+      return;
+    }
+
+    if (!this.devMode || this.highFpsWindows < 8) return;
+
+    if (current === 'low') this.background.setQualityTier('medium');
+    else if (current === 'medium') this.background.setQualityTier('high');
+
+    localStorage.setItem('bubble_quality', this.background.getQualityTier());
+    this.highFpsWindows = 0;
   }
 
   // Public API for UI integration
@@ -199,28 +296,40 @@ export class GameApp {
   startGame(p1Config: PlayerConfig, p2Config: PlayerConfig, duration: number) {
     if (!this.gameScene) return;
 
-    this.state.setPhase('PLAYING');
-    this.state.score = 0;
-    this.state.timeLeft = duration;
-
-    this.gameScene.startGame(p1Config, p2Config);
-
-    // Start timer
     if (this.gameTimer) {
       clearInterval(this.gameTimer);
+      this.gameTimer = null;
     }
 
-    this.gameTimer = window.setInterval(() => {
-      this.state.timeLeft--;
-      this.onTimeChange?.(this.state.timeLeft);
-
-      if (this.state.timeLeft <= 0) {
-        this.endGame();
-      }
-    }, 1000);
-
+    this.state.score = 0;
+    this.state.timeLeft = duration;
+    this.state.setPhase('INTRO');
+    this.screenShake = { framesRemaining: 0, magnitude: 0, x: 0, y: 0 };
     this.onScoreChange?.(0);
     this.onTimeChange?.(duration);
+
+    const beginPlaying = () => {
+      if (!this.gameScene) return;
+
+      this.state.setPhase('PLAYING');
+      this.gameScene.startGame(p1Config, p2Config);
+
+      this.gameTimer = window.setInterval(() => {
+        this.state.timeLeft--;
+        this.onTimeChange?.(this.state.timeLeft);
+
+        if (this.state.timeLeft <= 0) {
+          this.endGame();
+        }
+      }, 1000);
+    };
+
+    if (!this.background) {
+      beginPlaying();
+      return;
+    }
+
+    this.background.startIntro(beginPlaying);
   }
 
   endGame() {
@@ -229,6 +338,8 @@ export class GameApp {
       this.gameTimer = null;
     }
 
+    this.background?.skipIntro();
+    this.screenShake = { framesRemaining: 0, magnitude: 0, x: 0, y: 0 };
     this.state.setPhase('END');
     this.gameScene?.clear();
     this.onGameEnd?.(this.state.score);
@@ -240,6 +351,8 @@ export class GameApp {
       this.gameTimer = null;
     }
 
+    this.background?.skipIntro();
+    this.screenShake = { framesRemaining: 0, magnitude: 0, x: 0, y: 0 };
     this.state.setPhase('START');
     this.gameScene?.clear();
   }

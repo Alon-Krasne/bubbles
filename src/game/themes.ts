@@ -23,6 +23,11 @@ export interface ThemeDefinition {
   grassBottom: number;
   isDark: boolean;
   weather: WeatherConfig;
+  mood?: {
+    atmosphere?: number;
+    clouds?: number;
+    excitement?: number;
+  };
 }
 
 export const THEMES: Record<string, ThemeDefinition> = {
@@ -48,6 +53,7 @@ export const THEMES: Record<string, ThemeDefinition> = {
       shape: 'star',
       rotates: true,
     },
+    mood: { atmosphere: 1, clouds: 1, excitement: 1 },
   },
   imagine: {
     name: 'ארץ דמיון',
@@ -96,6 +102,7 @@ export const THEMES: Record<string, ThemeDefinition> = {
       shape: ['star', 'heart'],
       rotates: true,
     },
+    mood: { atmosphere: 1.15, clouds: 1.05, excitement: 1.2 },
   },
   dinosaur: {
     name: 'ארץ הדינוזאורים',
@@ -193,6 +200,7 @@ export const THEMES: Record<string, ThemeDefinition> = {
       rotates: true,
       hueCycle: true,
     },
+    mood: { atmosphere: 1.25, clouds: 1.1, excitement: 1.35 },
   },
   castle: {
     name: 'טירת החלומות',
@@ -218,6 +226,7 @@ export const THEMES: Record<string, ThemeDefinition> = {
       shape: 'circle',
       rotates: false,
     },
+    mood: { atmosphere: 0.9, clouds: 0.95, excitement: 1.1 },
   },
 };
 

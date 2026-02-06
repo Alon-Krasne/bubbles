@@ -93,7 +93,6 @@ canvas {
 
 /* ==================== START SCREEN ==================== */
 #start-screen {
-    /* Transparent background - PIXI canvas provides animated background */
     background: transparent;
     gap: 15px;
     justify-content: center;
@@ -1142,7 +1141,6 @@ canvas {
 
 /* ==================== END SCREEN ==================== */
 #end-screen {
-    /* Transparent background - PIXI canvas provides animated background */
     background: transparent;
 }
 
