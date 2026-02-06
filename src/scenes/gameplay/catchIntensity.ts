@@ -7,6 +7,7 @@ export interface CatchIntensityInput {
 export interface CatchIntensityResult {
   catchMoments: number[];
   intensity: number;
+  streakCount: number;
 }
 
 export function registerCatchAndComputeIntensity(input: CatchIntensityInput): CatchIntensityResult {
@@ -18,5 +19,6 @@ export function registerCatchAndComputeIntensity(input: CatchIntensityInput): Ca
   return {
     catchMoments: nextCatchMoments,
     intensity: Math.min(1.8, 1 + streakCount * 0.12),
+    streakCount,
   };
 }

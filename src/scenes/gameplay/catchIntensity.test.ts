@@ -9,6 +9,7 @@ test('registerCatchAndComputeIntensity increases intensity with more catches in 
 
   assert.ok(second.intensity > first.intensity);
   assert.ok(third.intensity > second.intensity);
+  assert.equal(third.streakCount, 3);
 });
 
 test('registerCatchAndComputeIntensity drops stale catches outside window', () => {
@@ -16,5 +17,6 @@ test('registerCatchAndComputeIntensity drops stale catches outside window', () =
 
   assert.equal(result.catchMoments.length, 1);
   assert.equal(result.catchMoments[0], 150);
+  assert.equal(result.streakCount, 1);
   assert.equal(result.intensity, 1.12);
 });
