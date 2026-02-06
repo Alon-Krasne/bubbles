@@ -3,6 +3,7 @@ import { Character, FigureType } from '../entities/Character';
 import { Bubble, FallingItemMode } from '../entities/Bubble';
 import { ParticleSystem } from '../entities/Particle';
 import { BUBBLE_SPAWN_RATE } from '../game/config';
+import { registerCatchAndComputeIntensity } from './gameplay/catchIntensity';
 
 export interface PlayerConfig {
   name: string;
@@ -203,14 +204,13 @@ export class GameScene extends Container {
   }
 
   private registerCatchAndGetIntensity(): number {
-    this.catchMoments.push(this.animationTime);
+    const result = registerCatchAndComputeIntensity({
+      catchMoments: this.catchMoments,
+      now: this.animationTime,
+    });
 
-    const windowSize = 90;
-    const cutoff = this.animationTime - windowSize;
-    this.catchMoments = this.catchMoments.filter((moment) => moment >= cutoff);
-
-    const streakCount = this.catchMoments.length;
-    return Math.min(1.8, 1 + streakCount * 0.12);
+    this.catchMoments = result.catchMoments;
+    return result.intensity;
   }
 
   clear() {

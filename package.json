@@ -11,6 +11,7 @@
     "bundle": "vite build",
     "share": "vite build && open dist/index.html",
     "test:background": "bun test src/systems/background/*.test.ts src/systems/background/*.integration.test.ts",
+    "test:gameplay": "bun test src/scenes/gameplay/*.test.ts",
     "assets:atlas": "node scripts/build-atlases.mjs",
     "release": "npm version major --no-git-tag-version && bun run bundle"
   },
