@@ -1,5 +1,6 @@
 import { Container, Graphics } from 'pixi.js';
 import { GROUND_HEIGHT } from '../game/config';
+import { drawDiamond, drawHeart, drawLeaf } from './weather/shapeDrawers';
 
 export type ParticleBehavior = 'float-up' | 'fall-down' | 'drift' | 'wander' | 'spiral' | 'rise-wobble';
 export type ParticleShape = 'circle' | 'star' | 'heart' | 'leaf' | 'diamond';
@@ -410,93 +411,17 @@ export class WeatherParticles extends Container {
         break;
 
       case 'heart':
-        this.drawHeart(p.x, p.y, p.size, p.rotation, p.color, p.alpha);
+        drawHeart(this.graphics, p.x, p.y, p.size, p.rotation, p.color, p.alpha);
         break;
 
       case 'leaf':
-        this.drawLeaf(p.x, p.y, p.size, p.rotation, p.color, p.alpha);
+        drawLeaf(this.graphics, p.x, p.y, p.size, p.rotation, p.color, p.alpha);
         break;
 
       case 'diamond':
-        this.drawDiamond(p.x, p.y, p.size, p.rotation, p.color, p.alpha);
+        drawDiamond(this.graphics, p.x, p.y, p.size, p.rotation, p.color, p.alpha);
         break;
     }
-  }
-
-  private drawHeart(cx: number, cy: number, size: number, rotation: number, color: number, alpha: number) {
-    const g = this.graphics;
-    const s = size * 0.8;
-
-    // Save transform state by calculating rotated points
-    const cos = Math.cos(rotation);
-    const sin = Math.sin(rotation);
-    const rotate = (x: number, y: number): [number, number] => [
-      cx + x * cos - y * sin,
-      cy + x * sin + y * cos,
-    ];
-
-    // Heart shape using bezier curves
-    const [topX, topY] = rotate(0, -s * 0.3);
-    const [leftTopX, leftTopY] = rotate(-s, -s * 0.8);
-    const [leftMidX, leftMidY] = rotate(-s, 0);
-    const [bottomX, bottomY] = rotate(0, s);
-    const [rightMidX, rightMidY] = rotate(s, 0);
-    const [rightTopX, rightTopY] = rotate(s, -s * 0.8);
-
-    g.moveTo(topX, topY);
-    g.bezierCurveTo(leftTopX, leftTopY, leftMidX, leftMidY, bottomX, bottomY);
-    g.bezierCurveTo(rightMidX, rightMidY, rightTopX, rightTopY, topX, topY);
-    g.fill({ color, alpha });
-  }
-
-  private drawLeaf(cx: number, cy: number, size: number, rotation: number, color: number, alpha: number) {
-    const g = this.graphics;
-
-    // Simple oval leaf
-    const cos = Math.cos(rotation);
-    const sin = Math.sin(rotation);
-
-    // Ellipse approximation with bezier
-    const w = size * 0.4;
-    const h = size;
-
-    const rotate = (x: number, y: number): [number, number] => [
-      cx + x * cos - y * sin,
-      cy + x * sin + y * cos,
-    ];
-
-    const [topX, topY] = rotate(0, -h);
-    const [rightX, rightY] = rotate(w, 0);
-    const [bottomX, bottomY] = rotate(0, h);
-    const [leftX, leftY] = rotate(-w, 0);
-
-    g.moveTo(topX, topY);
-    g.quadraticCurveTo(rightX, rightY, bottomX, bottomY);
-    g.quadraticCurveTo(leftX, leftY, topX, topY);
-    g.fill({ color, alpha });
-  }
-
-  private drawDiamond(cx: number, cy: number, size: number, rotation: number, color: number, alpha: number) {
-    const g = this.graphics;
-
-    const cos = Math.cos(rotation);
-    const sin = Math.sin(rotation);
-    const rotate = (x: number, y: number): [number, number] => [
-      cx + x * cos - y * sin,
-      cy + x * sin + y * cos,
-    ];
-
-    const [topX, topY] = rotate(0, -size);
-    const [rightX, rightY] = rotate(size * 0.6, 0);
-    const [bottomX, bottomY] = rotate(0, size);
-    const [leftX, leftY] = rotate(-size * 0.6, 0);
-
-    g.moveTo(topX, topY);
-    g.lineTo(rightX, rightY);
-    g.lineTo(bottomX, bottomY);
-    g.lineTo(leftX, leftY);
-    g.closePath();
-    g.fill({ color, alpha });
   }
 
   private hslToHex(h: number, s: number, l: number): number {
