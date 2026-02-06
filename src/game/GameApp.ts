@@ -108,6 +108,12 @@ export class GameApp {
         return;
       }
 
+      if (this.devMode && e.code === 'KeyQ') {
+        this.cycleQualityTier();
+        e.preventDefault();
+        return;
+      }
+
       if (this.state.phase === 'PLAYING' && ['KeyA', 'KeyD', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
         e.preventDefault();
       }
@@ -203,6 +209,16 @@ export class GameApp {
     this.devOverlay!.style.fill = this.fpsDisplay >= 55 ? 0x4ade80 : this.fpsDisplay >= 30 ? 0xfbbf24 : 0xf87171;
   }
 
+  private cycleQualityTier() {
+    if (!this.background) return;
+
+    const current = this.background.getQualityTier();
+    const next = current === 'high' ? 'medium' : current === 'medium' ? 'low' : 'high';
+
+    this.background.setQualityTier(next);
+    localStorage.setItem('bubble_quality', next);
+  }
+
   private autoTuneQuality() {
     if (!this.background) return;
 
@@ -222,6 +238,7 @@ export class GameApp {
     if (this.lowFpsWindows >= 4) {
       if (current === 'high') this.background.setQualityTier('medium');
       if (current === 'medium') this.background.setQualityTier('low');
+      localStorage.setItem('bubble_quality', this.background.getQualityTier());
       this.lowFpsWindows = 0;
       return;
     }
@@ -231,6 +248,7 @@ export class GameApp {
     if (current === 'low') this.background.setQualityTier('medium');
     else if (current === 'medium') this.background.setQualityTier('high');
 
+    localStorage.setItem('bubble_quality', this.background.getQualityTier());
     this.highFpsWindows = 0;
   }
 
