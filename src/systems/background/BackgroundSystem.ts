@@ -48,11 +48,11 @@ export class BackgroundSystem {
     this.ambientParticleSystem.setConfig(config);
   }
 
-  update(clouds: Cloud[], deltaTime: number, screenWidth: number) {
+  update(clouds: Cloud[], deltaTime: number, screenWidth: number, screenHeight: number) {
     this.windStrength = this.windController.update(deltaTime);
 
     if (this.toggles.clouds) {
-      this.cloudLayerSystem.update(clouds, deltaTime, screenWidth);
+      this.cloudLayerSystem.update(clouds, deltaTime, screenWidth, screenHeight, this.windStrength);
     }
 
     if (this.toggles.grass) {

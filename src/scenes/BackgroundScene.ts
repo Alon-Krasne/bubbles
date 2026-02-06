@@ -97,21 +97,12 @@ export class BackgroundScene extends Container {
   }
 
   private initClouds() {
-    this.clouds = [];
-    for (let i = 0; i < 8; i++) {
-      this.clouds.push({
-        x: Math.random() * this.screenWidth,
-        y: 50 + Math.random() * 200,
-        size: 40 + Math.random() * 80,
-        speed: 0.2 + Math.random() * 0.3,
-        opacity: 0.4 + Math.random() * 0.4,
-      });
-    }
+    this.clouds = this.systems.cloudSystem.createInitialClouds(this.screenWidth, this.screenHeight);
   }
 
   update(deltaTime: number) {
     this.animationTime += deltaTime;
-    this.systems.update(this.clouds, deltaTime, this.screenWidth);
+    this.systems.update(this.clouds, deltaTime, this.screenWidth, this.screenHeight);
     this.draw();
   }
 
@@ -246,9 +237,9 @@ export class BackgroundScene extends Container {
 
     const cloudGraphics = new Graphics();
 
-    this.clouds.forEach((cloud, index) => {
+    this.clouds.forEach((cloud) => {
       const cx = cloud.x;
-      const bobY = cloud.y + this.systems.cloudSystem.getBobbingOffset(index);
+      const bobY = cloud.y + this.systems.cloudSystem.getBobbingOffset(cloud);
       const s = cloud.size;
 
       // Simplified cloud shape using circles
