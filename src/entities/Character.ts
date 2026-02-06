@@ -44,6 +44,36 @@ import princessWalk3 from '../assets/characters/princess/princess_walk_3.webp';
 import princessCelebrate1 from '../assets/characters/princess/princess_celebrate_1.webp';
 import princessCelebrate2 from '../assets/characters/princess/princess_celebrate_2.webp';
 
+// Animated blob-pink frames (24-frame smooth walk cycle from Veo 3.1)
+import blobPinkIdle1 from '../assets/characters/blob-pink/blob_pink_idle_1.png';
+import blobPinkIdle2 from '../assets/characters/blob-pink/blob_pink_idle_2.png';
+import blobPinkWalk01 from '../assets/characters/blob-pink/blob_pink_walk_01.png';
+import blobPinkWalk02 from '../assets/characters/blob-pink/blob_pink_walk_02.png';
+import blobPinkWalk03 from '../assets/characters/blob-pink/blob_pink_walk_03.png';
+import blobPinkWalk04 from '../assets/characters/blob-pink/blob_pink_walk_04.png';
+import blobPinkWalk05 from '../assets/characters/blob-pink/blob_pink_walk_05.png';
+import blobPinkWalk06 from '../assets/characters/blob-pink/blob_pink_walk_06.png';
+import blobPinkWalk07 from '../assets/characters/blob-pink/blob_pink_walk_07.png';
+import blobPinkWalk08 from '../assets/characters/blob-pink/blob_pink_walk_08.png';
+import blobPinkWalk09 from '../assets/characters/blob-pink/blob_pink_walk_09.png';
+import blobPinkWalk10 from '../assets/characters/blob-pink/blob_pink_walk_10.png';
+import blobPinkWalk11 from '../assets/characters/blob-pink/blob_pink_walk_11.png';
+import blobPinkWalk12 from '../assets/characters/blob-pink/blob_pink_walk_12.png';
+import blobPinkWalk13 from '../assets/characters/blob-pink/blob_pink_walk_13.png';
+import blobPinkWalk14 from '../assets/characters/blob-pink/blob_pink_walk_14.png';
+import blobPinkWalk15 from '../assets/characters/blob-pink/blob_pink_walk_15.png';
+import blobPinkWalk16 from '../assets/characters/blob-pink/blob_pink_walk_16.png';
+import blobPinkWalk17 from '../assets/characters/blob-pink/blob_pink_walk_17.png';
+import blobPinkWalk18 from '../assets/characters/blob-pink/blob_pink_walk_18.png';
+import blobPinkWalk19 from '../assets/characters/blob-pink/blob_pink_walk_19.png';
+import blobPinkWalk20 from '../assets/characters/blob-pink/blob_pink_walk_20.png';
+import blobPinkWalk21 from '../assets/characters/blob-pink/blob_pink_walk_21.png';
+import blobPinkWalk22 from '../assets/characters/blob-pink/blob_pink_walk_22.png';
+import blobPinkWalk23 from '../assets/characters/blob-pink/blob_pink_walk_23.png';
+import blobPinkWalk24 from '../assets/characters/blob-pink/blob_pink_walk_24.png';
+import blobPinkCelebrate1 from '../assets/characters/blob-pink/blob_pink_celebrate_1.png';
+import blobPinkCelebrate2 from '../assets/characters/blob-pink/blob_pink_celebrate_2.png';
+
 export type FigureType = 'blob' | 'unicorn' | 'dinosaur' | 'puppy' | 'princess';
 
 const FIGURE_PATHS: Record<string, string> = {
@@ -74,6 +104,18 @@ const ANIMATED_FRAMES: Record<string, { idle: string[]; walk: string[]; celebrat
     idle: [princessIdle1, princessIdle2, princessIdle1],
     walk: [princessWalk1, princessWalk2, princessWalk3, princessWalk2],
     celebrate: [princessCelebrate1, princessCelebrate2],
+  },
+  blob: {
+    idle: [blobPinkIdle1, blobPinkIdle2, blobPinkIdle1],
+    walk: [
+      blobPinkWalk01, blobPinkWalk02, blobPinkWalk03, blobPinkWalk04,
+      blobPinkWalk05, blobPinkWalk06, blobPinkWalk07, blobPinkWalk08,
+      blobPinkWalk09, blobPinkWalk10, blobPinkWalk11, blobPinkWalk12,
+      blobPinkWalk13, blobPinkWalk14, blobPinkWalk15, blobPinkWalk16,
+      blobPinkWalk17, blobPinkWalk18, blobPinkWalk19, blobPinkWalk20,
+      blobPinkWalk21, blobPinkWalk22, blobPinkWalk23, blobPinkWalk24,
+    ],
+    celebrate: [blobPinkCelebrate1, blobPinkCelebrate2],
   },
 };
 
@@ -175,6 +217,7 @@ export class Character extends Container {
 
     // Build the body
     if (this.figureType === 'blob') {
+      // Temporary: keep procedural blob until blob-pink frames are cleanly transparent
       this.buildBlobBody();
     } else if (ANIMATED_FRAMES[this.figureType]) {
       this.loadAnimatedSprite();
