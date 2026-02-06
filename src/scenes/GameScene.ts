@@ -11,6 +11,19 @@ export interface PlayerConfig {
   isGirl: boolean;
 }
 
+interface MovementProfile {
+  accel: number;
+  decel: number;
+}
+
+const PROFILE_BY_FIGURE: Record<FigureType, MovementProfile> = {
+  blob: { accel: 0.12, decel: 0.2 },
+  unicorn: { accel: 0.1, decel: 0.18 },
+  dinosaur: { accel: 0.16, decel: 0.24 },
+  puppy: { accel: 0.14, decel: 0.2 },
+  princess: { accel: 0.11, decel: 0.19 },
+};
+
 export class GameScene extends Container {
   private characters: Character[] = [];
   private bubbles: Bubble[] = [];
@@ -20,6 +33,13 @@ export class GameScene extends Container {
   private screenHeight = 600;
   private animationTime = 0;
   private fallingItemsMode: FallingItemMode = 'bubbles';
+
+  private movementTargets = [0, 0];
+  private movementCurrent = [0, 0];
+  private movementProfiles: MovementProfile[] = [
+    PROFILE_BY_FIGURE.blob,
+    PROFILE_BY_FIGURE.blob,
+  ];
 
   public score = 0;
 
@@ -68,6 +88,13 @@ export class GameScene extends Container {
     this.characters.push(p1, p2);
     this.addChild(p1);
     this.addChild(p2);
+
+    this.movementTargets = [0, 0];
+    this.movementCurrent = [0, 0];
+    this.movementProfiles = [
+      PROFILE_BY_FIGURE[p1Config.figureType],
+      PROFILE_BY_FIGURE[p2Config.figureType],
+    ];
   }
 
   setFallingItemsMode(mode: FallingItemMode) {
@@ -116,6 +143,8 @@ export class GameScene extends Container {
       }
     }
 
+    this.applyMovementSmoothing(deltaTime);
+
     // Update characters
     this.characters.forEach((c) => {
       c.update(deltaTime, this.screenWidth, this.screenHeight);
@@ -128,8 +157,21 @@ export class GameScene extends Container {
   }
 
   setPlayerVelocity(playerIndex: number, vx: number) {
-    if (this.characters[playerIndex]) {
-      this.characters[playerIndex].setVelocity(vx);
+    if (!this.characters[playerIndex]) return;
+    this.movementTargets[playerIndex] = Math.max(-1, Math.min(1, vx));
+  }
+
+  private applyMovementSmoothing(deltaTime: number) {
+    for (let i = 0; i < this.characters.length; i++) {
+      const profile = this.movementProfiles[i] ?? PROFILE_BY_FIGURE.blob;
+      const target = this.movementTargets[i] ?? 0;
+      const current = this.movementCurrent[i] ?? 0;
+
+      const accel = target === 0 ? profile.decel : profile.accel;
+      const next = current + (target - current) * accel * deltaTime;
+
+      this.movementCurrent[i] = Math.abs(next) < 0.01 ? 0 : next;
+      this.characters[i].setVelocity(this.movementCurrent[i]);
     }
   }
 
@@ -138,6 +180,8 @@ export class GameScene extends Container {
     this.characters = [];
     this.bubbles.forEach((b) => b.destroy());
     this.bubbles = [];
+    this.movementTargets = [0, 0];
+    this.movementCurrent = [0, 0];
   }
 
   getBubbleCount(): number {
