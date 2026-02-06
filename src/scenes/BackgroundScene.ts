@@ -124,6 +124,8 @@ export class BackgroundScene extends Container {
 
   startIntro(onComplete: () => void) {
     this.introSettlingFrames = 0;
+    this.introRenderer.setVariant(Math.random() > 0.5 ? 1 : 0);
+
     this.introController.start(() => {
       this.introSettlingFrames = this.introSettlingDuration;
       onComplete();

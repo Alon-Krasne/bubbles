@@ -3,6 +3,7 @@ import { GROUND_HEIGHT } from '../../game/config';
 
 export class IntroEffectRenderer {
   private readonly graphics = new Graphics();
+  private variant: 0 | 1 = 0;
   private readonly skipHint = new Text({
     text: 'לחצו על כל מקש כדי לדלג',
     style: {
@@ -17,6 +18,10 @@ export class IntroEffectRenderer {
     this.skipHint.anchor.set(0.5);
     parent.addChild(this.graphics);
     parent.addChild(this.skipHint);
+  }
+
+  setVariant(variant: 0 | 1) {
+    this.variant = variant;
   }
 
   render(progress: number, animationTime: number, screenWidth: number, screenHeight: number) {
@@ -55,8 +60,9 @@ export class IntroEffectRenderer {
   }
 
   private getCometPosition(progress: number, screenWidth: number, screenHeight: number) {
-    const startX = screenWidth + 140;
-    const endX = screenWidth * 0.45;
+    const fromRight = this.variant === 0;
+    const startX = fromRight ? screenWidth + 140 : -140;
+    const endX = fromRight ? screenWidth * 0.45 : screenWidth * 0.55;
     const startY = -90;
     const endY = screenHeight * 0.27;
 
@@ -68,14 +74,15 @@ export class IntroEffectRenderer {
 
   private drawCometTrail(cometX: number, cometY: number) {
     const trailCount = 8;
+    const direction = this.variant === 0 ? 1 : -1;
 
     for (let i = 0; i < trailCount; i++) {
       const t = i / trailCount;
-      const tx = cometX + t * 160;
+      const tx = cometX + direction * t * 160;
       const ty = cometY - t * 80;
 
       this.graphics.circle(tx, ty, 18 - t * 13);
-      this.graphics.fill({ color: 0xfff8dd, alpha: (1 - t) * 0.22 });
+      this.graphics.fill({ color: this.variant === 0 ? 0xfff8dd : 0xdff7ff, alpha: (1 - t) * 0.22 });
     }
   }
 
@@ -84,7 +91,7 @@ export class IntroEffectRenderer {
     this.graphics.fill({ color: 0xffffff, alpha: 0.94 });
 
     this.graphics.circle(cometX, cometY, 30);
-    this.graphics.fill({ color: 0xffdbff, alpha: 0.34 });
+    this.graphics.fill({ color: this.variant === 0 ? 0xffdbff : 0xd2f0ff, alpha: 0.34 });
   }
 
   private drawLandingBurst(landing: number, animationTime: number, screenWidth: number, screenHeight: number) {
