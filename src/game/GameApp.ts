@@ -4,6 +4,7 @@ import { BackgroundScene } from '../scenes/BackgroundScene';
 import { GameScene, PlayerConfig } from '../scenes/GameScene';
 import { FigureType } from '../entities/Character';
 import { FallingItemMode } from '../entities/Bubble';
+import { ScreenShakeState, startScreenShake, stepScreenShake } from './effects/screenShake';
 
 export class GameApp {
   private app: Application | null = null;
@@ -27,6 +28,7 @@ export class GameApp {
   private fpsDisplay = 0;
   private lowFpsWindows = 0;
   private highFpsWindows = 0;
+  private screenShake: ScreenShakeState = { framesRemaining: 0, magnitude: 0, x: 0, y: 0 };
 
   async init() {
     // Check dev mode
@@ -74,6 +76,7 @@ export class GameApp {
     // Wire up bubble catch to trigger reactive background burst
     this.gameScene.onBubbleCatch = (x, y, intensity) => {
       this.background?.burstAt(x, y, intensity);
+      this.screenShake = startScreenShake({ state: this.screenShake, intensity: intensity - 0.6 });
     };
 
     // Dev overlay
@@ -188,11 +191,21 @@ export class GameApp {
         }
       }
 
+      this.applyScreenShake(dt);
+
       // Dev overlay
       if (this.devMode && this.devOverlay) {
         this.updateDevOverlay();
       }
     });
+  }
+
+  private applyScreenShake(deltaTime: number) {
+    if (!this.app) return;
+
+    this.screenShake = stepScreenShake({ state: this.screenShake, deltaTime });
+    this.app.stage.x = this.screenShake.x;
+    this.app.stage.y = this.screenShake.y;
   }
 
   private updateDevOverlay() {
@@ -272,6 +285,7 @@ export class GameApp {
     this.state.score = 0;
     this.state.timeLeft = duration;
     this.state.setPhase('INTRO');
+    this.screenShake = { framesRemaining: 0, magnitude: 0, x: 0, y: 0 };
     this.onScoreChange?.(0);
     this.onTimeChange?.(duration);
 
@@ -306,6 +320,7 @@ export class GameApp {
     }
 
     this.background?.skipIntro();
+    this.screenShake = { framesRemaining: 0, magnitude: 0, x: 0, y: 0 };
     this.state.setPhase('END');
     this.gameScene?.clear();
     this.onGameEnd?.(this.state.score);
@@ -318,6 +333,7 @@ export class GameApp {
     }
 
     this.background?.skipIntro();
+    this.screenShake = { framesRemaining: 0, magnitude: 0, x: 0, y: 0 };
     this.state.setPhase('START');
     this.gameScene?.clear();
   }
