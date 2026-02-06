@@ -201,7 +201,6 @@ export class Character extends Container {
   private animations: Record<AnimationState, Texture[]> | null = null;
   private currentAnim: AnimationState = 'idle';
   private glowFilter: GlowFilter | null = null;
-  private ghostSprites: Sprite[] = [];
 
   public vx = 0;
   private bounceOffset = 0;
@@ -408,7 +407,6 @@ export class Character extends Container {
 
       this.animatedSprite.filters = [shadowFilter, this.glowFilter];
 
-      this.setupGhostTrail();
       this.body.addChild(this.animatedSprite);
       this.currentAnim = 'idle';
     } catch (e) {
@@ -532,24 +530,6 @@ export class Character extends Container {
       width: maxX - minX + 1,
       height: maxY - minY + 1,
     };
-  }
-
-  private setupGhostTrail() {
-    this.ghostSprites.forEach((ghost) => ghost.destroy());
-    this.ghostSprites = [];
-
-    if (!this.animatedSprite) return;
-
-    for (let i = 0; i < 2; i++) {
-      const ghost = new Sprite(this.animatedSprite.texture);
-      ghost.anchor.set(0.5);
-      ghost.width = this.animatedSprite.width;
-      ghost.height = this.animatedSprite.height;
-      ghost.alpha = 0;
-      this.body.addChild(ghost);
-      this.body.setChildIndex(ghost, 0);
-      this.ghostSprites.push(ghost);
-    }
   }
 
   private async loadFigureSprite() {
@@ -711,7 +691,6 @@ export class Character extends Container {
       }
 
       this.animatedSprite.scale.x = this.movingDirection >= 0 ? Math.abs(this.animatedSprite.scale.x) : -Math.abs(this.animatedSprite.scale.x);
-      this.updateGhostTrail(speedNorm);
     }
 
     if (this.glowFilter) {
@@ -727,27 +706,6 @@ export class Character extends Container {
       } else {
         this.animatedSprite.tint = 0xffffff;
       }
-    }
-  }
-
-  private updateGhostTrail(speedNorm: number) {
-    if (!this.animatedSprite || this.ghostSprites.length === 0) return;
-
-    const direction = this.movingDirection;
-    const active = speedNorm > 0.45;
-    for (let i = 0; i < this.ghostSprites.length; i++) {
-      const ghost = this.ghostSprites[i];
-      const strength = (1 - i * 0.4) * clamp((speedNorm - 0.35) / 0.8, 0, 1);
-      ghost.texture = this.animatedSprite.texture;
-      ghost.rotation = this.animatedSprite.rotation;
-      const offset = (i + 1) * (7 + speedNorm * 12);
-      ghost.x = active ? -direction * offset : 0;
-      ghost.y = active ? (i + 1) * 2.5 : 0;
-      const sx = this.animatedSprite.scale.x >= 0 ? 1 : -1;
-      const scale = 1 - (i + 1) * 0.08;
-      ghost.scale.set(sx * scale, scale);
-      ghost.alpha = active ? 0.2 * strength : Math.max(0, ghost.alpha - 0.04);
-      ghost.tint = this.baseColor;
     }
   }
 
