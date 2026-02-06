@@ -13,9 +13,9 @@ interface ToggleState {
 export type QualityTier = 'high' | 'medium' | 'low';
 
 const PARTICLE_QUALITY_MULTIPLIER: Record<QualityTier, number> = {
-  high: 1,
-  medium: 0.72,
-  low: 0.45,
+  high: 1.2,
+  medium: 0.85,
+  low: 0.55,
 };
 
 export class BackgroundSystem {

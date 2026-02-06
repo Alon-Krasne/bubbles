@@ -42,7 +42,7 @@ interface WeatherParticle {
 }
 
 const MAX_WEATHER_PARTICLES = 150;
-const BURST_PARTICLE_COUNT = 10;
+const BURST_PARTICLE_COUNT = 14;
 
 export class WeatherParticles extends Container {
   private particles: WeatherParticle[] = [];
@@ -143,7 +143,8 @@ export class WeatherParticles extends Container {
 
     // Opacity
     const [minAlpha, maxAlpha] = this.config.opacity;
-    p.targetAlpha = minAlpha + Math.random() * (maxAlpha - minAlpha);
+    const targetAlpha = minAlpha + Math.random() * (maxAlpha - minAlpha);
+    p.targetAlpha = Math.min(1, targetAlpha * 1.18);
     p.alpha = randomY ? p.targetAlpha : 0; // Fade in if spawning at edge
 
     // Velocity based on behavior
@@ -383,11 +384,11 @@ export class WeatherParticles extends Container {
 
       // Draw glow effect first (behind particle)
       if (glow) {
-        let glowAlpha = p.alpha * 0.3;
+        let glowAlpha = p.alpha * 0.46;
         if (pulseGlow) {
-          glowAlpha *= 0.5 + Math.sin(this.animationTime * 0.05 + p.glowPulseOffset) * 0.5;
+          glowAlpha *= 0.6 + Math.sin(this.animationTime * 0.05 + p.glowPulseOffset) * 0.4;
         }
-        this.graphics.circle(p.x, p.y, p.size * 2.5);
+        this.graphics.circle(p.x, p.y, p.size * 3.2);
         this.graphics.fill({ color: p.color, alpha: glowAlpha });
       }
 

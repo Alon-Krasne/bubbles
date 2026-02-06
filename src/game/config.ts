@@ -8,5 +8,5 @@ export const MAX_PARTICLES = 150;
 export const PARTICLES_PER_POOF = 15;
 
 // Weather/ambient particles
-export const WEATHER_PARTICLE_COUNT = 70;
+export const WEATHER_PARTICLE_COUNT = 95;
 export const WEATHER_BURST_COUNT = 10;
