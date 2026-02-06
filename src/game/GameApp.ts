@@ -114,6 +114,12 @@ export class GameApp {
         return;
       }
 
+      if (this.devMode && e.code === 'KeyE') {
+        this.background?.burstAt(window.innerWidth * 0.5, window.innerHeight * 0.32, 1.6);
+        e.preventDefault();
+        return;
+      }
+
       if (this.state.phase === 'PLAYING' && ['KeyA', 'KeyD', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
         e.preventDefault();
       }
@@ -204,8 +210,9 @@ export class GameApp {
     const particles = this.gameScene?.getParticleCount() ?? 0;
     const weather = this.background?.getWeatherParticleCount() ?? 0;
     const quality = this.background?.getQualityTier() ?? 'high';
+    const excitement = this.background?.getExcitement() ?? 0;
 
-    this.devOverlay!.text = `FPS: ${this.fpsDisplay}\nQuality: ${quality}\nBubbles: ${bubbles}\nParticles: ${particles}\nWeather: ${weather}`;
+    this.devOverlay!.text = `FPS: ${this.fpsDisplay}\nQuality: ${quality}\nExcitement: ${excitement.toFixed(2)}\nBubbles: ${bubbles}\nParticles: ${particles}\nWeather: ${weather}`;
     this.devOverlay!.style.fill = this.fpsDisplay >= 55 ? 0x4ade80 : this.fpsDisplay >= 30 ? 0xfbbf24 : 0xf87171;
   }
 

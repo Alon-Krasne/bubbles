@@ -474,6 +474,10 @@ export class BackgroundScene extends Container {
     return this.systems.getParticleCount();
   }
 
+  getExcitement(): number {
+    return this.systems.getExcitement();
+  }
+
   private applyDevToggles() {
     const params = new URLSearchParams(window.location.search);
     const disableClouds = params.get('bgClouds') === '0' || localStorage.getItem('bubble_bg_clouds') === '0';

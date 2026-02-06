@@ -11,6 +11,7 @@ Use these while tuning animations/background.
 
 ## Keyboard (dev mode)
 - `Q` — cycle quality tier (`high -> medium -> low -> high`)
+- `E` — trigger a strong manual background burst (for VFX tuning)
 - Any key during intro — skip intro sequence
 
 ## Persisted localStorage keys
