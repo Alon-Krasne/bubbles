@@ -8,8 +8,47 @@
 </head>
 <body>
     <div id="game-container">
+        <!-- Game Select Screen -->
+        <div id="game-select-screen" class="screen active">
+            <div class="game-select-decoration game-select-decoration-sun" aria-hidden="true"></div>
+            <div class="game-select-decoration game-select-decoration-cloud game-select-cloud-1" aria-hidden="true"></div>
+            <div class="game-select-decoration game-select-decoration-cloud game-select-cloud-2" aria-hidden="true"></div>
+
+            <header class="game-select-header">
+                <p class="game-select-kicker">משחקים של לוטם ותום</p>
+                <h1 class="game-select-title">מה משחקים היום?</h1>
+            </header>
+
+            <div class="game-grid" aria-label="בחירת משחק">
+                <button type="button" class="game-choice-card game-choice-card-bubbles" data-game="bubbles" id="select-bubbles-btn">
+                    <span class="game-card-art" aria-hidden="true">
+                        <img src="src/assets/carousel/classic.webp" alt="">
+                        <span class="game-card-bubble game-card-bubble-1"></span>
+                        <span class="game-card-bubble game-card-bubble-2"></span>
+                        <span class="game-card-bubble game-card-bubble-3"></span>
+                    </span>
+                    <span class="game-card-copy">
+                        <span class="game-card-name">בועות!</span>
+                        <span class="game-card-meta">קלאסי</span>
+                    </span>
+                    <span class="game-card-action">בחרו</span>
+                </button>
+
+                <div class="game-choice-card game-choice-card-soon" aria-label="משחק נוסף בקרוב">
+                    <span class="soon-sparkle" aria-hidden="true">✦</span>
+                    <span class="soon-title">עוד משחק</span>
+                    <span class="soon-copy">בקרוב</span>
+                </div>
+            </div>
+        </div>
+
         <!-- Start Screen -->
-        <div id="start-screen" class="screen active">
+        <div id="start-screen" class="screen">
+            <button id="back-to-games-btn" class="back-to-games-btn" type="button" aria-label="חזרה לבחירת משחקים" title="חזרה לבחירת משחקים">
+                <span aria-hidden="true">‹</span>
+                <span>משחקים</span>
+            </button>
+
             <!-- Floating decorations -->
             <div class="floating-decorations">
                 <div class="floating-bubble" style="--delay: 0s; --x: 10%; --size: 60px;"></div>

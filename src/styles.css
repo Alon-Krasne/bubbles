@@ -91,6 +91,272 @@ canvas {
     display: none;
 }
 
+/* ==================== GAME SELECT SCREEN ==================== */
+#game-select-screen {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 38%),
+        transparent;
+    justify-content: center;
+    gap: clamp(24px, 5vh, 44px);
+    padding: clamp(20px, 5vw, 56px);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.game-select-header {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.game-select-kicker {
+    font-size: clamp(16px, 3.2vw, 23px);
+    font-weight: 800;
+    color: #2F7E9B;
+    background: rgba(255, 255, 255, 0.74);
+    border: 2px solid rgba(255, 255, 255, 0.82);
+    border-radius: 999px;
+    padding: 8px 20px;
+    box-shadow: 0 8px 24px rgba(52, 137, 170, 0.12);
+}
+
+.game-select-title {
+    font-family: 'Secular One', sans-serif;
+    font-size: clamp(48px, 11vw, 118px);
+    line-height: 0.96;
+    color: white;
+    text-shadow:
+        0 6px 0 rgba(64, 151, 180, 0.32),
+        0 14px 34px rgba(43, 117, 150, 0.2);
+}
+
+.game-grid {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: minmax(270px, 410px) minmax(210px, 300px);
+    gap: clamp(16px, 3vw, 28px);
+    align-items: stretch;
+    width: min(92vw, 780px);
+}
+
+.game-choice-card {
+    min-height: 310px;
+    border-radius: 34px;
+    border: 3px solid rgba(255, 255, 255, 0.82);
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow:
+        0 18px 0 rgba(86, 144, 151, 0.16),
+        0 28px 55px rgba(61, 134, 164, 0.22),
+        inset 0 3px 0 rgba(255, 255, 255, 0.92);
+    color: var(--text);
+    font-family: 'Rubik', sans-serif;
+}
+
+.game-choice-card-bubbles {
+    position: relative;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    gap: 14px;
+    padding: 20px;
+    cursor: pointer;
+    text-align: right;
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.game-choice-card-bubbles:hover {
+    transform: translateY(-8px) rotate(-1deg);
+    border-color: var(--candy-yellow);
+    box-shadow:
+        0 25px 0 rgba(86, 144, 151, 0.15),
+        0 38px 70px rgba(61, 134, 164, 0.28),
+        0 0 0 6px rgba(255, 230, 109, 0.32),
+        inset 0 3px 0 rgba(255, 255, 255, 0.96);
+}
+
+.game-choice-card-bubbles:active {
+    transform: translateY(3px) rotate(0);
+    box-shadow:
+        0 10px 0 rgba(86, 144, 151, 0.16),
+        0 20px 42px rgba(61, 134, 164, 0.2),
+        inset 0 3px 0 rgba(255, 255, 255, 0.92);
+}
+
+.game-card-art {
+    position: relative;
+    min-height: 166px;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 24% 22%, rgba(255, 230, 109, 0.76) 0 16%, transparent 17%),
+        linear-gradient(160deg, #A9E4FF 0%, #EAF9FF 50%, #8BD96A 100%);
+}
+
+.game-card-art img {
+    width: min(72%, 245px);
+    max-height: 142px;
+    object-fit: contain;
+    filter: drop-shadow(0 13px 16px rgba(38, 103, 132, 0.18));
+    transform: translateY(5px) scale(1.08);
+}
+
+.game-card-bubble {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle at 32% 28%, rgba(255,255,255,0.95) 0 16%, rgba(255,255,255,0.52) 17% 38%, rgba(126,200,232,0.32) 39% 100%);
+    border: 1px solid rgba(255, 255, 255, 0.68);
+    box-shadow: inset -4px -5px 12px rgba(82, 156, 190, 0.12);
+}
+
+.game-card-bubble-1 {
+    width: 52px;
+    height: 52px;
+    right: 24px;
+    top: 24px;
+}
+
+.game-card-bubble-2 {
+    width: 34px;
+    height: 34px;
+    left: 34px;
+    top: 42px;
+}
+
+.game-card-bubble-3 {
+    width: 42px;
+    height: 42px;
+    left: 20%;
+    bottom: 24px;
+}
+
+.game-card-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 0 0 8px 108px;
+}
+
+.game-card-name {
+    font-family: 'Secular One', sans-serif;
+    font-size: clamp(36px, 5vw, 50px);
+    line-height: 1;
+    color: var(--pink-dark);
+    text-shadow:
+        0 2px 0 rgba(255, 255, 255, 0.9),
+        0 7px 16px rgba(229, 122, 149, 0.2);
+}
+
+.game-card-meta {
+    font-size: 18px;
+    font-weight: 800;
+    color: #39768E;
+}
+
+.game-card-action {
+    position: absolute;
+    left: 18px;
+    bottom: 18px;
+    min-width: 86px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #5BE87F 0%, #32CD32 100%);
+    color: white;
+    font-family: 'Secular One', sans-serif;
+    font-size: 22px;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.16);
+    box-shadow: 0 5px 0 #1E8F1E;
+}
+
+.game-choice-card-soon {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 26px;
+    background:
+        repeating-linear-gradient(-35deg, rgba(255,255,255,0.46) 0 12px, rgba(255,255,255,0.24) 12px 24px),
+        rgba(255, 255, 255, 0.56);
+    border-style: dashed;
+    box-shadow:
+        0 18px 0 rgba(86, 144, 151, 0.09),
+        0 24px 45px rgba(61, 134, 164, 0.14),
+        inset 0 3px 0 rgba(255, 255, 255, 0.76);
+    color: rgba(45, 52, 54, 0.62);
+}
+
+.soon-sparkle {
+    width: 82px;
+    height: 82px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(180deg, rgba(255, 230, 109, 0.78), rgba(255, 158, 181, 0.5));
+    color: white;
+    font-size: 44px;
+    text-shadow: 0 3px 0 rgba(229, 122, 149, 0.35);
+}
+
+.soon-title {
+    font-family: 'Secular One', sans-serif;
+    font-size: 34px;
+}
+
+.soon-copy {
+    max-width: 180px;
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.game-select-decoration {
+    position: absolute;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.game-select-decoration-sun {
+    width: clamp(120px, 19vw, 230px);
+    height: clamp(120px, 19vw, 230px);
+    top: clamp(18px, 6vh, 56px);
+    right: clamp(20px, 7vw, 92px);
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #FFF6A4 0%, var(--sun) 58%, #FFB84D 100%);
+    box-shadow:
+        0 0 0 18px rgba(255, 224, 102, 0.14),
+        0 0 55px rgba(255, 184, 77, 0.36);
+}
+
+.game-select-decoration-cloud {
+    width: 170px;
+    height: 58px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.58);
+    box-shadow:
+        48px -18px 0 6px rgba(255, 255, 255, 0.58),
+        92px 2px 0 -2px rgba(255, 255, 255, 0.58);
+}
+
+.game-select-cloud-1 {
+    top: 17%;
+    left: 8%;
+}
+
+.game-select-cloud-2 {
+    bottom: 12%;
+    right: 7%;
+    transform: scale(0.78);
+    opacity: 0.65;
+}
+
 /* ==================== START SCREEN ==================== */
 #start-screen {
     /* Transparent background - PIXI canvas provides animated background */
@@ -98,6 +364,41 @@ canvas {
     gap: 15px;
     justify-content: center;
     padding: 15px;
+}
+
+.back-to-games-btn {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border: none;
+    border-radius: 999px;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.86);
+    color: #39768E;
+    font-family: 'Rubik', sans-serif;
+    font-size: 16px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow:
+        0 5px 0 rgba(57, 118, 142, 0.18),
+        0 10px 24px rgba(57, 118, 142, 0.12);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.back-to-games-btn span:first-child {
+    font-size: 28px;
+    line-height: 0.7;
+}
+
+.back-to-games-btn:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 8px 0 rgba(57, 118, 142, 0.18),
+        0 16px 28px rgba(57, 118, 142, 0.16);
 }
 
 /* ==================== GAME TITLE ==================== */
@@ -1275,6 +1576,66 @@ td {
 
 /* ==================== RESPONSIVE ==================== */
 @media (max-width: 650px) {
+    #game-select-screen {
+        justify-content: flex-start;
+        padding-top: 34px;
+        gap: 22px;
+    }
+
+    .game-grid {
+        grid-template-columns: minmax(260px, 1fr);
+        width: min(92vw, 420px);
+    }
+
+    .game-choice-card {
+        min-height: 236px;
+        border-radius: 28px;
+    }
+
+    .game-choice-card-bubbles {
+        padding: 16px;
+    }
+
+    .game-card-art {
+        min-height: 132px;
+    }
+
+    .game-card-action {
+        min-width: 76px;
+        padding: 8px 14px;
+        font-size: 20px;
+    }
+
+    .game-card-copy {
+        padding-left: 92px;
+    }
+
+    .game-choice-card-soon {
+        min-height: 150px;
+    }
+
+    .soon-sparkle {
+        width: 58px;
+        height: 58px;
+        font-size: 32px;
+    }
+
+    .soon-title {
+        font-size: 27px;
+    }
+
+    .game-select-decoration-sun {
+        right: -36px;
+        top: 18px;
+        opacity: 0.78;
+    }
+
+    .game-select-cloud-1 {
+        left: -60px;
+        top: 120px;
+        opacity: 0.68;
+    }
+
     .players-area {
         flex-direction: column;
         align-items: center;
@@ -1345,6 +1706,35 @@ td {
 }
 
 @media (max-width: 400px) {
+    .game-select-kicker {
+        font-size: 15px;
+        padding: 7px 14px;
+    }
+
+    .game-choice-card {
+        min-height: 220px;
+    }
+
+    .game-card-art {
+        min-height: 116px;
+    }
+
+    .game-card-meta {
+        font-size: 15px;
+    }
+
+    .game-card-action {
+        left: 14px;
+        bottom: 14px;
+    }
+
+    .back-to-games-btn {
+        top: 10px;
+        right: 10px;
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+
     .player-bubble {
         padding: 15px 12px 12px;
         min-width: 240px;
@@ -1366,6 +1756,32 @@ td {
 }
 
 @media (max-height: 700px) {
+    #game-select-screen {
+        gap: 18px;
+        padding-top: 20px;
+        padding-bottom: 20px;
+    }
+
+    .game-select-title {
+        font-size: clamp(38px, 10vw, 74px);
+    }
+
+    .game-choice-card {
+        min-height: 218px;
+    }
+
+    .game-card-art {
+        min-height: 116px;
+    }
+
+    .game-card-name {
+        font-size: clamp(32px, 6vw, 42px);
+    }
+
+    .game-choice-card-soon {
+        min-height: 160px;
+    }
+
     #start-screen {
         gap: 10px;
         padding: 10px;
@@ -1456,6 +1872,51 @@ td {
 
 /* Very small height */
 @media (max-height: 550px) {
+    .game-grid {
+        grid-template-columns: minmax(260px, 380px) minmax(180px, 250px);
+    }
+
+    .game-select-kicker {
+        display: none;
+    }
+
+    .game-choice-card {
+        min-height: 172px;
+    }
+
+    .game-card-art {
+        min-height: 86px;
+    }
+
+    .game-card-art img {
+        max-height: 82px;
+    }
+
+    .game-card-bubble-1 {
+        width: 38px;
+        height: 38px;
+    }
+
+    .game-card-bubble-2,
+    .game-card-bubble-3 {
+        width: 28px;
+        height: 28px;
+    }
+
+    .soon-sparkle {
+        width: 48px;
+        height: 48px;
+        font-size: 28px;
+    }
+
+    .soon-title {
+        font-size: 24px;
+    }
+
+    .soon-copy {
+        font-size: 14px;
+    }
+
     .floating-decorations {
         display: none;
     }
@@ -1493,5 +1954,16 @@ td {
     
     .carousel-card .card-name {
         font-size: 9px;
+    }
+}
+
+@media (max-width: 650px) and (max-height: 550px) {
+    .game-grid {
+        grid-template-columns: minmax(250px, 1fr);
+    }
+
+    .game-choice-card-soon {
+        min-height: 96px;
+        padding: 14px;
     }
 }
