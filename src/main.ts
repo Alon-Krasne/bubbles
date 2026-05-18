@@ -79,6 +79,7 @@ let memoryFirstCard: HTMLButtonElement | null = null;
 let memorySecondCard: HTMLButtonElement | null = null;
 let memoryMatchedPairs = new Set<string>();
 let memoryLocked = false;
+let memoryToastTimer: number | null = null;
 
 // Load saved preferences
 function loadPreferences() {
@@ -356,6 +357,7 @@ function startMemoryRound(difficulty: MemoryDifficulty) {
   updateMemoryDifficultyButtons();
   renderMemoryBoard();
   updateMemoryStatus('הפכו שני קלפים שמתחברים');
+  hideMemoryToast();
 }
 
 function shuffleMemoryCards(cards: MemoryCard[]): MemoryCard[] {
@@ -455,14 +457,14 @@ function matchMemoryCards() {
 
   const matchedWord = MEMORY_WORDS.find((word) => word.id === wordId) as MemoryWord;
   const pairCount = MEMORY_DIFFICULTY_PAIRS[memoryDifficulty];
-  const message = memoryMatchedPairs.size === pairCount
-    ? 'הגן מלא מילים!'
-    : `${matchedWord.hebrew} = ${matchedWord.english}`;
+  const isComplete = memoryMatchedPairs.size === pairCount;
+  const message = isComplete ? 'הגן מלא מילים!' : `${matchedWord.hebrew} = ${matchedWord.english}`;
 
   memoryFirstCard = null;
   memorySecondCard = null;
   memoryLocked = false;
   updateMemoryStatus(message);
+  showMemoryToast(matchedWord, isComplete);
 }
 
 function closeUnmatchedMemoryCards() {
@@ -484,6 +486,38 @@ function updateMemoryStatus(message: string) {
   const pairCount = MEMORY_DIFFICULTY_PAIRS[memoryDifficulty];
   requireElement<HTMLDivElement>('memory-progress').textContent = `${memoryMatchedPairs.size} מתוך ${pairCount} זוגות`;
   requireElement<HTMLDivElement>('memory-message').textContent = message;
+}
+
+function showMemoryToast(matchedWord: MemoryWord, isComplete: boolean) {
+  const toast = requireElement<HTMLDivElement>('memory-toast');
+  const toastText = requireElement<HTMLSpanElement>('memory-toast-text');
+  const name = p1Name.trim() || 'לוטם';
+  toastText.textContent = isComplete
+    ? `${name}, גן המילים שלך פורח!`
+    : `${name}, מצאת זוג: ${matchedWord.hebrew} = ${matchedWord.english}`;
+
+  if (memoryToastTimer) {
+    clearTimeout(memoryToastTimer);
+  }
+
+  toast.classList.remove('is-visible', 'is-complete');
+  void toast.offsetWidth;
+  toast.classList.toggle('is-complete', isComplete);
+  toast.classList.add('is-visible');
+
+  memoryToastTimer = window.setTimeout(() => {
+    toast.classList.remove('is-visible', 'is-complete');
+    memoryToastTimer = null;
+  }, isComplete ? 4200 : 3000);
+}
+
+function hideMemoryToast() {
+  if (memoryToastTimer) {
+    clearTimeout(memoryToastTimer);
+    memoryToastTimer = null;
+  }
+
+  document.getElementById('memory-toast')?.classList.remove('is-visible', 'is-complete');
 }
 
 // ==================== WORLD CAROUSEL (Infinite Loop) ====================

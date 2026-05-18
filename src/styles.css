@@ -745,6 +745,81 @@ canvas {
     font-weight: 900;
 }
 
+.memory-toast {
+    position: fixed;
+    left: 50%;
+    bottom: clamp(22px, 5vh, 54px);
+    z-index: 30;
+    display: grid;
+    grid-template-columns: 48px minmax(170px, auto) 28px;
+    align-items: center;
+    gap: 12px;
+    max-width: min(92vw, 560px);
+    min-height: 68px;
+    padding: 12px 18px 12px 14px;
+    border-radius: 999px;
+    border: 3px solid rgba(255,255,255,0.88);
+    background:
+        radial-gradient(circle at 12% 18%, rgba(255, 230, 109, 0.42), transparent 28%),
+        linear-gradient(180deg, rgba(255,255,255,0.96), rgba(232, 255, 221, 0.96));
+    color: #39768E;
+    font-family: 'Rubik', sans-serif;
+    font-weight: 900;
+    box-shadow:
+        0 10px 0 rgba(90, 158, 58, 0.18),
+        0 22px 44px rgba(57, 118, 142, 0.22),
+        inset 0 3px 0 rgba(255,255,255,0.94);
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, 22px) scale(0.92);
+    transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.memory-toast.is-visible {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+}
+
+.memory-toast.is-complete {
+    background:
+        radial-gradient(circle at 12% 18%, rgba(255, 230, 109, 0.5), transparent 30%),
+        linear-gradient(180deg, #FFFFFF 0%, #FFF2A8 44%, #DDF8C5 100%);
+    color: #5A7600;
+    box-shadow:
+        0 10px 0 rgba(212, 168, 0, 0.24),
+        0 24px 52px rgba(90, 158, 58, 0.3),
+        inset 0 3px 0 rgba(255,255,255,0.96);
+}
+
+.memory-toast-flower {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    justify-self: center;
+    border-radius: 50%;
+    background: radial-gradient(circle, #FFE66D 0 23%, #FF9EB5 25% 49%, transparent 51%);
+    box-shadow:
+        0 -22px 0 -10px #FF9EB5,
+        0 22px 0 -10px #FF9EB5,
+        22px 0 0 -10px #FF9EB5,
+        -22px 0 0 -10px #FF9EB5,
+        15px 15px 0 -11px #C9A0DC,
+        -15px -15px 0 -11px #C9A0DC;
+}
+
+.memory-toast-text {
+    font-size: clamp(17px, 3vw, 24px);
+    line-height: 1.2;
+    text-align: center;
+}
+
+.memory-toast-spark {
+    color: #E57A95;
+    font-family: 'Secular One', sans-serif;
+    font-size: 26px;
+    text-shadow: 0 2px 0 rgba(255,255,255,0.85);
+}
+
 /* ==================== START SCREEN ==================== */
 #start-screen {
     /* Transparent background - PIXI canvas provides animated background */
@@ -2059,6 +2134,19 @@ td {
         border-radius: 18px;
     }
 
+    .memory-toast {
+        grid-template-columns: 38px minmax(150px, auto) 22px;
+        gap: 8px;
+        min-height: 58px;
+        padding: 10px 14px 10px 12px;
+        bottom: 18px;
+    }
+
+    .memory-toast-flower {
+        width: 34px;
+        height: 34px;
+    }
+
     .game-choice-card-soon {
         min-height: 150px;
     }
@@ -2208,6 +2296,11 @@ td {
 
     .memory-card {
         min-height: 86px;
+    }
+
+    .memory-toast {
+        max-width: 94vw;
+        border-radius: 28px;
     }
 
     .player-bubble {
@@ -2440,6 +2533,16 @@ td {
 
     .memory-card {
         min-height: 70px;
+    }
+
+    .memory-toast {
+        bottom: 10px;
+        min-height: 50px;
+        padding: 8px 12px;
+    }
+
+    .memory-toast-text {
+        font-size: 15px;
     }
 
     .game-card-bubble-1 {
