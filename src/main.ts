@@ -80,6 +80,7 @@ let memorySecondCard: HTMLButtonElement | null = null;
 let memoryMatchedPairs = new Set<string>();
 let memoryLocked = false;
 let memoryToastTimer: number | null = null;
+let memoryMismatchTimer: number | null = null;
 
 // Load saved preferences
 function loadPreferences() {
@@ -254,6 +255,8 @@ function setupUI() {
 }
 
 function openBubblesSetup() {
+  clearMemoryMismatchTimer();
+  hideMemoryToast();
   showScreen('start-screen');
 }
 
@@ -264,6 +267,8 @@ function openMemoryGarden() {
 }
 
 function startGame() {
+  clearMemoryMismatchTimer();
+  hideMemoryToast();
   showScreen('game-hud');
 
   gameApp.startGame(
@@ -274,11 +279,15 @@ function startGame() {
 }
 
 function returnToGameSelect() {
+  clearMemoryMismatchTimer();
+  hideMemoryToast();
   gameApp.returnToStart();
   showScreen('game-select-screen');
 }
 
 function returnToStart() {
+  clearMemoryMismatchTimer();
+  hideMemoryToast();
   gameApp.returnToStart();
   showScreen('start-screen');
 }
@@ -330,6 +339,7 @@ function loadHighScores() {
 }
 
 function startMemoryRound(difficulty: MemoryDifficulty) {
+  clearMemoryMismatchTimer();
   memoryDifficulty = difficulty;
   memoryMatchedPairs = new Set<string>();
   memoryFirstCard = null;
@@ -435,7 +445,7 @@ function handleMemoryCardClick(cardButton: HTMLButtonElement) {
     matchMemoryCards();
   } else {
     updateMemoryStatus('כמעט. נסו שוב');
-    window.setTimeout(closeUnmatchedMemoryCards, 850);
+    memoryMismatchTimer = window.setTimeout(closeUnmatchedMemoryCards, 850);
   }
 }
 
@@ -468,8 +478,17 @@ function matchMemoryCards() {
 }
 
 function closeUnmatchedMemoryCards() {
-  const firstCard = memoryFirstCard as HTMLButtonElement;
-  const secondCard = memorySecondCard as HTMLButtonElement;
+  memoryMismatchTimer = null;
+
+  if (!memoryFirstCard || !memorySecondCard || !memoryFirstCard.isConnected || !memorySecondCard.isConnected) {
+    memoryFirstCard = null;
+    memorySecondCard = null;
+    memoryLocked = false;
+    return;
+  }
+
+  const firstCard = memoryFirstCard;
+  const secondCard = memorySecondCard;
 
   firstCard.classList.remove('is-face-up');
   secondCard.classList.remove('is-face-up');
@@ -480,6 +499,13 @@ function closeUnmatchedMemoryCards() {
   memorySecondCard = null;
   memoryLocked = false;
   updateMemoryStatus('הפכו שני קלפים שמתחברים');
+}
+
+function clearMemoryMismatchTimer() {
+  if (memoryMismatchTimer) {
+    clearTimeout(memoryMismatchTimer);
+    memoryMismatchTimer = null;
+  }
 }
 
 function updateMemoryStatus(message: string) {
