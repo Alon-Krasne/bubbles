@@ -34,12 +34,57 @@
                     <span class="game-card-action">בחרו</span>
                 </button>
 
-                <div class="game-choice-card game-choice-card-soon" aria-label="משחק נוסף בקרוב">
-                    <span class="soon-sparkle" aria-hidden="true">✦</span>
-                    <span class="soon-title">עוד משחק</span>
-                    <span class="soon-copy">בקרוב</span>
-                </div>
+                <button type="button" class="game-choice-card game-choice-card-memory" data-game="memory-garden" id="select-memory-btn">
+                    <span class="memory-card-art" aria-hidden="true">
+                        <span class="memory-art-card memory-art-card-he">שמש</span>
+                        <span class="memory-art-card memory-art-card-en">sun</span>
+                        <span class="memory-art-flower memory-flower-1"></span>
+                        <span class="memory-art-flower memory-flower-2"></span>
+                    </span>
+                    <span class="game-card-copy memory-card-copy">
+                        <span class="game-card-name memory-game-name">גן מילים</span>
+                        <span class="game-card-meta">זוגות עברית ואנגלית</span>
+                    </span>
+                    <span class="game-card-action">בחרו</span>
+                </button>
             </div>
+        </div>
+
+        <!-- Memory Garden Screen -->
+        <div id="memory-screen" class="screen">
+            <button id="memory-back-btn" class="back-to-games-btn" type="button" aria-label="חזרה לבחירת משחקים" title="חזרה לבחירת משחקים">
+                <span aria-hidden="true">‹</span>
+                <span>משחקים</span>
+            </button>
+
+            <header class="memory-header">
+                <p class="memory-kicker">משחק זוגות בלי זמן</p>
+                <h1 class="memory-title">גן מילים</h1>
+                <p class="memory-subtitle">מצאו זוגות של עברית ואנגלית</p>
+            </header>
+
+            <div class="memory-controls" aria-label="בחירת קושי">
+                <button type="button" class="memory-difficulty-btn active" data-difficulty="easy">
+                    <span>קל</span>
+                    <small>4 זוגות</small>
+                </button>
+                <button type="button" class="memory-difficulty-btn" data-difficulty="medium">
+                    <span>רגיל</span>
+                    <small>6 זוגות</small>
+                </button>
+                <button type="button" class="memory-difficulty-btn" data-difficulty="hard">
+                    <span>גדול</span>
+                    <small>8 זוגות</small>
+                </button>
+            </div>
+
+            <div class="memory-status-panel" aria-live="polite">
+                <div class="memory-progress" id="memory-progress">0 מתוך 4 זוגות</div>
+                <div class="memory-message" id="memory-message">הפכו שני קלפים שמתחברים</div>
+                <button type="button" id="memory-new-garden-btn" class="memory-new-garden-btn">גן חדש</button>
+            </div>
+
+            <div id="memory-board" class="memory-board" aria-label="קלפי גן מילים"></div>
         </div>
 
         <!-- Start Screen -->

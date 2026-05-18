@@ -12,7 +12,43 @@ if (versionBadge) {
 // Initialize game
 const gameApp = new GameApp();
 
-type ScreenId = 'game-select-screen' | 'start-screen' | 'game-hud' | 'end-screen';
+type ScreenId = 'game-select-screen' | 'memory-screen' | 'start-screen' | 'game-hud' | 'end-screen';
+type MemoryDifficulty = 'easy' | 'medium' | 'hard';
+type MemoryCardKind = 'hebrew' | 'english';
+
+interface MemoryWord {
+  id: string;
+  hebrew: string;
+  english: string;
+}
+
+interface MemoryCard {
+  cardId: string;
+  wordId: string;
+  kind: MemoryCardKind;
+  text: string;
+}
+
+const MEMORY_WORDS: MemoryWord[] = [
+  { id: 'dog', hebrew: 'כלב', english: 'dog' },
+  { id: 'cat', hebrew: 'חתול', english: 'cat' },
+  { id: 'apple', hebrew: 'תפוח', english: 'apple' },
+  { id: 'banana', hebrew: 'בננה', english: 'banana' },
+  { id: 'sun', hebrew: 'שמש', english: 'sun' },
+  { id: 'moon', hebrew: 'ירח', english: 'moon' },
+  { id: 'house', hebrew: 'בית', english: 'house' },
+  { id: 'car', hebrew: 'מכונית', english: 'car' },
+  { id: 'ball', hebrew: 'כדור', english: 'ball' },
+  { id: 'tree', hebrew: 'עץ', english: 'tree' },
+  { id: 'fish', hebrew: 'דג', english: 'fish' },
+  { id: 'flower', hebrew: 'פרח', english: 'flower' },
+];
+
+const MEMORY_DIFFICULTY_PAIRS: Record<MemoryDifficulty, number> = {
+  easy: 4,
+  medium: 6,
+  hard: 8,
+};
 
 function requireElement<T extends HTMLElement>(id: string): T {
   const element = document.getElementById(id);
@@ -37,6 +73,12 @@ let p1Figure: FigureType = 'blob';
 let p2Figure: FigureType = 'blob';
 let selectedTime = 45;
 let fallingItemsMode: FallingItemMode = 'bubbles';
+let memoryDifficulty: MemoryDifficulty = 'easy';
+let memoryCards: MemoryCard[] = [];
+let memoryFirstCard: HTMLButtonElement | null = null;
+let memorySecondCard: HTMLButtonElement | null = null;
+let memoryMatchedPairs = new Set<string>();
+let memoryLocked = false;
 
 // Load saved preferences
 function loadPreferences() {
@@ -175,8 +217,18 @@ function setupUI() {
 
   // Start button
   requireElement<HTMLButtonElement>('select-bubbles-btn').addEventListener('click', openBubblesSetup);
+  requireElement<HTMLButtonElement>('select-memory-btn').addEventListener('click', openMemoryGarden);
   requireElement<HTMLButtonElement>('back-to-games-btn').addEventListener('click', returnToGameSelect);
   requireElement<HTMLButtonElement>('start-btn').addEventListener('click', startGame);
+  requireElement<HTMLButtonElement>('memory-back-btn').addEventListener('click', returnToGameSelect);
+  requireElement<HTMLButtonElement>('memory-new-garden-btn').addEventListener('click', () => startMemoryRound(memoryDifficulty));
+
+  document.querySelectorAll<HTMLButtonElement>('.memory-difficulty-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const difficulty = btn.dataset.difficulty as MemoryDifficulty;
+      startMemoryRound(difficulty);
+    });
+  });
 
   // Restart button
   document.getElementById('restart-btn')?.addEventListener('click', returnToStart);
@@ -202,6 +254,12 @@ function setupUI() {
 
 function openBubblesSetup() {
   showScreen('start-screen');
+}
+
+function openMemoryGarden() {
+  gameApp.returnToStart();
+  startMemoryRound(memoryDifficulty);
+  showScreen('memory-screen');
 }
 
 function startGame() {
@@ -268,6 +326,164 @@ function loadHighScores() {
       })
       .join('');
   }
+}
+
+function startMemoryRound(difficulty: MemoryDifficulty) {
+  memoryDifficulty = difficulty;
+  memoryMatchedPairs = new Set<string>();
+  memoryFirstCard = null;
+  memorySecondCard = null;
+  memoryLocked = false;
+
+  const pairCount = MEMORY_DIFFICULTY_PAIRS[difficulty];
+  const selectedWords = MEMORY_WORDS.slice(0, pairCount);
+  const cards = selectedWords.flatMap((word): MemoryCard[] => [
+    {
+      cardId: `${word.id}-hebrew`,
+      wordId: word.id,
+      kind: 'hebrew',
+      text: word.hebrew,
+    },
+    {
+      cardId: `${word.id}-english`,
+      wordId: word.id,
+      kind: 'english',
+      text: word.english,
+    },
+  ]);
+
+  memoryCards = shuffleMemoryCards(cards);
+  updateMemoryDifficultyButtons();
+  renderMemoryBoard();
+  updateMemoryStatus('הפכו שני קלפים שמתחברים');
+}
+
+function shuffleMemoryCards(cards: MemoryCard[]): MemoryCard[] {
+  const shuffled = [...cards];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+function updateMemoryDifficultyButtons() {
+  document.querySelectorAll<HTMLButtonElement>('.memory-difficulty-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.difficulty === memoryDifficulty);
+  });
+}
+
+function renderMemoryBoard() {
+  const board = requireElement<HTMLDivElement>('memory-board');
+  board.innerHTML = '';
+  board.dataset.difficulty = memoryDifficulty;
+
+  memoryCards.forEach((card) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `memory-card memory-card-${card.kind}`;
+    button.dataset.cardId = card.cardId;
+    button.dataset.wordId = card.wordId;
+    button.dataset.kind = card.kind;
+    button.setAttribute('aria-label', 'קלף זיכרון סגור');
+
+    const back = document.createElement('span');
+    back.className = 'memory-card-back';
+    back.textContent = '❋';
+
+    const front = document.createElement('span');
+    front.className = 'memory-card-front';
+
+    const word = document.createElement('span');
+    word.className = 'memory-card-word';
+    word.textContent = card.text;
+
+    const language = document.createElement('span');
+    language.className = 'memory-card-language';
+    language.textContent = card.kind === 'hebrew' ? 'עברית' : 'English';
+
+    front.append(word, language);
+    button.append(back, front);
+    button.addEventListener('click', () => handleMemoryCardClick(button));
+    board.append(button);
+  });
+}
+
+function handleMemoryCardClick(cardButton: HTMLButtonElement) {
+  if (memoryLocked || cardButton.classList.contains('is-face-up') || cardButton.classList.contains('is-matched')) {
+    return;
+  }
+
+  revealMemoryCard(cardButton);
+
+  if (!memoryFirstCard) {
+    memoryFirstCard = cardButton;
+    updateMemoryStatus('בחרו את הזוג שלו');
+    return;
+  }
+
+  memorySecondCard = cardButton;
+  memoryLocked = true;
+
+  const isMatch =
+    memoryFirstCard.dataset.wordId === memorySecondCard.dataset.wordId &&
+    memoryFirstCard.dataset.kind !== memorySecondCard.dataset.kind;
+
+  if (isMatch) {
+    matchMemoryCards();
+  } else {
+    updateMemoryStatus('כמעט. נסו שוב');
+    window.setTimeout(closeUnmatchedMemoryCards, 850);
+  }
+}
+
+function revealMemoryCard(cardButton: HTMLButtonElement) {
+  cardButton.classList.add('is-face-up');
+  cardButton.setAttribute('aria-label', cardButton.textContent?.trim() || 'קלף פתוח');
+}
+
+function matchMemoryCards() {
+  const firstCard = memoryFirstCard as HTMLButtonElement;
+  const secondCard = memorySecondCard as HTMLButtonElement;
+  const wordId = firstCard.dataset.wordId as string;
+
+  firstCard.classList.add('is-matched');
+  secondCard.classList.add('is-matched');
+  firstCard.disabled = true;
+  secondCard.disabled = true;
+  memoryMatchedPairs.add(wordId);
+
+  const matchedWord = MEMORY_WORDS.find((word) => word.id === wordId) as MemoryWord;
+  const pairCount = MEMORY_DIFFICULTY_PAIRS[memoryDifficulty];
+  const message = memoryMatchedPairs.size === pairCount
+    ? 'הגן מלא מילים!'
+    : `${matchedWord.hebrew} = ${matchedWord.english}`;
+
+  memoryFirstCard = null;
+  memorySecondCard = null;
+  memoryLocked = false;
+  updateMemoryStatus(message);
+}
+
+function closeUnmatchedMemoryCards() {
+  const firstCard = memoryFirstCard as HTMLButtonElement;
+  const secondCard = memorySecondCard as HTMLButtonElement;
+
+  firstCard.classList.remove('is-face-up');
+  secondCard.classList.remove('is-face-up');
+  firstCard.setAttribute('aria-label', 'קלף זיכרון סגור');
+  secondCard.setAttribute('aria-label', 'קלף זיכרון סגור');
+
+  memoryFirstCard = null;
+  memorySecondCard = null;
+  memoryLocked = false;
+  updateMemoryStatus('הפכו שני קלפים שמתחברים');
+}
+
+function updateMemoryStatus(message: string) {
+  const pairCount = MEMORY_DIFFICULTY_PAIRS[memoryDifficulty];
+  requireElement<HTMLDivElement>('memory-progress').textContent = `${memoryMatchedPairs.size} מתוך ${pairCount} זוגות`;
+  requireElement<HTMLDivElement>('memory-message').textContent = message;
 }
 
 // ==================== WORLD CAROUSEL (Infinite Loop) ====================
