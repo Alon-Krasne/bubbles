@@ -73,6 +73,13 @@ bubbles/
 - `bun run bundle` - Create `dist/bubbles_v<major>.html`
 - `bun run share` - Bundle and open
 
+## Branch and PR Workflow
+- Do not implement feature work directly on `main`.
+- Before editing files for implementation work, create or switch to a `codex/<description>` feature branch from the current `main`.
+- Keep local `main` clean and aligned with `origin/main`; use it only as the integration base.
+- Open a PR for completed feature work instead of leaving changes uncommitted on `main`.
+- If work accidentally starts on `main`, move the uncommitted changes to a feature branch before committing or opening a PR.
+
 ## Key Design Decisions
 - Keep vanilla HTML/CSS/JS (no frameworks)
 - Canvas for game, DOM for UI overlays (screens, HUD)
