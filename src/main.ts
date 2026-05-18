@@ -12,6 +12,22 @@ if (versionBadge) {
 // Initialize game
 const gameApp = new GameApp();
 
+type ScreenId = 'game-select-screen' | 'start-screen' | 'game-hud' | 'end-screen';
+
+function requireElement<T extends HTMLElement>(id: string): T {
+  const element = document.getElementById(id);
+  if (!element) {
+    throw new Error(`Missing #${id}`);
+  }
+  return element as T;
+}
+
+function showScreen(screenId: ScreenId) {
+  document.querySelectorAll<HTMLElement>('.screen').forEach((screen) => {
+    screen.classList.toggle('active', screen.id === screenId);
+  });
+}
+
 // Player state (will be updated by UI)
 let p1Name = localStorage.getItem('bubble_p1_name') || 'לוטם';
 let p2Name = localStorage.getItem('bubble_p2_name') || 'תום';
@@ -158,7 +174,9 @@ function setupUI() {
   });
 
   // Start button
-  document.getElementById('start-btn')?.addEventListener('click', startGame);
+  requireElement<HTMLButtonElement>('select-bubbles-btn').addEventListener('click', openBubblesSetup);
+  requireElement<HTMLButtonElement>('back-to-games-btn').addEventListener('click', returnToGameSelect);
+  requireElement<HTMLButtonElement>('start-btn').addEventListener('click', startGame);
 
   // Restart button
   document.getElementById('restart-btn')?.addEventListener('click', returnToStart);
@@ -182,10 +200,12 @@ function setupUI() {
   });
 }
 
+function openBubblesSetup() {
+  showScreen('start-screen');
+}
+
 function startGame() {
-  document.getElementById('start-screen')?.classList.remove('active');
-  document.getElementById('end-screen')?.classList.remove('active');
-  document.getElementById('game-hud')?.classList.add('active');
+  showScreen('game-hud');
 
   gameApp.startGame(
     { name: p1Name, color: p1Color, figureType: p1Figure, isGirl: true },
@@ -194,16 +214,18 @@ function startGame() {
   );
 }
 
+function returnToGameSelect() {
+  gameApp.returnToStart();
+  showScreen('game-select-screen');
+}
+
 function returnToStart() {
   gameApp.returnToStart();
-  document.getElementById('game-hud')?.classList.remove('active');
-  document.getElementById('end-screen')?.classList.remove('active');
-  document.getElementById('start-screen')?.classList.add('active');
+  showScreen('start-screen');
 }
 
 function showEndScreen(score: number) {
-  document.getElementById('game-hud')?.classList.remove('active');
-  document.getElementById('end-screen')?.classList.add('active');
+  showScreen('end-screen');
 
   const finalScoreEl = document.getElementById('final-score-val');
   if (finalScoreEl) finalScoreEl.textContent = String(score);
