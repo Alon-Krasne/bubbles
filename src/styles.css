@@ -738,13 +738,6 @@ canvas {
     direction: ltr;
 }
 
-.memory-card-language {
-    margin-top: 8px;
-    color: #6F8D98;
-    font-size: clamp(12px, 1.8vw, 15px);
-    font-weight: 900;
-}
-
 .memory-toast {
     position: relative;
     z-index: 30;
