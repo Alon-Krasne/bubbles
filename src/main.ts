@@ -410,11 +410,7 @@ function renderMemoryBoard() {
     word.className = 'memory-card-word';
     word.textContent = card.text;
 
-    const language = document.createElement('span');
-    language.className = 'memory-card-language';
-    language.textContent = card.kind === 'hebrew' ? 'עברית' : 'English';
-
-    front.append(word, language);
+    front.append(word);
     button.append(back, front);
     button.addEventListener('click', () => handleMemoryCardClick(button));
     board.append(button);
