@@ -16,10 +16,17 @@ type ScreenId = 'game-select-screen' | 'memory-screen' | 'start-screen' | 'game-
 type MemoryDifficulty = 'easy' | 'medium' | 'hard';
 type MemoryCardKind = 'hebrew' | 'english';
 
+interface KidProfile {
+  id: string;
+  name: string;
+  emoji: string;
+}
+
 interface MemoryWord {
   id: string;
   hebrew: string;
   english: string;
+  drawing: string;
 }
 
 interface MemoryCard {
@@ -27,21 +34,23 @@ interface MemoryCard {
   wordId: string;
   kind: MemoryCardKind;
   text: string;
+  english: string;
+  drawing: string;
 }
 
 const MEMORY_WORDS: MemoryWord[] = [
-  { id: 'dog', hebrew: 'כלב', english: 'dog' },
-  { id: 'cat', hebrew: 'חתול', english: 'cat' },
-  { id: 'apple', hebrew: 'תפוח', english: 'apple' },
-  { id: 'banana', hebrew: 'בננה', english: 'banana' },
-  { id: 'sun', hebrew: 'שמש', english: 'sun' },
-  { id: 'moon', hebrew: 'ירח', english: 'moon' },
-  { id: 'house', hebrew: 'בית', english: 'house' },
-  { id: 'car', hebrew: 'מכונית', english: 'car' },
-  { id: 'ball', hebrew: 'כדור', english: 'ball' },
-  { id: 'tree', hebrew: 'עץ', english: 'tree' },
-  { id: 'fish', hebrew: 'דג', english: 'fish' },
-  { id: 'flower', hebrew: 'פרח', english: 'flower' },
+  { id: 'dog', hebrew: 'כלב', english: 'dog', drawing: '🐶' },
+  { id: 'cat', hebrew: 'חתול', english: 'cat', drawing: '🐱' },
+  { id: 'apple', hebrew: 'תפוח', english: 'apple', drawing: '🍎' },
+  { id: 'banana', hebrew: 'בננה', english: 'banana', drawing: '🍌' },
+  { id: 'sun', hebrew: 'שמש', english: 'sun', drawing: '☀️' },
+  { id: 'moon', hebrew: 'ירח', english: 'moon', drawing: '🌙' },
+  { id: 'house', hebrew: 'בית', english: 'house', drawing: '🏠' },
+  { id: 'car', hebrew: 'מכונית', english: 'car', drawing: '🚗' },
+  { id: 'ball', hebrew: 'כדור', english: 'ball', drawing: '⚽' },
+  { id: 'tree', hebrew: 'עץ', english: 'tree', drawing: '🌳' },
+  { id: 'fish', hebrew: 'דג', english: 'fish', drawing: '🐟' },
+  { id: 'flower', hebrew: 'פרח', english: 'flower', drawing: '🌸' },
 ];
 
 const MEMORY_DIFFICULTY_PAIRS: Record<MemoryDifficulty, number> = {
@@ -49,6 +58,14 @@ const MEMORY_DIFFICULTY_PAIRS: Record<MemoryDifficulty, number> = {
   medium: 6,
   hard: 8,
 };
+
+const PROFILE_STORAGE_KEY = 'bubble_kid_profiles';
+const ACTIVE_PROFILE_STORAGE_KEY = 'bubble_active_kid_profile';
+const DEFAULT_KID_PROFILES: KidProfile[] = [
+  { id: 'lotem', name: 'לוטם', emoji: '🌸' },
+  { id: 'tom', name: 'תום', emoji: '🫧' },
+];
+const PROFILE_EMOJIS = ['🌸', '🫧', '⭐', '🌈', '🍎', '🦄', '🚗', '☀️', '🐶', '🏠'];
 
 function requireElement<T extends HTMLElement>(id: string): T {
   const element = document.getElementById(id);
@@ -65,8 +82,10 @@ function showScreen(screenId: ScreenId) {
 }
 
 // Player state (will be updated by UI)
-let p1Name = localStorage.getItem('bubble_p1_name') || 'לוטם';
-let p2Name = localStorage.getItem('bubble_p2_name') || 'תום';
+let kidProfiles: KidProfile[] = DEFAULT_KID_PROFILES.map((profile) => ({ ...profile }));
+let activeProfileId = DEFAULT_KID_PROFILES[0].id;
+let p1Name = DEFAULT_KID_PROFILES[0].name;
+let p2Name = DEFAULT_KID_PROFILES[1].name;
 let p1Color = 0xff9eb5;
 let p2Color = 0x7ec8e8;
 let p1Figure: FigureType = 'blob';
@@ -75,8 +94,8 @@ let selectedTime = 45;
 let fallingItemsMode: FallingItemMode = 'bubbles';
 let memoryDifficulty: MemoryDifficulty = 'easy';
 let memoryCards: MemoryCard[] = [];
-let memoryFirstCard: HTMLButtonElement | null = null;
-let memorySecondCard: HTMLButtonElement | null = null;
+let memoryFirstCard: HTMLDivElement | null = null;
+let memorySecondCard: HTMLDivElement | null = null;
 let memoryMatchedPairs = new Set<string>();
 let memoryLocked = false;
 let memoryToastTimer: number | null = null;
@@ -93,8 +112,9 @@ function loadPreferences() {
   if (savedFigures.p2) p2Figure = savedFigures.p2;
 
   const savedNames = JSON.parse(localStorage.getItem('bubble_names') || '{}');
-  if (savedNames.p1) p1Name = savedNames.p1;
   if (savedNames.p2) p2Name = savedNames.p2;
+
+  loadProfiles();
 
   const savedTheme = localStorage.getItem('bubble_background_theme');
   if (savedTheme) {
@@ -116,6 +136,18 @@ function loadPreferences() {
 
 // Setup UI event handlers
 function setupUI() {
+  renderProfileList();
+  syncActiveProfileUI();
+
+  requireElement<HTMLButtonElement>('add-profile-btn').addEventListener('click', addProfileFromInput);
+  requireElement<HTMLButtonElement>('rename-profile-btn').addEventListener('click', renameActiveProfileFromInput);
+  requireElement<HTMLButtonElement>('delete-profile-btn').addEventListener('click', deleteActiveProfile);
+  requireElement<HTMLInputElement>('profile-name-input').addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      addProfileFromInput();
+    }
+  });
+
   // Name inputs
   const p1Input = document.getElementById('p1-name') as HTMLInputElement;
   const p2Input = document.getElementById('p2-name') as HTMLInputElement;
@@ -123,7 +155,7 @@ function setupUI() {
   if (p1Input) {
     p1Input.value = p1Name;
     p1Input.addEventListener('input', () => {
-      p1Name = p1Input.value || 'לוטם';
+      renameActiveProfile(p1Input.value);
       localStorage.setItem('bubble_names', JSON.stringify({ p1: p1Name, p2: p2Name }));
     });
   }
@@ -254,6 +286,157 @@ function setupUI() {
   });
 }
 
+function loadProfiles() {
+  const savedProfiles = localStorage.getItem(PROFILE_STORAGE_KEY);
+  kidProfiles = savedProfiles ? JSON.parse(savedProfiles) : DEFAULT_KID_PROFILES.map((profile) => ({ ...profile }));
+
+  const savedActiveProfile = localStorage.getItem(ACTIVE_PROFILE_STORAGE_KEY);
+  if (savedActiveProfile) {
+    activeProfileId = savedActiveProfile;
+  }
+
+  if (!kidProfiles.some((profile) => profile.id === activeProfileId)) {
+    activeProfileId = kidProfiles[0].id;
+  }
+
+  p1Name = getActiveProfile().name;
+  saveProfiles();
+}
+
+function getActiveProfile(): KidProfile {
+  const profile = kidProfiles.find((candidate) => candidate.id === activeProfileId);
+  if (!profile) {
+    throw new Error(`Missing active profile ${activeProfileId}`);
+  }
+  return profile;
+}
+
+function saveProfiles() {
+  localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(kidProfiles));
+  localStorage.setItem(ACTIVE_PROFILE_STORAGE_KEY, activeProfileId);
+}
+
+function createProfileId() {
+  return `kid-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function createProfileEmoji() {
+  return PROFILE_EMOJIS[kidProfiles.length % PROFILE_EMOJIS.length];
+}
+
+function readProfileInput() {
+  return requireElement<HTMLInputElement>('profile-name-input').value.trim();
+}
+
+function addProfileFromInput() {
+  const name = readProfileInput();
+  if (!name) {
+    requireElement<HTMLInputElement>('profile-name-input').focus();
+    return;
+  }
+
+  const profile: KidProfile = {
+    id: createProfileId(),
+    name,
+    emoji: createProfileEmoji(),
+  };
+
+  kidProfiles.push(profile);
+  activeProfileId = profile.id;
+  p1Name = profile.name;
+  saveProfiles();
+  localStorage.setItem('bubble_names', JSON.stringify({ p1: p1Name, p2: p2Name }));
+  requireElement<HTMLInputElement>('profile-name-input').value = '';
+  renderProfileList();
+  syncActiveProfileUI();
+}
+
+function renameActiveProfileFromInput() {
+  renameActiveProfile(readProfileInput());
+  requireElement<HTMLInputElement>('profile-name-input').value = '';
+}
+
+function renameActiveProfile(name: string) {
+  const normalizedName = name.trim() || getActiveProfile().name;
+  const profile = getActiveProfile();
+  profile.name = normalizedName;
+  p1Name = normalizedName;
+  saveProfiles();
+  localStorage.setItem('bubble_names', JSON.stringify({ p1: p1Name, p2: p2Name }));
+  renderProfileList();
+  syncActiveProfileUI();
+}
+
+function deleteActiveProfile() {
+  if (kidProfiles.length === 1) {
+    return;
+  }
+
+  const deletedIndex = kidProfiles.findIndex((profile) => profile.id === activeProfileId);
+  if (deletedIndex === -1) {
+    throw new Error(`Missing active profile ${activeProfileId}`);
+  }
+
+  kidProfiles.splice(deletedIndex, 1);
+  activeProfileId = kidProfiles[Math.max(0, deletedIndex - 1)].id;
+  p1Name = getActiveProfile().name;
+  saveProfiles();
+  localStorage.setItem('bubble_names', JSON.stringify({ p1: p1Name, p2: p2Name }));
+  renderProfileList();
+  syncActiveProfileUI();
+}
+
+function selectProfile(profileId: string) {
+  activeProfileId = profileId;
+  p1Name = getActiveProfile().name;
+  saveProfiles();
+  localStorage.setItem('bubble_names', JSON.stringify({ p1: p1Name, p2: p2Name }));
+  renderProfileList();
+  syncActiveProfileUI();
+}
+
+function renderProfileList() {
+  const list = requireElement<HTMLDivElement>('profile-list');
+  list.innerHTML = '';
+
+  kidProfiles.forEach((profile) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'profile-chip';
+    button.classList.toggle('active', profile.id === activeProfileId);
+    button.setAttribute('aria-pressed', String(profile.id === activeProfileId));
+
+    const avatar = document.createElement('span');
+    avatar.className = 'profile-avatar';
+    avatar.setAttribute('aria-hidden', 'true');
+    avatar.textContent = profile.emoji;
+
+    const name = document.createElement('span');
+    name.className = 'profile-name';
+    name.textContent = profile.name;
+
+    button.append(avatar, name);
+    button.addEventListener('click', () => selectProfile(profile.id));
+    list.append(button);
+  });
+}
+
+function syncActiveProfileUI() {
+  const profile = getActiveProfile();
+  p1Name = profile.name;
+
+  requireElement<HTMLElement>('active-profile-name').textContent = profile.name;
+  requireElement<HTMLElement>('memory-profile-badge').textContent = `${profile.name} משחק/ת`;
+
+  const p1Input = document.getElementById('p1-name') as HTMLInputElement | null;
+  if (p1Input) {
+    p1Input.value = profile.name;
+  }
+
+  const deleteButton = requireElement<HTMLButtonElement>('delete-profile-btn');
+  deleteButton.disabled = kidProfiles.length === 1;
+}
+
 function openBubblesSetup() {
   clearMemoryMismatchTimer();
   hideMemoryToast();
@@ -354,12 +537,16 @@ function startMemoryRound(difficulty: MemoryDifficulty) {
       wordId: word.id,
       kind: 'hebrew',
       text: word.hebrew,
+      english: word.english,
+      drawing: word.drawing,
     },
     {
       cardId: `${word.id}-english`,
       wordId: word.id,
       kind: 'english',
       text: word.english,
+      english: word.english,
+      drawing: word.drawing,
     },
   ]);
 
@@ -391,12 +578,14 @@ function renderMemoryBoard() {
   board.dataset.difficulty = memoryDifficulty;
 
   memoryCards.forEach((card) => {
-    const button = document.createElement('button');
-    button.type = 'button';
+    const button = document.createElement('div');
     button.className = `memory-card memory-card-${card.kind}`;
     button.dataset.cardId = card.cardId;
     button.dataset.wordId = card.wordId;
     button.dataset.kind = card.kind;
+    button.dataset.english = card.english;
+    button.tabIndex = 0;
+    button.setAttribute('role', 'button');
     button.setAttribute('aria-label', 'קלף זיכרון סגור');
 
     const back = document.createElement('span');
@@ -406,18 +595,48 @@ function renderMemoryBoard() {
     const front = document.createElement('span');
     front.className = 'memory-card-front';
 
+    const drawing = document.createElement('span');
+    drawing.className = 'memory-card-drawing';
+    drawing.setAttribute('aria-hidden', 'true');
+    drawing.textContent = card.drawing;
+
     const word = document.createElement('span');
     word.className = 'memory-card-word';
     word.textContent = card.text;
 
-    front.append(word);
+    front.append(drawing, word);
+
+    if (card.kind === 'english') {
+      const soundButton = document.createElement('button');
+      soundButton.type = 'button';
+      soundButton.className = 'memory-card-sound';
+      soundButton.setAttribute('aria-label', `השמיעו ${card.english}`);
+      soundButton.title = `השמיעו ${card.english}`;
+      soundButton.tabIndex = -1;
+      soundButton.textContent = '🔊';
+      soundButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        speakMemoryWord(card.english);
+      });
+      soundButton.addEventListener('keydown', (event) => {
+        event.stopPropagation();
+      });
+      front.append(soundButton);
+    }
+
     button.append(back, front);
     button.addEventListener('click', () => handleMemoryCardClick(button));
+    button.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        handleMemoryCardClick(button);
+      }
+    });
     board.append(button);
   });
 }
 
-function handleMemoryCardClick(cardButton: HTMLButtonElement) {
+function handleMemoryCardClick(cardButton: HTMLDivElement) {
   if (memoryLocked || cardButton.classList.contains('is-face-up') || cardButton.classList.contains('is-matched')) {
     return;
   }
@@ -445,20 +664,23 @@ function handleMemoryCardClick(cardButton: HTMLButtonElement) {
   }
 }
 
-function revealMemoryCard(cardButton: HTMLButtonElement) {
+function revealMemoryCard(cardButton: HTMLDivElement) {
   cardButton.classList.add('is-face-up');
   cardButton.setAttribute('aria-label', cardButton.textContent?.trim() || 'קלף פתוח');
+  setMemorySoundButtonFocus(cardButton, true);
 }
 
 function matchMemoryCards() {
-  const firstCard = memoryFirstCard as HTMLButtonElement;
-  const secondCard = memorySecondCard as HTMLButtonElement;
+  const firstCard = memoryFirstCard as HTMLDivElement;
+  const secondCard = memorySecondCard as HTMLDivElement;
   const wordId = firstCard.dataset.wordId as string;
 
   firstCard.classList.add('is-matched');
   secondCard.classList.add('is-matched');
-  firstCard.disabled = true;
-  secondCard.disabled = true;
+  firstCard.removeAttribute('tabindex');
+  secondCard.removeAttribute('tabindex');
+  setMemorySoundButtonFocus(firstCard, true);
+  setMemorySoundButtonFocus(secondCard, true);
   memoryMatchedPairs.add(wordId);
 
   const matchedWord = MEMORY_WORDS.find((word) => word.id === wordId) as MemoryWord;
@@ -490,6 +712,8 @@ function closeUnmatchedMemoryCards() {
   secondCard.classList.remove('is-face-up');
   firstCard.setAttribute('aria-label', 'קלף זיכרון סגור');
   secondCard.setAttribute('aria-label', 'קלף זיכרון סגור');
+  setMemorySoundButtonFocus(firstCard, false);
+  setMemorySoundButtonFocus(secondCard, false);
 
   memoryFirstCard = null;
   memorySecondCard = null;
@@ -508,6 +732,23 @@ function updateMemoryStatus(message: string) {
   const pairCount = MEMORY_DIFFICULTY_PAIRS[memoryDifficulty];
   requireElement<HTMLDivElement>('memory-progress').textContent = `${memoryMatchedPairs.size} מתוך ${pairCount} זוגות`;
   requireElement<HTMLDivElement>('memory-message').textContent = message;
+}
+
+function setMemorySoundButtonFocus(cardButton: HTMLDivElement, isFocusable: boolean) {
+  const soundButton = cardButton.querySelector<HTMLButtonElement>('.memory-card-sound');
+  if (soundButton) {
+    soundButton.tabIndex = isFocusable ? 0 : -1;
+  }
+}
+
+function speakMemoryWord(word: string) {
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(word);
+  utterance.lang = 'en-US';
+  utterance.rate = 0.82;
+  utterance.pitch = 1.08;
+  window.speechSynthesis.speak(utterance);
 }
 
 function showMemoryToast(matchedWord: MemoryWord, isComplete: boolean) {
