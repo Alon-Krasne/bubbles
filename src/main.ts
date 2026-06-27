@@ -69,6 +69,8 @@ interface MemoryLevel {
 type MemoryRoutePoint = { x: number; y: number };
 type MemoryMapAreaTone = 'green' | 'pink' | 'gold';
 type MemoryMapArea = { label: string; x: number; y: number; tone: MemoryMapAreaTone };
+const MEMORY_MAP_VISIBLE_LEVEL_COUNT = 5;
+const MEMORY_MAP_ACTIVE_PATH_POINT_COUNT = 3;
 
 const MEMORY_WORDS: MemoryWord[] = [
   { id: 'dog', hebrew: 'כלב', english: 'dog', drawing: '🐶' },
@@ -250,21 +252,21 @@ const MEMORY_LEVELS: MemoryLevel[] = [
 ];
 
 const MEMORY_ROUTE_POINTS: MemoryRoutePoint[] = [
-  { x: 14, y: 58 },
-  { x: 19, y: 82 },
-  { x: 24, y: 43 },
-  { x: 32, y: 40 },
-  { x: 44, y: 44 },
-  { x: 53, y: 55 },
-  { x: 61, y: 66 },
-  { x: 72, y: 76 },
-  { x: 82, y: 68 },
-  { x: 90, y: 55 },
-  { x: 86, y: 42 },
-  { x: 78, y: 36 },
-  { x: 68, y: 32 },
-  { x: 59, y: 36 },
-  { x: 50, y: 31 },
+  { x: 16, y: 62 },
+  { x: 30, y: 44 },
+  { x: 43, y: 42 },
+  { x: 53, y: 49 },
+  { x: 63, y: 66 },
+  { x: 68, y: 66 },
+  { x: 78, y: 68 },
+  { x: 88, y: 56 },
+  { x: 82, y: 44 },
+  { x: 72, y: 37 },
+  { x: 61, y: 31 },
+  { x: 52, y: 37 },
+  { x: 43, y: 31 },
+  { x: 34, y: 36 },
+  { x: 25, y: 41 },
 ];
 
 const MEMORY_MAP_AREAS: MemoryMapArea[] = [
@@ -1046,7 +1048,7 @@ function renderMemoryLevelMap() {
 
   const currentLevelId = deriveMemoryCurrentLevelId();
 
-  MEMORY_LEVELS.forEach((level, index) => {
+  MEMORY_LEVELS.slice(0, MEMORY_MAP_VISIBLE_LEVEL_COUNT).forEach((level, index) => {
     const stars = getMemoryLevelStars(level.id);
     const isCurrent = !level.locked && level.id === currentLevelId && stars === 0;
     const point = MEMORY_ROUTE_POINTS[index];
@@ -1072,7 +1074,11 @@ function renderMemoryLevelMap() {
     icon.textContent = level.icon;
 
     if (level.locked) {
-      button.append(number, icon);
+      const lock = document.createElement('span');
+      lock.className = 'memory-level-lock';
+      lock.setAttribute('aria-hidden', 'true');
+      lock.textContent = '🔒';
+      button.append(icon, lock);
     } else {
       const copy = document.createElement('span');
       copy.className = 'memory-level-copy';
@@ -1100,14 +1106,7 @@ function renderMemoryLevelMap() {
       button.append(number, icon, copy, starRow);
     }
 
-    if (isCurrent) {
-      const marker = document.createElement('span');
-      marker.className = 'memory-level-current-marker';
-      marker.textContent = `${getActiveProfile().emoji} הבא`;
-      button.append(marker);
-    }
-
-    if (level.reward) {
+    if (level.reward && !level.locked) {
       const reward = document.createElement('span');
       reward.className = 'memory-level-reward';
       reward.setAttribute('aria-hidden', 'true');
@@ -1117,6 +1116,8 @@ function renderMemoryLevelMap() {
 
     const stop = document.createElement('div');
     stop.className = `memory-level-stop memory-level-stop-${index + 1}`;
+    stop.classList.toggle('is-playable-stop', !level.locked);
+    stop.classList.toggle('is-locked-stop', level.locked);
     stop.style.left = `${point.x}%`;
     stop.style.top = `${point.y}%`;
     stop.append(button);
@@ -1183,7 +1184,8 @@ function renderMemoryLevelPath(trail: HTMLDivElement) {
   pathSvg.setAttribute('preserveAspectRatio', 'none');
   pathSvg.setAttribute('aria-hidden', 'true');
 
-  const pathData = createMemoryRoutePath();
+  const visiblePathPoints = MEMORY_ROUTE_POINTS.slice(0, MEMORY_MAP_ACTIVE_PATH_POINT_COUNT);
+  const pathData = createMemoryRoutePath(visiblePathPoints);
   const shadow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   shadow.setAttribute('class', 'memory-level-path-shadow');
   shadow.setAttribute('d', pathData);
@@ -1199,21 +1201,9 @@ function renderMemoryLevelPath(trail: HTMLDivElement) {
   pathSvg.append(shadow, road, frosting);
   trail.append(pathSvg);
 
-  MEMORY_ROUTE_POINTS.slice(0, -1).forEach((point, index) => {
-    const nextPoint = MEMORY_ROUTE_POINTS[index + 1];
-    const arrow = document.createElement('span');
-    arrow.className = 'memory-level-path-arrow';
-    arrow.setAttribute('aria-hidden', 'true');
-    arrow.textContent = '›';
-    arrow.style.left = `${(point.x + nextPoint.x) / 2}%`;
-    arrow.style.top = `${(point.y + nextPoint.y) / 2}%`;
-    arrow.style.transform = `translate(-50%, -50%) rotate(${Math.atan2(nextPoint.y - point.y, nextPoint.x - point.x)}rad)`;
-    trail.append(arrow);
-  });
 }
 
-function createMemoryRoutePath() {
-  const points = MEMORY_ROUTE_POINTS;
+function createMemoryRoutePath(points: MemoryRoutePoint[]) {
   const commands = [`M ${points[0].x} ${points[0].y}`];
 
   for (let index = 1; index < points.length - 1; index++) {
