@@ -20,6 +20,7 @@ interface MemoryWord {
   id: string;
   hebrew: string;
   english: string;
+  drawing: string;
 }
 
 interface MemoryCard {
@@ -27,21 +28,23 @@ interface MemoryCard {
   wordId: string;
   kind: MemoryCardKind;
   text: string;
+  english: string;
+  drawing: string;
 }
 
 const MEMORY_WORDS: MemoryWord[] = [
-  { id: 'dog', hebrew: 'כלב', english: 'dog' },
-  { id: 'cat', hebrew: 'חתול', english: 'cat' },
-  { id: 'apple', hebrew: 'תפוח', english: 'apple' },
-  { id: 'banana', hebrew: 'בננה', english: 'banana' },
-  { id: 'sun', hebrew: 'שמש', english: 'sun' },
-  { id: 'moon', hebrew: 'ירח', english: 'moon' },
-  { id: 'house', hebrew: 'בית', english: 'house' },
-  { id: 'car', hebrew: 'מכונית', english: 'car' },
-  { id: 'ball', hebrew: 'כדור', english: 'ball' },
-  { id: 'tree', hebrew: 'עץ', english: 'tree' },
-  { id: 'fish', hebrew: 'דג', english: 'fish' },
-  { id: 'flower', hebrew: 'פרח', english: 'flower' },
+  { id: 'dog', hebrew: 'כלב', english: 'dog', drawing: '🐶' },
+  { id: 'cat', hebrew: 'חתול', english: 'cat', drawing: '🐱' },
+  { id: 'apple', hebrew: 'תפוח', english: 'apple', drawing: '🍎' },
+  { id: 'banana', hebrew: 'בננה', english: 'banana', drawing: '🍌' },
+  { id: 'sun', hebrew: 'שמש', english: 'sun', drawing: '☀️' },
+  { id: 'moon', hebrew: 'ירח', english: 'moon', drawing: '🌙' },
+  { id: 'house', hebrew: 'בית', english: 'house', drawing: '🏠' },
+  { id: 'car', hebrew: 'מכונית', english: 'car', drawing: '🚗' },
+  { id: 'ball', hebrew: 'כדור', english: 'ball', drawing: '⚽' },
+  { id: 'tree', hebrew: 'עץ', english: 'tree', drawing: '🌳' },
+  { id: 'fish', hebrew: 'דג', english: 'fish', drawing: '🐟' },
+  { id: 'flower', hebrew: 'פרח', english: 'flower', drawing: '🌸' },
 ];
 
 const MEMORY_DIFFICULTY_PAIRS: Record<MemoryDifficulty, number> = {
@@ -75,8 +78,8 @@ let selectedTime = 45;
 let fallingItemsMode: FallingItemMode = 'bubbles';
 let memoryDifficulty: MemoryDifficulty = 'easy';
 let memoryCards: MemoryCard[] = [];
-let memoryFirstCard: HTMLButtonElement | null = null;
-let memorySecondCard: HTMLButtonElement | null = null;
+let memoryFirstCard: HTMLDivElement | null = null;
+let memorySecondCard: HTMLDivElement | null = null;
 let memoryMatchedPairs = new Set<string>();
 let memoryLocked = false;
 let memoryToastTimer: number | null = null;
@@ -354,12 +357,16 @@ function startMemoryRound(difficulty: MemoryDifficulty) {
       wordId: word.id,
       kind: 'hebrew',
       text: word.hebrew,
+      english: word.english,
+      drawing: word.drawing,
     },
     {
       cardId: `${word.id}-english`,
       wordId: word.id,
       kind: 'english',
       text: word.english,
+      english: word.english,
+      drawing: word.drawing,
     },
   ]);
 
@@ -391,12 +398,14 @@ function renderMemoryBoard() {
   board.dataset.difficulty = memoryDifficulty;
 
   memoryCards.forEach((card) => {
-    const button = document.createElement('button');
-    button.type = 'button';
+    const button = document.createElement('div');
     button.className = `memory-card memory-card-${card.kind}`;
     button.dataset.cardId = card.cardId;
     button.dataset.wordId = card.wordId;
     button.dataset.kind = card.kind;
+    button.dataset.english = card.english;
+    button.tabIndex = 0;
+    button.setAttribute('role', 'button');
     button.setAttribute('aria-label', 'קלף זיכרון סגור');
 
     const back = document.createElement('span');
@@ -406,18 +415,48 @@ function renderMemoryBoard() {
     const front = document.createElement('span');
     front.className = 'memory-card-front';
 
+    const drawing = document.createElement('span');
+    drawing.className = 'memory-card-drawing';
+    drawing.setAttribute('aria-hidden', 'true');
+    drawing.textContent = card.drawing;
+
     const word = document.createElement('span');
     word.className = 'memory-card-word';
     word.textContent = card.text;
 
-    front.append(word);
+    front.append(drawing, word);
+
+    if (card.kind === 'english') {
+      const soundButton = document.createElement('button');
+      soundButton.type = 'button';
+      soundButton.className = 'memory-card-sound';
+      soundButton.setAttribute('aria-label', `השמיעו ${card.english}`);
+      soundButton.title = `השמיעו ${card.english}`;
+      soundButton.tabIndex = -1;
+      soundButton.textContent = '🔊';
+      soundButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        speakMemoryWord(card.english);
+      });
+      soundButton.addEventListener('keydown', (event) => {
+        event.stopPropagation();
+      });
+      front.append(soundButton);
+    }
+
     button.append(back, front);
     button.addEventListener('click', () => handleMemoryCardClick(button));
+    button.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        handleMemoryCardClick(button);
+      }
+    });
     board.append(button);
   });
 }
 
-function handleMemoryCardClick(cardButton: HTMLButtonElement) {
+function handleMemoryCardClick(cardButton: HTMLDivElement) {
   if (memoryLocked || cardButton.classList.contains('is-face-up') || cardButton.classList.contains('is-matched')) {
     return;
   }
@@ -445,20 +484,23 @@ function handleMemoryCardClick(cardButton: HTMLButtonElement) {
   }
 }
 
-function revealMemoryCard(cardButton: HTMLButtonElement) {
+function revealMemoryCard(cardButton: HTMLDivElement) {
   cardButton.classList.add('is-face-up');
   cardButton.setAttribute('aria-label', cardButton.textContent?.trim() || 'קלף פתוח');
+  setMemorySoundButtonFocus(cardButton, true);
 }
 
 function matchMemoryCards() {
-  const firstCard = memoryFirstCard as HTMLButtonElement;
-  const secondCard = memorySecondCard as HTMLButtonElement;
+  const firstCard = memoryFirstCard as HTMLDivElement;
+  const secondCard = memorySecondCard as HTMLDivElement;
   const wordId = firstCard.dataset.wordId as string;
 
   firstCard.classList.add('is-matched');
   secondCard.classList.add('is-matched');
-  firstCard.disabled = true;
-  secondCard.disabled = true;
+  firstCard.removeAttribute('tabindex');
+  secondCard.removeAttribute('tabindex');
+  setMemorySoundButtonFocus(firstCard, true);
+  setMemorySoundButtonFocus(secondCard, true);
   memoryMatchedPairs.add(wordId);
 
   const matchedWord = MEMORY_WORDS.find((word) => word.id === wordId) as MemoryWord;
@@ -490,6 +532,8 @@ function closeUnmatchedMemoryCards() {
   secondCard.classList.remove('is-face-up');
   firstCard.setAttribute('aria-label', 'קלף זיכרון סגור');
   secondCard.setAttribute('aria-label', 'קלף זיכרון סגור');
+  setMemorySoundButtonFocus(firstCard, false);
+  setMemorySoundButtonFocus(secondCard, false);
 
   memoryFirstCard = null;
   memorySecondCard = null;
@@ -508,6 +552,23 @@ function updateMemoryStatus(message: string) {
   const pairCount = MEMORY_DIFFICULTY_PAIRS[memoryDifficulty];
   requireElement<HTMLDivElement>('memory-progress').textContent = `${memoryMatchedPairs.size} מתוך ${pairCount} זוגות`;
   requireElement<HTMLDivElement>('memory-message').textContent = message;
+}
+
+function setMemorySoundButtonFocus(cardButton: HTMLDivElement, isFocusable: boolean) {
+  const soundButton = cardButton.querySelector<HTMLButtonElement>('.memory-card-sound');
+  if (soundButton) {
+    soundButton.tabIndex = isFocusable ? 0 : -1;
+  }
+}
+
+function speakMemoryWord(word: string) {
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(word);
+  utterance.lang = 'en-US';
+  utterance.rate = 0.82;
+  utterance.pitch = 1.08;
+  window.speechSynthesis.speak(utterance);
 }
 
 function showMemoryToast(matchedWord: MemoryWord, isComplete: boolean) {
