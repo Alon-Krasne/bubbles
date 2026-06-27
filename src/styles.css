@@ -953,7 +953,7 @@ canvas {
 .memory-level-stop {
     position: absolute;
     z-index: 6;
-    transform: translate(-50%, -50%) skewY(-3deg);
+    transform: translate(-50%, -50%);
     filter: drop-shadow(0 14px 12px rgba(57, 80, 92, 0.13));
 }
 
@@ -1026,7 +1026,9 @@ canvas {
 .memory-level-node.is-locked {
     cursor: not-allowed;
     color: #6F6490;
-    transform: scale(0.78);
+    pointer-events: none;
+    transform: scale(0.62);
+    opacity: 0.78;
     border-color: rgba(255,255,255,0.68);
     background:
         radial-gradient(circle at 30% 22%, rgba(255,255,255,0.98) 0 14%, transparent 15%),
@@ -1040,19 +1042,19 @@ canvas {
 }
 
 .memory-level-node.is-locked:hover {
-    transform: scale(0.78);
+    transform: scale(0.62);
 }
 
 .memory-level-node.is-locked .memory-level-number {
-    opacity: 0.82;
+    display: none;
 }
 
 .memory-level-node.is-locked .memory-level-icon {
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
     display: inline-flex;
     background: rgba(255,255,255,0.5);
-    font-size: 23px;
+    font-size: 24px;
     box-shadow:
         0 3px 0 rgba(57, 80, 92, 0.1),
         inset 0 2px 0 rgba(255,255,255,0.75);
@@ -1061,8 +1063,8 @@ canvas {
 .memory-level-node.is-locked::after {
     content: '🔒';
     position: absolute;
-    right: 8%;
-    top: 9%;
+    right: 5%;
+    top: 6%;
     font-size: 17px;
     filter: drop-shadow(0 2px 0 rgba(255,255,255,0.72));
 }
