@@ -674,6 +674,429 @@ canvas {
         0 12px 28px rgba(57, 118, 142, 0.2);
 }
 
+.memory-level-map {
+    position: relative;
+    z-index: 2;
+    width: min(96vw, 1080px);
+    min-height: clamp(390px, 56vh, 540px);
+    padding: clamp(20px, 3vw, 34px);
+    border-radius: 34px;
+    background:
+        radial-gradient(circle at 16% 18%, rgba(255, 230, 109, 0.28), transparent 24%),
+        radial-gradient(circle at 84% 24%, rgba(255, 158, 181, 0.22), transparent 24%),
+        radial-gradient(circle at 76% 78%, rgba(152, 217, 194, 0.28), transparent 26%),
+        linear-gradient(180deg, rgba(255,255,255,0.64), rgba(232, 255, 221, 0.44));
+    border: 2px solid rgba(255,255,255,0.78);
+    box-shadow:
+        0 18px 46px rgba(57, 118, 142, 0.16),
+        inset 0 2px 0 rgba(255,255,255,0.86);
+}
+
+.memory-level-map.hidden,
+.memory-game-area.hidden {
+    display: none;
+}
+
+.memory-level-trail {
+    position: relative;
+    min-height: clamp(340px, 49vh, 470px);
+    display: grid;
+    grid-template-columns: repeat(5, minmax(104px, 1fr));
+    grid-template-rows: repeat(3, minmax(106px, 1fr));
+    align-items: center;
+    justify-items: center;
+    gap: clamp(14px, 2vw, 26px);
+    direction: ltr;
+}
+
+.memory-level-path {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.memory-level-path path {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.memory-level-path-shadow {
+    stroke: rgba(186, 124, 42, 0.34);
+    stroke-width: 15;
+    transform: translateY(1.8px);
+}
+
+.memory-level-path-ribbon {
+    stroke: #F7C97E;
+    stroke-width: 14;
+    filter: drop-shadow(0 4px 0 rgba(196, 126, 25, 0.22));
+}
+
+.memory-level-path-highlight {
+    stroke: rgba(255,255,255,0.66);
+    stroke-width: 4;
+}
+
+.memory-level-trail::after {
+    content: '✦  ✦  ✦';
+    position: absolute;
+    left: 12%;
+    top: 11%;
+    color: rgba(255, 211, 77, 0.88);
+    font-size: 28px;
+    letter-spacing: 32px;
+    text-shadow: 0 0 16px rgba(255, 230, 109, 0.72);
+    pointer-events: none;
+}
+
+.memory-level-stop {
+    position: relative;
+    z-index: 1;
+}
+
+.memory-level-stop-1 {
+    grid-column: 1;
+    grid-row: 3;
+}
+
+.memory-level-stop-2 {
+    grid-column: 2;
+    grid-row: 3;
+}
+
+.memory-level-stop-3 {
+    grid-column: 3;
+    grid-row: 3;
+}
+
+.memory-level-stop-4 {
+    grid-column: 4;
+    grid-row: 3;
+}
+
+.memory-level-stop-5 {
+    grid-column: 5;
+    grid-row: 3;
+}
+
+.memory-level-stop-6 {
+    grid-column: 5;
+    grid-row: 2;
+}
+
+.memory-level-stop-7 {
+    grid-column: 4;
+    grid-row: 2;
+}
+
+.memory-level-stop-8 {
+    grid-column: 3;
+    grid-row: 2;
+}
+
+.memory-level-stop-9 {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+.memory-level-stop-10 {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.memory-level-stop-11 {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.memory-level-stop-12 {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.memory-level-stop-13 {
+    grid-column: 3;
+    grid-row: 1;
+}
+
+.memory-level-stop-14 {
+    grid-column: 4;
+    grid-row: 1;
+}
+
+.memory-level-stop-15 {
+    grid-column: 5;
+    grid-row: 1;
+}
+
+.memory-level-node {
+    position: relative;
+    width: clamp(88px, 9.5vw, 112px);
+    min-height: clamp(88px, 9.5vw, 112px);
+    display: grid;
+    grid-template-rows: auto auto auto;
+    justify-items: center;
+    align-items: center;
+    gap: 2px;
+    border: 5px solid #E8956D;
+    border-radius: 50%;
+    padding: 9px;
+    background:
+        radial-gradient(circle at 35% 24%, rgba(255,255,255,0.98) 0 14%, transparent 15%),
+        linear-gradient(180deg, #FFF8F0 0%, #FDE8D8 56%, #F5C4A0 100%);
+    color: #39768E;
+    font-family: 'Rubik', sans-serif;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow:
+        0 7px 0 #C4683A,
+        0 16px 26px rgba(57, 80, 92, 0.2),
+        inset 0 2px 0 rgba(255,255,255,0.92);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.memory-level-node:hover,
+.memory-level-node:focus-visible {
+    transform: translateY(-4px);
+    border-color: #FFE66D;
+    box-shadow:
+        0 11px 0 #C4683A,
+        0 24px 34px rgba(57, 80, 92, 0.24),
+        0 0 0 6px rgba(255, 230, 109, 0.28),
+        inset 0 2px 0 rgba(255,255,255,0.94);
+    outline: none;
+}
+
+.memory-level-node.is-current {
+    animation: memoryCurrentPulse 1.8s ease-in-out infinite;
+}
+
+.memory-level-node.is-playable {
+    background:
+        radial-gradient(circle at 35% 24%, rgba(255,255,255,0.98) 0 14%, transparent 15%),
+        linear-gradient(180deg, #FFFBE8 0%, #FFE66D 54%, #FFB84D 100%);
+    border-color: #FF9E5E;
+    box-shadow:
+        0 7px 0 #C4683A,
+        0 16px 26px rgba(57, 80, 92, 0.2),
+        0 0 0 4px rgba(255, 230, 109, 0.62),
+        0 0 20px 6px rgba(255, 200, 0, 0.28),
+        inset 0 2px 0 rgba(255,255,255,0.92);
+}
+
+.memory-level-node.is-complete {
+    border-color: #B8E986;
+    background:
+        radial-gradient(circle at 35% 24%, rgba(255,255,255,0.98) 0 14%, transparent 15%),
+        linear-gradient(180deg, #FFFFFF 0%, #E8FFDD 58%, #B8E986 100%);
+    box-shadow:
+        0 7px 0 #7EC850,
+        0 18px 32px rgba(90, 158, 58, 0.22),
+        inset 0 2px 0 rgba(255,255,255,0.92);
+}
+
+.memory-level-node.is-locked {
+    cursor: not-allowed;
+    color: #8AA1AA;
+    background:
+        radial-gradient(circle at 35% 24%, rgba(255,255,255,0.86) 0 14%, transparent 15%),
+        linear-gradient(180deg, #F2F5F6 0%, #D8E0E4 58%, #B6C3C9 100%);
+    border-color: #AAB8BE;
+    box-shadow:
+        0 6px 0 rgba(110, 130, 140, 0.2),
+        0 14px 24px rgba(57, 118, 142, 0.11),
+        inset 0 2px 0 rgba(255,255,255,0.7);
+    animation: none;
+}
+
+.memory-level-node.is-locked:hover {
+    transform: none;
+}
+
+.memory-level-number {
+    position: absolute;
+    top: -13px;
+    right: -9px;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #FF9EB5, #E57A95);
+    color: white;
+    font-family: 'Secular One', sans-serif;
+    font-size: 21px;
+    line-height: 1;
+    text-shadow: 0 2px 0 rgba(130, 50, 70, 0.18);
+    box-shadow:
+        0 3px 0 rgba(180, 80, 100, 0.52),
+        0 6px 10px rgba(57, 80, 92, 0.18),
+        inset 0 2px 0 rgba(255,255,255,0.62);
+}
+
+.memory-level-icon {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #FFE66D, #FFB7C8);
+    font-size: 23px;
+    box-shadow:
+        0 5px 0 rgba(196, 126, 25, 0.18),
+        inset 0 2px 0 rgba(255,255,255,0.75);
+}
+
+.memory-level-copy {
+    display: grid;
+    gap: 1px;
+    text-align: center;
+}
+
+.memory-level-copy strong {
+    color: #4F9F74;
+    font-family: 'Secular One', sans-serif;
+    font-size: 20px;
+    line-height: 1;
+}
+
+.memory-level-copy small {
+    color: #39768E;
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.memory-level-stars {
+    display: inline-flex;
+    direction: ltr;
+    gap: 2px;
+    font-size: 20px;
+    line-height: 1;
+}
+
+.memory-level-star {
+    color: rgba(255,255,255,0.72);
+    -webkit-text-stroke: 1px #B98522;
+    text-shadow: 0 2px 0 rgba(255,255,255,0.8);
+}
+
+.memory-level-star.is-filled {
+    color: #FFD34D;
+    text-shadow:
+        0 2px 0 rgba(155, 111, 0, 0.18),
+        0 0 10px rgba(255, 230, 109, 0.6);
+}
+
+.memory-level-hints {
+    display: none;
+    position: absolute;
+    left: 50%;
+    bottom: -15px;
+    justify-content: center;
+    gap: 2px;
+    transform: translateX(-50%);
+}
+
+.memory-level-hints span {
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.78);
+    font-size: 13px;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,0.82);
+}
+
+.memory-level-reward {
+    position: absolute;
+    left: -12px;
+    top: -12px;
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #FFF7B0, #FFB7C8);
+    font-size: 22px;
+    box-shadow:
+        0 4px 0 rgba(196, 126, 25, 0.2),
+        0 8px 14px rgba(57, 118, 142, 0.15),
+        inset 0 2px 0 rgba(255,255,255,0.72);
+}
+
+@keyframes memoryCurrentPulse {
+    0%, 100% {
+        box-shadow:
+            0 7px 0 #C4683A,
+            0 18px 30px rgba(57, 80, 92, 0.18),
+            0 0 0 4px rgba(255, 230, 109, 0.62),
+            0 0 18px 6px rgba(255, 200, 0, 0.34),
+            inset 0 2px 0 rgba(255,255,255,0.92);
+    }
+
+    50% {
+        box-shadow:
+            0 9px 0 #C4683A,
+            0 22px 34px rgba(57, 80, 92, 0.22),
+            0 0 0 8px rgba(255, 230, 109, 0.38),
+            0 0 30px 10px rgba(255, 200, 0, 0.42),
+            inset 0 2px 0 rgba(255,255,255,0.94);
+    }
+}
+
+.memory-game-area {
+    position: relative;
+    z-index: 2;
+    display: contents;
+}
+
+.memory-level-toolbar {
+    width: min(94vw, 760px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.memory-map-btn,
+.memory-level-title {
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-family: 'Rubik', sans-serif;
+    font-weight: 900;
+    box-shadow: 0 5px 0 rgba(57, 118, 142, 0.15);
+}
+
+.memory-map-btn {
+    border: none;
+    background: linear-gradient(180deg, #98D9C2 0%, #4FBE8D 100%);
+    color: white;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.memory-map-btn:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 7px 0 rgba(57, 118, 142, 0.15),
+        0 12px 20px rgba(57, 118, 142, 0.15);
+}
+
+.memory-level-title {
+    background: rgba(255,255,255,0.82);
+    color: #39768E;
+}
+
 .memory-controls {
     position: relative;
     z-index: 2;
@@ -2343,6 +2766,55 @@ td {
         padding-top: 16px;
     }
 
+    .memory-level-map {
+        width: min(94vw, 440px);
+        min-height: auto;
+        padding: 14px;
+    }
+
+    .memory-level-trail {
+        min-height: auto;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(82px, 1fr));
+        grid-template-rows: auto;
+        gap: 14px;
+    }
+
+    .memory-level-trail::before {
+        display: none;
+    }
+
+    .memory-level-stop {
+        position: relative;
+        inset: auto;
+        grid-column: auto;
+        grid-row: auto;
+        display: flex;
+        justify-content: center;
+        transform: none;
+    }
+
+    .memory-level-node {
+        width: min(100%, 104px);
+        min-height: 104px;
+        grid-template-columns: none;
+        grid-template-rows: auto auto auto;
+        justify-items: center;
+        text-align: center;
+    }
+
+    .memory-level-icon {
+        grid-row: auto;
+        width: 34px;
+        height: 34px;
+        font-size: 20px;
+    }
+
+    .memory-level-toolbar {
+        width: min(94vw, 440px);
+        flex-wrap: wrap;
+    }
+
     .memory-status-panel {
         grid-template-columns: 1fr;
         width: min(94vw, 440px);
@@ -2816,6 +3288,55 @@ td {
 
     .memory-subtitle {
         display: none;
+    }
+
+    .memory-level-map {
+        min-height: auto;
+        padding: 10px;
+    }
+
+    .memory-level-trail {
+        min-height: auto;
+    }
+
+    .memory-level-node {
+        width: 90px;
+        min-height: 90px;
+        padding: 10px;
+    }
+
+    .memory-level-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 17px;
+    }
+
+    .memory-level-copy strong {
+        font-size: 17px;
+    }
+
+    .memory-level-copy small {
+        font-size: 9px;
+    }
+
+    .memory-level-stars {
+        font-size: 15px;
+    }
+
+    .memory-level-hints span {
+        width: 18px;
+        height: 18px;
+        font-size: 11px;
+    }
+
+    .memory-level-toolbar {
+        gap: 8px;
+    }
+
+    .memory-map-btn,
+    .memory-level-title {
+        padding: 7px 12px;
+        font-size: 14px;
     }
 
     .memory-controls {

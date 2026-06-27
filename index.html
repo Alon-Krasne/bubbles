@@ -78,34 +78,28 @@
                 <p id="memory-profile-badge" class="memory-profile-badge">לוטם משחק/ת</p>
             </header>
 
-            <div class="memory-controls" aria-label="בחירת קושי">
-                <button type="button" class="memory-difficulty-btn active" data-difficulty="easy">
-                    <span>קל</span>
-                    <small>4 זוגות</small>
-                </button>
-                <button type="button" class="memory-difficulty-btn" data-difficulty="medium">
-                    <span>רגיל</span>
-                    <small>6 זוגות</small>
-                </button>
-                <button type="button" class="memory-difficulty-btn" data-difficulty="hard">
-                    <span>גדול</span>
-                    <small>8 זוגות</small>
-                </button>
-            </div>
+            <section id="memory-level-map" class="memory-level-map" aria-label="שלבי גן מילים"></section>
 
-            <div class="memory-status-panel" aria-live="polite">
-                <div class="memory-progress" id="memory-progress">0 מתוך 4 זוגות</div>
-                <div class="memory-message" id="memory-message">הפכו שני קלפים שמתחברים</div>
-                <button type="button" id="memory-new-garden-btn" class="memory-new-garden-btn">גן חדש</button>
-            </div>
+            <section id="memory-game-area" class="memory-game-area hidden" aria-label="משחק גן מילים">
+                <div class="memory-level-toolbar">
+                    <button type="button" id="memory-map-btn" class="memory-map-btn">מפת שלבים</button>
+                    <div id="memory-level-title" class="memory-level-title">שלב 1</div>
+                </div>
 
-            <div id="memory-board" class="memory-board" aria-label="קלפי גן מילים"></div>
+                <div class="memory-status-panel" aria-live="polite">
+                    <div class="memory-progress" id="memory-progress">0 מתוך 4 זוגות</div>
+                    <div class="memory-message" id="memory-message">הפכו שני קלפים שמתחברים</div>
+                    <button type="button" id="memory-new-garden-btn" class="memory-new-garden-btn">ערבבו</button>
+                </div>
 
-            <div id="memory-toast" class="memory-toast" role="status" aria-live="polite">
-                <span class="memory-toast-flower" aria-hidden="true"></span>
-                <span id="memory-toast-text" class="memory-toast-text"></span>
-                <span class="memory-toast-spark" aria-hidden="true">✦</span>
-            </div>
+                <div id="memory-board" class="memory-board" aria-label="קלפי גן מילים"></div>
+
+                <div id="memory-toast" class="memory-toast" role="status" aria-live="polite">
+                    <span class="memory-toast-flower" aria-hidden="true"></span>
+                    <span id="memory-toast-text" class="memory-toast-text"></span>
+                    <span class="memory-toast-spark" aria-hidden="true">✦</span>
+                </div>
+            </section>
         </div>
 
         <!-- Start Screen -->
