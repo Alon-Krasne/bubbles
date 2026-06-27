@@ -66,6 +66,10 @@ interface MemoryLevel {
   reward?: string;
 }
 
+type MemoryRoutePoint = { x: number; y: number };
+type MemoryMapAreaTone = 'green' | 'pink' | 'gold';
+type MemoryMapArea = { label: string; x: number; y: number; tone: MemoryMapAreaTone };
+
 const MEMORY_WORDS: MemoryWord[] = [
   { id: 'dog', hebrew: 'כלב', english: 'dog', drawing: '🐶' },
   { id: 'cat', hebrew: 'חתול', english: 'cat', drawing: '🐱' },
@@ -104,7 +108,7 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     title: 'שלב 2',
     subtitle: 'שביל פרחים',
     pairs: MEMORY_DIFFICULTY_PAIRS.medium,
-    icon: '🌸',
+    icon: '🐶',
     hints: ['moon', 'house', 'car', 'ball'],
     locked: false,
   },
@@ -114,7 +118,7 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     title: 'שלב 3',
     subtitle: 'שער הכוכבים',
     pairs: MEMORY_DIFFICULTY_PAIRS.hard,
-    icon: '⭐',
+    icon: '🐘',
     hints: ['tree', 'fish', 'flower', 'banana'],
     locked: false,
     reward: '🎁',
@@ -125,7 +129,7 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     title: 'שלב 4',
     subtitle: 'בקרוב',
     pairs: MEMORY_DIFFICULTY_PAIRS.easy,
-    icon: '🐟',
+    icon: '☀️',
     hints: ['fish', 'tree', 'moon'],
     locked: true,
   },
@@ -146,7 +150,7 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     title: 'שלב 6',
     subtitle: 'בקרוב',
     pairs: MEMORY_DIFFICULTY_PAIRS.medium,
-    icon: '🚗',
+    icon: '🌳',
     hints: ['car', 'dog', 'apple'],
     locked: true,
   },
@@ -245,6 +249,30 @@ const MEMORY_LEVELS: MemoryLevel[] = [
   },
 ];
 
+const MEMORY_ROUTE_POINTS: MemoryRoutePoint[] = [
+  { x: 15, y: 58 },
+  { x: 19, y: 83 },
+  { x: 24, y: 43 },
+  { x: 33, y: 37 },
+  { x: 43, y: 40 },
+  { x: 53, y: 49 },
+  { x: 60, y: 64 },
+  { x: 70, y: 71 },
+  { x: 78, y: 68 },
+  { x: 88, y: 60 },
+  { x: 90, y: 43 },
+  { x: 80, y: 31 },
+  { x: 68, y: 31 },
+  { x: 56, y: 36 },
+  { x: 45, y: 31 },
+];
+
+const MEMORY_MAP_AREAS: MemoryMapArea[] = [
+  { label: 'עמק הפרחים', x: 36, y: 82, tone: 'green' },
+  { label: 'שביל הכוכבים', x: 58, y: 74, tone: 'pink' },
+  { label: 'שער העננים', x: 20, y: 19, tone: 'gold' },
+];
+
 const PROFILE_STORAGE_KEY = 'bubble_kid_profiles';
 const ACTIVE_PROFILE_STORAGE_KEY = 'bubble_active_kid_profile';
 const MEMORY_LEVEL_PROGRESS_STORAGE_KEY = 'bubble_memory_garden_levels';
@@ -288,6 +316,8 @@ let memoryMatchedPairs = new Set<string>();
 let memoryLocked = false;
 let memoryToastTimer: number | null = null;
 let memoryMismatchTimer: number | null = null;
+let memoryWinReturnTimer: number | null = null;
+const MEMORY_WIN_RETURN_DELAY_MS = 2400;
 
 // Load saved preferences
 function loadPreferences() {
@@ -445,6 +475,7 @@ function setupUI() {
   requireElement<HTMLButtonElement>('memory-back-btn').addEventListener('click', returnToGameSelect);
   requireElement<HTMLButtonElement>('memory-map-btn').addEventListener('click', showMemoryLevelMap);
   requireElement<HTMLButtonElement>('memory-new-garden-btn').addEventListener('click', () => startMemoryLevel(activeMemoryLevel.id));
+  requireElement<HTMLButtonElement>('memory-celebration-next-btn').addEventListener('click', returnToMemoryMapAfterWin);
 
   // Restart button
   document.getElementById('restart-btn')?.addEventListener('click', returnToStart);
@@ -622,7 +653,9 @@ function syncActiveProfileUI() {
 
 function openBubblesSetup() {
   clearMemoryMismatchTimer();
+  clearMemoryWinReturnTimer();
   hideMemoryToast();
+  hideMemoryCelebration();
   showScreen('start-screen');
 }
 
@@ -646,14 +679,18 @@ function startGame() {
 
 function returnToGameSelect() {
   clearMemoryMismatchTimer();
+  clearMemoryWinReturnTimer();
   hideMemoryToast();
+  hideMemoryCelebration();
   gameApp.returnToStart();
   showScreen('game-select-screen');
 }
 
 function returnToStart() {
   clearMemoryMismatchTimer();
+  clearMemoryWinReturnTimer();
   hideMemoryToast();
+  hideMemoryCelebration();
   gameApp.returnToStart();
   showScreen('start-screen');
 }
@@ -706,9 +743,14 @@ function loadHighScores() {
 
 function showMemoryLevelMap() {
   clearMemoryMismatchTimer();
+  clearMemoryWinReturnTimer();
   hideMemoryToast();
-  requireElement<HTMLElement>('memory-game-area').classList.add('hidden');
-  requireElement<HTMLElement>('memory-level-map').classList.remove('hidden');
+  hideMemoryCelebration();
+  const gameArea = requireElement<HTMLElement>('memory-game-area');
+  const levelMap = requireElement<HTMLElement>('memory-level-map');
+  gameArea.classList.remove('is-completing');
+  gameArea.classList.add('hidden');
+  levelMap.classList.remove('hidden', 'is-returning');
   renderMemoryLevelMap();
 }
 
@@ -721,9 +763,14 @@ function startMemoryLevel(levelId: MemoryLevelId) {
     throw new Error(`Memory level ${levelId} is locked`);
   }
 
+  clearMemoryWinReturnTimer();
+  hideMemoryCelebration();
   activeMemoryLevel = level;
-  requireElement<HTMLElement>('memory-level-map').classList.add('hidden');
-  requireElement<HTMLElement>('memory-game-area').classList.remove('hidden');
+  const levelMap = requireElement<HTMLElement>('memory-level-map');
+  const gameArea = requireElement<HTMLElement>('memory-game-area');
+  levelMap.classList.add('hidden');
+  levelMap.classList.remove('is-returning');
+  gameArea.classList.remove('hidden', 'is-completing');
   requireElement<HTMLElement>('memory-level-title').textContent = `${level.title} - ${level.subtitle}`;
   startMemoryRound(level);
 }
@@ -893,9 +940,16 @@ function matchMemoryCards() {
   memoryLocked = false;
   if (isComplete) {
     saveMemoryLevelStars(activeMemoryLevel.id, 3);
+    showMemoryCelebration();
+    clearMemoryWinReturnTimer();
+    memoryWinReturnTimer = window.setTimeout(() => {
+      returnToMemoryMapAfterWin();
+    }, MEMORY_WIN_RETURN_DELAY_MS);
   }
   updateMemoryStatus(message);
-  showMemoryToast(matchedWord, isComplete);
+  if (!isComplete) {
+    showMemoryToast(matchedWord);
+  }
 }
 
 function closeUnmatchedMemoryCards() {
@@ -931,6 +985,13 @@ function clearMemoryMismatchTimer() {
   }
 }
 
+function clearMemoryWinReturnTimer() {
+  if (memoryWinReturnTimer) {
+    clearTimeout(memoryWinReturnTimer);
+    memoryWinReturnTimer = null;
+  }
+}
+
 function updateMemoryStatus(message: string) {
   const pairCount = activeMemoryLevel.pairs;
   requireElement<HTMLDivElement>('memory-progress').textContent = `${memoryMatchedPairs.size} מתוך ${pairCount} זוגות`;
@@ -944,6 +1005,18 @@ function readMemoryLevelProgress(): Record<string, Partial<Record<MemoryLevelId,
 function getMemoryLevelStars(levelId: MemoryLevelId) {
   const progress = readMemoryLevelProgress();
   return progress[activeProfileId]?.[levelId] || 0;
+}
+
+function deriveMemoryCurrentLevelId(): MemoryLevelId {
+  const firstIncomplete = MEMORY_LEVELS.find(
+    (level) => !level.locked && getMemoryLevelStars(level.id) === 0
+  );
+  if (firstIncomplete) {
+    return firstIncomplete.id;
+  }
+
+  const lastUnlocked = [...MEMORY_LEVELS].reverse().find((level) => !level.locked);
+  return lastUnlocked?.id || MEMORY_LEVELS[0].id;
 }
 
 function saveMemoryLevelStars(levelId: MemoryLevelId, stars: number) {
@@ -962,38 +1035,27 @@ function renderMemoryLevelMap() {
   }
 
   map.innerHTML = '';
+  updateMemoryStarsBadge();
 
   const trail = document.createElement('div');
   trail.className = 'memory-level-trail';
 
-  const path = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  path.setAttribute('class', 'memory-level-path');
-  path.setAttribute('viewBox', '0 0 100 100');
-  path.setAttribute('aria-hidden', 'true');
+  renderMemoryMapScenery(trail);
+  renderMemoryMapAreas(trail);
+  renderMemoryLevelPath(trail);
 
-  const pathShadow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  pathShadow.setAttribute('class', 'memory-level-path-shadow');
-  pathShadow.setAttribute('d', 'M10 82 C18 76 22 88 30 82 C38 76 42 88 50 82 C58 76 62 88 70 82 C78 76 84 82 90 82 C97 82 97 60 90 54 C82 46 78 54 70 50 C60 44 60 56 50 50 C40 44 40 56 30 50 C20 44 14 50 10 50 C3 50 3 25 10 18 C18 10 22 22 30 18 C38 12 42 24 50 18 C58 12 62 24 70 18 C78 12 84 18 90 18');
-
-  const pathRibbon = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  pathRibbon.setAttribute('class', 'memory-level-path-ribbon');
-  pathRibbon.setAttribute('d', pathShadow.getAttribute('d') as string);
-
-  const pathHighlight = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  pathHighlight.setAttribute('class', 'memory-level-path-highlight');
-  pathHighlight.setAttribute('d', pathShadow.getAttribute('d') as string);
-
-  path.append(pathShadow, pathRibbon, pathHighlight);
-  trail.append(path);
+  const currentLevelId = deriveMemoryCurrentLevelId();
 
   MEMORY_LEVELS.forEach((level, index) => {
     const stars = getMemoryLevelStars(level.id);
+    const isCurrent = !level.locked && level.id === currentLevelId && stars === 0;
+    const point = MEMORY_ROUTE_POINTS[index];
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'memory-level-node';
     button.classList.toggle('is-playable', !level.locked);
     button.classList.toggle('is-complete', stars > 0);
-    button.classList.toggle('is-current', !level.locked && level.id === activeMemoryLevel.id && stars === 0);
+    button.classList.toggle('is-current', isCurrent);
     button.classList.toggle('is-locked', level.locked);
     button.dataset.level = level.id;
     button.disabled = level.locked;
@@ -1007,7 +1069,7 @@ function renderMemoryLevelMap() {
     const icon = document.createElement('span');
     icon.className = 'memory-level-icon';
     icon.setAttribute('aria-hidden', 'true');
-    icon.textContent = level.locked ? '🔒' : level.icon;
+    icon.textContent = level.icon;
 
     if (level.locked) {
       button.append(number, icon);
@@ -1038,6 +1100,13 @@ function renderMemoryLevelMap() {
       button.append(number, icon, copy, starRow);
     }
 
+    if (isCurrent) {
+      const marker = document.createElement('span');
+      marker.className = 'memory-level-current-marker';
+      marker.textContent = `${getActiveProfile().emoji} הבא`;
+      button.append(marker);
+    }
+
     if (level.reward) {
       const reward = document.createElement('span');
       reward.className = 'memory-level-reward';
@@ -1048,11 +1117,155 @@ function renderMemoryLevelMap() {
 
     const stop = document.createElement('div');
     stop.className = `memory-level-stop memory-level-stop-${index + 1}`;
+    stop.style.left = `${point.x}%`;
+    stop.style.top = `${point.y}%`;
     stop.append(button);
     trail.append(stop);
   });
 
+  renderMemorySpriteMarker(trail, currentLevelId);
   map.append(trail);
+}
+
+function updateMemoryStarsBadge() {
+  const count = document.getElementById('memory-stars-count');
+  if (!count) {
+    return;
+  }
+
+  const earnedStars = MEMORY_LEVELS
+    .filter((level) => !level.locked)
+    .reduce((sum, level) => sum + getMemoryLevelStars(level.id), 0);
+  const availableStars = MEMORY_LEVELS.filter((level) => !level.locked).length * 3;
+  count.textContent = `${earnedStars}/${availableStars}`;
+}
+
+function renderMemoryMapAreas(trail: HTMLDivElement) {
+  MEMORY_MAP_AREAS.forEach((area) => {
+    const label = document.createElement('span');
+    label.className = `memory-map-area-label memory-map-area-label-${area.tone}`;
+    label.textContent = area.label;
+    label.style.left = `${area.x}%`;
+    label.style.top = `${area.y}%`;
+    trail.append(label);
+  });
+}
+
+function renderMemoryMapScenery(trail: HTMLDivElement) {
+  const props = [
+    { className: 'memory-scenery-gate', text: '⌂', x: 12, y: 28 },
+    { className: 'memory-scenery-cloud memory-scenery-cloud-1', text: '', x: 26, y: 54 },
+    { className: 'memory-scenery-cloud memory-scenery-cloud-2', text: '', x: 88, y: 17 },
+    { className: 'memory-scenery-flowerbed memory-scenery-flowerbed-1', text: '', x: 56, y: 23 },
+    { className: 'memory-scenery-flowerbed memory-scenery-flowerbed-2', text: '', x: 42, y: 78 },
+    { className: 'memory-scenery-chest memory-scenery-chest-1', text: '🎁', x: 8, y: 82 },
+    { className: 'memory-scenery-chest memory-scenery-chest-2', text: '🎁', x: 82, y: 22 },
+    { className: 'memory-scenery-bubble memory-scenery-bubble-1', text: '', x: 50, y: 18 },
+    { className: 'memory-scenery-bubble memory-scenery-bubble-2', text: '', x: 74, y: 43 },
+    { className: 'memory-scenery-bubble memory-scenery-bubble-3', text: '', x: 33, y: 20 },
+  ];
+
+  props.forEach((prop) => {
+    const item = document.createElement('span');
+    item.className = `memory-scenery ${prop.className}`;
+    item.setAttribute('aria-hidden', 'true');
+    item.textContent = prop.text;
+    item.style.left = `${prop.x}%`;
+    item.style.top = `${prop.y}%`;
+    trail.append(item);
+  });
+}
+
+function renderMemoryLevelPath(trail: HTMLDivElement) {
+  const pathSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  pathSvg.setAttribute('class', 'memory-level-path');
+  pathSvg.setAttribute('viewBox', '0 0 100 100');
+  pathSvg.setAttribute('preserveAspectRatio', 'none');
+  pathSvg.setAttribute('aria-hidden', 'true');
+
+  const pathData = createMemoryRoutePath();
+  const shadow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  shadow.setAttribute('class', 'memory-level-path-shadow');
+  shadow.setAttribute('d', pathData);
+
+  const road = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  road.setAttribute('class', 'memory-level-path-road');
+  road.setAttribute('d', pathData);
+
+  const frosting = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  frosting.setAttribute('class', 'memory-level-path-frosting');
+  frosting.setAttribute('d', pathData);
+
+  pathSvg.append(shadow, road, frosting);
+  trail.append(pathSvg);
+
+  MEMORY_ROUTE_POINTS.slice(0, -1).forEach((point, index) => {
+    const nextPoint = MEMORY_ROUTE_POINTS[index + 1];
+    const arrow = document.createElement('span');
+    arrow.className = 'memory-level-path-arrow';
+    arrow.setAttribute('aria-hidden', 'true');
+    arrow.textContent = '›';
+    arrow.style.left = `${(point.x + nextPoint.x) / 2}%`;
+    arrow.style.top = `${(point.y + nextPoint.y) / 2}%`;
+    arrow.style.transform = `translate(-50%, -50%) rotate(${Math.atan2(nextPoint.y - point.y, nextPoint.x - point.x)}rad)`;
+    trail.append(arrow);
+  });
+}
+
+function createMemoryRoutePath() {
+  const points = MEMORY_ROUTE_POINTS;
+  const commands = [`M ${points[0].x} ${points[0].y}`];
+
+  for (let index = 1; index < points.length - 1; index++) {
+    const point = points[index];
+    const nextPoint = points[index + 1];
+    const midX = (point.x + nextPoint.x) / 2;
+    const midY = (point.y + nextPoint.y) / 2;
+    commands.push(`Q ${point.x} ${point.y} ${midX} ${midY}`);
+  }
+
+  const lastPoint = points[points.length - 1];
+  commands.push(`T ${lastPoint.x} ${lastPoint.y}`);
+  return commands.join(' ');
+}
+
+function renderMemorySpriteMarker(trail: HTMLDivElement, levelId: MemoryLevelId) {
+  const levelIndex = MEMORY_LEVELS.findIndex((level) => level.id === levelId);
+  if (levelIndex < 0) {
+    throw new Error(`Missing route point for ${levelId}`);
+  }
+
+  const point = MEMORY_ROUTE_POINTS[levelIndex];
+  const sprite = document.createElement('span');
+  sprite.className = 'memory-map-sprite';
+  sprite.setAttribute('aria-hidden', 'true');
+  sprite.style.left = `${point.x}%`;
+  sprite.style.top = `${point.y}%`;
+  sprite.innerHTML = `
+    <span class="memory-map-sprite-shadow"></span>
+    <span class="memory-map-sprite-body">
+      <span class="memory-map-sprite-hair"></span>
+      <span class="memory-map-sprite-face"></span>
+      <span class="memory-map-sprite-bow"></span>
+      <span class="memory-map-sprite-dress"></span>
+    </span>
+  `;
+  trail.append(sprite);
+}
+
+function playMemoryMapReturnCue() {
+  const map = requireElement<HTMLElement>('memory-level-map');
+  map.classList.remove('is-returning');
+  void map.offsetWidth;
+  map.classList.add('is-returning');
+  map.addEventListener('animationend', () => map.classList.remove('is-returning'), { once: true });
+}
+
+function returnToMemoryMapAfterWin() {
+  clearMemoryWinReturnTimer();
+  hideMemoryCelebration();
+  showMemoryLevelMap();
+  playMemoryMapReturnCue();
 }
 
 function setMemorySoundButtonFocus(cardButton: HTMLDivElement, isFocusable: boolean) {
@@ -1072,13 +1285,11 @@ function speakMemoryWord(word: string) {
   window.speechSynthesis.speak(utterance);
 }
 
-function showMemoryToast(matchedWord: MemoryWord, isComplete: boolean) {
+function showMemoryToast(matchedWord: MemoryWord) {
   const toast = requireElement<HTMLDivElement>('memory-toast');
   const toastText = requireElement<HTMLSpanElement>('memory-toast-text');
   const name = p1Name.trim() || 'לוטם';
-  toastText.textContent = isComplete
-    ? `${name}, ${activeMemoryLevel.title} פורח עם 3 כוכבים!`
-    : `${name}, מצאת זוג: ${matchedWord.hebrew} = ${matchedWord.english}`;
+  toastText.textContent = `${name}, מצאת זוג: ${matchedWord.hebrew} = ${matchedWord.english}`;
 
   if (memoryToastTimer) {
     clearTimeout(memoryToastTimer);
@@ -1086,13 +1297,32 @@ function showMemoryToast(matchedWord: MemoryWord, isComplete: boolean) {
 
   toast.classList.remove('is-visible', 'is-complete');
   void toast.offsetWidth;
-  toast.classList.toggle('is-complete', isComplete);
   toast.classList.add('is-visible');
 
   memoryToastTimer = window.setTimeout(() => {
     toast.classList.remove('is-visible', 'is-complete');
     memoryToastTimer = null;
-  }, isComplete ? 4200 : 3000);
+  }, 3000);
+}
+
+function showMemoryCelebration() {
+  const celebration = requireElement<HTMLDivElement>('memory-celebration');
+  const subtitle = requireElement<HTMLDivElement>('memory-celebration-subtitle');
+  const profile = getActiveProfile().name;
+  subtitle.textContent = `${profile}, ${activeMemoryLevel.title} הושלם עם 3 כוכבים`;
+
+  requireElement<HTMLElement>('memory-game-area').classList.add('is-completing');
+  celebration.classList.add('is-visible');
+  celebration.setAttribute('aria-hidden', 'false');
+}
+
+function hideMemoryCelebration() {
+  const celebration = document.getElementById('memory-celebration');
+  if (celebration) {
+    celebration.classList.remove('is-visible');
+    celebration.setAttribute('aria-hidden', 'true');
+  }
+  document.getElementById('memory-game-area')?.classList.remove('is-completing');
 }
 
 function hideMemoryToast() {

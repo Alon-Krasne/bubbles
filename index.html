@@ -76,6 +76,11 @@
                 <h1 class="memory-title">גן מילים</h1>
                 <p class="memory-subtitle">מצאו זוגות של עברית ואנגלית</p>
                 <p id="memory-profile-badge" class="memory-profile-badge">לוטם משחק/ת</p>
+                <p id="memory-stars-badge" class="memory-stars-badge" aria-live="polite">
+                    <span>כוכבים</span>
+                    <strong id="memory-stars-count">0/9</strong>
+                    <span aria-hidden="true">⭐</span>
+                </p>
             </header>
 
             <section id="memory-level-map" class="memory-level-map" aria-label="שלבי גן מילים"></section>
@@ -100,6 +105,15 @@
                     <span class="memory-toast-spark" aria-hidden="true">✦</span>
                 </div>
             </section>
+
+            <div id="memory-celebration" class="memory-celebration" role="status" aria-live="polite" aria-hidden="true">
+                <div class="memory-celebration-content">
+                    <div class="memory-celebration-stars" aria-hidden="true">⭐⭐⭐</div>
+                    <div class="memory-celebration-title">כל הכבוד!</div>
+                    <div class="memory-celebration-subtitle" id="memory-celebration-subtitle"></div>
+                    <button type="button" id="memory-celebration-next-btn" class="memory-celebration-next-btn">למפת השלבים</button>
+                </div>
+            </div>
         </div>
 
         <!-- Start Screen -->

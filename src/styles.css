@@ -619,18 +619,20 @@ canvas {
 /* ==================== MEMORY GARDEN ==================== */
 #memory-screen {
     background:
-        linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 44%),
-        transparent;
+        radial-gradient(ellipse at 14% -3%, rgba(255,255,255,0.84) 0 12%, transparent 13%),
+        radial-gradient(ellipse at 90% -5%, rgba(255,255,255,0.78) 0 15%, transparent 16%),
+        radial-gradient(circle at 76% 26%, rgba(255, 230, 109, 0.18), transparent 18%),
+        linear-gradient(180deg, #9DDAD1 0%, #BDE8DB 48%, #AEE099 100%);
     justify-content: flex-start;
-    gap: clamp(14px, 2.5vh, 24px);
-    padding: 24px clamp(14px, 4vw, 44px) 28px;
-    overflow-y: auto;
+    gap: clamp(8px, 1.5vh, 14px);
+    padding: 18px clamp(14px, 3vw, 36px) 20px;
+    overflow-y: hidden;
     overflow-x: hidden;
 }
 
 .memory-header {
     position: relative;
-    z-index: 2;
+    z-index: 12;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -651,45 +653,128 @@ canvas {
 }
 
 .memory-kicker {
-    font-size: clamp(14px, 2vw, 18px);
+    display: none;
 }
 
 .memory-subtitle {
-    font-size: clamp(15px, 2.4vw, 20px);
+    margin-top: -10px;
+    background: linear-gradient(180deg, #58C4BB 0%, #3CA7A4 100%);
+    color: white;
+    font-size: clamp(15px, 2vw, 20px);
+    text-shadow: 0 2px 0 rgba(38, 108, 112, 0.26);
 }
 
 .memory-profile-badge {
-    font-size: clamp(14px, 2vw, 18px);
-    background: linear-gradient(180deg, rgba(255, 250, 232, 0.92), rgba(232, 255, 221, 0.88));
-    color: #4F9F74;
+    position: fixed;
+    left: clamp(16px, 4vw, 54px);
+    top: clamp(16px, 3vw, 42px);
+    min-height: 58px;
+    padding: 10px 28px 10px 64px;
+    background: linear-gradient(180deg, #FFF8EE 0%, #F8E5D3 100%);
+    color: #A64B68;
+    font-family: 'Secular One', sans-serif;
+    font-size: clamp(22px, 3vw, 36px);
+    box-shadow:
+        0 6px 0 rgba(141, 83, 92, 0.22),
+        0 18px 34px rgba(57, 80, 92, 0.18),
+        inset 0 2px 0 rgba(255,255,255,0.9);
+}
+
+.memory-profile-badge::before {
+    content: '👧';
+    position: absolute;
+    left: -4px;
+    top: 50%;
+    width: 68px;
+    height: 68px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #FFE9A8 0%, #E9B85E 100%);
+    box-shadow:
+        0 4px 0 rgba(155, 111, 0, 0.22),
+        inset 0 0 0 5px rgba(255,255,255,0.74);
+    transform: translateY(-50%);
+}
+
+.memory-stars-badge {
+    position: fixed;
+    right: clamp(20px, 4vw, 62px);
+    top: clamp(18px, 3vw, 46px);
+    min-height: 62px;
+    display: grid;
+    grid-template-columns: auto auto 58px;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px 9px 22px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #FFF8EE 0%, #F8E5D3 100%);
+    border: 3px solid rgba(255,255,255,0.82);
+    color: #A64B68;
+    font-family: 'Secular One', 'Rubik', sans-serif;
+    box-shadow:
+        0 6px 0 rgba(141, 83, 92, 0.18),
+        0 18px 34px rgba(57, 80, 92, 0.16),
+        inset 0 2px 0 rgba(255,255,255,0.9);
+}
+
+.memory-stars-badge span:first-child {
+    font-size: 21px;
+}
+
+.memory-stars-badge strong {
+    font-size: 26px;
+    line-height: 1;
+}
+
+.memory-stars-badge span:last-child {
+    width: 58px;
+    height: 58px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #FFE66D 0%, #FFB84D 100%);
+    font-size: 38px;
+    box-shadow:
+        0 4px 0 rgba(155, 111, 0, 0.24),
+        inset 0 2px 0 rgba(255,255,255,0.72);
 }
 
 .memory-title {
     font-family: 'Secular One', sans-serif;
-    font-size: clamp(46px, 9vw, 86px);
+    min-width: min(74vw, 420px);
+    padding: 12px 42px 16px;
+    border-radius: 28px;
+    background:
+        radial-gradient(circle at 7% 50%, #58C4BB 0 5px, transparent 6px),
+        radial-gradient(circle at 93% 50%, #58C4BB 0 5px, transparent 6px),
+        linear-gradient(180deg, #FFF8EC 0%, #F4E0CF 100%);
+    border: 5px solid rgba(126, 207, 188, 0.92);
+    font-size: clamp(48px, 7vw, 82px);
     line-height: 0.95;
-    color: white;
+    color: #A64B68;
     text-shadow:
-        0 5px 0 rgba(79, 159, 116, 0.36),
-        0 12px 28px rgba(57, 118, 142, 0.2);
+        0 3px 0 rgba(255,255,255,0.78),
+        0 9px 18px rgba(57, 80, 92, 0.16);
+    box-shadow:
+        0 8px 0 rgba(61, 151, 151, 0.28),
+        0 22px 38px rgba(57, 80, 92, 0.18),
+        inset 0 3px 0 rgba(255,255,255,0.92);
 }
 
 .memory-level-map {
     position: relative;
     z-index: 2;
-    width: min(96vw, 1080px);
-    min-height: clamp(390px, 56vh, 540px);
-    padding: clamp(20px, 3vw, 34px);
-    border-radius: 34px;
-    background:
-        radial-gradient(circle at 16% 18%, rgba(255, 230, 109, 0.28), transparent 24%),
-        radial-gradient(circle at 84% 24%, rgba(255, 158, 181, 0.22), transparent 24%),
-        radial-gradient(circle at 76% 78%, rgba(152, 217, 194, 0.28), transparent 26%),
-        linear-gradient(180deg, rgba(255,255,255,0.64), rgba(232, 255, 221, 0.44));
-    border: 2px solid rgba(255,255,255,0.78);
-    box-shadow:
-        0 18px 46px rgba(57, 118, 142, 0.16),
-        inset 0 2px 0 rgba(255,255,255,0.86);
+    width: min(100vw, 1600px);
+    min-height: clamp(560px, 72vh, 760px);
+    padding: clamp(8px, 1.6vw, 18px);
+    border-radius: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    transform-origin: center 62%;
 }
 
 .memory-level-map.hidden,
@@ -699,24 +784,25 @@ canvas {
 
 .memory-level-trail {
     position: relative;
-    min-height: clamp(340px, 49vh, 470px);
-    display: grid;
-    grid-template-columns: repeat(5, minmax(104px, 1fr));
-    grid-template-rows: repeat(3, minmax(106px, 1fr));
-    align-items: center;
-    justify-items: center;
-    gap: clamp(14px, 2vw, 26px);
+    width: 100%;
+    min-height: min(72vh, 760px);
+    border-radius: 0;
+    overflow: visible;
     direction: ltr;
+    background: url('./assets/memory/memory-garden-map-bg.png') center / contain no-repeat;
+    filter: drop-shadow(0 24px 34px rgba(57, 80, 92, 0.12));
+}
+
+.memory-level-trail::before {
+    content: none;
+}
+
+.memory-level-trail::after {
+    content: none;
 }
 
 .memory-level-path {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-    pointer-events: none;
-    z-index: 0;
+    display: none;
 }
 
 .memory-level-path path {
@@ -726,209 +812,257 @@ canvas {
 }
 
 .memory-level-path-shadow {
-    stroke: rgba(186, 124, 42, 0.34);
-    stroke-width: 15;
-    transform: translateY(1.8px);
-}
-
-.memory-level-path-ribbon {
-    stroke: #F7C97E;
+    stroke: rgba(171, 129, 160, 0.28);
     stroke-width: 14;
-    filter: drop-shadow(0 4px 0 rgba(196, 126, 25, 0.22));
+    transform: translateY(2.2px);
 }
 
-.memory-level-path-highlight {
-    stroke: rgba(255,255,255,0.66);
-    stroke-width: 4;
+.memory-level-path-road {
+    stroke: #F7D5E9;
+    stroke-width: 13;
+    box-shadow:
+        0 10px 0 rgba(186, 124, 42, 0.28),
+        0 20px 36px rgba(57, 80, 92, 0.12);
 }
 
-.memory-level-trail::after {
-    content: '✦  ✦  ✦';
+.memory-level-path-frosting {
+    stroke: rgba(255,255,255,0.86);
+    stroke-width: 5;
+    stroke-dasharray: 1 10;
+    filter: drop-shadow(0 0 4px rgba(255,255,255,0.9));
+}
+
+.memory-level-path-arrow {
+    display: none;
+}
+
+.memory-scenery {
+    display: none;
+}
+
+.memory-scenery-gate {
+    width: 118px;
+    height: 92px;
+    border-radius: 46px 46px 12px 12px;
+    border: 7px solid #E9B85E;
+    background:
+        linear-gradient(90deg, transparent 14%, rgba(255,255,255,0.7) 15% 19%, transparent 20% 33%, rgba(255,255,255,0.7) 34% 38%, transparent 39% 52%, rgba(255,255,255,0.7) 53% 57%, transparent 58% 71%, rgba(255,255,255,0.7) 72% 76%, transparent 77%),
+        linear-gradient(180deg, #F8D389 0%, #F1A85E 100%);
+    box-shadow:
+        0 8px 0 rgba(155, 111, 0, 0.18),
+        0 20px 30px rgba(57, 80, 92, 0.12),
+        inset 0 0 0 4px rgba(255,255,255,0.34);
+}
+
+.memory-scenery-gate::before,
+.memory-scenery-gate::after {
+    content: '♦';
     position: absolute;
-    left: 12%;
-    top: 11%;
-    color: rgba(255, 211, 77, 0.88);
-    font-size: 28px;
-    letter-spacing: 32px;
-    text-shadow: 0 0 16px rgba(255, 230, 109, 0.72);
-    pointer-events: none;
+    top: 16px;
+    color: #C9A0DC;
+    font-size: 32px;
+    text-shadow: 0 2px 0 rgba(255,255,255,0.55);
+}
+
+.memory-scenery-gate::before {
+    left: 18px;
+}
+
+.memory-scenery-gate::after {
+    right: 18px;
+    color: #98D9C2;
+}
+
+.memory-scenery-cloud {
+    width: 150px;
+    height: 60px;
+    border-radius: 999px;
+    background:
+        radial-gradient(circle at 24% 58%, #FFFFFF 0 34%, transparent 35%),
+        radial-gradient(circle at 47% 34%, #FFFFFF 0 42%, transparent 43%),
+        radial-gradient(circle at 70% 58%, #FFFFFF 0 35%, transparent 36%),
+        rgba(255,255,255,0.88);
+    filter: drop-shadow(0 14px 18px rgba(57, 80, 92, 0.12));
+}
+
+.memory-scenery-cloud-2 {
+    transform: translate(-50%, -50%) scale(0.8);
+}
+
+.memory-scenery-flowerbed {
+    width: 150px;
+    height: 92px;
+    border-radius: 45% 45% 28% 28%;
+    background:
+        radial-gradient(circle at 22% 34%, #FF9EB5 0 8%, transparent 9%),
+        radial-gradient(circle at 42% 23%, #FFE66D 0 8%, transparent 9%),
+        radial-gradient(circle at 62% 38%, #C9A0DC 0 8%, transparent 9%),
+        radial-gradient(circle at 78% 25%, #FFB7C8 0 8%, transparent 9%),
+        linear-gradient(180deg, #78C45F 0%, #5CA54F 100%);
+    box-shadow:
+        0 10px 0 rgba(91, 119, 70, 0.18),
+        0 20px 30px rgba(57, 80, 92, 0.12);
+}
+
+.memory-scenery-chest {
+    width: 70px;
+    height: 54px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px 14px 12px 12px;
+    background: linear-gradient(180deg, #F7B46F 0%, #D8874F 100%);
+    border: 3px solid #FFE2A8;
+    font-size: 34px;
+    box-shadow:
+        0 8px 0 rgba(155, 90, 53, 0.22),
+        0 18px 28px rgba(57, 80, 92, 0.14);
+}
+
+.memory-scenery-bubble {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 30% 24%, rgba(255,255,255,0.95) 0 12%, transparent 13%),
+        radial-gradient(circle at 68% 74%, rgba(255,255,255,0.38), transparent 24%),
+        rgba(201, 160, 220, 0.24);
+    border: 2px solid rgba(255,255,255,0.46);
+    box-shadow:
+        inset 0 0 16px rgba(255,255,255,0.46),
+        0 12px 20px rgba(57, 80, 92, 0.08);
+}
+.memory-map-area-label {
+    display: none;
+}
+
+.memory-map-area-label-green {
+    background: linear-gradient(180deg, #FFFFFF 0%, #DDF8C5 100%);
+}
+
+.memory-map-area-label-pink {
+    background: linear-gradient(180deg, #FFFFFF 0%, #FFE1EC 100%);
+}
+
+.memory-map-area-label-gold {
+    background: linear-gradient(180deg, #FFFFFF 0%, #FFF2A8 100%);
 }
 
 .memory-level-stop {
-    position: relative;
-    z-index: 1;
-}
-
-.memory-level-stop-1 {
-    grid-column: 1;
-    grid-row: 3;
-}
-
-.memory-level-stop-2 {
-    grid-column: 2;
-    grid-row: 3;
-}
-
-.memory-level-stop-3 {
-    grid-column: 3;
-    grid-row: 3;
-}
-
-.memory-level-stop-4 {
-    grid-column: 4;
-    grid-row: 3;
-}
-
-.memory-level-stop-5 {
-    grid-column: 5;
-    grid-row: 3;
-}
-
-.memory-level-stop-6 {
-    grid-column: 5;
-    grid-row: 2;
-}
-
-.memory-level-stop-7 {
-    grid-column: 4;
-    grid-row: 2;
-}
-
-.memory-level-stop-8 {
-    grid-column: 3;
-    grid-row: 2;
-}
-
-.memory-level-stop-9 {
-    grid-column: 2;
-    grid-row: 2;
-}
-
-.memory-level-stop-10 {
-    grid-column: 1;
-    grid-row: 2;
-}
-
-.memory-level-stop-11 {
-    grid-column: 1;
-    grid-row: 1;
-}
-
-.memory-level-stop-12 {
-    grid-column: 2;
-    grid-row: 1;
-}
-
-.memory-level-stop-13 {
-    grid-column: 3;
-    grid-row: 1;
-}
-
-.memory-level-stop-14 {
-    grid-column: 4;
-    grid-row: 1;
-}
-
-.memory-level-stop-15 {
-    grid-column: 5;
-    grid-row: 1;
+    position: absolute;
+    z-index: 6;
+    transform: translate(-50%, -50%) skewY(-3deg);
+    filter: drop-shadow(0 14px 12px rgba(57, 80, 92, 0.13));
 }
 
 .memory-level-node {
     position: relative;
-    width: clamp(88px, 9.5vw, 112px);
-    min-height: clamp(88px, 9.5vw, 112px);
+    width: clamp(78px, 7.6vw, 112px);
+    min-height: clamp(78px, 7.6vw, 112px);
     display: grid;
-    grid-template-rows: auto auto auto;
+    grid-template-rows: auto auto;
     justify-items: center;
     align-items: center;
-    gap: 2px;
-    border: 5px solid #E8956D;
+    gap: 1px;
+    border: none;
     border-radius: 50%;
-    padding: 9px;
-    background:
-        radial-gradient(circle at 35% 24%, rgba(255,255,255,0.98) 0 14%, transparent 15%),
-        linear-gradient(180deg, #FFF8F0 0%, #FDE8D8 56%, #F5C4A0 100%);
+    padding: 0;
+    background: transparent;
     color: #39768E;
     font-family: 'Rubik', sans-serif;
     font-weight: 900;
     cursor: pointer;
-    box-shadow:
-        0 7px 0 #C4683A,
-        0 16px 26px rgba(57, 80, 92, 0.2),
-        inset 0 2px 0 rgba(255,255,255,0.92);
-    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    box-shadow: none;
+    transition: transform 0.18s ease, filter 0.18s ease;
 }
 
 .memory-level-node:hover,
 .memory-level-node:focus-visible {
-    transform: translateY(-4px);
-    border-color: #FFE66D;
+    transform: translateY(-3px) scale(1.03);
+    filter: drop-shadow(0 0 16px rgba(255, 230, 109, 0.72));
     box-shadow:
-        0 11px 0 #C4683A,
-        0 24px 34px rgba(57, 80, 92, 0.24),
-        0 0 0 6px rgba(255, 230, 109, 0.28),
-        inset 0 2px 0 rgba(255,255,255,0.94);
+        0 0 0 5px rgba(255,255,255,0.5),
+        0 0 0 10px rgba(255, 230, 109, 0.22);
     outline: none;
 }
 
 .memory-level-node.is-current {
-    animation: memoryCurrentPulse 1.8s ease-in-out infinite;
+    animation: memoryCurrentPulse 1.35s ease-in-out infinite;
+}
+
+.memory-level-node.is-current::before {
+    content: '';
+    position: absolute;
+    inset: 8%;
+    z-index: -1;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle, rgba(255,255,255,0.94) 0 47%, rgba(255, 158, 181, 0.92) 48% 70%, rgba(255, 230, 109, 0.76) 71% 100%);
+    box-shadow:
+        0 0 0 7px rgba(255,255,255,0.5),
+        0 0 28px 10px rgba(255, 158, 181, 0.5),
+        0 12px 28px rgba(57, 80, 92, 0.18);
 }
 
 .memory-level-node.is-playable {
-    background:
-        radial-gradient(circle at 35% 24%, rgba(255,255,255,0.98) 0 14%, transparent 15%),
-        linear-gradient(180deg, #FFFBE8 0%, #FFE66D 54%, #FFB84D 100%);
-    border-color: #FF9E5E;
-    box-shadow:
-        0 7px 0 #C4683A,
-        0 16px 26px rgba(57, 80, 92, 0.2),
-        0 0 0 4px rgba(255, 230, 109, 0.62),
-        0 0 20px 6px rgba(255, 200, 0, 0.28),
-        inset 0 2px 0 rgba(255,255,255,0.92);
+    background: transparent;
 }
 
 .memory-level-node.is-complete {
-    border-color: #B8E986;
-    background:
-        radial-gradient(circle at 35% 24%, rgba(255,255,255,0.98) 0 14%, transparent 15%),
-        linear-gradient(180deg, #FFFFFF 0%, #E8FFDD 58%, #B8E986 100%);
-    box-shadow:
-        0 7px 0 #7EC850,
-        0 18px 32px rgba(90, 158, 58, 0.22),
-        inset 0 2px 0 rgba(255,255,255,0.92);
+    background: transparent;
 }
 
 .memory-level-node.is-locked {
     cursor: not-allowed;
-    color: #8AA1AA;
-    background:
-        radial-gradient(circle at 35% 24%, rgba(255,255,255,0.86) 0 14%, transparent 15%),
-        linear-gradient(180deg, #F2F5F6 0%, #D8E0E4 58%, #B6C3C9 100%);
-    border-color: #AAB8BE;
-    box-shadow:
-        0 6px 0 rgba(110, 130, 140, 0.2),
-        0 14px 24px rgba(57, 118, 142, 0.11),
-        inset 0 2px 0 rgba(255,255,255,0.7);
+    color: transparent;
+    transform: scale(0.9);
+    background: transparent;
+    box-shadow: none;
     animation: none;
 }
 
 .memory-level-node.is-locked:hover {
-    transform: none;
+    transform: scale(0.9);
+}
+
+.memory-level-node.is-locked .memory-level-number {
+    display: none;
+}
+
+.memory-level-node.is-locked .memory-level-icon {
+    width: 46px;
+    height: 46px;
+    display: none;
+    background: rgba(255,255,255,0.5);
+    font-size: 27px;
+    box-shadow:
+        0 3px 0 rgba(57, 80, 92, 0.1),
+        inset 0 2px 0 rgba(255,255,255,0.75);
+}
+
+.memory-level-node.is-locked::after {
+    content: none;
+}
+
+.memory-level-node.is-current .memory-level-icon {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    background: rgba(255,255,255,0.72);
+    font-size: 29px;
 }
 
 .memory-level-number {
     position: absolute;
-    top: -13px;
-    right: -9px;
-    width: 36px;
-    height: 36px;
-    display: inline-flex;
+    top: -11px;
+    right: -10px;
+    width: 34px;
+    height: 34px;
+    display: none;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: linear-gradient(180deg, #FF9EB5, #E57A95);
+    background: rgba(255, 158, 181, 0.94);
     color: white;
     font-family: 'Secular One', sans-serif;
     font-size: 21px;
@@ -940,24 +1074,45 @@ canvas {
         inset 0 2px 0 rgba(255,255,255,0.62);
 }
 
-.memory-level-icon {
-    width: 36px;
-    height: 36px;
+.memory-level-node.is-current .memory-level-number {
     display: inline-flex;
+}
+
+.memory-level-icon {
+    display: none;
+    width: 40px;
+    height: 40px;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
     background: linear-gradient(180deg, #FFE66D, #FFB7C8);
-    font-size: 23px;
+    font-size: 25px;
     box-shadow:
         0 5px 0 rgba(196, 126, 25, 0.18),
         inset 0 2px 0 rgba(255,255,255,0.75);
 }
 
 .memory-level-copy {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 12px);
+    z-index: 20;
+    min-width: 132px;
     display: grid;
-    gap: 1px;
+    gap: 3px;
+    padding: 10px 12px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.94);
+    border: 2px solid rgba(255,255,255,0.9);
+    box-shadow:
+        0 8px 0 rgba(57, 118, 142, 0.12),
+        0 18px 30px rgba(57, 118, 142, 0.18),
+        inset 0 2px 0 rgba(255,255,255,0.9);
     text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, 8px) scale(0.9);
+    transition: opacity 0.16s ease, transform 0.16s ease;
 }
 
 .memory-level-copy strong {
@@ -969,22 +1124,30 @@ canvas {
 
 .memory-level-copy small {
     color: #39768E;
-    font-size: 10px;
+    font-size: 13px;
     white-space: nowrap;
 }
 
 .memory-level-stars {
+    position: absolute;
+    left: 50%;
+    bottom: -17px;
     display: inline-flex;
     direction: ltr;
     gap: 2px;
-    font-size: 20px;
+    font-size: 19px;
     line-height: 1;
+    transform: translateX(-50%);
 }
 
 .memory-level-star {
-    color: rgba(255,255,255,0.72);
+    color: rgba(255,255,255,0.85);
     -webkit-text-stroke: 1px #B98522;
     text-shadow: 0 2px 0 rgba(255,255,255,0.8);
+}
+
+.memory-level-node:not(.is-complete) .memory-level-stars {
+    display: none;
 }
 
 .memory-level-star.is-filled {
@@ -992,6 +1155,33 @@ canvas {
     text-shadow:
         0 2px 0 rgba(155, 111, 0, 0.18),
         0 0 10px rgba(255, 230, 109, 0.6);
+}
+
+.memory-level-current-marker {
+    position: absolute;
+    left: 50%;
+    bottom: -36px;
+    min-width: 74px;
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #FFFFFF 0%, #E8FFDD 100%);
+    border: 2px solid rgba(255,255,255,0.9);
+    color: #4F9F74;
+    font-family: 'Rubik', sans-serif;
+    font-size: 15px;
+    font-weight: 900;
+    box-shadow:
+        0 5px 0 rgba(90, 158, 58, 0.22),
+        0 12px 20px rgba(57, 118, 142, 0.15),
+        inset 0 2px 0 rgba(255,255,255,0.9);
+    transform: translateX(-50%);
+    white-space: nowrap;
+    pointer-events: none;
 }
 
 .memory-level-hints {
@@ -1017,21 +1207,132 @@ canvas {
 }
 
 .memory-level-reward {
+    display: none;
+}
+
+.memory-level-node:hover .memory-level-copy,
+.memory-level-node:focus-visible .memory-level-copy {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+}
+
+.memory-map-sprite {
     position: absolute;
-    left: -12px;
-    top: -12px;
-    width: 38px;
-    height: 38px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    z-index: 9;
+    width: 66px;
+    height: 78px;
+    transform: translate(-128%, -58%);
+    pointer-events: none;
+    animation: memorySpriteIdle 1.6s ease-in-out infinite;
+}
+
+.memory-level-map.is-returning .memory-map-sprite {
+    animation:
+        memorySpriteArrive 0.9s cubic-bezier(0.18, 0.86, 0.24, 1.14) both,
+        memorySpriteIdle 1.6s ease-in-out 0.9s infinite;
+}
+
+.memory-map-sprite-shadow {
+    position: absolute;
+    left: 50%;
+    bottom: 2px;
+    width: 46px;
+    height: 14px;
     border-radius: 50%;
-    background: linear-gradient(180deg, #FFF7B0, #FFB7C8);
-    font-size: 22px;
+    background: rgba(57, 80, 92, 0.18);
+    transform: translateX(-50%);
+    filter: blur(1px);
+}
+
+.memory-map-sprite-body {
+    position: absolute;
+    left: 50%;
+    bottom: 10px;
+    width: 44px;
+    height: 58px;
+    transform: translateX(-50%);
+}
+
+.memory-map-sprite-hair {
+    position: absolute;
+    left: 5px;
+    top: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 50% 50% 45% 45%;
+    background: linear-gradient(180deg, #8B5A3C 0%, #5F3A2A 100%);
     box-shadow:
-        0 4px 0 rgba(196, 126, 25, 0.2),
-        0 8px 14px rgba(57, 118, 142, 0.15),
-        inset 0 2px 0 rgba(255,255,255,0.72);
+        -8px 9px 0 -3px #6F472F,
+        8px 9px 0 -3px #6F472F;
+}
+
+.memory-map-sprite-face {
+    position: absolute;
+    left: 8px;
+    top: 7px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 36% 45%, #5F3A2A 0 5%, transparent 6%),
+        radial-gradient(circle at 64% 45%, #5F3A2A 0 5%, transparent 6%),
+        radial-gradient(circle at 50% 66%, #E57A95 0 8%, transparent 9%),
+        #FFD8B5;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,0.55);
+}
+
+.memory-map-sprite-bow {
+    position: absolute;
+    left: 25px;
+    top: -5px;
+    width: 22px;
+    height: 16px;
+    background:
+        radial-gradient(circle at 20% 50%, #FF9EB5 0 42%, transparent 43%),
+        radial-gradient(circle at 80% 50%, #FF9EB5 0 42%, transparent 43%),
+        radial-gradient(circle at 50% 50%, #E57A95 0 24%, transparent 25%);
+    transform: rotate(13deg);
+}
+
+.memory-map-sprite-dress {
+    position: absolute;
+    left: 6px;
+    top: 32px;
+    width: 32px;
+    height: 27px;
+    border-radius: 50% 50% 42% 42%;
+    background: linear-gradient(180deg, #FFB7C8 0%, #E57A95 100%);
+    box-shadow:
+        -8px 6px 0 -4px #FFD8B5,
+        8px 6px 0 -4px #FFD8B5,
+        0 5px 0 rgba(180, 80, 100, 0.28);
+}
+
+@keyframes memorySpriteIdle {
+    0%, 100% {
+        transform: translate(-128%, -58%) translateY(0);
+    }
+
+    50% {
+        transform: translate(-128%, -58%) translateY(-5px);
+    }
+}
+
+@keyframes memorySpriteArrive {
+    0% {
+        opacity: 0;
+        transform: translate(-160%, -58%) translateY(14px) scale(0.86);
+    }
+
+    64% {
+        opacity: 1;
+        transform: translate(-124%, -58%) translateY(-10px) scale(1.08);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translate(-128%, -58%) translateY(0) scale(1);
+    }
 }
 
 @keyframes memoryCurrentPulse {
@@ -1054,10 +1355,48 @@ canvas {
     }
 }
 
+.memory-level-map.is-returning {
+    animation: memoryMapReturn 0.58s cubic-bezier(0.18, 0.86, 0.24, 1.16) both;
+}
+
+@keyframes memoryMapReturn {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+        filter: saturate(0.92);
+    }
+
+    68% {
+        opacity: 1;
+        transform: translateY(-4px) scale(1.015);
+        filter: saturate(1.08);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: saturate(1);
+    }
+}
+
 .memory-game-area {
     position: relative;
     z-index: 2;
-    display: contents;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(12px, 2.2vh, 18px);
+    transform-origin: center top;
+    transition:
+        opacity 0.36s ease,
+        transform 0.36s cubic-bezier(0.18, 0.86, 0.24, 1);
+}
+
+.memory-game-area.is-completing {
+    opacity: 0.18;
+    pointer-events: none;
+    transform: translateY(16px) scale(0.975);
 }
 
 .memory-level-toolbar {
@@ -1071,16 +1410,19 @@ canvas {
 .memory-map-btn,
 .memory-level-title {
     border-radius: 999px;
-    padding: 10px 16px;
+    padding: 12px 18px;
     font-family: 'Rubik', sans-serif;
     font-weight: 900;
     box-shadow: 0 5px 0 rgba(57, 118, 142, 0.15);
 }
 
 .memory-map-btn {
+    min-width: 138px;
+    min-height: 52px;
     border: none;
     background: linear-gradient(180deg, #98D9C2 0%, #4FBE8D 100%);
     color: white;
+    font-size: 18px;
     cursor: pointer;
     transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
@@ -1093,8 +1435,13 @@ canvas {
 }
 
 .memory-level-title {
+    min-height: 52px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background: rgba(255,255,255,0.82);
     color: #39768E;
+    font-size: 18px;
 }
 
 .memory-controls {
@@ -1193,13 +1540,15 @@ canvas {
 }
 
 .memory-new-garden-btn {
+    min-width: 118px;
+    min-height: 52px;
     border: none;
     border-radius: 999px;
-    padding: 10px 16px;
+    padding: 12px 18px;
     background: linear-gradient(180deg, #FF9EB5 0%, #E57A95 100%);
     color: white;
     font-family: 'Rubik', sans-serif;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 900;
     cursor: pointer;
     box-shadow: 0 4px 0 rgba(180, 80, 100, 0.55);
@@ -1344,10 +1693,10 @@ canvas {
 
 .memory-card-sound {
     position: absolute;
-    left: 10px;
-    top: 10px;
-    width: 38px;
-    height: 38px;
+    left: 9px;
+    top: 9px;
+    width: 46px;
+    height: 46px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1355,7 +1704,7 @@ canvas {
     border-radius: 50%;
     background: linear-gradient(180deg, #FFE66D 0%, #FFB84D 100%);
     color: #39768E;
-    font-size: 18px;
+    font-size: 21px;
     cursor: pointer;
     box-shadow:
         0 4px 0 rgba(196, 126, 25, 0.34),
@@ -1453,6 +1802,113 @@ canvas {
     font-family: 'Secular One', sans-serif;
     font-size: 26px;
     text-shadow: 0 2px 0 rgba(255,255,255,0.85);
+}
+
+.memory-celebration {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+        radial-gradient(circle at 50% 43%, rgba(255, 230, 109, 0.22), transparent 26%),
+        rgba(135, 206, 235, 0.42);
+    backdrop-filter: blur(4px) saturate(1.08);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+}
+
+.memory-celebration.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.memory-celebration-content {
+    max-width: min(90vw, 420px);
+    padding: 34px 42px;
+    border-radius: 44px;
+    background:
+        radial-gradient(circle at 20% 18%, rgba(255, 230, 109, 0.5), transparent 28%),
+        linear-gradient(180deg, #FFFFFF 0%, #FFFBE8 44%, #E8FFD6 100%);
+    border: 4px solid rgba(255, 255, 255, 0.9);
+    box-shadow:
+        0 18px 0 rgba(126, 200, 80, 0.28),
+        0 36px 70px rgba(57, 118, 142, 0.26),
+        inset 0 3px 0 rgba(255, 255, 255, 0.96);
+    text-align: center;
+    transform: scale(0.85) translateY(20px);
+    transition: transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.memory-celebration.is-visible .memory-celebration-content {
+    transform: scale(1) translateY(0);
+}
+
+.memory-celebration-stars {
+    font-size: clamp(36px, 8vw, 56px);
+    line-height: 1;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 3px 0 rgba(155, 111, 0, 0.18));
+    animation: memoryStarsFloat 1.15s ease-in-out infinite alternate;
+}
+
+.memory-celebration-title {
+    font-family: 'Secular One', sans-serif;
+    font-size: clamp(38px, 9vw, 64px);
+    color: #4F9F74;
+    text-shadow: 0 3px 0 rgba(255, 255, 255, 0.8);
+    line-height: 1;
+    margin-bottom: 10px;
+}
+
+.memory-celebration-subtitle {
+    font-family: 'Rubik', sans-serif;
+    font-size: clamp(18px, 3.5vw, 24px);
+    font-weight: 900;
+    color: #39768E;
+}
+
+.memory-celebration-next-btn {
+    min-width: 176px;
+    min-height: 56px;
+    margin-top: 18px;
+    border: none;
+    border-radius: 999px;
+    padding: 12px 24px;
+    background: linear-gradient(180deg, #98D9C2 0%, #4FBE8D 100%);
+    color: white;
+    font-family: 'Rubik', sans-serif;
+    font-size: 20px;
+    font-weight: 900;
+    cursor: pointer;
+    pointer-events: auto;
+    box-shadow:
+        0 6px 0 #3C9970,
+        0 14px 24px rgba(57, 118, 142, 0.18),
+        inset 0 2px 0 rgba(255,255,255,0.5);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.memory-celebration-next-btn:hover,
+.memory-celebration-next-btn:focus-visible {
+    transform: translateY(-3px);
+    box-shadow:
+        0 9px 0 #3C9970,
+        0 20px 30px rgba(57, 118, 142, 0.22),
+        inset 0 2px 0 rgba(255,255,255,0.58);
+    outline: none;
+}
+
+@keyframes memoryStarsFloat {
+    from {
+        transform: translateY(0) scale(1);
+    }
+
+    to {
+        transform: translateY(-5px) scale(1.035);
+    }
 }
 
 /* ==================== START SCREEN ==================== */
@@ -2856,9 +3312,9 @@ td {
     .memory-card-sound {
         left: 7px;
         top: 7px;
-        width: 32px;
-        height: 32px;
-        font-size: 15px;
+        width: 42px;
+        height: 42px;
+        font-size: 18px;
     }
 
     .memory-toast {
@@ -3335,8 +3791,9 @@ td {
 
     .memory-map-btn,
     .memory-level-title {
-        padding: 7px 12px;
-        font-size: 14px;
+        min-height: 46px;
+        padding: 8px 14px;
+        font-size: 15px;
     }
 
     .memory-controls {
@@ -3380,9 +3837,9 @@ td {
     .memory-card-sound {
         left: 5px;
         top: 5px;
-        width: 26px;
-        height: 26px;
-        font-size: 12px;
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
         border-width: 1px;
     }
 
