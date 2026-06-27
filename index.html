@@ -15,9 +15,23 @@
             <div class="game-select-decoration game-select-decoration-cloud game-select-cloud-2" aria-hidden="true"></div>
 
             <header class="game-select-header">
-                <p class="game-select-kicker">משחקים של לוטם ותום</p>
+                <p class="game-select-kicker">משחקים של כולם</p>
                 <h1 class="game-select-title">מה משחקים היום?</h1>
             </header>
+
+            <section class="profiles-panel" aria-label="בחירת פרופיל">
+                <div class="profiles-heading">
+                    <span>מי משחק/ת היום?</span>
+                    <strong id="active-profile-name">לוטם</strong>
+                </div>
+                <div id="profile-list" class="profile-list" aria-label="פרופילים"></div>
+                <div class="profile-editor">
+                    <input id="profile-name-input" type="text" maxlength="10" placeholder="שם של ילד/ה">
+                    <button id="add-profile-btn" type="button">הוסיפו</button>
+                    <button id="rename-profile-btn" type="button">שנו שם</button>
+                    <button id="delete-profile-btn" type="button">מחקו</button>
+                </div>
+            </section>
 
             <div class="game-grid" aria-label="בחירת משחק">
                 <button type="button" class="game-choice-card game-choice-card-bubbles" data-game="bubbles" id="select-bubbles-btn">
@@ -61,6 +75,7 @@
                 <p class="memory-kicker">משחק זוגות בלי זמן</p>
                 <h1 class="memory-title">גן מילים</h1>
                 <p class="memory-subtitle">מצאו זוגות של עברית ואנגלית</p>
+                <p id="memory-profile-badge" class="memory-profile-badge">לוטם משחק/ת</p>
             </header>
 
             <div class="memory-controls" aria-label="בחירת קושי">

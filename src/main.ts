@@ -16,6 +16,12 @@ type ScreenId = 'game-select-screen' | 'memory-screen' | 'start-screen' | 'game-
 type MemoryDifficulty = 'easy' | 'medium' | 'hard';
 type MemoryCardKind = 'hebrew' | 'english';
 
+interface KidProfile {
+  id: string;
+  name: string;
+  emoji: string;
+}
+
 interface MemoryWord {
   id: string;
   hebrew: string;
@@ -53,6 +59,14 @@ const MEMORY_DIFFICULTY_PAIRS: Record<MemoryDifficulty, number> = {
   hard: 8,
 };
 
+const PROFILE_STORAGE_KEY = 'bubble_kid_profiles';
+const ACTIVE_PROFILE_STORAGE_KEY = 'bubble_active_kid_profile';
+const DEFAULT_KID_PROFILES: KidProfile[] = [
+  { id: 'lotem', name: 'לוטם', emoji: '🌸' },
+  { id: 'tom', name: 'תום', emoji: '🫧' },
+];
+const PROFILE_EMOJIS = ['🌸', '🫧', '⭐', '🌈', '🍎', '🦄', '🚗', '☀️', '🐶', '🏠'];
+
 function requireElement<T extends HTMLElement>(id: string): T {
   const element = document.getElementById(id);
   if (!element) {
@@ -68,8 +82,10 @@ function showScreen(screenId: ScreenId) {
 }
 
 // Player state (will be updated by UI)
-let p1Name = localStorage.getItem('bubble_p1_name') || 'לוטם';
-let p2Name = localStorage.getItem('bubble_p2_name') || 'תום';
+let kidProfiles: KidProfile[] = DEFAULT_KID_PROFILES.map((profile) => ({ ...profile }));
+let activeProfileId = DEFAULT_KID_PROFILES[0].id;
+let p1Name = DEFAULT_KID_PROFILES[0].name;
+let p2Name = DEFAULT_KID_PROFILES[1].name;
 let p1Color = 0xff9eb5;
 let p2Color = 0x7ec8e8;
 let p1Figure: FigureType = 'blob';
@@ -96,8 +112,9 @@ function loadPreferences() {
   if (savedFigures.p2) p2Figure = savedFigures.p2;
 
   const savedNames = JSON.parse(localStorage.getItem('bubble_names') || '{}');
-  if (savedNames.p1) p1Name = savedNames.p1;
   if (savedNames.p2) p2Name = savedNames.p2;
+
+  loadProfiles();
 
   const savedTheme = localStorage.getItem('bubble_background_theme');
   if (savedTheme) {
@@ -119,6 +136,18 @@ function loadPreferences() {
 
 // Setup UI event handlers
 function setupUI() {
+  renderProfileList();
+  syncActiveProfileUI();
+
+  requireElement<HTMLButtonElement>('add-profile-btn').addEventListener('click', addProfileFromInput);
+  requireElement<HTMLButtonElement>('rename-profile-btn').addEventListener('click', renameActiveProfileFromInput);
+  requireElement<HTMLButtonElement>('delete-profile-btn').addEventListener('click', deleteActiveProfile);
+  requireElement<HTMLInputElement>('profile-name-input').addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      addProfileFromInput();
+    }
+  });
+
   // Name inputs
   const p1Input = document.getElementById('p1-name') as HTMLInputElement;
   const p2Input = document.getElementById('p2-name') as HTMLInputElement;
@@ -126,7 +155,7 @@ function setupUI() {
   if (p1Input) {
     p1Input.value = p1Name;
     p1Input.addEventListener('input', () => {
-      p1Name = p1Input.value || 'לוטם';
+      renameActiveProfile(p1Input.value);
       localStorage.setItem('bubble_names', JSON.stringify({ p1: p1Name, p2: p2Name }));
     });
   }
@@ -255,6 +284,157 @@ function setupUI() {
       (e.target as HTMLElement).classList.add('hidden');
     }
   });
+}
+
+function loadProfiles() {
+  const savedProfiles = localStorage.getItem(PROFILE_STORAGE_KEY);
+  kidProfiles = savedProfiles ? JSON.parse(savedProfiles) : DEFAULT_KID_PROFILES.map((profile) => ({ ...profile }));
+
+  const savedActiveProfile = localStorage.getItem(ACTIVE_PROFILE_STORAGE_KEY);
+  if (savedActiveProfile) {
+    activeProfileId = savedActiveProfile;
+  }
+
+  if (!kidProfiles.some((profile) => profile.id === activeProfileId)) {
+    activeProfileId = kidProfiles[0].id;
+  }
+
+  p1Name = getActiveProfile().name;
+  saveProfiles();
+}
+
+function getActiveProfile(): KidProfile {
+  const profile = kidProfiles.find((candidate) => candidate.id === activeProfileId);
+  if (!profile) {
+    throw new Error(`Missing active profile ${activeProfileId}`);
+  }
+  return profile;
+}
+
+function saveProfiles() {
+  localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(kidProfiles));
+  localStorage.setItem(ACTIVE_PROFILE_STORAGE_KEY, activeProfileId);
+}
+
+function createProfileId() {
+  return `kid-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function createProfileEmoji() {
+  return PROFILE_EMOJIS[kidProfiles.length % PROFILE_EMOJIS.length];
+}
+
+function readProfileInput() {
+  return requireElement<HTMLInputElement>('profile-name-input').value.trim();
+}
+
+function addProfileFromInput() {
+  const name = readProfileInput();
+  if (!name) {
+    requireElement<HTMLInputElement>('profile-name-input').focus();
+    return;
+  }
+
+  const profile: KidProfile = {
+    id: createProfileId(),
+    name,
+    emoji: createProfileEmoji(),
+  };
+
+  kidProfiles.push(profile);
+  activeProfileId = profile.id;
+  p1Name = profile.name;
+  saveProfiles();
+  localStorage.setItem('bubble_names', JSON.stringify({ p1: p1Name, p2: p2Name }));
+  requireElement<HTMLInputElement>('profile-name-input').value = '';
+  renderProfileList();
+  syncActiveProfileUI();
+}
+
+function renameActiveProfileFromInput() {
+  renameActiveProfile(readProfileInput());
+  requireElement<HTMLInputElement>('profile-name-input').value = '';
+}
+
+function renameActiveProfile(name: string) {
+  const normalizedName = name.trim() || getActiveProfile().name;
+  const profile = getActiveProfile();
+  profile.name = normalizedName;
+  p1Name = normalizedName;
+  saveProfiles();
+  localStorage.setItem('bubble_names', JSON.stringify({ p1: p1Name, p2: p2Name }));
+  renderProfileList();
+  syncActiveProfileUI();
+}
+
+function deleteActiveProfile() {
+  if (kidProfiles.length === 1) {
+    return;
+  }
+
+  const deletedIndex = kidProfiles.findIndex((profile) => profile.id === activeProfileId);
+  if (deletedIndex === -1) {
+    throw new Error(`Missing active profile ${activeProfileId}`);
+  }
+
+  kidProfiles.splice(deletedIndex, 1);
+  activeProfileId = kidProfiles[Math.max(0, deletedIndex - 1)].id;
+  p1Name = getActiveProfile().name;
+  saveProfiles();
+  localStorage.setItem('bubble_names', JSON.stringify({ p1: p1Name, p2: p2Name }));
+  renderProfileList();
+  syncActiveProfileUI();
+}
+
+function selectProfile(profileId: string) {
+  activeProfileId = profileId;
+  p1Name = getActiveProfile().name;
+  saveProfiles();
+  localStorage.setItem('bubble_names', JSON.stringify({ p1: p1Name, p2: p2Name }));
+  renderProfileList();
+  syncActiveProfileUI();
+}
+
+function renderProfileList() {
+  const list = requireElement<HTMLDivElement>('profile-list');
+  list.innerHTML = '';
+
+  kidProfiles.forEach((profile) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'profile-chip';
+    button.classList.toggle('active', profile.id === activeProfileId);
+    button.setAttribute('aria-pressed', String(profile.id === activeProfileId));
+
+    const avatar = document.createElement('span');
+    avatar.className = 'profile-avatar';
+    avatar.setAttribute('aria-hidden', 'true');
+    avatar.textContent = profile.emoji;
+
+    const name = document.createElement('span');
+    name.className = 'profile-name';
+    name.textContent = profile.name;
+
+    button.append(avatar, name);
+    button.addEventListener('click', () => selectProfile(profile.id));
+    list.append(button);
+  });
+}
+
+function syncActiveProfileUI() {
+  const profile = getActiveProfile();
+  p1Name = profile.name;
+
+  requireElement<HTMLElement>('active-profile-name').textContent = profile.name;
+  requireElement<HTMLElement>('memory-profile-badge').textContent = `${profile.name} משחק/ת`;
+
+  const p1Input = document.getElementById('p1-name') as HTMLInputElement | null;
+  if (p1Input) {
+    p1Input.value = profile.name;
+  }
+
+  const deleteButton = requireElement<HTMLButtonElement>('delete-profile-btn');
+  deleteButton.disabled = kidProfiles.length === 1;
 }
 
 function openBubblesSetup() {
