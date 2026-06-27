@@ -250,21 +250,21 @@ const MEMORY_LEVELS: MemoryLevel[] = [
 ];
 
 const MEMORY_ROUTE_POINTS: MemoryRoutePoint[] = [
-  { x: 15, y: 58 },
-  { x: 19, y: 83 },
+  { x: 14, y: 58 },
+  { x: 19, y: 82 },
   { x: 24, y: 43 },
-  { x: 33, y: 37 },
-  { x: 43, y: 40 },
-  { x: 53, y: 49 },
-  { x: 60, y: 64 },
-  { x: 70, y: 71 },
-  { x: 78, y: 68 },
-  { x: 88, y: 60 },
-  { x: 90, y: 43 },
-  { x: 80, y: 31 },
-  { x: 68, y: 31 },
-  { x: 56, y: 36 },
-  { x: 45, y: 31 },
+  { x: 32, y: 40 },
+  { x: 44, y: 44 },
+  { x: 53, y: 55 },
+  { x: 61, y: 66 },
+  { x: 72, y: 76 },
+  { x: 82, y: 68 },
+  { x: 90, y: 55 },
+  { x: 86, y: 42 },
+  { x: 78, y: 36 },
+  { x: 68, y: 32 },
+  { x: 59, y: 36 },
+  { x: 50, y: 31 },
 ];
 
 const MEMORY_MAP_AREAS: MemoryMapArea[] = [
