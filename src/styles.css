@@ -618,19 +618,22 @@ canvas {
 
 /* ==================== MEMORY GARDEN ==================== */
 #memory-screen {
+    position: relative;
     background:
-        linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 44%),
-        transparent;
+        radial-gradient(ellipse at 14% -3%, rgba(255,255,255,0.84) 0 12%, transparent 13%),
+        radial-gradient(ellipse at 90% -5%, rgba(255,255,255,0.78) 0 15%, transparent 16%),
+        radial-gradient(circle at 76% 26%, rgba(255, 230, 109, 0.18), transparent 18%),
+        linear-gradient(180deg, #9DDAD1 0%, #BDE8DB 48%, #AEE099 100%);
     justify-content: flex-start;
-    gap: clamp(14px, 2.5vh, 24px);
-    padding: 24px clamp(14px, 4vw, 44px) 28px;
-    overflow-y: auto;
+    gap: clamp(8px, 1.5vh, 14px);
+    padding: 18px clamp(14px, 3vw, 36px) 20px;
+    overflow-y: hidden;
     overflow-x: hidden;
 }
 
 .memory-header {
     position: relative;
-    z-index: 2;
+    z-index: 12;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -651,27 +654,843 @@ canvas {
 }
 
 .memory-kicker {
-    font-size: clamp(14px, 2vw, 18px);
+    display: none;
 }
 
 .memory-subtitle {
-    font-size: clamp(15px, 2.4vw, 20px);
+    margin-top: -10px;
+    background: linear-gradient(180deg, #58C4BB 0%, #3CA7A4 100%);
+    color: white;
+    font-size: clamp(15px, 2vw, 20px);
+    text-shadow: 0 2px 0 rgba(38, 108, 112, 0.26);
 }
 
 .memory-profile-badge {
-    font-size: clamp(14px, 2vw, 18px);
-    background: linear-gradient(180deg, rgba(255, 250, 232, 0.92), rgba(232, 255, 221, 0.88));
-    color: #4F9F74;
+    position: fixed;
+    left: clamp(16px, 4vw, 54px);
+    top: clamp(16px, 3vw, 42px);
+    min-height: 58px;
+    padding: 10px 28px 10px 64px;
+    background: linear-gradient(180deg, #FFF8EE 0%, #F8E5D3 100%);
+    color: #A64B68;
+    font-family: 'Secular One', sans-serif;
+    font-size: clamp(22px, 3vw, 36px);
+    box-shadow:
+        0 6px 0 rgba(141, 83, 92, 0.22),
+        0 18px 34px rgba(57, 80, 92, 0.18),
+        inset 0 2px 0 rgba(255,255,255,0.9);
+}
+
+.memory-profile-badge::before {
+    content: '👧';
+    position: absolute;
+    left: -4px;
+    top: 50%;
+    width: 68px;
+    height: 68px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #FFE9A8 0%, #E9B85E 100%);
+    box-shadow:
+        0 4px 0 rgba(155, 111, 0, 0.22),
+        inset 0 0 0 5px rgba(255,255,255,0.74);
+    transform: translateY(-50%);
+}
+
+.memory-stars-badge {
+    position: fixed;
+    right: clamp(20px, 4vw, 62px);
+    top: clamp(18px, 3vw, 46px);
+    min-height: 62px;
+    display: grid;
+    grid-template-columns: auto auto 58px;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px 9px 22px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #FFF8EE 0%, #F8E5D3 100%);
+    border: 3px solid rgba(255,255,255,0.82);
+    color: #A64B68;
+    font-family: 'Secular One', 'Rubik', sans-serif;
+    box-shadow:
+        0 6px 0 rgba(141, 83, 92, 0.18),
+        0 18px 34px rgba(57, 80, 92, 0.16),
+        inset 0 2px 0 rgba(255,255,255,0.9);
+}
+
+.memory-stars-badge span:first-child {
+    font-size: 21px;
+}
+
+.memory-stars-badge strong {
+    font-size: 26px;
+    line-height: 1;
+}
+
+.memory-stars-badge span:last-child {
+    width: 58px;
+    height: 58px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #FFE66D 0%, #FFB84D 100%);
+    font-size: 38px;
+    box-shadow:
+        0 4px 0 rgba(155, 111, 0, 0.24),
+        inset 0 2px 0 rgba(255,255,255,0.72);
 }
 
 .memory-title {
     font-family: 'Secular One', sans-serif;
-    font-size: clamp(46px, 9vw, 86px);
+    min-width: min(74vw, 420px);
+    padding: 12px 42px 16px;
+    border-radius: 28px;
+    background:
+        radial-gradient(circle at 7% 50%, #58C4BB 0 5px, transparent 6px),
+        radial-gradient(circle at 93% 50%, #58C4BB 0 5px, transparent 6px),
+        linear-gradient(180deg, #FFF8EC 0%, #F4E0CF 100%);
+    border: 5px solid rgba(126, 207, 188, 0.92);
+    font-size: clamp(48px, 7vw, 82px);
     line-height: 0.95;
-    color: white;
+    color: #A64B68;
     text-shadow:
-        0 5px 0 rgba(79, 159, 116, 0.36),
-        0 12px 28px rgba(57, 118, 142, 0.2);
+        0 3px 0 rgba(255,255,255,0.78),
+        0 9px 18px rgba(57, 80, 92, 0.16);
+    box-shadow:
+        0 8px 0 rgba(61, 151, 151, 0.28),
+        0 22px 38px rgba(57, 80, 92, 0.18),
+        inset 0 3px 0 rgba(255,255,255,0.92);
+}
+
+.memory-level-map {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    transform-origin: center 62%;
+}
+
+.memory-level-map.hidden,
+.memory-game-area.hidden {
+    display: none;
+}
+
+.memory-level-trail {
+    position: relative;
+    width: min(100vw, calc(100vh * 1.7778));
+    height: min(100vh, calc(100vw / 1.7778));
+    aspect-ratio: 16 / 9;
+    border-radius: 0;
+    overflow: visible;
+    direction: ltr;
+    background: url('./assets/memory/memory-garden-map-bg-v2.png') center / 100% 100% no-repeat;
+    filter: saturate(1.06) drop-shadow(0 24px 34px rgba(57, 80, 92, 0.12));
+}
+
+.memory-level-trail::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse at 50% 50%, transparent 0 64%, rgba(255,255,255,0.22) 92%, rgba(255,255,255,0.5) 100%),
+        radial-gradient(ellipse at 50% -1%, rgba(255,255,255,0.94) 0 8%, rgba(255,255,255,0.58) 13%, transparent 22%),
+        radial-gradient(circle at 18% 68%, rgba(255,255,255,0.25), transparent 15%),
+        radial-gradient(circle at 42% 54%, rgba(255, 230, 109, 0.12), transparent 14%);
+}
+
+.memory-level-trail::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 16% 62%, rgba(255,255,255,0.56) 0 5%, transparent 10%),
+        radial-gradient(circle at 26% 71%, rgba(255,255,255,0.42) 0 4%, transparent 9%),
+        radial-gradient(circle at 38% 56%, rgba(255,255,255,0.36) 0 4%, transparent 8%);
+    mix-blend-mode: soft-light;
+}
+
+.memory-level-path {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+    filter: drop-shadow(0 7px 9px rgba(142, 95, 126, 0.16));
+}
+
+.memory-level-path path {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.memory-level-path-shadow {
+    stroke: rgba(154, 116, 146, 0.18);
+    stroke-width: 7.5;
+    transform: translateY(1.5px);
+}
+
+.memory-level-path-road {
+    stroke: rgba(255, 216, 234, 0.62);
+    stroke-width: 6.5;
+    filter: drop-shadow(0 0 8px rgba(255, 216, 234, 0.34));
+}
+
+.memory-level-path-frosting {
+    stroke: rgba(255,255,255,0.82);
+    stroke-width: 2.2;
+    stroke-dasharray: 0.1 6.6;
+    filter: drop-shadow(0 0 5px rgba(255,255,255,0.95));
+}
+
+.memory-level-path-arrow {
+    display: none;
+}
+
+.memory-scenery {
+    display: none;
+}
+
+.memory-scenery-gate {
+    width: 118px;
+    height: 92px;
+    border-radius: 46px 46px 12px 12px;
+    border: 7px solid #E9B85E;
+    background:
+        linear-gradient(90deg, transparent 14%, rgba(255,255,255,0.7) 15% 19%, transparent 20% 33%, rgba(255,255,255,0.7) 34% 38%, transparent 39% 52%, rgba(255,255,255,0.7) 53% 57%, transparent 58% 71%, rgba(255,255,255,0.7) 72% 76%, transparent 77%),
+        linear-gradient(180deg, #F8D389 0%, #F1A85E 100%);
+    box-shadow:
+        0 8px 0 rgba(155, 111, 0, 0.18),
+        0 20px 30px rgba(57, 80, 92, 0.12),
+        inset 0 0 0 4px rgba(255,255,255,0.34);
+}
+
+.memory-scenery-gate::before,
+.memory-scenery-gate::after {
+    content: '♦';
+    position: absolute;
+    top: 16px;
+    color: #C9A0DC;
+    font-size: 32px;
+    text-shadow: 0 2px 0 rgba(255,255,255,0.55);
+}
+
+.memory-scenery-gate::before {
+    left: 18px;
+}
+
+.memory-scenery-gate::after {
+    right: 18px;
+    color: #98D9C2;
+}
+
+.memory-scenery-cloud {
+    width: 150px;
+    height: 60px;
+    border-radius: 999px;
+    background:
+        radial-gradient(circle at 24% 58%, #FFFFFF 0 34%, transparent 35%),
+        radial-gradient(circle at 47% 34%, #FFFFFF 0 42%, transparent 43%),
+        radial-gradient(circle at 70% 58%, #FFFFFF 0 35%, transparent 36%),
+        rgba(255,255,255,0.88);
+    filter: drop-shadow(0 14px 18px rgba(57, 80, 92, 0.12));
+}
+
+.memory-scenery-cloud-2 {
+    transform: translate(-50%, -50%) scale(0.8);
+}
+
+.memory-scenery-flowerbed {
+    width: 150px;
+    height: 92px;
+    border-radius: 45% 45% 28% 28%;
+    background:
+        radial-gradient(circle at 22% 34%, #FF9EB5 0 8%, transparent 9%),
+        radial-gradient(circle at 42% 23%, #FFE66D 0 8%, transparent 9%),
+        radial-gradient(circle at 62% 38%, #C9A0DC 0 8%, transparent 9%),
+        radial-gradient(circle at 78% 25%, #FFB7C8 0 8%, transparent 9%),
+        linear-gradient(180deg, #78C45F 0%, #5CA54F 100%);
+    box-shadow:
+        0 10px 0 rgba(91, 119, 70, 0.18),
+        0 20px 30px rgba(57, 80, 92, 0.12);
+}
+
+.memory-scenery-chest {
+    width: 70px;
+    height: 54px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px 14px 12px 12px;
+    background: linear-gradient(180deg, #F7B46F 0%, #D8874F 100%);
+    border: 3px solid #FFE2A8;
+    font-size: 34px;
+    box-shadow:
+        0 8px 0 rgba(155, 90, 53, 0.22),
+        0 18px 28px rgba(57, 80, 92, 0.14);
+}
+
+.memory-scenery-bubble {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 30% 24%, rgba(255,255,255,0.95) 0 12%, transparent 13%),
+        radial-gradient(circle at 68% 74%, rgba(255,255,255,0.38), transparent 24%),
+        rgba(201, 160, 220, 0.24);
+    border: 2px solid rgba(255,255,255,0.46);
+    box-shadow:
+        inset 0 0 16px rgba(255,255,255,0.46),
+        0 12px 20px rgba(57, 80, 92, 0.08);
+}
+.memory-map-area-label {
+    display: none;
+}
+
+.memory-map-area-label-green {
+    background: linear-gradient(180deg, #FFFFFF 0%, #DDF8C5 100%);
+}
+
+.memory-map-area-label-pink {
+    background: linear-gradient(180deg, #FFFFFF 0%, #FFE1EC 100%);
+}
+
+.memory-map-area-label-gold {
+    background: linear-gradient(180deg, #FFFFFF 0%, #FFF2A8 100%);
+}
+
+.memory-level-stop {
+    position: absolute;
+    z-index: 6;
+    transform: translate(-50%, -50%);
+    filter: drop-shadow(0 14px 12px rgba(57, 80, 92, 0.13));
+}
+
+.memory-level-stop.is-playable-stop {
+    z-index: 9;
+}
+
+.memory-level-stop.is-locked-stop {
+    z-index: 5;
+    filter: drop-shadow(0 10px 10px rgba(57, 80, 92, 0.08));
+}
+
+.memory-level-node {
+    position: relative;
+    width: clamp(110px, 8.2vw, 142px);
+    min-height: clamp(110px, 8.2vw, 142px);
+    display: grid;
+    grid-template-rows: auto auto auto;
+    justify-items: center;
+    align-items: center;
+    gap: 1px;
+    border: 6px solid rgba(255, 229, 151, 0.98);
+    border-radius: 50%;
+    padding: 8px;
+    background:
+        radial-gradient(circle at 34% 25%, rgba(255,255,255,0.96) 0 13%, transparent 14%),
+        linear-gradient(180deg, #FFF5B8 0%, #FFD878 52%, #F3A84E 100%);
+    color: #8E6331;
+    font-family: 'Rubik', sans-serif;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow:
+        0 9px 0 #C87837,
+        0 22px 34px rgba(57, 80, 92, 0.22),
+        inset 0 3px 0 rgba(255,255,255,0.7);
+    transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+}
+
+.memory-level-node:hover,
+.memory-level-node:focus-visible {
+    transform: translateY(-3px) scale(1.03);
+    filter: drop-shadow(0 0 16px rgba(255, 230, 109, 0.72));
+    box-shadow:
+        0 0 0 5px rgba(255,255,255,0.5),
+        0 0 0 10px rgba(255, 230, 109, 0.22);
+    outline: none;
+}
+
+.memory-level-node.is-current {
+    animation: memoryCurrentPulse 1.35s ease-in-out infinite;
+}
+
+.memory-level-node.is-current::before {
+    content: '';
+    position: absolute;
+    inset: -12%;
+    z-index: -1;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle, rgba(255,255,255,0.95) 0 43%, rgba(255, 158, 181, 0.88) 44% 63%, rgba(255, 230, 109, 0.74) 64% 100%);
+    box-shadow:
+        0 0 0 7px rgba(255,255,255,0.5),
+        0 0 28px 10px rgba(255, 158, 181, 0.5),
+        0 12px 28px rgba(57, 80, 92, 0.18);
+}
+
+.memory-level-node.is-playable {
+    background:
+        radial-gradient(circle at 34% 25%, rgba(255,255,255,0.96) 0 13%, transparent 14%),
+        linear-gradient(180deg, #FFF5B8 0%, #FFD878 52%, #F3A84E 100%);
+}
+
+.memory-level-node.is-complete {
+    background:
+        radial-gradient(circle at 34% 25%, rgba(255,255,255,0.96) 0 13%, transparent 14%),
+        linear-gradient(180deg, #FFF7C8 0%, #FDE08B 52%, #EEC45C 100%);
+}
+
+.memory-level-node.is-locked {
+    cursor: not-allowed;
+    color: #6F6490;
+    pointer-events: none;
+    width: clamp(64px, 5.2vw, 84px);
+    min-height: clamp(64px, 5.2vw, 84px);
+    padding: 0;
+    opacity: 0.78;
+    border: 2px solid rgba(255,255,255,0.72);
+    background:
+        radial-gradient(circle at 30% 22%, rgba(255,255,255,0.98) 0 14%, transparent 15%),
+        radial-gradient(circle at 70% 74%, rgba(255,255,255,0.36), transparent 24%),
+        rgba(209, 226, 246, 0.58);
+    box-shadow:
+        0 8px 22px rgba(57, 80, 92, 0.14),
+        inset 0 0 18px rgba(255,255,255,0.64);
+    animation: none;
+    backdrop-filter: blur(1px);
+}
+
+.memory-level-node.is-locked:hover {
+    transform: none;
+}
+
+.memory-level-node.is-locked .memory-level-number {
+    display: none;
+}
+
+.memory-level-node.is-locked .memory-level-icon {
+    width: clamp(34px, 3vw, 46px);
+    height: clamp(34px, 3vw, 46px);
+    display: inline-flex;
+    background: rgba(255,255,255,0.44);
+    font-size: clamp(22px, 2vw, 30px);
+    opacity: 0.72;
+    box-shadow:
+        0 3px 0 rgba(57, 80, 92, 0.08),
+        inset 0 2px 0 rgba(255,255,255,0.72);
+}
+
+.memory-level-node.is-locked::after {
+    content: none;
+}
+
+.memory-level-lock {
+    position: absolute;
+    right: -4px;
+    top: -6px;
+    width: clamp(24px, 2.2vw, 32px);
+    height: clamp(24px, 2.2vw, 32px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.78);
+    font-size: clamp(15px, 1.4vw, 20px);
+    box-shadow:
+        0 3px 0 rgba(57, 80, 92, 0.08),
+        inset 0 2px 0 rgba(255,255,255,0.7);
+}
+
+.memory-level-node.is-current .memory-level-icon {
+    width: clamp(76px, 5.8vw, 94px);
+    height: clamp(76px, 5.8vw, 94px);
+    display: inline-flex;
+    background: rgba(255,255,255,0.72);
+    font-size: clamp(52px, 4.1vw, 66px);
+}
+
+.memory-level-number {
+    display: none;
+}
+
+.memory-level-node.is-current .memory-level-number {
+    display: none;
+}
+
+.memory-level-icon {
+    display: inline-flex;
+    width: clamp(76px, 5.8vw, 94px);
+    height: clamp(76px, 5.8vw, 94px);
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #FFE66D, #FFB7C8);
+    font-size: clamp(52px, 4.1vw, 66px);
+    box-shadow:
+        0 5px 0 rgba(196, 126, 25, 0.18),
+        inset 0 2px 0 rgba(255,255,255,0.75);
+}
+
+.memory-level-copy {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 12px);
+    z-index: 20;
+    min-width: 132px;
+    display: grid;
+    gap: 3px;
+    padding: 10px 12px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.94);
+    border: 2px solid rgba(255,255,255,0.9);
+    box-shadow:
+        0 8px 0 rgba(57, 118, 142, 0.12),
+        0 18px 30px rgba(57, 118, 142, 0.18),
+        inset 0 2px 0 rgba(255,255,255,0.9);
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, 8px) scale(0.9);
+    transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.memory-level-copy strong {
+    color: #4F9F74;
+    font-family: 'Secular One', sans-serif;
+    font-size: 20px;
+    line-height: 1;
+}
+
+.memory-level-copy small {
+    color: #39768E;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.memory-level-stars {
+    position: absolute;
+    left: 50%;
+    top: -38px;
+    bottom: auto;
+    display: inline-flex;
+    direction: ltr;
+    gap: 0;
+    font-size: clamp(25px, 2.2vw, 34px);
+    line-height: 1;
+    transform: translateX(-50%);
+}
+
+.memory-level-star {
+    color: rgba(255,255,255,0.54);
+    -webkit-text-stroke: 1px #B98522;
+    text-shadow: 0 2px 0 rgba(255,255,255,0.8);
+}
+
+.memory-level-star:nth-child(1) {
+    transform: translateY(7px) rotate(-13deg);
+}
+
+.memory-level-star:nth-child(2) {
+    transform: translateY(0) scale(1.08);
+}
+
+.memory-level-star:nth-child(3) {
+    transform: translateY(7px) rotate(13deg);
+}
+
+.memory-level-node:not(.is-complete) .memory-level-stars {
+    display: inline-flex;
+}
+
+.memory-level-star.is-filled {
+    color: #FFD34D;
+    text-shadow:
+        0 2px 0 rgba(155, 111, 0, 0.18),
+        0 0 10px rgba(255, 230, 109, 0.6);
+}
+
+.memory-level-current-marker {
+    display: none;
+}
+
+.memory-level-hints {
+    display: none;
+    position: absolute;
+    left: 50%;
+    bottom: -15px;
+    justify-content: center;
+    gap: 2px;
+    transform: translateX(-50%);
+}
+
+.memory-level-hints span {
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.78);
+    font-size: 13px;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,0.82);
+}
+
+.memory-level-reward {
+    display: none;
+}
+
+.memory-level-node:hover .memory-level-copy,
+.memory-level-node:focus-visible .memory-level-copy {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+}
+
+.memory-map-sprite {
+    position: absolute;
+    z-index: 10;
+    width: clamp(58px, 5.2vw, 78px);
+    height: clamp(70px, 6.2vw, 94px);
+    transform: translate(-134%, -38%);
+    pointer-events: none;
+    animation: memorySpriteIdle 1.6s ease-in-out infinite;
+}
+
+.memory-level-map.is-returning .memory-map-sprite {
+    animation:
+        memorySpriteArrive 0.9s cubic-bezier(0.18, 0.86, 0.24, 1.14) both,
+        memorySpriteIdle 1.6s ease-in-out 0.9s infinite;
+}
+
+.memory-map-sprite-shadow {
+    position: absolute;
+    left: 50%;
+    bottom: 2px;
+    width: 46px;
+    height: 14px;
+    border-radius: 50%;
+    background: rgba(57, 80, 92, 0.18);
+    transform: translateX(-50%);
+    filter: blur(1px);
+}
+
+.memory-map-sprite-body {
+    position: absolute;
+    left: 50%;
+    bottom: 10px;
+    width: 44px;
+    height: 58px;
+    transform: translateX(-50%);
+}
+
+.memory-map-sprite-hair {
+    position: absolute;
+    left: 5px;
+    top: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 50% 50% 45% 45%;
+    background: linear-gradient(180deg, #8B5A3C 0%, #5F3A2A 100%);
+    box-shadow:
+        -8px 9px 0 -3px #6F472F,
+        8px 9px 0 -3px #6F472F;
+}
+
+.memory-map-sprite-face {
+    position: absolute;
+    left: 8px;
+    top: 7px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 36% 45%, #5F3A2A 0 5%, transparent 6%),
+        radial-gradient(circle at 64% 45%, #5F3A2A 0 5%, transparent 6%),
+        radial-gradient(circle at 50% 66%, #E57A95 0 8%, transparent 9%),
+        #FFD8B5;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,0.55);
+}
+
+.memory-map-sprite-bow {
+    position: absolute;
+    left: 25px;
+    top: -5px;
+    width: 22px;
+    height: 16px;
+    background:
+        radial-gradient(circle at 20% 50%, #FF9EB5 0 42%, transparent 43%),
+        radial-gradient(circle at 80% 50%, #FF9EB5 0 42%, transparent 43%),
+        radial-gradient(circle at 50% 50%, #E57A95 0 24%, transparent 25%);
+    transform: rotate(13deg);
+}
+
+.memory-map-sprite-dress {
+    position: absolute;
+    left: 6px;
+    top: 32px;
+    width: 32px;
+    height: 27px;
+    border-radius: 50% 50% 42% 42%;
+    background: linear-gradient(180deg, #FFB7C8 0%, #E57A95 100%);
+    box-shadow:
+        -8px 6px 0 -4px #FFD8B5,
+        8px 6px 0 -4px #FFD8B5,
+        0 5px 0 rgba(180, 80, 100, 0.28);
+}
+
+@keyframes memorySpriteIdle {
+    0%, 100% {
+        transform: translate(-134%, -38%) translateY(0);
+    }
+
+    50% {
+        transform: translate(-134%, -38%) translateY(-5px);
+    }
+}
+
+@keyframes memorySpriteArrive {
+    0% {
+        opacity: 0;
+        transform: translate(-166%, -38%) translateY(14px) scale(0.86);
+    }
+
+    64% {
+        opacity: 1;
+        transform: translate(-130%, -38%) translateY(-10px) scale(1.08);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translate(-134%, -38%) translateY(0) scale(1);
+    }
+}
+
+@keyframes memoryCurrentPulse {
+    0%, 100% {
+        box-shadow:
+            0 7px 0 #C4683A,
+            0 18px 30px rgba(57, 80, 92, 0.18),
+            0 0 0 4px rgba(255, 230, 109, 0.62),
+            0 0 18px 6px rgba(255, 200, 0, 0.34),
+            inset 0 2px 0 rgba(255,255,255,0.92);
+    }
+
+    50% {
+        box-shadow:
+            0 9px 0 #C4683A,
+            0 22px 34px rgba(57, 80, 92, 0.22),
+            0 0 0 8px rgba(255, 230, 109, 0.38),
+            0 0 30px 10px rgba(255, 200, 0, 0.42),
+            inset 0 2px 0 rgba(255,255,255,0.94);
+    }
+}
+
+.memory-level-map.is-returning {
+    animation: memoryMapReturn 0.58s cubic-bezier(0.18, 0.86, 0.24, 1.16) both;
+}
+
+@keyframes memoryMapReturn {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+        filter: saturate(0.92);
+    }
+
+    68% {
+        opacity: 1;
+        transform: translateY(-4px) scale(1.015);
+        filter: saturate(1.08);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: saturate(1);
+    }
+}
+
+.memory-game-area {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(12px, 2.2vh, 18px);
+    transform-origin: center top;
+    transition:
+        opacity 0.36s ease,
+        transform 0.36s cubic-bezier(0.18, 0.86, 0.24, 1);
+}
+
+.memory-game-area.is-completing {
+    opacity: 0.18;
+    pointer-events: none;
+    transform: translateY(16px) scale(0.975);
+}
+
+.memory-level-toolbar {
+    width: min(94vw, 760px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.memory-map-btn,
+.memory-level-title {
+    border-radius: 999px;
+    padding: 12px 18px;
+    font-family: 'Rubik', sans-serif;
+    font-weight: 900;
+    box-shadow: 0 5px 0 rgba(57, 118, 142, 0.15);
+}
+
+.memory-map-btn {
+    min-width: 138px;
+    min-height: 52px;
+    border: none;
+    background: linear-gradient(180deg, #98D9C2 0%, #4FBE8D 100%);
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.memory-map-btn:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 7px 0 rgba(57, 118, 142, 0.15),
+        0 12px 20px rgba(57, 118, 142, 0.15);
+}
+
+.memory-level-title {
+    min-height: 52px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.82);
+    color: #39768E;
+    font-size: 18px;
 }
 
 .memory-controls {
@@ -770,13 +1589,15 @@ canvas {
 }
 
 .memory-new-garden-btn {
+    min-width: 118px;
+    min-height: 52px;
     border: none;
     border-radius: 999px;
-    padding: 10px 16px;
+    padding: 12px 18px;
     background: linear-gradient(180deg, #FF9EB5 0%, #E57A95 100%);
     color: white;
     font-family: 'Rubik', sans-serif;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 900;
     cursor: pointer;
     box-shadow: 0 4px 0 rgba(180, 80, 100, 0.55);
@@ -921,10 +1742,10 @@ canvas {
 
 .memory-card-sound {
     position: absolute;
-    left: 10px;
-    top: 10px;
-    width: 38px;
-    height: 38px;
+    left: 9px;
+    top: 9px;
+    width: 46px;
+    height: 46px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -932,7 +1753,7 @@ canvas {
     border-radius: 50%;
     background: linear-gradient(180deg, #FFE66D 0%, #FFB84D 100%);
     color: #39768E;
-    font-size: 18px;
+    font-size: 21px;
     cursor: pointer;
     box-shadow:
         0 4px 0 rgba(196, 126, 25, 0.34),
@@ -1030,6 +1851,113 @@ canvas {
     font-family: 'Secular One', sans-serif;
     font-size: 26px;
     text-shadow: 0 2px 0 rgba(255,255,255,0.85);
+}
+
+.memory-celebration {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+        radial-gradient(circle at 50% 43%, rgba(255, 230, 109, 0.22), transparent 26%),
+        rgba(135, 206, 235, 0.42);
+    backdrop-filter: blur(4px) saturate(1.08);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+}
+
+.memory-celebration.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.memory-celebration-content {
+    max-width: min(90vw, 420px);
+    padding: 34px 42px;
+    border-radius: 44px;
+    background:
+        radial-gradient(circle at 20% 18%, rgba(255, 230, 109, 0.5), transparent 28%),
+        linear-gradient(180deg, #FFFFFF 0%, #FFFBE8 44%, #E8FFD6 100%);
+    border: 4px solid rgba(255, 255, 255, 0.9);
+    box-shadow:
+        0 18px 0 rgba(126, 200, 80, 0.28),
+        0 36px 70px rgba(57, 118, 142, 0.26),
+        inset 0 3px 0 rgba(255, 255, 255, 0.96);
+    text-align: center;
+    transform: scale(0.85) translateY(20px);
+    transition: transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.memory-celebration.is-visible .memory-celebration-content {
+    transform: scale(1) translateY(0);
+}
+
+.memory-celebration-stars {
+    font-size: clamp(36px, 8vw, 56px);
+    line-height: 1;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 3px 0 rgba(155, 111, 0, 0.18));
+    animation: memoryStarsFloat 1.15s ease-in-out infinite alternate;
+}
+
+.memory-celebration-title {
+    font-family: 'Secular One', sans-serif;
+    font-size: clamp(38px, 9vw, 64px);
+    color: #4F9F74;
+    text-shadow: 0 3px 0 rgba(255, 255, 255, 0.8);
+    line-height: 1;
+    margin-bottom: 10px;
+}
+
+.memory-celebration-subtitle {
+    font-family: 'Rubik', sans-serif;
+    font-size: clamp(18px, 3.5vw, 24px);
+    font-weight: 900;
+    color: #39768E;
+}
+
+.memory-celebration-next-btn {
+    min-width: 176px;
+    min-height: 56px;
+    margin-top: 18px;
+    border: none;
+    border-radius: 999px;
+    padding: 12px 24px;
+    background: linear-gradient(180deg, #98D9C2 0%, #4FBE8D 100%);
+    color: white;
+    font-family: 'Rubik', sans-serif;
+    font-size: 20px;
+    font-weight: 900;
+    cursor: pointer;
+    pointer-events: auto;
+    box-shadow:
+        0 6px 0 #3C9970,
+        0 14px 24px rgba(57, 118, 142, 0.18),
+        inset 0 2px 0 rgba(255,255,255,0.5);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.memory-celebration-next-btn:hover,
+.memory-celebration-next-btn:focus-visible {
+    transform: translateY(-3px);
+    box-shadow:
+        0 9px 0 #3C9970,
+        0 20px 30px rgba(57, 118, 142, 0.22),
+        inset 0 2px 0 rgba(255,255,255,0.58);
+    outline: none;
+}
+
+@keyframes memoryStarsFloat {
+    from {
+        transform: translateY(0) scale(1);
+    }
+
+    to {
+        transform: translateY(-5px) scale(1.035);
+    }
 }
 
 /* ==================== START SCREEN ==================== */
@@ -2343,6 +3271,48 @@ td {
         padding-top: 16px;
     }
 
+    .memory-level-map {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+    }
+
+    .memory-level-trail {
+        width: min(100vw, calc(100vh * 1.7778));
+        height: min(100vh, calc(100vw / 1.7778));
+        aspect-ratio: 16 / 9;
+    }
+
+    .memory-level-trail::before {
+        display: block;
+    }
+
+    .memory-level-stop {
+        position: absolute;
+        transform: translate(-50%, -50%);
+    }
+
+    .memory-level-node {
+        width: clamp(34px, 7.6vw, 60px);
+        min-height: clamp(34px, 7.6vw, 60px);
+        grid-template-columns: none;
+        grid-template-rows: auto auto auto;
+        justify-items: center;
+        text-align: center;
+    }
+
+    .memory-level-icon {
+        grid-row: auto;
+        width: 34px;
+        height: 34px;
+        font-size: 20px;
+    }
+
+    .memory-level-toolbar {
+        width: min(94vw, 440px);
+        flex-wrap: wrap;
+    }
+
     .memory-status-panel {
         grid-template-columns: 1fr;
         width: min(94vw, 440px);
@@ -2384,9 +3354,9 @@ td {
     .memory-card-sound {
         left: 7px;
         top: 7px;
-        width: 32px;
-        height: 32px;
-        font-size: 15px;
+        width: 42px;
+        height: 42px;
+        font-size: 18px;
     }
 
     .memory-toast {
@@ -2818,6 +3788,57 @@ td {
         display: none;
     }
 
+    .memory-level-map {
+        padding: 0;
+    }
+
+    .memory-level-trail {
+        width: min(100vw, calc(100vh * 1.7778));
+        height: min(100vh, calc(100vw / 1.7778));
+        aspect-ratio: 16 / 9;
+    }
+
+    .memory-level-node {
+        width: clamp(30px, 7.6vw, 54px);
+        min-height: clamp(30px, 7.6vw, 54px);
+        padding: 10px;
+    }
+
+    .memory-level-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 17px;
+    }
+
+    .memory-level-copy strong {
+        font-size: 17px;
+    }
+
+    .memory-level-copy small {
+        font-size: 9px;
+    }
+
+    .memory-level-stars {
+        font-size: 15px;
+    }
+
+    .memory-level-hints span {
+        width: 18px;
+        height: 18px;
+        font-size: 11px;
+    }
+
+    .memory-level-toolbar {
+        gap: 8px;
+    }
+
+    .memory-map-btn,
+    .memory-level-title {
+        min-height: 46px;
+        padding: 8px 14px;
+        font-size: 15px;
+    }
+
     .memory-controls {
         gap: 7px;
     }
@@ -2859,9 +3880,9 @@ td {
     .memory-card-sound {
         left: 5px;
         top: 5px;
-        width: 26px;
-        height: 26px;
-        font-size: 12px;
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
         border-width: 1px;
     }
 
