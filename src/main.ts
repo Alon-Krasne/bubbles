@@ -985,6 +985,7 @@ function matchMemoryCards() {
   const pairCount = activeMemoryLevel.pairs;
   const isComplete = memoryMatchedPairs.size === pairCount;
   const message = isComplete ? `${activeMemoryLevel.title} הושלם!` : `זוג מנצח: ${matchedWord.hebrew} ו-${matchedWord.english}`;
+  speakMemoryWord(matchedWord.english);
 
   memoryFirstCard = null;
   memorySecondCard = null;
