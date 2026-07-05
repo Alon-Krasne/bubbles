@@ -340,8 +340,8 @@ let memoryFirstCard: HTMLDivElement | null = null;
 let memorySecondCard: HTMLDivElement | null = null;
 let memoryMatchedPairs = new Set<string>();
 let memoryLocked = false;
+let memoryNeedsMismatchDismiss = false;
 let memoryToastTimer: number | null = null;
-let memoryMismatchTimer: number | null = null;
 let memoryWinReturnTimer: number | null = null;
 const MEMORY_WIN_RETURN_DELAY_MS = 2400;
 
@@ -678,7 +678,7 @@ function syncActiveProfileUI() {
 }
 
 function openBubblesSetup() {
-  clearMemoryMismatchTimer();
+  clearMemoryMismatchState();
   clearMemoryWinReturnTimer();
   hideMemoryToast();
   hideMemoryCelebration();
@@ -692,7 +692,7 @@ function openMemoryGarden() {
 }
 
 function startGame() {
-  clearMemoryMismatchTimer();
+  clearMemoryMismatchState();
   hideMemoryToast();
   showScreen('game-hud');
 
@@ -704,7 +704,7 @@ function startGame() {
 }
 
 function returnToGameSelect() {
-  clearMemoryMismatchTimer();
+  clearMemoryMismatchState();
   clearMemoryWinReturnTimer();
   hideMemoryToast();
   hideMemoryCelebration();
@@ -713,7 +713,7 @@ function returnToGameSelect() {
 }
 
 function returnToStart() {
-  clearMemoryMismatchTimer();
+  clearMemoryMismatchState();
   clearMemoryWinReturnTimer();
   hideMemoryToast();
   hideMemoryCelebration();
@@ -768,7 +768,7 @@ function loadHighScores() {
 }
 
 function showMemoryLevelMap() {
-  clearMemoryMismatchTimer();
+  clearMemoryMismatchState();
   clearMemoryWinReturnTimer();
   hideMemoryToast();
   hideMemoryCelebration();
@@ -802,12 +802,13 @@ function startMemoryLevel(levelId: MemoryLevelId) {
 }
 
 function startMemoryRound(level: MemoryLevel) {
-  clearMemoryMismatchTimer();
+  clearMemoryMismatchState();
   memoryDifficulty = level.difficulty;
   memoryMatchedPairs = new Set<string>();
   memoryFirstCard = null;
   memorySecondCard = null;
   memoryLocked = false;
+  memoryNeedsMismatchDismiss = false;
 
   const pairCount = level.pairs;
   const selectedWords = selectMemoryWords(pairCount);
@@ -929,6 +930,11 @@ function renderMemoryBoard() {
 }
 
 function handleMemoryCardClick(cardButton: HTMLDivElement) {
+  if (memoryNeedsMismatchDismiss) {
+    closeUnmatchedMemoryCards();
+    return;
+  }
+
   if (memoryLocked || cardButton.classList.contains('is-face-up') || cardButton.classList.contains('is-matched')) {
     return;
   }
@@ -951,8 +957,8 @@ function handleMemoryCardClick(cardButton: HTMLDivElement) {
   if (isMatch) {
     matchMemoryCards();
   } else {
-    updateMemoryStatus('כמעט. נסו שוב');
-    memoryMismatchTimer = window.setTimeout(closeUnmatchedMemoryCards, 850);
+    memoryNeedsMismatchDismiss = true;
+    updateMemoryStatus('לא זוג. לחצו כדי לסגור ולנסות שוב');
   }
 }
 
@@ -998,7 +1004,7 @@ function matchMemoryCards() {
 }
 
 function closeUnmatchedMemoryCards() {
-  memoryMismatchTimer = null;
+  memoryNeedsMismatchDismiss = false;
 
   if (!memoryFirstCard || !memorySecondCard || !memoryFirstCard.isConnected || !memorySecondCard.isConnected) {
     memoryFirstCard = null;
@@ -1023,10 +1029,9 @@ function closeUnmatchedMemoryCards() {
   updateMemoryStatus('הפכו שני קלפים שמתחברים');
 }
 
-function clearMemoryMismatchTimer() {
-  if (memoryMismatchTimer) {
-    clearTimeout(memoryMismatchTimer);
-    memoryMismatchTimer = null;
+function clearMemoryMismatchState() {
+  if (memoryNeedsMismatchDismiss) {
+    closeUnmatchedMemoryCards();
   }
 }
 
