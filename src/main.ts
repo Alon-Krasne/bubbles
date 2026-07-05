@@ -302,8 +302,8 @@ let memoryFirstCard: HTMLDivElement | null = null;
 let memorySecondCard: HTMLDivElement | null = null;
 let memoryMatchedPairs = new Set<string>();
 let memoryLocked = false;
+let memoryNeedsMismatchDismiss = false;
 let memoryToastTimer: number | null = null;
-let memoryMismatchTimer: number | null = null;
 let memoryWinReturnTimer: number | null = null;
 const MEMORY_WIN_RETURN_DELAY_MS = 2400;
 
@@ -647,7 +647,7 @@ function syncActiveProfileUI() {
 
 function openBubblesSetup() {
   shopGame?.leaveShop();
-  clearMemoryMismatchTimer();
+  clearMemoryMismatchState();
   clearMemoryWinReturnTimer();
   hideMemoryToast();
   hideMemoryCelebration();
@@ -663,7 +663,7 @@ function openMemoryGarden() {
 
 function startGame() {
   shopGame?.leaveShop();
-  clearMemoryMismatchTimer();
+  clearMemoryMismatchState();
   hideMemoryToast();
   showScreen('game-hud');
 
@@ -676,7 +676,7 @@ function startGame() {
 
 function returnToGameSelect() {
   shopGame?.leaveShop();
-  clearMemoryMismatchTimer();
+  clearMemoryMismatchState();
   clearMemoryWinReturnTimer();
   hideMemoryToast();
   hideMemoryCelebration();
@@ -686,7 +686,7 @@ function returnToGameSelect() {
 
 function returnToStart() {
   shopGame?.leaveShop();
-  clearMemoryMismatchTimer();
+  clearMemoryMismatchState();
   clearMemoryWinReturnTimer();
   hideMemoryToast();
   hideMemoryCelebration();
@@ -741,7 +741,7 @@ function loadHighScores() {
 }
 
 function showMemoryLevelMap() {
-  clearMemoryMismatchTimer();
+  clearMemoryMismatchState();
   clearMemoryWinReturnTimer();
   hideMemoryToast();
   hideMemoryCelebration();
@@ -775,12 +775,13 @@ function startMemoryLevel(levelId: MemoryLevelId) {
 }
 
 function startMemoryRound(level: MemoryLevel) {
-  clearMemoryMismatchTimer();
+  clearMemoryMismatchState();
   memoryDifficulty = level.difficulty;
   memoryMatchedPairs = new Set<string>();
   memoryFirstCard = null;
   memorySecondCard = null;
   memoryLocked = false;
+  memoryNeedsMismatchDismiss = false;
 
   const pairCount = level.pairs;
   const selectedWords = selectMemoryWords(level);
@@ -818,10 +819,20 @@ function shuffleMemoryCards(cards: MemoryCard[]): MemoryCard[] {
   return shuffled;
 }
 
+function shuffleMemoryWords(words: MemoryWord[]): MemoryWord[] {
+  const shuffled = [...words];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 function selectMemoryWords(level: MemoryLevel) {
   const selectedWords = level.hints.map(getMemoryWord);
   if (selectedWords.length >= level.pairs) {
-    return selectedWords.slice(0, level.pairs);
+    const hintWords = selectedWords.length > level.pairs ? shuffleMemoryWords(selectedWords) : selectedWords;
+    return hintWords.slice(0, level.pairs);
   }
 
   const selectedIds = new Set(selectedWords.map((word) => word.id));
@@ -862,16 +873,19 @@ function renderMemoryBoard() {
     const front = document.createElement('span');
     front.className = 'memory-card-front';
 
-    const drawing = document.createElement('span');
-    drawing.className = 'memory-card-drawing';
-    drawing.setAttribute('aria-hidden', 'true');
-    drawing.textContent = card.drawing;
-
     const word = document.createElement('span');
     word.className = 'memory-card-word';
     word.textContent = card.text;
 
-    front.append(drawing, word);
+    if (card.kind === 'hebrew') {
+      const drawing = document.createElement('span');
+      drawing.className = 'memory-card-drawing';
+      drawing.setAttribute('aria-hidden', 'true');
+      drawing.textContent = card.drawing;
+      front.append(drawing);
+    }
+
+    front.append(word);
 
     if (card.kind === 'english') {
       const soundButton = document.createElement('button');
@@ -904,6 +918,11 @@ function renderMemoryBoard() {
 }
 
 function handleMemoryCardClick(cardButton: HTMLDivElement) {
+  if (memoryNeedsMismatchDismiss) {
+    closeUnmatchedMemoryCards();
+    return;
+  }
+
   if (memoryLocked || cardButton.classList.contains('is-face-up') || cardButton.classList.contains('is-matched')) {
     return;
   }
@@ -926,8 +945,8 @@ function handleMemoryCardClick(cardButton: HTMLDivElement) {
   if (isMatch) {
     matchMemoryCards();
   } else {
-    updateMemoryStatus('כמעט. נסו שוב');
-    memoryMismatchTimer = window.setTimeout(closeUnmatchedMemoryCards, 850);
+    memoryNeedsMismatchDismiss = true;
+    updateMemoryStatus('לא זוג. לחצו כדי לסגור ולנסות שוב');
   }
 }
 
@@ -953,7 +972,8 @@ function matchMemoryCards() {
   const matchedWord = getMemoryWord(wordId);
   const pairCount = activeMemoryLevel.pairs;
   const isComplete = memoryMatchedPairs.size === pairCount;
-  const message = isComplete ? `${activeMemoryLevel.title} הושלם!` : `${matchedWord.hebrew} = ${matchedWord.english}`;
+  const message = isComplete ? `${activeMemoryLevel.title} הושלם!` : `זוג מנצח: ${matchedWord.hebrew} ו-${matchedWord.english}`;
+  speakMemoryWord(matchedWord.english);
 
   memoryFirstCard = null;
   memorySecondCard = null;
@@ -973,7 +993,7 @@ function matchMemoryCards() {
 }
 
 function closeUnmatchedMemoryCards() {
-  memoryMismatchTimer = null;
+  memoryNeedsMismatchDismiss = false;
 
   if (!memoryFirstCard || !memorySecondCard || !memoryFirstCard.isConnected || !memorySecondCard.isConnected) {
     memoryFirstCard = null;
@@ -998,10 +1018,9 @@ function closeUnmatchedMemoryCards() {
   updateMemoryStatus('הפכו שני קלפים שמתחברים');
 }
 
-function clearMemoryMismatchTimer() {
-  if (memoryMismatchTimer) {
-    clearTimeout(memoryMismatchTimer);
-    memoryMismatchTimer = null;
+function clearMemoryMismatchState() {
+  if (memoryNeedsMismatchDismiss) {
+    closeUnmatchedMemoryCards();
   }
 }
 
@@ -1297,7 +1316,28 @@ function showMemoryToast(matchedWord: MemoryWord) {
   const toast = requireElement<HTMLDivElement>('memory-toast');
   const toastText = requireElement<HTMLSpanElement>('memory-toast-text');
   const name = p1Name.trim() || 'לוטם';
-  toastText.textContent = `${name}, מצאת זוג: ${matchedWord.hebrew} = ${matchedWord.english}`;
+  const cheer = document.createElement('span');
+  cheer.className = 'memory-toast-cheer';
+  cheer.textContent = `${name}, גילית זוג מילים!`;
+
+  const pair = document.createElement('span');
+  pair.className = 'memory-toast-pair';
+
+  const hebrewWord = document.createElement('span');
+  hebrewWord.className = 'memory-toast-word memory-toast-word-hebrew';
+  hebrewWord.textContent = matchedWord.hebrew;
+
+  const connector = document.createElement('span');
+  connector.className = 'memory-toast-connector';
+  connector.setAttribute('aria-hidden', 'true');
+  connector.textContent = '✨';
+
+  const englishWord = document.createElement('span');
+  englishWord.className = 'memory-toast-word memory-toast-word-english';
+  englishWord.textContent = matchedWord.english;
+
+  pair.append(hebrewWord, connector, englishWord);
+  toastText.replaceChildren(cheer, pair);
 
   if (memoryToastTimer) {
     clearTimeout(memoryToastTimer);

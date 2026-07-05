@@ -116,6 +116,7 @@ export const VOCAB_WORDS: VocabWord[] = [
   { id: 'moon', english: 'moon', hebrew: 'ירח', drawing: '🌙', category: 'nature' },
   { id: 'star', english: 'star', hebrew: 'כוכב', drawing: '⭐', category: 'nature' },
   { id: 'cloud', english: 'cloud', hebrew: 'ענן', drawing: '☁️', category: 'nature' },
+  { id: 'rain', english: 'rain', hebrew: 'גשם', drawing: '🌧️', category: 'nature' },
   { id: 'rainbow', english: 'rainbow', hebrew: 'קשת', drawing: '🌈', category: 'nature' },
   { id: 'tree', english: 'tree', hebrew: 'עץ', drawing: '🌳', category: 'nature' },
   { id: 'flower', english: 'flower', hebrew: 'פרח', drawing: '🌸', category: 'nature' },

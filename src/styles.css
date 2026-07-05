@@ -1918,6 +1918,7 @@ canvas {
 .memory-toast.is-visible {
     opacity: 1;
     transform: translateY(0) scale(1);
+    animation: memoryToastPop 0.48s cubic-bezier(0.18, 0.86, 0.24, 1.18) both;
 }
 
 .memory-toast.is-complete {
@@ -1947,10 +1948,67 @@ canvas {
         -15px -15px 0 -11px #C9A0DC;
 }
 
+.memory-toast.is-visible .memory-toast-flower {
+    animation: memoryToastFlowerSpin 0.62s ease both;
+}
+
 .memory-toast-text {
+    display: grid;
+    justify-items: center;
+    gap: 5px;
     font-size: clamp(17px, 3vw, 24px);
     line-height: 1.2;
     text-align: center;
+}
+
+.memory-toast-cheer {
+    color: #39768E;
+    font-size: clamp(15px, 2.3vw, 19px);
+}
+
+.memory-toast-pair {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    direction: ltr;
+    gap: 8px;
+}
+
+.memory-toast-word {
+    min-width: 72px;
+    padding: 5px 12px 6px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.82);
+    border: 2px solid rgba(255,255,255,0.9);
+    box-shadow:
+        0 4px 0 rgba(57, 118, 142, 0.11),
+        inset 0 2px 0 rgba(255,255,255,0.95);
+    color: #A64B68;
+    font-family: 'Secular One', 'Rubik', sans-serif;
+}
+
+.memory-toast-word-hebrew {
+    direction: rtl;
+}
+
+.memory-toast-word-english {
+    color: #39768E;
+    letter-spacing: 0;
+}
+
+.memory-toast-connector {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #FFE66D 0%, #FFB7C8 100%);
+    box-shadow:
+        0 4px 0 rgba(196, 126, 25, 0.18),
+        0 0 16px rgba(255, 230, 109, 0.72),
+        inset 0 2px 0 rgba(255,255,255,0.82);
+    animation: memoryToastSparkle 0.9s ease-in-out infinite alternate;
 }
 
 .memory-toast-spark {
@@ -1958,6 +2016,47 @@ canvas {
     font-family: 'Secular One', sans-serif;
     font-size: 26px;
     text-shadow: 0 2px 0 rgba(255,255,255,0.85);
+}
+
+@keyframes memoryToastPop {
+    0% {
+        transform: translateY(16px) scale(0.86);
+        filter: saturate(0.96);
+    }
+
+    68% {
+        transform: translateY(-4px) scale(1.04);
+        filter: saturate(1.12);
+    }
+
+    100% {
+        transform: translateY(0) scale(1);
+        filter: saturate(1);
+    }
+}
+
+@keyframes memoryToastFlowerSpin {
+    0% {
+        transform: rotate(-24deg) scale(0.65);
+    }
+
+    72% {
+        transform: rotate(14deg) scale(1.14);
+    }
+
+    100% {
+        transform: rotate(0) scale(1);
+    }
+}
+
+@keyframes memoryToastSparkle {
+    from {
+        transform: scale(0.92) rotate(-8deg);
+    }
+
+    to {
+        transform: scale(1.08) rotate(8deg);
+    }
 }
 
 .memory-celebration {
