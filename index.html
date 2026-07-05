@@ -61,6 +61,28 @@
                     </span>
                     <span class="game-card-action">בחרו</span>
                 </button>
+
+                <button type="button" class="game-choice-card game-choice-card-shop" data-game="listening-shop" id="select-shop-btn">
+                    <span class="shop-card-art" aria-hidden="true">
+                        <span class="shop-art-awning"></span>
+                        <span class="shop-art-shelf shop-art-shelf-top">
+                            <span>🍌</span>
+                            <span>🥛</span>
+                            <span>🍞</span>
+                        </span>
+                        <span class="shop-art-shelf shop-art-shelf-bottom">
+                            <span>🍎</span>
+                            <span>🧀</span>
+                            <span>🍪</span>
+                        </span>
+                        <span class="shop-art-basket">🛒</span>
+                    </span>
+                    <span class="game-card-copy shop-card-copy">
+                        <span class="game-card-name shop-game-name">החנות הקטנה</span>
+                        <span class="game-card-meta">מקשיבים ומגישים לקונים</span>
+                    </span>
+                    <span class="game-card-action">בחרו</span>
+                </button>
             </div>
         </div>
 
@@ -112,6 +134,74 @@
                     <div class="memory-celebration-title">כל הכבוד!</div>
                     <div class="memory-celebration-subtitle" id="memory-celebration-subtitle"></div>
                     <button type="button" id="memory-celebration-next-btn" class="memory-celebration-next-btn">למפת השלבים</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Listening Shop Screen -->
+        <div id="shop-screen" class="screen">
+            <button id="shop-back-btn" class="back-to-games-btn" type="button" aria-label="חזרה לבחירת משחקים" title="חזרה לבחירת משחקים">
+                <span aria-hidden="true">‹</span>
+                <span>משחקים</span>
+            </button>
+
+            <section id="shop-level-map" class="shop-level-map" aria-label="שלבי החנות הקטנה">
+                <header class="shop-header">
+                    <p class="shop-kicker">משחק הקשבה באנגלית</p>
+                    <h1 class="shop-title">החנות הקטנה</h1>
+                    <p class="shop-subtitle">הקשיבו לקונה ובחרו את הפריט מהמדף</p>
+                    <p id="shop-profile-badge" class="shop-profile-badge">לוטם משחק/ת</p>
+                    <p class="shop-coins-badge" aria-live="polite">
+                        <span>מטבעות</span>
+                        <strong id="shop-coins-count">0</strong>
+                        <span aria-hidden="true">🪙</span>
+                    </p>
+                </header>
+
+                <div id="shop-level-trail" class="shop-level-trail"></div>
+            </section>
+
+            <section id="shop-game-area" class="shop-game-area hidden" aria-label="משחק החנות הקטנה">
+                <div class="shop-game-toolbar">
+                    <button type="button" id="shop-level-list-btn" class="shop-map-btn" aria-label="חזרה למפת שלבי החנות">שלבים</button>
+                    <div id="shop-game-level-title" class="shop-game-level-title">שלב 1</div>
+                    <button type="button" id="shop-replay-btn" class="shop-replay-btn" aria-label="השמעת ההזמנה שוב">🔊</button>
+                </div>
+
+                <div class="shop-hud" aria-live="polite">
+                    <div id="shop-served-progress" class="shop-hud-pill">🧺 0/5</div>
+                    <div id="shop-round-coins" class="shop-hud-pill">🪙 0</div>
+                    <div id="shop-basket-progress" class="shop-hud-pill">סל ריק</div>
+                </div>
+
+                <div class="shop-stage">
+                    <div id="shop-customer-card" class="shop-customer-card">
+                        <div id="shop-customer-avatar" class="shop-customer-avatar" aria-hidden="true">🐰</div>
+                        <div>
+                            <div id="shop-customer-name" class="shop-customer-name">נוני</div>
+                            <div class="shop-speech-bubble">
+                                <span id="shop-order-prompt" class="shop-order-prompt">אני רוצה בבקשה...</span>
+                                <button type="button" id="shop-order-replay-btn" class="shop-order-replay-btn" aria-label="השמעת ההזמנה שוב">🔊</button>
+                                <span class="shop-order-question" aria-hidden="true">?</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="shop-counter">
+                        <div id="shop-basket" class="shop-basket" aria-live="polite">🧺</div>
+                    </div>
+                </div>
+
+                <div id="shop-shelves" class="shop-shelves" aria-label="מדפי החנות"></div>
+                <div id="shop-feedback" class="shop-feedback" role="status" aria-live="polite"></div>
+            </section>
+
+            <div id="shop-celebration" class="shop-celebration" role="status" aria-live="polite" aria-hidden="true">
+                <div class="shop-celebration-content">
+                    <div id="shop-celebration-stars" class="shop-celebration-stars" aria-hidden="true">⭐⭐⭐</div>
+                    <div class="shop-celebration-title">החנות הצליחה!</div>
+                    <div id="shop-celebration-subtitle" class="shop-celebration-subtitle"></div>
+                    <button type="button" id="shop-celebration-next-btn" class="shop-celebration-next-btn">לשלבים</button>
                 </div>
             </div>
         </div>

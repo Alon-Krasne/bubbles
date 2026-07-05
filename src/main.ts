@@ -2,6 +2,8 @@ import './styles.css';
 import { GameApp } from './game/GameApp';
 import { FigureType } from './entities/Character';
 import { FallingItemMode } from './entities/Bubble';
+import { initShopGame } from './shop';
+import { VOCAB_WORDS, type VocabWord } from './words';
 
 // Version badge
 const versionBadge = document.getElementById('version-badge');
@@ -11,8 +13,9 @@ if (versionBadge) {
 
 // Initialize game
 const gameApp = new GameApp();
+let shopGame: ReturnType<typeof initShopGame> | null = null;
 
-type ScreenId = 'game-select-screen' | 'memory-screen' | 'start-screen' | 'game-hud' | 'end-screen';
+type ScreenId = 'game-select-screen' | 'memory-screen' | 'shop-screen' | 'start-screen' | 'game-hud' | 'end-screen';
 type MemoryDifficulty = 'easy' | 'medium' | 'hard';
 type MemoryCardKind = 'hebrew' | 'english';
 type MemoryLevelId =
@@ -38,12 +41,7 @@ interface KidProfile {
   emoji: string;
 }
 
-interface MemoryWord {
-  id: string;
-  hebrew: string;
-  english: string;
-  drawing: string;
-}
+type MemoryWord = VocabWord;
 
 interface MemoryCard {
   cardId: string;
@@ -72,20 +70,8 @@ type MemoryMapArea = { label: string; x: number; y: number; tone: MemoryMapAreaT
 const MEMORY_MAP_VISIBLE_LEVEL_COUNT = 5;
 const MEMORY_MAP_ACTIVE_PATH_POINT_COUNT = 3;
 
-const MEMORY_WORDS: MemoryWord[] = [
-  { id: 'dog', hebrew: 'כלב', english: 'dog', drawing: '🐶' },
-  { id: 'cat', hebrew: 'חתול', english: 'cat', drawing: '🐱' },
-  { id: 'apple', hebrew: 'תפוח', english: 'apple', drawing: '🍎' },
-  { id: 'banana', hebrew: 'בננה', english: 'banana', drawing: '🍌' },
-  { id: 'sun', hebrew: 'שמש', english: 'sun', drawing: '☀️' },
-  { id: 'moon', hebrew: 'ירח', english: 'moon', drawing: '🌙' },
-  { id: 'house', hebrew: 'בית', english: 'house', drawing: '🏠' },
-  { id: 'car', hebrew: 'מכונית', english: 'car', drawing: '🚗' },
-  { id: 'ball', hebrew: 'כדור', english: 'ball', drawing: '⚽' },
-  { id: 'tree', hebrew: 'עץ', english: 'tree', drawing: '🌳' },
-  { id: 'fish', hebrew: 'דג', english: 'fish', drawing: '🐟' },
-  { id: 'flower', hebrew: 'פרח', english: 'flower', drawing: '🌸' },
-];
+const MEMORY_WORDS: MemoryWord[] = VOCAB_WORDS;
+const MEMORY_WORD_BY_ID = new Map(MEMORY_WORDS.map((word) => [word.id, word]));
 
 const MEMORY_DIFFICULTY_PAIRS: Record<MemoryDifficulty, number> = {
   easy: 4,
@@ -98,30 +84,30 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     id: 'level-1',
     difficulty: 'easy',
     title: 'שלב 1',
-    subtitle: 'גן קטן',
+    subtitle: 'חיות קלות',
     pairs: MEMORY_DIFFICULTY_PAIRS.easy,
-    icon: '🍎',
-    hints: ['dog', 'cat', 'apple', 'sun'],
+    icon: '🐶',
+    hints: ['dog', 'cat', 'bird', 'rabbit'],
     locked: false,
   },
   {
     id: 'level-2',
     difficulty: 'medium',
     title: 'שלב 2',
-    subtitle: 'שביל פרחים',
+    subtitle: 'פירות',
     pairs: MEMORY_DIFFICULTY_PAIRS.medium,
-    icon: '🐶',
-    hints: ['moon', 'house', 'car', 'ball'],
+    icon: '🍎',
+    hints: ['apple', 'banana', 'orange', 'strawberry', 'grapes', 'pear'],
     locked: false,
   },
   {
     id: 'level-3',
     difficulty: 'hard',
     title: 'שלב 3',
-    subtitle: 'שער הכוכבים',
+    subtitle: 'טבע ושמיים',
     pairs: MEMORY_DIFFICULTY_PAIRS.hard,
-    icon: '🐘',
-    hints: ['tree', 'fish', 'flower', 'banana'],
+    icon: '☀️',
+    hints: ['sun', 'moon', 'tree', 'flower', 'star', 'cloud', 'rainbow', 'mountain'],
     locked: false,
     reward: '🎁',
   },
@@ -129,20 +115,20 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     id: 'level-4',
     difficulty: 'easy',
     title: 'שלב 4',
-    subtitle: 'בקרוב',
+    subtitle: 'אוכל בסיסי',
     pairs: MEMORY_DIFFICULTY_PAIRS.easy,
-    icon: '☀️',
-    hints: ['fish', 'tree', 'moon'],
+    icon: '🥛',
+    hints: ['bread', 'milk', 'egg', 'cheese'],
     locked: true,
   },
   {
     id: 'level-5',
     difficulty: 'medium',
     title: 'שלב 5',
-    subtitle: 'בקרוב',
+    subtitle: 'צעצועים ולימודים',
     pairs: MEMORY_DIFFICULTY_PAIRS.medium,
-    icon: '🏠',
-    hints: ['house', 'car', 'ball'],
+    icon: '⚽',
+    hints: ['ball', 'book', 'pencil', 'crayon', 'backpack', 'balloon'],
     locked: true,
     reward: '🎁',
   },
@@ -150,30 +136,30 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     id: 'level-6',
     difficulty: 'medium',
     title: 'שלב 6',
-    subtitle: 'בקרוב',
+    subtitle: 'נסיעות',
     pairs: MEMORY_DIFFICULTY_PAIRS.medium,
-    icon: '🌳',
-    hints: ['car', 'dog', 'apple'],
+    icon: '🚗',
+    hints: ['car', 'bus', 'train', 'airplane', 'boat', 'bicycle'],
     locked: true,
   },
   {
     id: 'level-7',
     difficulty: 'hard',
     title: 'שלב 7',
-    subtitle: 'בקרוב',
+    subtitle: 'חיות גדולות',
     pairs: MEMORY_DIFFICULTY_PAIRS.hard,
-    icon: '🌙',
-    hints: ['moon', 'sun', 'cat'],
+    icon: '🐘',
+    hints: ['elephant', 'giraffe', 'zebra', 'lion', 'tiger', 'panda', 'monkey', 'bear'],
     locked: true,
   },
   {
     id: 'level-8',
     difficulty: 'easy',
     title: 'שלב 8',
-    subtitle: 'בקרוב',
+    subtitle: 'בגדים',
     pairs: MEMORY_DIFFICULTY_PAIRS.easy,
-    icon: '⚽',
-    hints: ['ball', 'flower', 'fish'],
+    icon: '👕',
+    hints: ['hat', 'shirt', 'shoe', 'sock'],
     locked: true,
     reward: '🎁',
   },
@@ -181,30 +167,30 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     id: 'level-9',
     difficulty: 'medium',
     title: 'שלב 9',
-    subtitle: 'בקרוב',
+    subtitle: 'דברים בבית',
     pairs: MEMORY_DIFFICULTY_PAIRS.medium,
-    icon: '🌳',
-    hints: ['tree', 'house', 'banana'],
+    icon: '🏠',
+    hints: ['house', 'bed', 'chair', 'lamp', 'cup', 'key'],
     locked: true,
   },
   {
     id: 'level-10',
     difficulty: 'hard',
     title: 'שלב 10',
-    subtitle: 'בקרוב',
+    subtitle: 'ירקות ופירות',
     pairs: MEMORY_DIFFICULTY_PAIRS.hard,
-    icon: '🍌',
-    hints: ['banana', 'dog', 'sun'],
+    icon: '🥕',
+    hints: ['tomato', 'carrot', 'corn', 'potato', 'mushroom', 'lemon', 'watermelon', 'pineapple'],
     locked: true,
   },
   {
     id: 'level-11',
     difficulty: 'easy',
     title: 'שלב 11',
-    subtitle: 'בקרוב',
+    subtitle: 'גוף',
     pairs: MEMORY_DIFFICULTY_PAIRS.easy,
-    icon: '🐶',
-    hints: ['dog', 'cat', 'car'],
+    icon: '👁️',
+    hints: ['eye', 'ear', 'nose', 'mouth'],
     locked: true,
     reward: '🎁',
   },
@@ -212,40 +198,40 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     id: 'level-12',
     difficulty: 'medium',
     title: 'שלב 12',
-    subtitle: 'בקרוב',
+    subtitle: 'אנשים וגוף',
     pairs: MEMORY_DIFFICULTY_PAIRS.medium,
-    icon: '🐱',
-    hints: ['cat', 'moon', 'flower'],
+    icon: '🧒',
+    hints: ['baby', 'child', 'girl', 'boy', 'teacher', 'hand'],
     locked: true,
   },
   {
     id: 'level-13',
     difficulty: 'hard',
     title: 'שלב 13',
-    subtitle: 'בקרוב',
+    subtitle: 'פינוקים',
     pairs: MEMORY_DIFFICULTY_PAIRS.hard,
-    icon: '☀️',
-    hints: ['sun', 'apple', 'ball'],
+    icon: '🍰',
+    hints: ['cake', 'cookie', 'ice-cream', 'pizza', 'hamburger', 'fries', 'sandwich', 'candy'],
     locked: true,
   },
   {
     id: 'level-14',
     difficulty: 'medium',
     title: 'שלב 14',
-    subtitle: 'בקרוב',
+    subtitle: 'צבעים וחפצים',
     pairs: MEMORY_DIFFICULTY_PAIRS.medium,
-    icon: '🌸',
-    hints: ['flower', 'tree', 'house'],
+    icon: '💙',
+    hints: ['red-heart', 'blue-heart', 'yellow-heart', 'green-heart', 'red-book', 'blue-book'],
     locked: true,
   },
   {
     id: 'level-15',
     difficulty: 'hard',
     title: 'שלב 15',
-    subtitle: 'בקרוב',
+    subtitle: 'מילים מוכרות',
     pairs: MEMORY_DIFFICULTY_PAIRS.hard,
     icon: '👑',
-    hints: ['fish', 'banana', 'sun'],
+    hints: ['dog', 'apple', 'house', 'car', 'ball', 'tree', 'fish', 'flower'],
     locked: true,
     reward: '🏆',
   },
@@ -358,6 +344,11 @@ function loadPreferences() {
 function setupUI() {
   renderProfileList();
   syncActiveProfileUI();
+  shopGame = initShopGame({
+    showScreen,
+    getActiveProfile,
+    returnToGameSelect,
+  });
 
   requireElement<HTMLButtonElement>('add-profile-btn').addEventListener('click', addProfileFromInput);
   requireElement<HTMLButtonElement>('rename-profile-btn').addEventListener('click', renameActiveProfileFromInput);
@@ -472,6 +463,7 @@ function setupUI() {
   // Start button
   requireElement<HTMLButtonElement>('select-bubbles-btn').addEventListener('click', openBubblesSetup);
   requireElement<HTMLButtonElement>('select-memory-btn').addEventListener('click', openMemoryGarden);
+  requireElement<HTMLButtonElement>('select-shop-btn').addEventListener('click', () => shopGame?.openShop());
   requireElement<HTMLButtonElement>('back-to-games-btn').addEventListener('click', returnToGameSelect);
   requireElement<HTMLButtonElement>('start-btn').addEventListener('click', startGame);
   requireElement<HTMLButtonElement>('memory-back-btn').addEventListener('click', returnToGameSelect);
@@ -654,6 +646,7 @@ function syncActiveProfileUI() {
 }
 
 function openBubblesSetup() {
+  shopGame?.leaveShop();
   clearMemoryMismatchTimer();
   clearMemoryWinReturnTimer();
   hideMemoryToast();
@@ -662,12 +655,14 @@ function openBubblesSetup() {
 }
 
 function openMemoryGarden() {
+  shopGame?.leaveShop();
   gameApp.returnToStart();
   showScreen('memory-screen');
   showMemoryLevelMap();
 }
 
 function startGame() {
+  shopGame?.leaveShop();
   clearMemoryMismatchTimer();
   hideMemoryToast();
   showScreen('game-hud');
@@ -680,6 +675,7 @@ function startGame() {
 }
 
 function returnToGameSelect() {
+  shopGame?.leaveShop();
   clearMemoryMismatchTimer();
   clearMemoryWinReturnTimer();
   hideMemoryToast();
@@ -689,6 +685,7 @@ function returnToGameSelect() {
 }
 
 function returnToStart() {
+  shopGame?.leaveShop();
   clearMemoryMismatchTimer();
   clearMemoryWinReturnTimer();
   hideMemoryToast();
@@ -786,7 +783,7 @@ function startMemoryRound(level: MemoryLevel) {
   memoryLocked = false;
 
   const pairCount = level.pairs;
-  const selectedWords = MEMORY_WORDS.slice(0, pairCount);
+  const selectedWords = selectMemoryWords(level);
   const cards = selectedWords.flatMap((word): MemoryCard[] => [
     {
       cardId: `${word.id}-hebrew`,
@@ -819,6 +816,27 @@ function shuffleMemoryCards(cards: MemoryCard[]): MemoryCard[] {
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled;
+}
+
+function selectMemoryWords(level: MemoryLevel) {
+  const selectedWords = level.hints.map(getMemoryWord);
+  if (selectedWords.length >= level.pairs) {
+    return selectedWords.slice(0, level.pairs);
+  }
+
+  const selectedIds = new Set(selectedWords.map((word) => word.id));
+  const fillerWords = MEMORY_WORDS
+    .filter((word) => !selectedIds.has(word.id))
+    .slice(0, level.pairs - selectedWords.length);
+  return [...selectedWords, ...fillerWords];
+}
+
+function getMemoryWord(wordId: string) {
+  const word = MEMORY_WORD_BY_ID.get(wordId);
+  if (!word) {
+    throw new Error(`Missing memory word ${wordId}`);
+  }
+  return word;
 }
 
 function renderMemoryBoard() {
@@ -932,7 +950,7 @@ function matchMemoryCards() {
   setMemorySoundButtonFocus(secondCard, true);
   memoryMatchedPairs.add(wordId);
 
-  const matchedWord = MEMORY_WORDS.find((word) => word.id === wordId) as MemoryWord;
+  const matchedWord = getMemoryWord(wordId);
   const pairCount = activeMemoryLevel.pairs;
   const isComplete = memoryMatchedPairs.size === pairCount;
   const message = isComplete ? `${activeMemoryLevel.title} הושלם!` : `${matchedWord.hebrew} = ${matchedWord.english}`;
