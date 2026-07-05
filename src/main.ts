@@ -85,6 +85,30 @@ const MEMORY_WORDS: MemoryWord[] = [
   { id: 'tree', hebrew: 'עץ', english: 'tree', drawing: '🌳' },
   { id: 'fish', hebrew: 'דג', english: 'fish', drawing: '🐟' },
   { id: 'flower', hebrew: 'פרח', english: 'flower', drawing: '🌸' },
+  { id: 'door', hebrew: 'דלת', english: 'door', drawing: '🚪' },
+  { id: 'book', hebrew: 'ספר', english: 'book', drawing: '📖' },
+  { id: 'chair', hebrew: 'כיסא', english: 'chair', drawing: '🪑' },
+  { id: 'bed', hebrew: 'מיטה', english: 'bed', drawing: '🛏️' },
+  { id: 'shoe', hebrew: 'נעל', english: 'shoe', drawing: '👟' },
+  { id: 'hat', hebrew: 'כובע', english: 'hat', drawing: '🧢' },
+  { id: 'cup', hebrew: 'כוס', english: 'cup', drawing: '🥤' },
+  { id: 'milk', hebrew: 'חלב', english: 'milk', drawing: '🥛' },
+  { id: 'water', hebrew: 'מים', english: 'water', drawing: '💧' },
+  { id: 'bread', hebrew: 'לחם', english: 'bread', drawing: '🍞' },
+  { id: 'egg', hebrew: 'ביצה', english: 'egg', drawing: '🥚' },
+  { id: 'bird', hebrew: 'ציפור', english: 'bird', drawing: '🐦' },
+  { id: 'cow', hebrew: 'פרה', english: 'cow', drawing: '🐮' },
+  { id: 'duck', hebrew: 'ברווז', english: 'duck', drawing: '🦆' },
+  { id: 'elephant', hebrew: 'פיל', english: 'elephant', drawing: '🐘' },
+  { id: 'baby', hebrew: 'תינוק', english: 'baby', drawing: '👶' },
+  { id: 'hand', hebrew: 'יד', english: 'hand', drawing: '✋' },
+  { id: 'eye', hebrew: 'עין', english: 'eye', drawing: '👁️' },
+  { id: 'nose', hebrew: 'אף', english: 'nose', drawing: '👃' },
+  { id: 'ear', hebrew: 'אוזן', english: 'ear', drawing: '👂' },
+  { id: 'mouth', hebrew: 'פה', english: 'mouth', drawing: '👄' },
+  { id: 'star', hebrew: 'כוכב', english: 'star', drawing: '⭐' },
+  { id: 'rain', hebrew: 'גשם', english: 'rain', drawing: '🌧️' },
+  { id: 'cloud', hebrew: 'ענן', english: 'cloud', drawing: '☁️' },
 ];
 
 const MEMORY_DIFFICULTY_PAIRS: Record<MemoryDifficulty, number> = {
@@ -786,7 +810,7 @@ function startMemoryRound(level: MemoryLevel) {
   memoryLocked = false;
 
   const pairCount = level.pairs;
-  const selectedWords = MEMORY_WORDS.slice(0, pairCount);
+  const selectedWords = selectMemoryWords(pairCount);
   const cards = selectedWords.flatMap((word): MemoryCard[] => [
     {
       cardId: `${word.id}-hebrew`,
@@ -810,6 +834,22 @@ function startMemoryRound(level: MemoryLevel) {
   renderMemoryBoard();
   updateMemoryStatus(`${level.title}: הפכו שני קלפים שמתחברים`);
   hideMemoryToast();
+}
+
+function selectMemoryWords(pairCount: number): MemoryWord[] {
+  if (pairCount > MEMORY_WORDS.length) {
+    throw new Error(`Memory level needs ${pairCount} pairs but only ${MEMORY_WORDS.length} words exist`);
+  }
+  return shuffleMemoryWords(MEMORY_WORDS).slice(0, pairCount);
+}
+
+function shuffleMemoryWords(words: MemoryWord[]): MemoryWord[] {
+  const shuffled = [...words];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
 }
 
 function shuffleMemoryCards(cards: MemoryCard[]): MemoryCard[] {
@@ -844,16 +884,19 @@ function renderMemoryBoard() {
     const front = document.createElement('span');
     front.className = 'memory-card-front';
 
-    const drawing = document.createElement('span');
-    drawing.className = 'memory-card-drawing';
-    drawing.setAttribute('aria-hidden', 'true');
-    drawing.textContent = card.drawing;
-
     const word = document.createElement('span');
     word.className = 'memory-card-word';
     word.textContent = card.text;
 
-    front.append(drawing, word);
+    if (card.kind === 'hebrew') {
+      const drawing = document.createElement('span');
+      drawing.className = 'memory-card-drawing';
+      drawing.setAttribute('aria-hidden', 'true');
+      drawing.textContent = card.drawing;
+      front.append(drawing);
+    }
+
+    front.append(word);
 
     if (card.kind === 'english') {
       const soundButton = document.createElement('button');
