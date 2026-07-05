@@ -984,7 +984,7 @@ function matchMemoryCards() {
   const matchedWord = MEMORY_WORDS.find((word) => word.id === wordId) as MemoryWord;
   const pairCount = activeMemoryLevel.pairs;
   const isComplete = memoryMatchedPairs.size === pairCount;
-  const message = isComplete ? `${activeMemoryLevel.title} הושלם!` : `${matchedWord.hebrew} = ${matchedWord.english}`;
+  const message = isComplete ? `${activeMemoryLevel.title} הושלם!` : `זוג מנצח: ${matchedWord.hebrew} ו-${matchedWord.english}`;
 
   memoryFirstCard = null;
   memorySecondCard = null;
@@ -1327,7 +1327,28 @@ function showMemoryToast(matchedWord: MemoryWord) {
   const toast = requireElement<HTMLDivElement>('memory-toast');
   const toastText = requireElement<HTMLSpanElement>('memory-toast-text');
   const name = p1Name.trim() || 'לוטם';
-  toastText.textContent = `${name}, מצאת זוג: ${matchedWord.hebrew} = ${matchedWord.english}`;
+  const cheer = document.createElement('span');
+  cheer.className = 'memory-toast-cheer';
+  cheer.textContent = `${name}, גילית זוג מילים!`;
+
+  const pair = document.createElement('span');
+  pair.className = 'memory-toast-pair';
+
+  const hebrewWord = document.createElement('span');
+  hebrewWord.className = 'memory-toast-word memory-toast-word-hebrew';
+  hebrewWord.textContent = matchedWord.hebrew;
+
+  const connector = document.createElement('span');
+  connector.className = 'memory-toast-connector';
+  connector.setAttribute('aria-hidden', 'true');
+  connector.textContent = '✨';
+
+  const englishWord = document.createElement('span');
+  englishWord.className = 'memory-toast-word memory-toast-word-english';
+  englishWord.textContent = matchedWord.english;
+
+  pair.append(hebrewWord, connector, englishWord);
+  toastText.replaceChildren(cheer, pair);
 
   if (memoryToastTimer) {
     clearTimeout(memoryToastTimer);
