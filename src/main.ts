@@ -1319,7 +1319,7 @@ function speakMemoryWord(word: string) {
 
   const utterance = new SpeechSynthesisUtterance(word);
   utterance.lang = 'en-US';
-  utterance.rate = 0.82;
+  utterance.rate = 0.72;
   utterance.pitch = 1.08;
   window.speechSynthesis.speak(utterance);
 }
