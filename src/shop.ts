@@ -41,6 +41,7 @@ interface ShopOrder {
 
 const SHOP_LEVEL_PROGRESS_STORAGE_KEY = 'bubble_shop_levels';
 const SHOP_COINS_STORAGE_KEY = 'bubble_shop_coins';
+const SHOP_SPEECH_RATE = 0.72;
 const SHOP_WIN_RETURN_DELAY_MS = 2400;
 const SHOP_CUSTOMER_EMOJIS = ['🐰', '🐻', '🐱', '🦊', '🐸', '🐼', '🐵', '🐨'];
 const SHOP_CUSTOMER_NAMES = ['נוני', 'מימי', 'קוקו', 'לילי', 'פופי', 'טופי', 'קיקי', 'בוני'];
@@ -185,7 +186,7 @@ const SHOP_LEVELS: ShopLevel[] = [
   },
 ];
 
-export function speakEnglish(text: string, rate = 0.8) {
+export function speakEnglish(text: string, rate = SHOP_SPEECH_RATE) {
   if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
     return;
   }
@@ -415,15 +416,15 @@ export function initShopGame(deps: ShopDeps) {
       state.servedCustomers += 1;
       setFeedback('תודה רבה!');
       requireElement<HTMLElement>('shop-customer-card').classList.add('is-happy');
-      scheduleTimer(() => speakEnglish(createConfirmationSentence(item), 0.84), 120);
-      scheduleTimer(() => speakEnglish(createThankYouSentence(), 0.84), 1120);
+      scheduleTimer(() => speakEnglish(createConfirmationSentence(item), SHOP_SPEECH_RATE), 120);
+      scheduleTimer(() => speakEnglish(createThankYouSentence(), SHOP_SPEECH_RATE), 1120);
       scheduleTimer(() => {
         requireElement<HTMLElement>('shop-customer-card').classList.add('is-leaving');
       }, 1460);
       scheduleTimer(() => nextCustomer(), 1860);
     } else {
       setFeedback('יפה! ממשיכים למלא את הסל');
-      speakEnglish(createConfirmationSentence(item), 0.84);
+      speakEnglish(createConfirmationSentence(item), SHOP_SPEECH_RATE);
     }
   }
 
@@ -508,7 +509,7 @@ export function initShopGame(deps: ShopDeps) {
   }
 
   function speakOrder() {
-    speakEnglish(requireCurrentOrder().sentence, 0.8);
+    speakEnglish(requireCurrentOrder().sentence, SHOP_SPEECH_RATE);
   }
 
   function completeLevel() {
