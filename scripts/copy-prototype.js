@@ -1,16 +1,19 @@
 const { cpSync, mkdirSync } = require('node:fs');
-const { resolve } = require('node:path');
+const { dirname, resolve } = require('node:path');
 
 const root = resolve(__dirname, '..');
+const copies = [
+  ['prototype', 'dist/prototype'],
+  ['src/assets/fonts', 'dist/src/assets/fonts'],
+  ['src/assets/memory/memory-garden-map-bg-v2.png', 'dist/src/assets/memory/memory-garden-map-bg-v2.png'],
+  ['src/assets/characters/princess', 'dist/src/assets/characters/princess'],
+  ['src/assets/characters/dinosaur', 'dist/src/assets/characters/dinosaur'],
+];
 
-function copy(relativeSource, relativeDestination) {
-  const source = resolve(root, relativeSource);
-  const destination = resolve(root, relativeDestination);
-  mkdirSync(resolve(destination, '..'), { recursive: true });
-  cpSync(source, destination, { recursive: true });
-}
+copies.forEach(([source, destination]) => {
+  const target = resolve(root, destination);
+  mkdirSync(dirname(target), { recursive: true });
+  cpSync(resolve(root, source), target, { recursive: true });
+});
 
-copy('prototype', 'dist/prototype');
-copy('src/assets/fonts', 'dist/src/assets/fonts');
-copy('src/assets/characters/princess', 'dist/src/assets/characters/princess');
-copy('src/assets/characters/dinosaur', 'dist/src/assets/characters/dinosaur');
+console.log('Copied educational game prototypes into dist.');

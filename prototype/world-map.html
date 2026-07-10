@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>עולם הבועות - אבטיפוס</title>
+  <link rel="stylesheet" href="./world-map.css">
+</head>
+<body data-prototype="unified-world-map">
+  <main class="world" aria-label="מפת עולם הבועות">
+    <div class="map-canvas">
+      <header class="world-chrome">
+        <button class="profile-button" id="profile-button" type="button" aria-expanded="false" aria-controls="profile-menu">
+          <span class="profile-avatar" id="profile-avatar" aria-hidden="true">🌸</span>
+          <span class="profile-copy">
+            <strong id="profile-name">לוטם</strong>
+            <small id="profile-language">לומדת אנגלית</small>
+          </span>
+          <span class="profile-chevron" aria-hidden="true">⌄</span>
+        </button>
+
+        <div class="profile-menu" id="profile-menu" hidden>
+          <button type="button" data-profile="lotem">
+            <span aria-hidden="true">🌸</span>
+            <span><strong>לוטם</strong><small>אנגלית</small></span>
+          </button>
+          <button type="button" data-profile="tom">
+            <span aria-hidden="true">🫧</span>
+            <span><strong>תום</strong><small>עברית</small></span>
+          </button>
+        </div>
+
+        <div class="world-title" aria-label="עולם הבועות">
+          <strong>עולם הבועות</strong>
+          <span id="journey-label">המסע של לוטם</span>
+        </div>
+
+        <div class="world-actions">
+          <div class="star-total" aria-label="8 מתוך 45 כוכבים">
+            <span aria-hidden="true">★</span>
+            <strong id="star-total">8</strong>
+            <small>/45</small>
+          </div>
+          <button class="icon-button" id="sound-button" type="button" aria-label="השתקת צלילים" title="צלילים">
+            <span class="sound-symbol" aria-hidden="true"></span>
+          </button>
+          <button class="icon-button" id="settings-button" type="button" aria-label="הגדרות" title="הגדרות">
+            <span aria-hidden="true">⚙</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="area-label area-label-words">עמק המילים</div>
+      <div class="area-label area-label-market">שוק הקסם</div>
+      <div class="area-label area-label-bubbles">שביל הבועות</div>
+
+      <section class="route" id="route" aria-label="שלבי המסע"></section>
+
+      <div class="traveller" id="traveller" aria-label="לוטם נמצאת בשלב 4">
+        <span class="traveller-shadow" aria-hidden="true"></span>
+        <img id="traveller-image" src="../src/assets/characters/princess/princess_idle_1.webp" alt="">
+      </div>
+
+      <section class="stage-panel" id="stage-panel" aria-live="polite">
+        <button class="panel-close" id="panel-close" type="button" aria-label="סגירת פרטי השלב">×</button>
+        <div class="panel-icon" id="panel-icon" aria-hidden="true">Aa</div>
+        <div class="panel-copy">
+          <div class="panel-kicker" id="panel-kicker">גן מילים · אנגלית</div>
+          <h1 id="panel-title">חיות ראשונות</h1>
+          <p id="panel-description">מוצאים זוגות של מילים וחיות</p>
+          <div class="panel-stars" id="panel-stars" aria-label="2 מתוך 3 כוכבים">★★☆</div>
+        </div>
+        <button class="play-button" id="play-button" type="button">
+          <span aria-hidden="true">▶</span>
+          <span>שחקו</span>
+        </button>
+      </section>
+
+      <div class="settings-popover" id="settings-popover" hidden>
+        <strong>הגדרות</strong>
+        <div>
+          <span>צלילים</span>
+          <button type="button" aria-label="צלילים פעילים" aria-pressed="true">פעיל</button>
+        </div>
+        <div>
+          <span>תנועה</span>
+          <button type="button" aria-label="תנועה פעילה" aria-pressed="true">פעילה</button>
+        </div>
+      </div>
+
+      <div class="launch-overlay" id="launch-overlay" aria-hidden="true">
+        <img id="launch-character" src="../src/assets/characters/princess/princess_celebrate_1.webp" alt="">
+        <strong id="launch-title">המשימה מתחילה!</strong>
+        <span aria-hidden="true">★</span>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="./world-map.js"></script>
+</body>
+</html>
