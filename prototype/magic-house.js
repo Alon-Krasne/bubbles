@@ -18,11 +18,32 @@ const ZONES = [
   { id: 'table', labels: { en: 'table', he: 'שולחן' } },
 ];
 
+const ROOM_MAP = {
+  zones: {
+    bed: { left: '39%', top: '36%', width: '21%', height: '26%' },
+    'toy-box': { left: '25.5%', top: '50%', width: '14%', height: '23%' },
+    shelf: { left: '25.5%', top: '24%', width: '14.5%', height: '23%' },
+    'under-bed': { left: '38%', top: '58%', width: '18%', height: '20%' },
+    nightstand: { left: '63.5%', top: '50%', width: '13%', height: '26%' },
+    table: { left: '44.5%', top: '65%', width: '21%', height: '28%' },
+  },
+  placements: {
+    pillow: { left: '49%', top: '45%', width: '8%' },
+    ball: { left: '32.5%', top: '62%', width: '7%' },
+    book: { left: '32.5%', top: '35%', width: '6.5%' },
+    shoes: { left: '42.5%', top: '68.5%', width: '9%' },
+    'yellow-lamp': { left: '69%', top: '55%', width: '7%' },
+    apple: { left: '55%', top: '70%', width: '6%' },
+    teddy: { left: '55%', top: '51%', width: '8%' },
+  },
+};
+
 const REQUESTS = [
   {
     id: 'request-1',
     targets: [{ objectId: 'pillow', zoneId: 'bed' }],
     en: { sentence: 'Put the pillow on the bed.', keywords: ['pillow', 'on', 'bed'] },
+    success: { en: 'The pillow is on the bed!', he: 'הכרית על המיטה!' },
     he: {
       male: 'שים את הכרית על המיטה.',
       female: 'שימי את הכרית על המיטה.',
@@ -33,6 +54,7 @@ const REQUESTS = [
     id: 'request-2',
     targets: [{ objectId: 'ball', zoneId: 'toy-box' }],
     en: { sentence: 'Put the ball in the toy box.', keywords: ['ball', 'in', 'toy box'] },
+    success: { en: 'The ball is in the toy box!', he: 'הכדור בקופסת הצעצועים!' },
     he: {
       male: 'שים את הכדור בקופסת הצעצועים.',
       female: 'שימי את הכדור בקופסת הצעצועים.',
@@ -43,6 +65,7 @@ const REQUESTS = [
     id: 'request-3',
     targets: [{ objectId: 'book', zoneId: 'shelf' }],
     en: { sentence: 'Put the blue book on the shelf.', keywords: ['blue book', 'on', 'shelf'] },
+    success: { en: 'The blue book is on the shelf!', he: 'הספר הכחול על המדף!' },
     he: {
       male: 'שים את הספר הכחול על המדף.',
       female: 'שימי את הספר הכחול על המדף.',
@@ -53,6 +76,7 @@ const REQUESTS = [
     id: 'request-4',
     targets: [{ objectId: 'shoes', zoneId: 'under-bed' }],
     en: { sentence: 'Put the shoes under the bed.', keywords: ['shoes', 'under', 'bed'] },
+    success: { en: 'The shoes are under the bed!', he: 'הנעליים מתחת למיטה!' },
     he: {
       male: 'שים את הנעליים מתחת למיטה.',
       female: 'שימי את הנעליים מתחת למיטה.',
@@ -63,6 +87,7 @@ const REQUESTS = [
     id: 'request-5',
     targets: [{ objectId: 'yellow-lamp', zoneId: 'nightstand' }],
     en: { sentence: 'Put the yellow lamp next to the bed.', keywords: ['yellow lamp', 'next to', 'bed'] },
+    success: { en: 'The yellow lamp is next to the bed!', he: 'המנורה הצהובה ליד המיטה!' },
     he: {
       male: 'שים את המנורה הצהובה ליד המיטה.',
       female: 'שימי את המנורה הצהובה ליד המיטה.',
@@ -79,6 +104,7 @@ const REQUESTS = [
       sentence: 'Put the red apple on the table and the teddy bear on the bed.',
       keywords: ['red apple', 'table', 'teddy bear', 'bed'],
     },
+    success: { en: 'The room looks magical!', he: 'החדר נראה קסום!' },
     he: {
       male: 'שים את התפוח האדום על השולחן ואת הדובי על המיטה.',
       female: 'שימי את התפוח האדום על השולחן ואת הדובי על המיטה.',
@@ -108,16 +134,6 @@ const PROFILES = {
   },
 };
 
-const PLACEMENTS = {
-  pillow: { left: '56%', top: '48%', width: '12%' },
-  ball: { left: '34%', top: '62%', width: '8%' },
-  book: { left: '36%', top: '34%', width: '7%' },
-  shoes: { left: '52%', top: '69%', width: '12%' },
-  'yellow-lamp': { left: '78%', top: '52%', width: '8%' },
-  apple: { left: '57%', top: '71%', width: '7%' },
-  teddy: { left: '64%', top: '46%', width: '10%' },
-};
-
 const objectById = new Map(OBJECTS.map((object) => [object.id, object]));
 const profileStates = new Map(Object.keys(PROFILES).map((profileId) => [profileId, createProfileState()]));
 const timers = new Set();
@@ -140,6 +156,7 @@ const helpButton = requireElement('help-button');
 const profileButton = requireElement('profile-button');
 const profileMenu = requireElement('profile-menu');
 const guideCharacter = requireElement('guide-character');
+const successToast = requireElement('success-toast');
 const celebration = requireElement('celebration');
 const sentenceAudio = requireElement('sentence-audio');
 
@@ -209,17 +226,8 @@ function renderDropZones() {
     button.className = 'drop-zone';
     button.dataset.zone = zone.id;
     button.setAttribute('aria-label', zone.labels[profile.primary]);
+    Object.assign(button.style, ROOM_MAP.zones[zone.id]);
     button.addEventListener('click', () => attemptPlacement(selectedObjectId, zone.id));
-    button.addEventListener('dragover', (event) => {
-      event.preventDefault();
-      button.classList.add('is-ready');
-    });
-    button.addEventListener('dragleave', () => button.classList.remove('is-ready'));
-    button.addEventListener('drop', (event) => {
-      event.preventDefault();
-      button.classList.remove('is-ready');
-      attemptPlacement(event.dataTransfer.getData('text/plain'), zone.id);
-    });
     dropLayer.append(button);
   });
 }
@@ -227,6 +235,7 @@ function renderDropZones() {
 function renderObjectDrawer() {
   const state = getState();
   const profile = getProfile();
+  removeDragGhosts();
   objectList.innerHTML = '';
 
   OBJECTS.forEach((object) => {
@@ -234,7 +243,7 @@ function renderObjectDrawer() {
     button.type = 'button';
     button.className = 'object-button';
     button.dataset.objectId = object.id;
-    button.draggable = !state.placedObjectIds.has(object.id);
+    button.draggable = false;
     button.disabled = state.placedObjectIds.has(object.id);
     button.classList.toggle('is-placed', state.placedObjectIds.has(object.id));
     button.classList.toggle('is-selected', selectedObjectId === object.id);
@@ -252,11 +261,6 @@ function renderObjectDrawer() {
 
     button.append(art, label);
     button.addEventListener('click', () => selectObject(object.id));
-    button.addEventListener('dragstart', (event) => {
-      selectObject(object.id);
-      event.dataTransfer.setData('text/plain', object.id);
-      event.dataTransfer.effectAllowed = 'move';
-    });
     attachPointerDrag(button, object);
     objectList.append(button);
   });
@@ -269,7 +273,7 @@ function renderPlacedObjects() {
 
   getState().placedObjectIds.forEach((objectId) => {
     const object = objectById.get(objectId);
-    const placement = PLACEMENTS[objectId];
+    const placement = ROOM_MAP.placements[objectId];
     const placed = document.createElement('span');
     placed.className = 'placed-object';
     placed.dataset.objectId = objectId;
@@ -352,7 +356,7 @@ function completeRequest() {
   instructionPanel.classList.add('is-success', 'show-keywords');
   translationElement.hidden = false;
   updateStars();
-  showFeedback(getProfile().primary === 'en' ? 'Great job!' : 'כל הכבוד!');
+  showSuccessToast(getRequest());
   speakSentence();
 
   waitForSentenceToFinish(() => {
@@ -383,12 +387,37 @@ function celebratePlacement() {
 }
 
 function showGentleRetry(objectId) {
+  selectedObjectId = null;
+  renderObjectDrawer();
   const button = document.querySelector(`[data-object-id="${objectId}"]`);
-  button?.classList.remove('is-returning');
-  void button?.offsetWidth;
-  button?.classList.add('is-returning');
+  button.classList.remove('is-returning');
+  void button.offsetWidth;
+  button.classList.add('is-returning');
   showFeedback(getProfile().primary === 'en' ? 'Try another spot' : 'ננסה מקום אחר');
   speakSentence();
+}
+
+function showSuccessToast(request) {
+  const profile = getProfile();
+  if (feedbackTimer) {
+    clearTimeout(feedbackTimer);
+    feedbackTimer = null;
+  }
+  feedbackElement.classList.remove('is-visible');
+  successToast.dir = profile.primary === 'en' ? 'ltr' : 'rtl';
+  requireElement('success-toast-character').src = profile.happyCharacter;
+  requireElement('success-toast-title').textContent = profile.primary === 'en' ? 'Great job!' : 'כל הכבוד!';
+  requireElement('success-toast-message').textContent = request.success[profile.primary];
+  successToast.classList.remove('is-visible');
+  void successToast.offsetWidth;
+  successToast.classList.add('is-visible');
+  successToast.setAttribute('aria-hidden', 'false');
+  schedule(hideSuccessToast, 2200);
+}
+
+function hideSuccessToast() {
+  successToast.classList.remove('is-visible');
+  successToast.setAttribute('aria-hidden', 'true');
 }
 
 function useHelp() {
@@ -481,6 +510,7 @@ function switchProfile(profileId) {
   celebration.classList.remove('is-visible');
   celebration.setAttribute('aria-hidden', 'true');
   magicHouse.classList.remove('is-celebrating');
+  hideSuccessToast();
   render();
   speakSentence();
 }
@@ -504,6 +534,7 @@ function resetActiveProfile() {
   celebration.classList.remove('is-visible');
   celebration.setAttribute('aria-hidden', 'true');
   magicHouse.classList.remove('is-celebrating');
+  hideSuccessToast();
   render();
   speakSentence();
 }
@@ -538,6 +569,7 @@ function attachPointerDrag(button, object) {
     if (!pointerState.moved && distance > 8) {
       pointerState.moved = true;
       selectObject(object.id);
+      removeDragGhosts();
       ghost = document.createElement('span');
       ghost.className = 'drag-ghost';
       setSpritePosition(ghost, object);
@@ -545,6 +577,7 @@ function attachPointerDrag(button, object) {
     }
 
     if (ghost) {
+      event.preventDefault();
       ghost.style.left = `${event.clientX}px`;
       ghost.style.top = `${event.clientY}px`;
     }
@@ -555,17 +588,42 @@ function attachPointerDrag(button, object) {
       return;
     }
 
-    if (pointerState.moved) {
+    const didMove = pointerState.moved;
+    if (didMove) {
       const target = document.elementFromPoint(event.clientX, event.clientY)?.closest('.drop-zone');
-      ghost?.remove();
-      ghost = null;
+      cleanupPointerDrag();
       if (target) {
         attemptPlacement(object.id, target.dataset.zone);
+      } else {
+        showGentleRetry(object.id);
       }
+      return;
     }
 
-    pointerState = null;
+    cleanupPointerDrag();
   });
+
+  button.addEventListener('pointercancel', cancelPointerDrag);
+  button.addEventListener('lostpointercapture', cancelPointerDrag);
+
+  function cleanupPointerDrag() {
+    ghost?.remove();
+    ghost = null;
+    pointerState = null;
+  }
+
+  function cancelPointerDrag() {
+    if (!pointerState) {
+      return;
+    }
+    cleanupPointerDrag();
+    selectedObjectId = null;
+    renderObjectDrawer();
+  }
+}
+
+function removeDragGhosts() {
+  document.querySelectorAll('.drag-ghost').forEach((ghost) => ghost.remove());
 }
 
 function setSpritePosition(element, object) {
