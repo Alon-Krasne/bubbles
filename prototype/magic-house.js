@@ -20,12 +20,12 @@ const ZONES = [
 
 const ROOM_MAP = {
   zones: {
-    bed: { left: '39%', top: '36%', width: '21%', height: '26%' },
-    'toy-box': { left: '25.5%', top: '50%', width: '14%', height: '23%' },
-    shelf: { left: '25.5%', top: '24%', width: '14.5%', height: '23%' },
-    'under-bed': { left: '38%', top: '58%', width: '18%', height: '20%' },
-    nightstand: { left: '63.5%', top: '50%', width: '13%', height: '26%' },
-    table: { left: '44.5%', top: '65%', width: '21%', height: '28%' },
+    bed: { left: '38.5%', top: '37%', width: '22%', height: '27%' },
+    'toy-box': { left: '26%', top: '50%', width: '13%', height: '23%' },
+    shelf: { left: '26%', top: '27%', width: '13%', height: '20%' },
+    'under-bed': { left: '39.5%', top: '64%', width: '12%', height: '18%' },
+    nightstand: { left: '63.5%', top: '53%', width: '12%', height: '22%' },
+    table: { left: '45.5%', top: '66%', width: '18%', height: '25%' },
   },
   placements: {
     pillow: { left: '49%', top: '45%', width: '8%' },
@@ -141,7 +141,6 @@ const timers = new Set();
 let activeProfileId = 'lotem';
 let selectedObjectId = null;
 let feedbackTimer = null;
-let audioCompletionHandler = null;
 
 const roomCanvas = requireElement('room-canvas');
 const magicHouse = document.querySelector('.magic-house');
@@ -218,16 +217,23 @@ function renderProfile() {
 
 function renderDropZones() {
   const profile = getProfile();
+  const state = getState();
+  const pendingZoneIds = new Set(getRequest().targets
+    .filter((target) => !state.placedObjectIds.has(target.objectId))
+    .map((target) => target.zoneId));
   dropLayer.innerHTML = '';
 
-  ZONES.forEach((zone) => {
+  ZONES.filter((zone) => pendingZoneIds.has(zone.id)).forEach((zone) => {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'drop-zone';
     button.dataset.zone = zone.id;
     button.setAttribute('aria-label', zone.labels[profile.primary]);
     Object.assign(button.style, ROOM_MAP.zones[zone.id]);
-    button.addEventListener('click', () => attemptPlacement(selectedObjectId, zone.id));
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      attemptPlacement(selectedObjectId, zone.id);
+    });
     dropLayer.append(button);
   });
 }
@@ -337,8 +343,10 @@ function attemptPlacement(objectId, zoneId) {
 
   state.placedObjectIds.add(objectId);
   selectedObjectId = null;
+  renderDropZones();
   renderPlacedObjects();
   renderObjectDrawer();
+  applyHelpState();
   celebratePlacement();
 
   const requestComplete = getRequest().targets.every((candidate) => state.placedObjectIds.has(candidate.objectId));
@@ -356,10 +364,11 @@ function completeRequest() {
   instructionPanel.classList.add('is-success', 'show-keywords');
   translationElement.hidden = false;
   updateStars();
+  stopSentenceAudio();
   showSuccessToast(getRequest());
-  speakSentence();
 
-  waitForSentenceToFinish(() => {
+  schedule(() => {
+    hideSuccessToast();
     if (state.completedRequests === REQUESTS.length) {
       showCelebration();
       return;
@@ -369,9 +378,10 @@ function completeRequest() {
     state.helpLevel = 0;
     state.locked = false;
     renderInstruction();
+    renderDropZones();
     applyHelpState();
     speakSentence();
-  });
+  }, 2200);
 }
 
 function celebratePlacement() {
@@ -412,7 +422,6 @@ function showSuccessToast(request) {
   void successToast.offsetWidth;
   successToast.classList.add('is-visible');
   successToast.setAttribute('aria-hidden', 'false');
-  schedule(hideSuccessToast, 2200);
 }
 
 function hideSuccessToast() {
@@ -481,23 +490,6 @@ function prepareSentenceAudio() {
 function stopSentenceAudio() {
   sentenceAudio.pause();
   sentenceAudio.currentTime = 0;
-}
-
-function waitForSentenceToFinish(callback) {
-  clearAudioCompletionHandler();
-  audioCompletionHandler = () => {
-    audioCompletionHandler = null;
-    callback();
-  };
-  sentenceAudio.addEventListener('ended', audioCompletionHandler, { once: true });
-}
-
-function clearAudioCompletionHandler() {
-  if (!audioCompletionHandler) {
-    return;
-  }
-  sentenceAudio.removeEventListener('ended', audioCompletionHandler);
-  audioCompletionHandler = null;
 }
 
 function switchProfile(profileId) {
@@ -640,7 +632,6 @@ function schedule(callback, delayMs) {
 }
 
 function clearTimers() {
-  clearAudioCompletionHandler();
   timers.forEach((timer) => clearTimeout(timer));
   timers.clear();
   if (feedbackTimer) {
@@ -674,6 +665,11 @@ document.querySelectorAll('[data-profile]').forEach((button) => {
 requireElement('sound-button').addEventListener('click', speakSentence);
 helpButton.addEventListener('click', useHelp);
 requireElement('replay-button').addEventListener('click', resetActiveProfile);
+roomCanvas.addEventListener('click', (event) => {
+  if (selectedObjectId && !event.target.closest('.drop-zone')) {
+    showGentleRetry(selectedObjectId);
+  }
+});
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') {
