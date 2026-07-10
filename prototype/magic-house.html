@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>הבית הקסום - אבטיפוס</title>
+  <link rel="stylesheet" href="./magic-house.css">
+</head>
+<body data-prototype="magic-house">
+  <main class="magic-house" aria-label="הבית הקסום">
+    <section class="room-shell" aria-label="חדר השינה הקסום">
+      <div class="room-canvas" id="room-canvas">
+        <div class="placed-layer" id="placed-layer" aria-live="polite"></div>
+        <div class="drop-layer" id="drop-layer" aria-label="מקומות בחדר"></div>
+        <img class="guide-character" id="guide-character" src="../src/assets/characters/princess/princess_idle_1.webp" alt="">
+      </div>
+
+      <header class="house-chrome">
+        <button class="profile-button" id="profile-button" type="button" aria-expanded="false" aria-controls="profile-menu">
+          <span class="profile-avatar" id="profile-avatar" aria-hidden="true">🌸</span>
+          <span class="profile-copy">
+            <strong id="profile-name">לוטם</strong>
+            <small id="profile-language">אנגלית</small>
+          </span>
+          <span aria-hidden="true">⌄</span>
+        </button>
+
+        <div class="profile-menu" id="profile-menu" hidden>
+          <button type="button" data-profile="lotem"><span>🌸</span><span><strong>לוטם</strong><small>אנגלית</small></span></button>
+          <button type="button" data-profile="tom"><span>🫧</span><span><strong>תום</strong><small>עברית</small></span></button>
+        </div>
+
+        <div class="room-title">
+          <strong>הבית הקסום</strong>
+          <span>חדר השינה</span>
+        </div>
+
+        <div class="progress-cluster">
+          <div class="stars" id="stars" aria-label="0 מתוך 3 כוכבים">
+            <span>☆</span><span>☆</span><span>☆</span>
+          </div>
+          <strong id="request-progress">1 / 6</strong>
+        </div>
+      </header>
+
+      <section class="instruction-panel" id="instruction-panel" aria-live="polite">
+        <button class="sound-button" id="sound-button" type="button" aria-label="השמעת המשפט שוב" title="השמעת המשפט שוב">
+          <span class="sound-symbol" aria-hidden="true"></span>
+        </button>
+        <div class="sentence-copy">
+          <p class="sentence" id="sentence" dir="ltr"></p>
+          <p class="translation" id="translation" hidden></p>
+        </div>
+        <button class="help-button" id="help-button" type="button" aria-label="עזרה" title="עזרה">
+          <span aria-hidden="true">?</span>
+          <small id="help-level">○○○</small>
+        </button>
+      </section>
+
+      <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+
+      <div class="celebration" id="celebration" aria-hidden="true">
+        <img id="celebration-character" src="../src/assets/characters/princess/princess_celebrate_1.webp" alt="">
+        <div class="celebration-stars" aria-hidden="true">★★★</div>
+        <strong id="celebration-title">החדר מוכן!</strong>
+        <p id="celebration-copy">כל הכבוד!</p>
+        <button id="replay-button" type="button">שחקו שוב</button>
+      </div>
+    </section>
+
+    <section class="object-drawer" aria-label="מגירת החפצים">
+      <div class="object-list" id="object-list"></div>
+    </section>
+  </main>
+
+  <audio id="sentence-audio" preload="auto" aria-hidden="true"></audio>
+
+  <script type="module" src="./magic-house.js"></script>
+</body>
+</html>
