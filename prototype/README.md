@@ -4,7 +4,7 @@ The prototype directory contains the mixed-game trail and its playable vertical 
 
 ## Unified World Map
 
-Open `http://127.0.0.1:5173/prototype/world-map.html` after starting the dev server.
+Open `http://127.0.0.1:5173/` after starting the dev server. The root entrypoint opens the world map; hosted Memory Garden and Listening Shop sessions continue to use `index.html` with the validated world-map context.
 
 The map mixes Memory Garden, Listening Shop, and Magic House stages. Stages 1-5 launch real activities with the active profile and exact level selection; stages 6-15 remain locked future destinations. Completed and current stages can be replayed, saved stars never decrease, and only completing the current frontier advances the character.
 

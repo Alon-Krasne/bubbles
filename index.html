@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>בועות!</title>
+    <script>
+        const entryParams = new URLSearchParams(window.location.search);
+        if (entryParams.get('host') !== 'world-map') {
+            window.location.replace(new URL('prototype/world-map.html', window.location.href));
+        }
+    </script>
     
 </head>
 <body>

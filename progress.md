@@ -24,3 +24,4 @@ Original prompt: Fix unlocked trail stages so they launch playable games and can
 - [x] Visually validate Magic House destination cues at 1440 x 900 and 1024 x 768.
 - [x] Receive final read-only Gemini 3.1 Pro visual approval.
 - [x] Run final build, review, version, and PR checks.
+- [x] Make the deployed root open the world trail while hosted activities remain playable.
