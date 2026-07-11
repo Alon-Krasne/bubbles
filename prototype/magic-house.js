@@ -29,7 +29,7 @@ const ROOM_MAP = {
   },
   placements: {
     pillow: { left: '49%', top: '45%', width: '8%' },
-    ball: { left: '32.5%', top: '62%', width: '7%' },
+    ball: { left: '33%', top: '61%', width: '5.5%' },
     book: { left: '32.5%', top: '35%', width: '6.5%' },
     shoes: { left: '42.5%', top: '68.5%', width: '9%' },
     'yellow-lamp': { left: '69%', top: '55%', width: '7%' },
@@ -134,16 +134,21 @@ const PROFILES = {
   },
 };
 
+const ACTIVITY_MESSAGE_VERSION = 1;
+const hostContext = readHostContext();
+
 const objectById = new Map(OBJECTS.map((object) => [object.id, object]));
 const profileStates = new Map(Object.keys(PROFILES).map((profileId) => [profileId, createProfileState()]));
 const timers = new Set();
 
-let activeProfileId = 'lotem';
+let activeProfileId = hostContext ? hostContext.profileId : 'lotem';
 let selectedObjectId = null;
 let feedbackTimer = null;
+let trailResultSent = false;
 
 const roomCanvas = requireElement('room-canvas');
 const magicHouse = document.querySelector('.magic-house');
+const trailBackButton = requireElement('trail-back-button');
 const dropLayer = requireElement('drop-layer');
 const placedLayer = requireElement('placed-layer');
 const objectList = requireElement('object-list');
@@ -158,6 +163,33 @@ const guideCharacter = requireElement('guide-character');
 const successToast = requireElement('success-toast');
 const celebration = requireElement('celebration');
 const sentenceAudio = requireElement('sentence-audio');
+
+if (hostContext) {
+  trailBackButton.hidden = false;
+  profileButton.disabled = true;
+}
+
+function readHostContext() {
+  const params = new URLSearchParams(window.location.search);
+  const host = params.get('host');
+  if (!host) {
+    return null;
+  }
+
+  const activityId = params.get('activity');
+  const levelId = params.get('level');
+  const profileId = params.get('profile');
+  const stageId = Number(params.get('stage'));
+  if (host !== 'world-map'
+    || activityId !== 'magic-house'
+    || levelId !== 'bedroom-1'
+    || !PROFILES[profileId]
+    || !Number.isInteger(stageId)) {
+    throw new Error('Invalid Magic House host context');
+  }
+
+  return { activityId, levelId, profileId, stageId };
+}
 
 function createProfileState() {
   return {
@@ -512,10 +544,55 @@ function showCelebration() {
   celebration.dir = profile.primary === 'en' ? 'ltr' : 'rtl';
   requireElement('celebration-title').textContent = profile.primary === 'en' ? 'The room is ready!' : 'החדר מוכן!';
   requireElement('celebration-copy').textContent = profile.primary === 'en' ? 'You built a magical bedroom!' : 'בנית חדר שינה קסום!';
-  requireElement('replay-button').textContent = profile.primary === 'en' ? 'Play again' : 'שחקו שוב';
+  requireElement('replay-button').textContent = hostContext
+    ? (profile.primary === 'en' ? 'Back to trail' : 'חזרה למסלול')
+    : (profile.primary === 'en' ? 'Play again' : 'שחקו שוב');
   magicHouse.classList.add('is-celebrating');
   celebration.classList.add('is-visible');
   celebration.setAttribute('aria-hidden', 'false');
+
+  if (hostContext) {
+    schedule(completeTrailStage, 2600);
+  }
+}
+
+function postTrailMessage(type, stars) {
+  window.parent.postMessage({
+    type,
+    version: ACTIVITY_MESSAGE_VERSION,
+    stageId: hostContext.stageId,
+    activityId: hostContext.activityId,
+    levelId: hostContext.levelId,
+    profileId: hostContext.profileId,
+    ...(stars ? { stars } : {}),
+  }, window.location.origin);
+}
+
+function completeTrailStage() {
+  if (!hostContext || trailResultSent) {
+    return;
+  }
+
+  trailResultSent = true;
+  postTrailMessage('bubbles.activity.complete', 3);
+}
+
+function exitToTrail() {
+  if (!hostContext || trailResultSent) {
+    return;
+  }
+
+  trailResultSent = true;
+  postTrailMessage('bubbles.activity.exit');
+}
+
+function handleCelebrationAction() {
+  if (hostContext) {
+    completeTrailStage();
+    return;
+  }
+
+  resetActiveProfile();
 }
 
 function resetActiveProfile() {
@@ -664,7 +741,8 @@ document.querySelectorAll('[data-profile]').forEach((button) => {
 
 requireElement('sound-button').addEventListener('click', speakSentence);
 helpButton.addEventListener('click', useHelp);
-requireElement('replay-button').addEventListener('click', resetActiveProfile);
+trailBackButton.addEventListener('click', exitToTrail);
+requireElement('replay-button').addEventListener('click', handleCelebrationAction);
 roomCanvas.addEventListener('click', (event) => {
   if (selectedObjectId && !event.target.closest('.drop-zone')) {
     showGentleRetry(selectedObjectId);

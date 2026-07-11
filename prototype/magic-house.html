@@ -9,9 +9,13 @@
 <body data-prototype="magic-house">
   <main class="magic-house" aria-label="הבית הקסום">
     <section class="room-shell" aria-label="חדר השינה הקסום">
+      <button class="trail-back-button" id="trail-back-button" type="button" aria-label="חזרה למסלול" title="חזרה למסלול" hidden>
+        <span aria-hidden="true">⌂</span>
+      </button>
       <div class="room-canvas" id="room-canvas">
         <div class="placed-layer" id="placed-layer" aria-live="polite"></div>
         <div class="drop-layer" id="drop-layer" aria-label="מקומות בחדר"></div>
+        <span class="guide-ground-shadow" aria-hidden="true"></span>
         <img class="guide-character" id="guide-character" src="../src/assets/characters/princess/princess_idle_1.webp" alt="">
       </div>
 

@@ -1,7 +1,7 @@
 const stages = [
   { id: 1, x: 8, y: 90, game: 'memory', title: 'חיות ראשונות', description: 'מוצאים זוגות של מילים וחיות' },
   { id: 2, x: 15, y: 82, game: 'shop', title: 'הקנייה הראשונה', description: 'מקשיבים ומגישים פריט לקונה' },
-  { id: 3, x: 22, y: 70, game: 'bubbles', title: 'בועות של מילים', description: 'תופסים את המילה ששומעים' },
+  { id: 3, x: 22, y: 70, game: 'house', activity: 'magic-house', level: 'bedroom-1', title: 'חדר השינה הקסום', description: 'מסדרים את החדר לפי משפטים באנגלית ובעברית' },
   { id: 4, x: 18, y: 57, game: 'memory', title: 'פירות צבעוניים', description: 'מוצאים זוגות של מילים ופירות' },
   { id: 5, x: 29, y: 47, game: 'shop', title: 'החנות מתמלאת', description: 'מקשיבים להזמנה ובוחרים מהמדף' },
   { id: 6, x: 40, y: 45, game: 'bubbles', title: 'שומעים ותופסים', description: 'מוצאים את המילה בין הבועות' },
@@ -22,8 +22,8 @@ const profiles = {
     avatar: '🌸',
     language: 'לומדת אנגלית',
     shortLanguage: 'אנגלית',
-    currentStage: 4,
-    progress: { 1: 3, 2: 3, 3: 2 },
+    currentStage: 3,
+    progress: { 1: 3, 2: 3 },
     character: '../src/assets/characters/princess/princess_idle_1.webp',
     walkingCharacter: '../src/assets/characters/princess/princess_walk_1.webp',
     celebratingCharacter: '../src/assets/characters/princess/princess_celebrate_1.webp',
@@ -45,7 +45,12 @@ const gameLabels = {
   memory: 'גן מילים',
   shop: 'החנות הקטנה',
   bubbles: 'בועות מילים',
+  house: 'הבית הקסום',
 };
+
+const WORLD_PROGRESS_STORAGE_KEY = 'bubble_world_map_progress_v1';
+const WORLD_ACTIVE_PROFILE_STORAGE_KEY = 'bubble_world_map_profile_v1';
+const ACTIVITY_MESSAGE_VERSION = 1;
 
 const route = document.getElementById('route');
 const stagePanel = document.getElementById('stage-panel');
@@ -65,10 +70,36 @@ const launchOverlay = document.getElementById('launch-overlay');
 const launchCharacter = document.getElementById('launch-character');
 const traveller = document.getElementById('traveller');
 const travellerImage = document.getElementById('traveller-image');
+const activityOverlay = document.getElementById('activity-overlay');
+const activityFrame = document.getElementById('activity-frame');
 
-let activeProfileId = 'lotem';
+loadWorldProgress();
+let activeProfileId = localStorage.getItem(WORLD_ACTIVE_PROFILE_STORAGE_KEY) || 'lotem';
 let selectedStage = stages.find((stage) => stage.id === profiles[activeProfileId].currentStage);
 let soundEnabled = true;
+let activeLaunch = null;
+
+function loadWorldProgress() {
+  const saved = localStorage.getItem(WORLD_PROGRESS_STORAGE_KEY);
+  if (!saved) {
+    return;
+  }
+
+  const storedProfiles = JSON.parse(saved);
+  Object.keys(profiles).forEach((profileId) => {
+    const stored = storedProfiles[profileId];
+    profiles[profileId].currentStage = stored.currentStage;
+    profiles[profileId].progress = stored.progress;
+  });
+}
+
+function saveWorldProgress() {
+  const storedProfiles = Object.fromEntries(Object.entries(profiles).map(([profileId, profile]) => [profileId, {
+    currentStage: profile.currentStage,
+    progress: profile.progress,
+  }]));
+  localStorage.setItem(WORLD_PROGRESS_STORAGE_KEY, JSON.stringify(storedProfiles));
+}
 
 function renderRoute() {
   route.innerHTML = '';
@@ -148,6 +179,7 @@ function renderActivityIcon(container, stage) {
 
 function setProfile(profileId) {
   activeProfileId = profileId;
+  localStorage.setItem(WORLD_ACTIVE_PROFILE_STORAGE_KEY, profileId);
   const profile = profiles[profileId];
   document.getElementById('profile-avatar').textContent = profile.avatar;
   document.getElementById('profile-name').textContent = profile.name;
@@ -190,6 +222,11 @@ function launchSelectedStage() {
   launchOverlay.classList.add('is-visible');
   launchOverlay.setAttribute('aria-hidden', 'false');
 
+  if (selectedStage.activity === 'magic-house') {
+    window.setTimeout(() => openMagicHouse(selectedStage), 650);
+    return;
+  }
+
   window.setTimeout(() => {
     document.getElementById('launch-title').textContent = 'כל הכבוד!';
   }, 520);
@@ -201,15 +238,44 @@ function launchSelectedStage() {
   }, 1250);
 }
 
-function completeSelectedStage() {
+function openMagicHouse(stage) {
+  activeLaunch = {
+    stageId: stage.id,
+    activityId: stage.activity,
+    levelId: stage.level,
+    profileId: activeProfileId,
+  };
+  const params = new URLSearchParams({
+    host: 'world-map',
+    activity: stage.activity,
+    level: stage.level,
+    stage: String(stage.id),
+    profile: activeProfileId,
+  });
+  activityFrame.src = `./magic-house.html?${params}`;
+  activityOverlay.classList.add('is-visible');
+  activityOverlay.setAttribute('aria-hidden', 'false');
+  launchOverlay.classList.remove('is-visible');
+  launchOverlay.setAttribute('aria-hidden', 'true');
+}
+
+function closeActivity() {
+  activityOverlay.classList.remove('is-visible');
+  activityOverlay.setAttribute('aria-hidden', 'true');
+  activityFrame.removeAttribute('src');
+  activeLaunch = null;
+}
+
+function completeSelectedStage(stars = 3) {
   const profile = profiles[activeProfileId];
   if (selectedStage.id !== profile.currentStage) {
     selectStage(selectedStage);
     return;
   }
 
-  profile.progress[selectedStage.id] = 3;
+  profile.progress[selectedStage.id] = stars;
   profile.currentStage = Math.min(selectedStage.id + 1, stages.length);
+  saveWorldProgress();
   const nextStage = stages.find((stage) => stage.id === profile.currentStage);
   updateStarTotal(profile);
   renderRoute();
@@ -223,6 +289,43 @@ function completeSelectedStage() {
     travellerImage.src = profile.character;
     selectStage(nextStage);
   }, 760);
+}
+
+function handleActivityMessage(event) {
+  if (!activeLaunch || event.origin !== window.location.origin || event.source !== activityFrame.contentWindow) {
+    return;
+  }
+
+  const message = event.data;
+  const matchesLaunch = message.version === ACTIVITY_MESSAGE_VERSION
+    && message.stageId === activeLaunch.stageId
+    && message.activityId === activeLaunch.activityId
+    && message.levelId === activeLaunch.levelId
+    && message.profileId === activeLaunch.profileId;
+  if (!matchesLaunch) {
+    throw new Error('Activity result does not match the active world-map stage');
+  }
+
+  if (message.type === 'bubbles.activity.exit') {
+    closeActivity();
+    selectStage(selectedStage);
+    return;
+  }
+
+  if (message.type !== 'bubbles.activity.complete' || !Number.isInteger(message.stars) || message.stars < 1 || message.stars > 3) {
+    throw new Error('Invalid activity result');
+  }
+
+  closeActivity();
+  launchCharacter.src = profiles[activeProfileId].celebratingCharacter;
+  document.getElementById('launch-title').textContent = 'כל הכבוד!';
+  launchOverlay.classList.add('is-visible');
+  launchOverlay.setAttribute('aria-hidden', 'false');
+  completeSelectedStage(message.stars);
+  window.setTimeout(() => {
+    launchOverlay.classList.remove('is-visible');
+    launchOverlay.setAttribute('aria-hidden', 'true');
+  }, 1250);
 }
 
 function updateStarTotal(profile) {
@@ -247,10 +350,15 @@ document.querySelectorAll('[data-profile]').forEach((button) => {
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') {
+    if (activeLaunch) {
+      closeActivity();
+      return;
+    }
     profileMenu.hidden = true;
     settingsPopover.hidden = true;
     stagePanel.classList.remove('is-open');
   }
 });
 
+window.addEventListener('message', handleActivityMessage);
 setProfile(activeProfileId);

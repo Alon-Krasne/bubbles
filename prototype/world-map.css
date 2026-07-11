@@ -62,15 +62,13 @@ body {
 .map-canvas {
   position: relative;
   isolation: isolate;
-  width: min(100vw, calc(100vh * var(--map-ratio)));
-  height: min(100vh, calc(100vw / var(--map-ratio)));
-  aspect-ratio: 2752 / 1536;
+  width: 100vw;
+  height: 100vh;
   overflow: hidden;
   background-image: url('../src/assets/memory/memory-garden-map-bg-v2.png');
   background-position: center;
   background-repeat: no-repeat;
   background-size: 100% 100%;
-  box-shadow: 0 18px 70px rgba(57, 112, 111, 0.22);
 }
 
 .world-chrome {
@@ -350,6 +348,12 @@ body {
   top: 24%;
 }
 
+.area-label-house {
+  left: 15%;
+  top: 64%;
+  background: rgba(169, 79, 112, 0.78);
+}
+
 .area-label-bubbles {
   right: 12%;
   top: 46%;
@@ -518,6 +522,63 @@ body {
   background: rgba(236, 250, 255, 0.72);
 }
 
+.activity-symbol-house {
+  width: clamp(31px, 2.9vw, 42px);
+  height: clamp(25px, 2.35vw, 34px);
+  border: 3px solid currentColor;
+  border-radius: 3px;
+  background: #fff1c9;
+}
+
+.activity-symbol-house::before {
+  content: '';
+  position: absolute;
+  left: 1px;
+  top: -14px;
+  width: 25px;
+  height: 25px;
+  border-top: 4px solid currentColor;
+  border-left: 4px solid currentColor;
+  background: #f3a2b9;
+  transform: rotate(45deg);
+}
+
+.activity-symbol-house::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 9px;
+  height: 15px;
+  border: 3px solid currentColor;
+  border-bottom: 0;
+  background: #fffaf0;
+  transform: translateX(-50%);
+}
+
+.activity-overlay {
+  position: absolute;
+  z-index: 100;
+  inset: 0;
+  background: #f8dfc4;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 260ms ease;
+}
+
+.activity-overlay.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.activity-overlay iframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+  background: #f8dfc4;
+}
+
 .activity-symbol-bubbles::before {
   width: 34%;
   height: 34%;
@@ -644,17 +705,17 @@ body {
 
 .panel-close {
   position: absolute;
-  top: -13px;
-  left: -13px;
-  width: 36px;
-  height: 36px;
+  top: -17px;
+  left: -17px;
+  width: 48px;
+  height: 48px;
   display: grid;
   place-items: center;
   border: 3px solid white;
   border-radius: 50%;
   background: #7896a0;
   color: white;
-  font-size: 25px;
+  font-size: 31px;
   line-height: 1;
   cursor: pointer;
 }
@@ -876,15 +937,6 @@ body {
 }
 
 @media (max-aspect-ratio: 1.55) {
-  .map-canvas {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: min(calc(100vh * var(--map-ratio)), 109.375vw);
-    height: auto;
-    transform: translate(-50%, -50%);
-  }
-
   .world-chrome {
     inset-inline: 6%;
   }
