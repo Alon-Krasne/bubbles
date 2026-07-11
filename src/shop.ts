@@ -1,4 +1,5 @@
 import { COLOR_VOCAB_WORDS, VOCAB_WORDS, type VocabWord } from './words';
+import type { HostedActivitySession } from './hostedActivity';
 
 export interface ShopProfile {
   id: string;
@@ -10,11 +11,12 @@ export interface ShopDeps {
   showScreen: (screenId: 'shop-screen') => void;
   getActiveProfile: () => ShopProfile;
   returnToGameSelect: () => void;
+  hostedSession: HostedActivitySession | null;
 }
 
 export type ShopItem = VocabWord;
 
-type ShopLevelId = 'shop-level-1' | 'shop-level-2' | 'shop-level-3' | 'shop-level-4' | 'shop-level-5';
+export type ShopLevelId = 'shop-level-1' | 'shop-level-2' | 'shop-level-3' | 'shop-level-4' | 'shop-level-5';
 type ShopLevelMode = 'single' | 'quantity' | 'color' | 'double';
 
 interface ShopLevel {
@@ -230,17 +232,31 @@ export function initShopGame(deps: ShopDeps) {
 
   requireElement<HTMLButtonElement>('shop-back-btn').addEventListener('click', () => {
     leaveShop();
+    if (deps.hostedSession) {
+      deps.hostedSession.exit();
+      return;
+    }
     deps.returnToGameSelect();
   });
-  requireElement<HTMLButtonElement>('shop-level-list-btn').addEventListener('click', returnToLevelList);
+  requireElement<HTMLButtonElement>('shop-level-list-btn').addEventListener('click', returnFromShopGame);
   requireElement<HTMLButtonElement>('shop-replay-btn').addEventListener('click', replayOrder);
   requireElement<HTMLButtonElement>('shop-order-replay-btn').addEventListener('click', replayOrder);
-  requireElement<HTMLButtonElement>('shop-celebration-next-btn').addEventListener('click', returnToLevelList);
+  requireElement<HTMLButtonElement>('shop-celebration-next-btn').addEventListener('click', finishShopCelebration);
 
   function openShop() {
     deps.showScreen('shop-screen');
     renderLevelList();
     showLevelList();
+  }
+
+  function openLevel(levelId: ShopLevelId) {
+    deps.showScreen('shop-screen');
+    if (deps.hostedSession) {
+      const levelListButton = requireElement<HTMLButtonElement>('shop-level-list-btn');
+      levelListButton.textContent = 'חזרה למסלול';
+      levelListButton.setAttribute('aria-label', 'חזרה למסלול');
+    }
+    startLevel(levelId);
   }
 
   function leaveShop() {
@@ -262,6 +278,23 @@ export function initShopGame(deps: ShopDeps) {
     hideCelebration();
     stopSpeech();
     showLevelList();
+  }
+
+  function returnFromShopGame() {
+    if (deps.hostedSession) {
+      leaveShop();
+      deps.hostedSession.exit();
+      return;
+    }
+    returnToLevelList();
+  }
+
+  function finishShopCelebration() {
+    if (deps.hostedSession) {
+      deps.hostedSession.complete(calculateStars(state.mistakes));
+      return;
+    }
+    returnToLevelList();
   }
 
   function renderLevelList() {
@@ -406,7 +439,9 @@ export function initShopGame(deps: ShopDeps) {
 
     target.served += 1;
     state.roundCoins += 1;
-    saveCoins(getCoins() + 1);
+    if (!deps.hostedSession) {
+      saveCoins(getCoins() + 1);
+    }
     animateCorrectTile(tile, item);
     renderBasket();
     updateHud();
@@ -473,7 +508,7 @@ export function initShopGame(deps: ShopDeps) {
   function updateHud() {
     const level = state.activeLevel;
     requireElement<HTMLElement>('shop-served-progress').textContent = `🧺 ${state.servedCustomers}/${level.customerCount}`;
-    requireElement<HTMLElement>('shop-round-coins').textContent = `🪙 ${getCoins()}`;
+    requireElement<HTMLElement>('shop-round-coins').textContent = `🪙 ${getDisplayedCoins()}`;
 
     const order = state.currentOrder;
     if (!order) {
@@ -488,7 +523,7 @@ export function initShopGame(deps: ShopDeps) {
   }
 
   function updateCoinBadges() {
-    requireElement<HTMLElement>('shop-coins-count').textContent = String(getCoins());
+    requireElement<HTMLElement>('shop-coins-count').textContent = String(getDisplayedCoins());
   }
 
   function setFeedback(message: string) {
@@ -516,10 +551,18 @@ export function initShopGame(deps: ShopDeps) {
     clearShopTimers();
     state.locked = true;
     const stars = calculateStars(state.mistakes);
-    saveLevelStars(state.activeLevel.id, stars);
-    renderLevelList();
+    if (!deps.hostedSession) {
+      saveLevelStars(state.activeLevel.id, stars);
+      renderLevelList();
+    }
     showCelebration(stars);
-    scheduleTimer(() => returnToLevelList(), SHOP_WIN_RETURN_DELAY_MS);
+    scheduleTimer(() => {
+      if (deps.hostedSession) {
+        deps.hostedSession.complete(stars);
+        return;
+      }
+      returnToLevelList();
+    }, SHOP_WIN_RETURN_DELAY_MS);
   }
 
   function showCelebration(stars: number) {
@@ -618,6 +661,10 @@ export function initShopGame(deps: ShopDeps) {
     return coins[deps.getActiveProfile().id] || 0;
   }
 
+  function getDisplayedCoins() {
+    return deps.hostedSession ? state.roundCoins : getCoins();
+  }
+
   function saveCoins(total: number) {
     const coins = JSON.parse(localStorage.getItem(SHOP_COINS_STORAGE_KEY) || '{}') as Record<string, number>;
     coins[deps.getActiveProfile().id] = total;
@@ -639,6 +686,7 @@ export function initShopGame(deps: ShopDeps) {
 
   return {
     openShop,
+    openLevel,
     leaveShop,
   };
 }

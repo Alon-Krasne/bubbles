@@ -18,6 +18,15 @@ const ZONES = [
   { id: 'table', labels: { en: 'table', he: 'שולחן' } },
 ];
 
+const ZONE_CUE_COLORS = Object.freeze({
+  bed: { color: '#d94fa1', fill: 'rgba(217, 79, 161, 0.1)' },
+  'toy-box': { color: '#07988b', fill: 'rgba(7, 152, 139, 0.1)' },
+  shelf: { color: '#7357d9', fill: 'rgba(115, 87, 217, 0.1)' },
+  'under-bed': { color: '#d3a215', fill: 'rgba(211, 162, 21, 0.1)' },
+  nightstand: { color: '#2877d4', fill: 'rgba(40, 119, 212, 0.1)' },
+  table: { color: '#2d9b60', fill: 'rgba(45, 155, 96, 0.1)' },
+});
+
 const ROOM_MAP = {
   zones: {
     bed: { left: '38.5%', top: '37%', width: '22%', height: '27%' },
@@ -262,12 +271,16 @@ function renderDropZones() {
     button.dataset.zone = zone.id;
     button.setAttribute('aria-label', zone.labels[profile.primary]);
     Object.assign(button.style, ROOM_MAP.zones[zone.id]);
+    button.style.setProperty('--zone-cue-color', ZONE_CUE_COLORS[zone.id].color);
+    button.style.setProperty('--zone-cue-fill', ZONE_CUE_COLORS[zone.id].fill);
     button.addEventListener('click', (event) => {
       event.stopPropagation();
       attemptPlacement(selectedObjectId, zone.id);
     });
     dropLayer.append(button);
   });
+
+  refreshPlacementCues();
 }
 
 function renderObjectDrawer() {
@@ -358,6 +371,18 @@ function selectObject(objectId) {
     const isSelected = button.dataset.objectId === objectId;
     button.classList.toggle('is-selected', isSelected);
     button.setAttribute('aria-pressed', String(isSelected));
+  });
+  refreshPlacementCues();
+}
+
+function refreshPlacementCues() {
+  const state = getState();
+  const validZoneIds = new Set(getRequest().targets
+    .filter((target) => target.objectId === selectedObjectId && !state.placedObjectIds.has(target.objectId))
+    .map((target) => target.zoneId));
+
+  document.querySelectorAll('.drop-zone').forEach((zone) => {
+    zone.classList.toggle('is-placement-cue', validZoneIds.has(zone.dataset.zone));
   });
 }
 
@@ -489,6 +514,8 @@ function applyHelpState() {
     zone.classList.toggle('is-current', isTarget);
     zone.classList.toggle('is-hinted', state.helpLevel >= 3 && isTarget);
   });
+
+  refreshPlacementCues();
 
   updateHelpDots();
 }
@@ -753,6 +780,10 @@ document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') {
     profileMenu.hidden = true;
     profileButton.setAttribute('aria-expanded', 'false');
+    if (selectedObjectId) {
+      selectedObjectId = null;
+      renderObjectDrawer();
+    }
   }
 });
 

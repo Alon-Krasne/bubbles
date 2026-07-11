@@ -2,8 +2,9 @@ import './styles.css';
 import { GameApp } from './game/GameApp';
 import { FigureType } from './entities/Character';
 import { FallingItemMode } from './entities/Bubble';
-import { initShopGame } from './shop';
+import { initShopGame, type ShopLevelId } from './shop';
 import { VOCAB_WORDS, type VocabWord } from './words';
+import { createHostedActivitySession, readHostedActivityContext } from './hostedActivity';
 
 // Version badge
 const versionBadge = document.getElementById('version-badge');
@@ -14,6 +15,10 @@ if (versionBadge) {
 // Initialize game
 const gameApp = new GameApp();
 let shopGame: ReturnType<typeof initShopGame> | null = null;
+const hostedActivityContext = readHostedActivityContext();
+const hostedActivitySession = hostedActivityContext
+  ? createHostedActivitySession(hostedActivityContext)
+  : null;
 
 type ScreenId = 'game-select-screen' | 'memory-screen' | 'shop-screen' | 'start-screen' | 'game-hud' | 'end-screen';
 type MemoryDifficulty = 'easy' | 'medium' | 'hard';
@@ -348,6 +353,7 @@ function setupUI() {
     showScreen,
     getActiveProfile,
     returnToGameSelect,
+    hostedSession: hostedActivityContext?.activityId === 'listening-shop' ? hostedActivitySession : null,
   });
 
   requireElement<HTMLButtonElement>('add-profile-btn').addEventListener('click', addProfileFromInput);
@@ -466,10 +472,10 @@ function setupUI() {
   requireElement<HTMLButtonElement>('select-shop-btn').addEventListener('click', () => shopGame?.openShop());
   requireElement<HTMLButtonElement>('back-to-games-btn').addEventListener('click', returnToGameSelect);
   requireElement<HTMLButtonElement>('start-btn').addEventListener('click', startGame);
-  requireElement<HTMLButtonElement>('memory-back-btn').addEventListener('click', returnToGameSelect);
-  requireElement<HTMLButtonElement>('memory-map-btn').addEventListener('click', showMemoryLevelMap);
+  requireElement<HTMLButtonElement>('memory-back-btn').addEventListener('click', returnFromMemoryScreen);
+  requireElement<HTMLButtonElement>('memory-map-btn').addEventListener('click', returnFromMemoryRound);
   requireElement<HTMLButtonElement>('memory-new-garden-btn').addEventListener('click', () => startMemoryLevel(activeMemoryLevel.id));
-  requireElement<HTMLButtonElement>('memory-celebration-next-btn').addEventListener('click', returnToMemoryMapAfterWin);
+  requireElement<HTMLButtonElement>('memory-celebration-next-btn').addEventListener('click', finishMemoryCelebration);
 
   // Restart button
   document.getElementById('restart-btn')?.addEventListener('click', returnToStart);
@@ -494,6 +500,17 @@ function setupUI() {
 }
 
 function loadProfiles() {
+  if (hostedActivityContext) {
+    kidProfiles = [{
+      id: hostedActivityContext.profileId,
+      name: hostedActivityContext.profileName,
+      emoji: hostedActivityContext.profileEmoji,
+    }];
+    activeProfileId = hostedActivityContext.profileId;
+    p1Name = hostedActivityContext.profileName;
+    return;
+  }
+
   const savedProfiles = localStorage.getItem(PROFILE_STORAGE_KEY);
   kidProfiles = savedProfiles ? JSON.parse(savedProfiles) : DEFAULT_KID_PROFILES.map((profile) => ({ ...profile }));
 
@@ -656,9 +673,88 @@ function openBubblesSetup() {
 
 function openMemoryGarden() {
   shopGame?.leaveShop();
-  gameApp.returnToStart();
+  if (!hostedActivityContext) {
+    gameApp.returnToStart();
+  }
   showScreen('memory-screen');
   showMemoryLevelMap();
+}
+
+function isHostedMemoryActivity() {
+  return hostedActivityContext?.activityId === 'memory-garden';
+}
+
+function requireHostedActivitySession() {
+  if (!hostedActivitySession) {
+    throw new Error('Missing hosted activity session');
+  }
+  return hostedActivitySession;
+}
+
+function exitHostedMemoryActivity() {
+  clearMemoryMismatchState();
+  clearMemoryWinReturnTimer();
+  hideMemoryToast();
+  hideMemoryCelebration();
+  requireHostedActivitySession().exit();
+}
+
+function returnFromMemoryScreen() {
+  if (isHostedMemoryActivity()) {
+    exitHostedMemoryActivity();
+    return;
+  }
+  returnToGameSelect();
+}
+
+function returnFromMemoryRound() {
+  if (isHostedMemoryActivity()) {
+    exitHostedMemoryActivity();
+    return;
+  }
+  showMemoryLevelMap();
+}
+
+function finishMemoryCelebration() {
+  if (isHostedMemoryActivity()) {
+    requireHostedActivitySession().complete(3);
+    return;
+  }
+  returnToMemoryMapAfterWin();
+}
+
+function openHostedActivity() {
+  if (!hostedActivityContext) {
+    return;
+  }
+
+  if (hostedActivityContext.activityId === 'memory-garden') {
+    const level = MEMORY_LEVELS.find((candidate) => candidate.id === hostedActivityContext.levelId);
+    if (!level || level.locked) {
+      throw new Error(`Invalid hosted memory level ${hostedActivityContext.levelId}`);
+    }
+    const mapButton = requireElement<HTMLButtonElement>('memory-map-btn');
+    mapButton.textContent = 'חזרה למסלול';
+    mapButton.setAttribute('aria-label', 'חזרה למסלול');
+    openMemoryGarden();
+    startMemoryLevel(level.id);
+    return;
+  }
+
+  const shopLevelIds: ShopLevelId[] = [
+    'shop-level-1',
+    'shop-level-2',
+    'shop-level-3',
+    'shop-level-4',
+    'shop-level-5',
+  ];
+  if (!shopLevelIds.includes(hostedActivityContext.levelId as ShopLevelId)) {
+    throw new Error(`Invalid hosted shop level ${hostedActivityContext.levelId}`);
+  }
+  if (!shopGame) {
+    throw new Error('Shop game is not initialized');
+  }
+  shopGame.openLevel(hostedActivityContext.levelId as ShopLevelId);
 }
 
 function startGame() {
@@ -979,10 +1075,16 @@ function matchMemoryCards() {
   memorySecondCard = null;
   memoryLocked = false;
   if (isComplete) {
-    saveMemoryLevelStars(activeMemoryLevel.id, 3);
+    if (!isHostedMemoryActivity()) {
+      saveMemoryLevelStars(activeMemoryLevel.id, 3);
+    }
     showMemoryCelebration();
     clearMemoryWinReturnTimer();
     memoryWinReturnTimer = window.setTimeout(() => {
+      if (isHostedMemoryActivity()) {
+        requireHostedActivitySession().complete(3);
+        return;
+      }
       returnToMemoryMapAfterWin();
     }, MEMORY_WIN_RETURN_DELAY_MS);
   }
@@ -1649,9 +1751,16 @@ gameApp.onGameEnd = (score) => {
   showEndScreen(score);
 };
 
-// Initialize
-gameApp.init().then(() => {
+function initializeUI() {
   loadPreferences();
   setupUI();
   loadHighScores();
-});
+  openHostedActivity();
+}
+
+// Initialize
+if (hostedActivityContext) {
+  initializeUI();
+} else {
+  gameApp.init().then(initializeUI);
+}

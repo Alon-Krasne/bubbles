@@ -1,19 +1,19 @@
 const stages = [
-  { id: 1, x: 8, y: 90, game: 'memory', title: 'חיות ראשונות', description: 'מוצאים זוגות של מילים וחיות' },
-  { id: 2, x: 15, y: 82, game: 'shop', title: 'הקנייה הראשונה', description: 'מקשיבים ומגישים פריט לקונה' },
-  { id: 3, x: 22, y: 70, game: 'house', activity: 'magic-house', level: 'bedroom-1', title: 'חדר השינה הקסום', description: 'מסדרים את החדר לפי משפטים באנגלית ובעברית' },
-  { id: 4, x: 18, y: 57, game: 'memory', title: 'פירות צבעוניים', description: 'מוצאים זוגות של מילים ופירות' },
-  { id: 5, x: 29, y: 47, game: 'shop', title: 'החנות מתמלאת', description: 'מקשיבים להזמנה ובוחרים מהמדף' },
-  { id: 6, x: 40, y: 45, game: 'bubbles', title: 'שומעים ותופסים', description: 'מוצאים את המילה בין הבועות' },
-  { id: 7, x: 50, y: 51, game: 'memory', title: 'טבע ושמיים', description: 'מחברים מילים מהעולם שסביבנו' },
-  { id: 8, x: 59, y: 60, game: 'shop', title: 'אחת שתיים שלוש', description: 'ממלאים הזמנות עם כמויות' },
-  { id: 9, x: 68, y: 67, game: 'bubbles', title: 'שומעים וכותבים', description: 'שומעים מילה ומוצאים איך כותבים אותה' },
-  { id: 10, x: 77, y: 72, game: 'memory', title: 'דברים בבית', description: 'מגלים מילים שמכירים מהבית' },
-  { id: 11, x: 86, y: 66, game: 'shop', title: 'צבעים בחנות', description: 'מקשיבים לצבע ובוחרים נכון' },
-  { id: 12, x: 89, y: 54, game: 'bubbles', title: 'מבול מילים', description: 'תופסים רצף של מילים נכונות' },
-  { id: 13, x: 84, y: 43, game: 'memory', title: 'נוסעים רחוק', description: 'מחברים מילים של כלי תחבורה' },
-  { id: 14, x: 78, y: 35, game: 'shop', title: 'הזמנה כפולה', description: 'זוכרים שני פריטים בהזמנה אחת' },
-  { id: 15, x: 87, y: 28, game: 'bubbles', symbol: '★', title: 'מסיבת המילים', description: 'משימת הסיום של עולם הבועות' },
+  { id: 1, x: 8, y: 90, game: 'memory', available: true, activity: 'memory-garden', level: 'level-1', entry: '../index.html', title: 'חיות ראשונות', description: 'מוצאים זוגות של מילים וחיות' },
+  { id: 2, x: 15, y: 82, game: 'shop', available: true, activity: 'listening-shop', level: 'shop-level-1', entry: '../index.html', title: 'הקנייה הראשונה', description: 'מקשיבים ומגישים פריט לקונה' },
+  { id: 3, x: 22, y: 70, game: 'house', available: true, activity: 'magic-house', level: 'bedroom-1', entry: './magic-house.html', title: 'חדר השינה הקסום', description: 'מסדרים את החדר לפי משפטים באנגלית ובעברית' },
+  { id: 4, x: 18, y: 57, game: 'memory', available: true, activity: 'memory-garden', level: 'level-2', entry: '../index.html', title: 'פירות צבעוניים', description: 'מוצאים זוגות של מילים ופירות' },
+  { id: 5, x: 29, y: 47, game: 'shop', available: true, activity: 'listening-shop', level: 'shop-level-2', entry: '../index.html', title: 'החנות מתמלאת', description: 'מקשיבים להזמנה ובוחרים מהמדף' },
+  { id: 6, x: 40, y: 45, game: 'bubbles', available: false, title: 'שומעים ותופסים', description: 'מוצאים את המילה בין הבועות' },
+  { id: 7, x: 50, y: 51, game: 'memory', available: false, title: 'טבע ושמיים', description: 'מחברים מילים מהעולם שסביבנו' },
+  { id: 8, x: 59, y: 60, game: 'shop', available: false, title: 'אחת שתיים שלוש', description: 'ממלאים הזמנות עם כמויות' },
+  { id: 9, x: 68, y: 67, game: 'bubbles', available: false, title: 'שומעים וכותבים', description: 'שומעים מילה ומוצאים איך כותבים אותה' },
+  { id: 10, x: 77, y: 72, game: 'memory', available: false, title: 'דברים בבית', description: 'מגלים מילים שמכירים מהבית' },
+  { id: 11, x: 86, y: 66, game: 'shop', available: false, title: 'צבעים בחנות', description: 'מקשיבים לצבע ובוחרים נכון' },
+  { id: 12, x: 89, y: 54, game: 'bubbles', available: false, title: 'מבול מילים', description: 'תופסים רצף של מילים נכונות' },
+  { id: 13, x: 84, y: 43, game: 'memory', available: false, title: 'נוסעים רחוק', description: 'מחברים מילים של כלי תחבורה' },
+  { id: 14, x: 78, y: 35, game: 'shop', available: false, title: 'הזמנה כפולה', description: 'זוכרים שני פריטים בהזמנה אחת' },
+  { id: 15, x: 87, y: 28, game: 'bubbles', available: false, symbol: '★', title: 'מסיבת המילים', description: 'משימת הסיום של עולם הבועות' },
 ];
 
 const profiles = {
@@ -72,6 +72,8 @@ const traveller = document.getElementById('traveller');
 const travellerImage = document.getElementById('traveller-image');
 const activityOverlay = document.getElementById('activity-overlay');
 const activityFrame = document.getElementById('activity-frame');
+const lockedRouteMist = document.getElementById('locked-route-mist');
+const lockedRouteDashes = document.getElementById('locked-route-dashes');
 
 loadWorldProgress();
 let activeProfileId = localStorage.getItem(WORLD_ACTIVE_PROFILE_STORAGE_KEY) || 'lotem';
@@ -103,11 +105,18 @@ function saveWorldProgress() {
 
 function renderRoute() {
   route.innerHTML = '';
+  renderLockedRoute();
 
   stages.forEach((stage) => {
     const profile = profiles[activeProfileId];
     const stars = profile.progress[stage.id] || 0;
-    const state = stars > 0 ? 'complete' : stage.id === profile.currentStage ? 'current' : 'locked';
+    const state = !stage.available
+      ? 'locked'
+      : stars > 0
+        ? 'complete'
+        : stage.id === profile.currentStage
+          ? 'current'
+          : 'locked';
     const button = document.createElement('button');
     button.type = 'button';
     button.className = `world-stage is-${state}`;
@@ -152,6 +161,26 @@ function renderRoute() {
 
     route.append(button);
   });
+}
+
+function renderLockedRoute() {
+  const firstLockedStage = stages.find((stage) => !stage.available);
+  const previousStage = stages.find((stage) => stage.id === firstLockedStage.id - 1);
+  const lockedPoints = [previousStage, ...stages.filter((stage) => !stage.available)];
+  const path = lockedPoints.reduce((result, point, index) => {
+    if (index === 0) {
+      return `M ${point.x} ${point.y}`;
+    }
+    if (index === lockedPoints.length - 1) {
+      return `${result} L ${point.x} ${point.y}`;
+    }
+    const next = lockedPoints[index + 1];
+    const midpointX = (point.x + next.x) / 2;
+    const midpointY = (point.y + next.y) / 2;
+    return `${result} Q ${point.x} ${point.y} ${midpointX} ${midpointY}`;
+  }, '');
+  lockedRouteMist.setAttribute('d', path);
+  lockedRouteDashes.setAttribute('d', path);
 }
 
 function selectStage(stage) {
@@ -222,23 +251,14 @@ function launchSelectedStage() {
   launchOverlay.classList.add('is-visible');
   launchOverlay.setAttribute('aria-hidden', 'false');
 
-  if (selectedStage.activity === 'magic-house') {
-    window.setTimeout(() => openMagicHouse(selectedStage), 650);
-    return;
+  if (!selectedStage.activity || !selectedStage.level || !selectedStage.entry) {
+    throw new Error(`Stage ${selectedStage.id} has no playable activity`);
   }
 
-  window.setTimeout(() => {
-    document.getElementById('launch-title').textContent = 'כל הכבוד!';
-  }, 520);
-
-  window.setTimeout(() => {
-    launchOverlay.classList.remove('is-visible');
-    launchOverlay.setAttribute('aria-hidden', 'true');
-    completeSelectedStage();
-  }, 1250);
+  window.setTimeout(() => openActivity(selectedStage), 650);
 }
 
-function openMagicHouse(stage) {
+function openActivity(stage) {
   activeLaunch = {
     stageId: stage.id,
     activityId: stage.activity,
@@ -251,8 +271,10 @@ function openMagicHouse(stage) {
     level: stage.level,
     stage: String(stage.id),
     profile: activeProfileId,
+    profileName: profiles[activeProfileId].name,
+    profileEmoji: profiles[activeProfileId].avatar,
   });
-  activityFrame.src = `./magic-house.html?${params}`;
+  activityFrame.src = `${stage.entry}?${params}`;
   activityOverlay.classList.add('is-visible');
   activityOverlay.setAttribute('aria-hidden', 'false');
   launchOverlay.classList.remove('is-visible');
@@ -268,15 +290,23 @@ function closeActivity() {
 
 function completeSelectedStage(stars = 3) {
   const profile = profiles[activeProfileId];
-  if (selectedStage.id !== profile.currentStage) {
+  const previousStars = profile.progress[selectedStage.id] || 0;
+  profile.progress[selectedStage.id] = Math.max(previousStars, stars);
+  const isCurrentStage = selectedStage.id === profile.currentStage;
+  const nextStage = isCurrentStage
+    ? stages.find((stage) => stage.id === selectedStage.id + 1 && stage.available)
+    : null;
+
+  if (!nextStage) {
+    saveWorldProgress();
+    updateStarTotal(profile);
+    renderRoute();
     selectStage(selectedStage);
     return;
   }
 
-  profile.progress[selectedStage.id] = stars;
-  profile.currentStage = Math.min(selectedStage.id + 1, stages.length);
+  profile.currentStage = nextStage.id;
   saveWorldProgress();
-  const nextStage = stages.find((stage) => stage.id === profile.currentStage);
   updateStarTotal(profile);
   renderRoute();
 

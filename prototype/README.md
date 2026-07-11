@@ -6,7 +6,9 @@ The prototype directory contains the mixed-game trail and its playable vertical 
 
 Open `http://127.0.0.1:5173/prototype/world-map.html` after starting the dev server.
 
-The map mixes Memory Garden, Listening Shop, Word Bubbles, and Magic House stages. It demonstrates independent profile progress, stars, stage details, unlocks, and character movement. Stage 3 launches the playable Magic House bedroom in the map itself; completing it awards three stars, returns to the trail, and moves the character to stage 4. The other map stages remain visual benchmark nodes until their games use the same trail contract.
+The map mixes Memory Garden, Listening Shop, and Magic House stages. Stages 1-5 launch real activities with the active profile and exact level selection; stages 6-15 remain locked future destinations. Completed and current stages can be replayed, saved stars never decrease, and only completing the current frontier advances the character.
+
+Memory Garden and Listening Shop run inside the trail's hosted activity shell. Their normal standalone navigation remains unchanged, while hosted completion and exit events use the shared same-origin protocol in `src/hostedActivity.ts`.
 
 ## Magic House
 
@@ -14,7 +16,7 @@ Open `http://127.0.0.1:5173/prototype/magic-house.html` to test the bedroom dire
 
 The room contains six cumulative English/Hebrew placement requests, profile-aware Google TTS, tap and pointer-drag placement, graduated help, non-punitive feedback, success toasts, and completion stars. Its full-room environment is generated with Nano Banana Pro (`gemini-3-pro-image`) from the original bedroom reference; it keeps the calibrated furniture layout while extending the scene to the frame edges.
 
-Pointer dragging uses one gesture path across mouse and touch. Failed drops always remove the drag ghost and return the tray object to rest. Drop zones and final object positions share the calibrated `ROOM_MAP` in `magic-house.js`, and only destinations required by the current sentence are mounted as hitboxes.
+Pointer dragging uses one gesture path across mouse and touch. Failed drops always remove the drag ghost and return the tray object to rest. Drop zones and final object positions share the calibrated `ROOM_MAP` in `magic-house.js`, and only destinations required by the current sentence are mounted as hitboxes. Selecting or dragging an object reveals only its valid destination as a color-coded projected glow; success, failed placement, cancellation, and Escape clear the cue.
 
 When opened from the trail, Magic House receives the active profile and stage context through its URL, locks profile switching, and posts either a verified completion result or an explicit exit back to the same-origin trail. Direct access keeps the existing replay flow.
 

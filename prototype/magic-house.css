@@ -129,7 +129,57 @@ body {
   border-radius: 8px;
   background: transparent;
   cursor: pointer;
-  transition: border-color 180ms ease, background-color 180ms ease, filter 180ms ease;
+  transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+}
+
+.drop-zone::before,
+.drop-zone::after {
+  position: absolute;
+  content: '';
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 160ms ease, transform 180ms ease;
+}
+
+.drop-zone::before {
+  inset: 20% 4%;
+  border: 3px dotted var(--zone-cue-color);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, var(--zone-cue-fill) 0 52%, transparent 72%);
+  box-shadow: 0 0 10px 3px var(--zone-cue-fill), inset 0 0 8px rgba(255, 255, 255, 0.72);
+  transform: rotate(-8deg) skewX(-16deg) scale(0.82);
+}
+
+.drop-zone::after {
+  top: 50%;
+  left: 50%;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  color: var(--zone-cue-color);
+  content: '✦';
+  font-size: 28px;
+  line-height: 1;
+  text-shadow: 0 0 3px white, 0 2px 7px rgba(68, 45, 50, 0.24);
+  transform: translate(-50%, -50%) scale(0.55);
+}
+
+.drop-zone.is-placement-cue {
+  filter: drop-shadow(0 0 6px var(--zone-cue-color));
+}
+
+.drop-zone.is-placement-cue::before,
+.drop-zone.is-placement-cue::after {
+  opacity: 1;
+}
+
+.drop-zone.is-placement-cue::after {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.drop-zone.is-placement-cue::before {
+  transform: rotate(-8deg) skewX(-16deg) scale(1);
 }
 
 .drop-zone:focus-visible,
@@ -144,7 +194,7 @@ body {
   z-index: 1;
 }
 
-.drop-zone.is-hinted {
+.drop-zone.is-hinted:not(.is-placement-cue) {
   border-color: rgba(255, 204, 74, 0.96);
   background: rgba(255, 235, 142, 0.24);
   animation: hintGlow 1.2s ease-in-out infinite;
