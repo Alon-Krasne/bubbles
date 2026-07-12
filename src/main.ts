@@ -748,6 +748,10 @@ function openHostedActivity() {
     const mapButton = requireElement<HTMLButtonElement>('memory-map-btn');
     mapButton.textContent = 'חזרה למסלול';
     mapButton.setAttribute('aria-label', 'חזרה למסלול');
+    const backButton = requireElement<HTMLButtonElement>('memory-back-btn');
+    backButton.querySelector<HTMLElement>('span:last-child')!.textContent = 'חזרה למסלול';
+    backButton.setAttribute('aria-label', 'חזרה למסלול');
+    backButton.title = 'חזרה למסלול';
     openMemoryGarden();
     startMemoryLevel(level.id);
     return;

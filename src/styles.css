@@ -2923,6 +2923,13 @@ canvas {
         0 16px 28px rgba(57, 118, 142, 0.16);
 }
 
+#memory-screen > .back-to-games-btn {
+    position: fixed;
+    top: clamp(124px, 10vw, 168px);
+    right: clamp(20px, 4vw, 62px);
+    z-index: 20;
+}
+
 /* ==================== GAME TITLE ==================== */
 .game-title {
     position: relative;
