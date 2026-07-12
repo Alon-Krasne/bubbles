@@ -143,11 +143,53 @@ const PROFILES = {
   },
 };
 
+const CHARACTER_ASSETS = Object.freeze({
+  princess: {
+    idleCharacter: '../src/assets/characters/princess/princess_idle_1.webp',
+    happyCharacter: '../src/assets/characters/princess/princess_celebrate_1.webp',
+  },
+  dinosaur: {
+    idleCharacter: '../src/assets/characters/dinosaur/dinosaur_idle_1.webp',
+    happyCharacter: '../src/assets/characters/dinosaur/dinosaur_celebrate_1.webp',
+  },
+  puppy: {
+    idleCharacter: '../src/assets/characters/puppy/puppy_idle_1.webp',
+    happyCharacter: '../src/assets/characters/puppy/puppy_celebrate_1.webp',
+  },
+  unicorn: {
+    idleCharacter: '../src/assets/characters/unicorn/unicorn_idle_1.webp',
+    happyCharacter: '../src/assets/characters/unicorn/unicorn_celebrate_1.webp',
+  },
+});
+
+const LANGUAGE_LABELS = Object.freeze({
+  en: 'אנגלית',
+  he: 'עברית',
+});
+
+const HEBREW_GRAMMAR_BY_CHARACTER = Object.freeze({
+  princess: 'female',
+  dinosaur: 'male',
+  puppy: 'male',
+  unicorn: 'female',
+});
+
+const CHARACTER_EMOJIS = Object.freeze({
+  princess: '🌸',
+  dinosaur: '🫧',
+  puppy: '🐶',
+  unicorn: '🦄',
+});
+
 const ACTIVITY_MESSAGE_VERSION = 1;
+const PROFILE_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i;
 const hostContext = readHostContext();
+const activeProfiles = hostContext
+  ? { ...PROFILES, [hostContext.profileId]: hostContext.profile }
+  : PROFILES;
 
 const objectById = new Map(OBJECTS.map((object) => [object.id, object]));
-const profileStates = new Map(Object.keys(PROFILES).map((profileId) => [profileId, createProfileState()]));
+const profileStates = new Map(Object.keys(activeProfiles).map((profileId) => [profileId, createProfileState()]));
 const timers = new Set();
 
 let activeProfileId = hostContext ? hostContext.profileId : 'lotem';
@@ -188,16 +230,43 @@ function readHostContext() {
   const activityId = params.get('activity');
   const levelId = params.get('level');
   const profileId = params.get('profile');
+  const profileName = params.get('profileName');
+  const profileEmoji = params.get('profileEmoji');
+  const profileLanguage = params.get('profileLanguage');
+  const profileCharacter = params.get('profileCharacter');
   const stageId = Number(params.get('stage'));
+  const characterAssets = CHARACTER_ASSETS[profileCharacter];
   if (host !== 'world-map'
     || activityId !== 'magic-house'
     || levelId !== 'bedroom-1'
-    || !PROFILES[profileId]
-    || !Number.isInteger(stageId)) {
+    || !profileId
+    || profileId.length > 64
+    || !PROFILE_ID_PATTERN.test(profileId)
+    || !profileName
+    || profileName.length > 12
+    || profileName !== profileName.trim()
+    || !profileEmoji
+    || !Object.prototype.hasOwnProperty.call(LANGUAGE_LABELS, profileLanguage)
+    || !Object.prototype.hasOwnProperty.call(CHARACTER_ASSETS, profileCharacter)
+    || stageId !== 3
+    || CHARACTER_EMOJIS[profileCharacter] !== profileEmoji) {
     throw new Error('Invalid Magic House host context');
   }
 
-  return { activityId, levelId, profileId, stageId };
+  return {
+    activityId,
+    levelId,
+    profileId,
+    stageId,
+    profile: {
+      name: profileName,
+      avatar: profileEmoji,
+      primary: profileLanguage,
+      gender: HEBREW_GRAMMAR_BY_CHARACTER[profileCharacter],
+      languageLabel: LANGUAGE_LABELS[profileLanguage],
+      ...characterAssets,
+    },
+  };
 }
 
 function createProfileState() {
@@ -211,7 +280,7 @@ function createProfileState() {
 }
 
 function getProfile() {
-  return PROFILES[activeProfileId];
+  return activeProfiles[activeProfileId];
 }
 
 function getState() {

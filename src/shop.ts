@@ -5,6 +5,7 @@ export interface ShopProfile {
   id: string;
   name: string;
   emoji: string;
+  language?: 'en' | 'he';
 }
 
 export interface ShopDeps {
@@ -189,6 +190,10 @@ const SHOP_LEVELS: ShopLevel[] = [
 ];
 
 export function speakEnglish(text: string, rate = SHOP_SPEECH_RATE) {
+  speakText(text, 'en', rate);
+}
+
+function speakText(text: string, language: 'en' | 'he', rate = SHOP_SPEECH_RATE) {
   if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
     return;
   }
@@ -197,13 +202,13 @@ export function speakEnglish(text: string, rate = SHOP_SPEECH_RATE) {
   synth.cancel();
 
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'en-US';
+  utterance.lang = language === 'en' ? 'en-US' : 'he-IL';
   utterance.rate = rate;
   utterance.pitch = 1.08;
 
   const voices = synth.getVoices();
-  const voice = voices.find((candidate) => candidate.lang.toLowerCase().startsWith('en-us'))
-    || voices.find((candidate) => candidate.lang.toLowerCase().startsWith('en'));
+  const languagePrefix = language === 'en' ? 'en' : 'he';
+  const voice = voices.find((candidate) => candidate.lang.toLowerCase().startsWith(languagePrefix));
   if (voice) {
     utterance.voice = voice;
   }
@@ -360,6 +365,7 @@ export function initShopGame(deps: ShopDeps) {
     state.mistakes = 0;
     state.roundCoins = 0;
     state.locked = false;
+    requireElement<HTMLElement>('shop-profile-badge').textContent = `${deps.getActiveProfile().name} משחק/ת`;
     clearShopTimers();
     hideCelebration();
     levelMap.classList.add('hidden');
@@ -451,15 +457,15 @@ export function initShopGame(deps: ShopDeps) {
       state.servedCustomers += 1;
       setFeedback('תודה רבה!');
       requireElement<HTMLElement>('shop-customer-card').classList.add('is-happy');
-      scheduleTimer(() => speakEnglish(createConfirmationSentence(item), SHOP_SPEECH_RATE), 120);
-      scheduleTimer(() => speakEnglish(createThankYouSentence(), SHOP_SPEECH_RATE), 1120);
+      scheduleTimer(() => speakText(createConfirmationSentence(item, getLearningLanguage()), getLearningLanguage()), 120);
+      scheduleTimer(() => speakText(createThankYouSentence(getLearningLanguage()), getLearningLanguage()), 1120);
       scheduleTimer(() => {
         requireElement<HTMLElement>('shop-customer-card').classList.add('is-leaving');
       }, 1460);
       scheduleTimer(() => nextCustomer(), 1860);
     } else {
       setFeedback('יפה! ממשיכים למלא את הסל');
-      speakEnglish(createConfirmationSentence(item), SHOP_SPEECH_RATE);
+      speakText(createConfirmationSentence(item, getLearningLanguage()), getLearningLanguage());
     }
   }
 
@@ -544,7 +550,22 @@ export function initShopGame(deps: ShopDeps) {
   }
 
   function speakOrder() {
-    speakEnglish(requireCurrentOrder().sentence, SHOP_SPEECH_RATE);
+    speakText(requireCurrentOrder().sentence, getLearningLanguage());
+  }
+
+  function getLearningLanguage(): 'en' | 'he' {
+    return deps.getActiveProfile().language ?? 'en';
+  }
+
+  function createLocalizedOrder(
+    englishSentence: string,
+    shelfItems: ShopItem[],
+    targets: ShopOrderTarget[],
+  ): ShopOrder {
+    const sentence = getLearningLanguage() === 'en'
+      ? englishSentence
+      : createHebrewRequestSentence(targets);
+    return { sentence, shelfItems, targets };
   }
 
   function completeLevel() {
@@ -584,49 +605,49 @@ export function initShopGame(deps: ShopDeps) {
     const level = state.activeLevel;
     if (level.id === 'shop-level-1' && state.servedCustomers === 0) {
       const banana = getShopItem('banana');
-      return {
-        sentence: 'Can I have a banana, please?',
-        shelfItems: [banana, getShopItem('apple'), getShopItem('milk'), getShopItem('bread')],
-        targets: [{ item: banana, required: 1, served: 0 }],
-      };
+      return createLocalizedOrder(
+        'Can I have a banana, please?',
+        [banana, getShopItem('apple'), getShopItem('milk'), getShopItem('bread')],
+        [{ item: banana, required: 1, served: 0 }],
+      );
     }
 
     if (level.mode === 'color') {
       const target = randomFrom(COLOR_ITEMS);
-      return {
-        sentence: createRequestSentence(definitePhrase(target)),
-        shelfItems: createShelf(COLOR_ITEMS, [target], level.shelfSize),
-        targets: [{ item: target, required: 1, served: 0 }],
-      };
+      return createLocalizedOrder(
+        createRequestSentence(definitePhrase(target)),
+        createShelf(COLOR_ITEMS, [target], level.shelfSize),
+        [{ item: target, required: 1, served: 0 }],
+      );
     }
 
     if (level.mode === 'quantity') {
       const target = randomFrom(getShopItems(SHOP_QUANTITY_ITEM_IDS));
       const quantity = 1 + Math.floor(Math.random() * 3);
-      return {
-        sentence: createRequestSentence(quantityPhrase(target, quantity)),
-        shelfItems: createShelf(getShopItems(SHOP_LEVEL_2_ITEM_IDS), [target], level.shelfSize),
-        targets: [{ item: target, required: quantity, served: 0 }],
-      };
+      return createLocalizedOrder(
+        createRequestSentence(quantityPhrase(target, quantity)),
+        createShelf(getShopItems(SHOP_LEVEL_2_ITEM_IDS), [target], level.shelfSize),
+        [{ item: target, required: quantity, served: 0 }],
+      );
     }
 
     if (level.mode === 'double') {
       const source = getShopItems(SHOP_DOUBLE_ITEM_IDS);
       const targets = shuffle(source).slice(0, 2);
-      return {
-        sentence: createRequestSentence(`${indefinitePhrase(targets[0])} and ${indefinitePhrase(targets[1])}`),
-        shelfItems: createShelf(source, targets, level.shelfSize),
-        targets: targets.map((item) => ({ item, required: 1, served: 0 })),
-      };
+      return createLocalizedOrder(
+        createRequestSentence(`${indefinitePhrase(targets[0])} and ${indefinitePhrase(targets[1])}`),
+        createShelf(source, targets, level.shelfSize),
+        targets.map((item) => ({ item, required: 1, served: 0 })),
+      );
     }
 
     const source = getShopItems(level.id === 'shop-level-2' ? SHOP_LEVEL_2_ITEM_IDS : SHOP_LEVEL_1_ITEM_IDS);
     const target = randomFrom(source);
-    return {
-      sentence: createRequestSentence(indefinitePhrase(target)),
-      shelfItems: createShelf(source, [target], level.shelfSize),
-      targets: [{ item: target, required: 1, served: 0 }],
-    };
+    return createLocalizedOrder(
+      createRequestSentence(indefinitePhrase(target)),
+      createShelf(source, [target], level.shelfSize),
+      [{ item: target, required: 1, served: 0 }],
+    );
   }
 
   function isLevelLocked(index: number) {
@@ -714,7 +735,11 @@ function createRequestSentence(phrase: string) {
   ]);
 }
 
-function createConfirmationSentence(item: ShopItem) {
+function createConfirmationSentence(item: ShopItem, language: 'en' | 'he') {
+  if (language === 'he') {
+    return `הנה ${item.hebrew}!`;
+  }
+
   const phrase = item.category === 'colors' ? definitePhrase(item) : indefinitePhrase(item);
   const capitalizedPhrase = capitalize(phrase);
   const frames = [
@@ -729,12 +754,27 @@ function createConfirmationSentence(item: ShopItem) {
   return randomFrom(frames);
 }
 
-function createThankYouSentence() {
+function createThankYouSentence(language: 'en' | 'he') {
+  if (language === 'he') {
+    return 'תודה רבה!';
+  }
+
   return randomFrom([
     'Thank you! Goodbye!',
     'Thank you so much!',
     'Yay! Thank you!',
   ]);
+}
+
+function createHebrewRequestSentence(targets: ShopOrderTarget[]) {
+  if (targets.length === 2) {
+    return `אפשר בבקשה ${targets[0].item.hebrew} וגם ${targets[1].item.hebrew}?`;
+  }
+
+  const target = targets[0];
+  return target.required === 1
+    ? `אפשר בבקשה ${target.item.hebrew}?`
+    : `אפשר בבקשה ${target.item.hebrew}, בכמות ${target.required}?`;
 }
 
 function indefinitePhrase(item: ShopItem) {

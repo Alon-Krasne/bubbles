@@ -25,3 +25,13 @@ Original prompt: Fix unlocked trail stages so they launch playable games and can
 - [x] Receive final read-only Gemini 3.1 Pro visual approval.
 - [x] Run final build, review, version, and PR checks.
 - [x] Make the deployed root open the world trail while hosted activities remain playable.
+
+## Profile gate acceptance
+
+- [x] Opening the app starts with profile selection before the trail.
+- [x] A profile can be created with a name, character, and learning language.
+- [x] Existing profiles can be edited without losing route progress.
+- [x] The selected profile persists across reloads and can be changed from the trail.
+- [x] Custom profile identity, language, and character reach every hosted activity.
+- [x] The only remaining profile cannot be deleted.
+- [x] Browser and Gemini 3.1 Pro visual review pass at 1440 x 900 and 1024 x 768.

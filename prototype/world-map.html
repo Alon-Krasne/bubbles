@@ -7,27 +7,30 @@
   <link rel="stylesheet" href="./world-map.css">
 </head>
 <body data-prototype="unified-world-map">
-  <main class="world" aria-label="מפת עולם הבועות">
+  <main class="world" id="world" aria-label="מפת עולם הבועות" aria-hidden="true" inert>
     <div class="map-canvas">
       <header class="world-chrome">
         <button class="profile-button" id="profile-button" type="button" aria-expanded="false" aria-controls="profile-menu">
-          <span class="profile-avatar" id="profile-avatar" aria-hidden="true">🌸</span>
+          <img class="profile-avatar" id="profile-avatar" src="../src/assets/characters/princess/princess_idle_1.webp" alt="">
           <span class="profile-copy">
             <strong id="profile-name">לוטם</strong>
-            <small id="profile-language">לומדת אנגלית</small>
+            <small id="profile-language">לומדים אנגלית</small>
           </span>
           <span class="profile-chevron" aria-hidden="true">⌄</span>
         </button>
 
         <div class="profile-menu" id="profile-menu" hidden>
-          <button type="button" data-profile="lotem">
-            <span aria-hidden="true">🌸</span>
-            <span><strong>לוטם</strong><small>אנגלית</small></span>
-          </button>
-          <button type="button" data-profile="tom">
-            <span aria-hidden="true">🫧</span>
-            <span><strong>תום</strong><small>עברית</small></span>
-          </button>
+          <div class="profile-menu-list" id="profile-menu-list"></div>
+          <div class="profile-menu-actions">
+            <button class="profile-menu-command" id="edit-profile-button" type="button">
+              <span aria-hidden="true">✎</span>
+              <strong>עריכת הפרופיל</strong>
+            </button>
+            <button class="profile-menu-command" id="choose-profile-button" type="button">
+              <span aria-hidden="true">↔</span>
+              <strong>בחירת פרופיל</strong>
+            </button>
+          </div>
         </div>
 
         <div class="world-title" aria-label="עולם הבועות">
@@ -105,6 +108,82 @@
       </section>
     </div>
   </main>
+
+  <section class="profile-gate" id="profile-gate" aria-label="בחירת פרופיל">
+    <div class="gate-sky" aria-hidden="true">
+      <span class="gate-cloud gate-cloud-one"></span>
+      <span class="gate-cloud gate-cloud-two"></span>
+      <span class="gate-star gate-star-one">★</span>
+      <span class="gate-star gate-star-two">★</span>
+      <span class="gate-star gate-star-three">★</span>
+    </div>
+    <div class="gate-content">
+      <header class="gate-heading">
+        <span class="gate-kicker">עולם הבועות</span>
+        <h1>מי איתנו במסע?</h1>
+      </header>
+      <div class="gate-profile-list" id="gate-profile-list"></div>
+      <button class="add-profile-button" id="add-profile-button" type="button">
+        <span aria-hidden="true">＋</span>
+        <strong>פרופיל חדש</strong>
+      </button>
+    </div>
+  </section>
+
+  <section class="profile-editor" id="profile-editor" aria-label="עריכת פרופיל" aria-hidden="true" hidden>
+    <form class="editor-dialog" id="profile-form">
+      <button class="editor-close" id="editor-close" type="button" aria-label="סגירה">×</button>
+      <div class="editor-heading">
+        <span class="editor-kicker">הפרופיל שלי</span>
+        <h2 id="editor-title">פרופיל חדש</h2>
+      </div>
+
+      <label class="name-field" for="profile-name-input">
+        <span>איך קוראים לך?</span>
+        <input id="profile-name-input" name="profileName" type="text" maxlength="12" autocomplete="off" required>
+      </label>
+
+      <fieldset class="character-picker">
+        <legend>הדמות במסלול</legend>
+        <div class="character-options">
+          <label>
+            <input type="radio" name="character" value="princess" required>
+            <span class="character-choice"><img src="../src/assets/characters/princess/princess_idle_1.webp" alt=""><strong>נסיכה</strong></span>
+          </label>
+          <label>
+            <input type="radio" name="character" value="dinosaur">
+            <span class="character-choice"><img src="../src/assets/characters/dinosaur/dinosaur_idle_1.webp" alt=""><strong>דינוזאור</strong></span>
+          </label>
+          <label>
+            <input type="radio" name="character" value="puppy">
+            <span class="character-choice"><img src="../src/assets/characters/puppy/puppy_idle_1.webp" alt=""><strong>כלבלב</strong></span>
+          </label>
+          <label>
+            <input type="radio" name="character" value="unicorn">
+            <span class="character-choice"><img src="../src/assets/characters/unicorn/unicorn_idle_1.webp" alt=""><strong>חד קרן</strong></span>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="language-picker">
+        <legend>איזו שפה לומדים?</legend>
+        <div class="language-options">
+          <label><input type="radio" name="learningLanguage" value="en" required><span>אנגלית</span></label>
+          <label><input type="radio" name="learningLanguage" value="he"><span>עברית</span></label>
+        </div>
+      </fieldset>
+
+      <div class="editor-actions">
+        <button class="save-profile-button" type="submit">שמירה</button>
+        <button class="delete-profile-button" id="delete-profile-button" type="button">מחיקה</button>
+      </div>
+      <div class="delete-confirm" id="delete-confirm" hidden>
+        <strong id="delete-confirm-copy"></strong>
+        <button class="cancel-delete-button" id="cancel-delete-button" type="button">לא, חוזרים</button>
+        <button class="confirm-delete-button" id="confirm-delete-button" type="button">כן, מוחקים</button>
+      </div>
+    </form>
+  </section>
 
   <script type="module" src="./world-map.js"></script>
 </body>

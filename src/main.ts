@@ -4,7 +4,12 @@ import { FigureType } from './entities/Character';
 import { FallingItemMode } from './entities/Bubble';
 import { initShopGame, type ShopLevelId } from './shop';
 import { VOCAB_WORDS, type VocabWord } from './words';
-import { createHostedActivitySession, readHostedActivityContext } from './hostedActivity';
+import {
+  createHostedActivitySession,
+  readHostedActivityContext,
+  type ProfileCharacter,
+  type ProfileLanguage,
+} from './hostedActivity';
 
 // Version badge
 const versionBadge = document.getElementById('version-badge');
@@ -44,6 +49,8 @@ interface KidProfile {
   id: string;
   name: string;
   emoji: string;
+  language?: ProfileLanguage;
+  character?: ProfileCharacter;
 }
 
 type MemoryWord = VocabWord;
@@ -505,6 +512,8 @@ function loadProfiles() {
       id: hostedActivityContext.profileId,
       name: hostedActivityContext.profileName,
       emoji: hostedActivityContext.profileEmoji,
+      language: hostedActivityContext.profileLanguage,
+      character: hostedActivityContext.profileCharacter,
     }];
     activeProfileId = hostedActivityContext.profileId;
     p1Name = hostedActivityContext.profileName;
@@ -536,6 +545,9 @@ function getActiveProfile(): KidProfile {
 }
 
 function saveProfiles() {
+  if (hostedActivityContext) {
+    return;
+  }
   localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(kidProfiles));
   localStorage.setItem(ACTIVE_PROFILE_STORAGE_KEY, activeProfileId);
 }
@@ -973,7 +985,10 @@ function renderMemoryBoard() {
     word.className = 'memory-card-word';
     word.textContent = card.text;
 
-    if (card.kind === 'hebrew') {
+    const learningLanguage = hostedActivityContext?.profileLanguage ?? 'en';
+    const targetCardKind: MemoryCardKind = learningLanguage === 'en' ? 'english' : 'hebrew';
+
+    if (card.kind !== targetCardKind) {
       const drawing = document.createElement('span');
       drawing.className = 'memory-card-drawing';
       drawing.setAttribute('aria-hidden', 'true');
@@ -983,17 +998,18 @@ function renderMemoryBoard() {
 
     front.append(word);
 
-    if (card.kind === 'english') {
+    if (card.kind === targetCardKind) {
+      const spokenWord = card.kind === 'english' ? card.english : card.text;
       const soundButton = document.createElement('button');
       soundButton.type = 'button';
       soundButton.className = 'memory-card-sound';
-      soundButton.setAttribute('aria-label', `השמיעו ${card.english}`);
-      soundButton.title = `השמיעו ${card.english}`;
+      soundButton.setAttribute('aria-label', `השמיעו ${spokenWord}`);
+      soundButton.title = `השמיעו ${spokenWord}`;
       soundButton.tabIndex = -1;
       soundButton.textContent = '🔊';
       soundButton.addEventListener('click', (event) => {
         event.stopPropagation();
-        speakMemoryWord(card.english);
+        speakMemoryWord(spokenWord, learningLanguage);
       });
       soundButton.addEventListener('keydown', (event) => {
         event.stopPropagation();
@@ -1069,7 +1085,8 @@ function matchMemoryCards() {
   const pairCount = activeMemoryLevel.pairs;
   const isComplete = memoryMatchedPairs.size === pairCount;
   const message = isComplete ? `${activeMemoryLevel.title} הושלם!` : `זוג מנצח: ${matchedWord.hebrew} ו-${matchedWord.english}`;
-  speakMemoryWord(matchedWord.english);
+  const learningLanguage = hostedActivityContext?.profileLanguage ?? 'en';
+  speakMemoryWord(learningLanguage === 'en' ? matchedWord.english : matchedWord.hebrew, learningLanguage);
 
   memoryFirstCard = null;
   memorySecondCard = null;
@@ -1404,11 +1421,11 @@ function setMemorySoundButtonFocus(cardButton: HTMLDivElement, isFocusable: bool
   }
 }
 
-function speakMemoryWord(word: string) {
+function speakMemoryWord(word: string, language: ProfileLanguage = 'en') {
   window.speechSynthesis.cancel();
 
   const utterance = new SpeechSynthesisUtterance(word);
-  utterance.lang = 'en-US';
+  utterance.lang = language === 'en' ? 'en-US' : 'he-IL';
   utterance.rate = 0.82;
   utterance.pitch = 1.08;
   window.speechSynthesis.speak(utterance);

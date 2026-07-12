@@ -8,7 +8,9 @@ Open `http://127.0.0.1:5173/` after starting the dev server. The root entrypoint
 
 The map mixes Memory Garden, Listening Shop, and Magic House stages. Stages 1-5 launch real activities with the active profile and exact level selection; stages 6-15 remain locked future destinations. Completed and current stages can be replayed, saved stars never decrease, and only completing the current frontier advances the character.
 
-Memory Garden and Listening Shop run inside the trail's hosted activity shell. Their normal standalone navigation remains unchanged, while hosted completion and exit events use the shared same-origin protocol in `src/hostedActivity.ts`.
+The root opens with a profile chooser. Profiles have a stable ID, name, one of four character sprites, and an English or Hebrew learning direction. Profiles can be created, edited, selected, and deleted from the same game-styled flow; route progress remains attached to the stable ID when the visible profile changes.
+
+Memory Garden and Listening Shop run inside the trail's hosted activity shell. Their normal standalone navigation remains unchanged, while hosted completion and exit events use the shared same-origin protocol in `src/hostedActivity.ts`. The hosted profile controls which Memory card language has drawings and audio, which language Shop orders speak, and the text direction and guide character in Magic House.
 
 ## Magic House
 

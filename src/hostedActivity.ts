@@ -1,6 +1,22 @@
 export const ACTIVITY_MESSAGE_VERSION = 1;
 
 export type HostedActivityId = 'memory-garden' | 'listening-shop';
+export type ProfileLanguage = 'en' | 'he';
+export type ProfileCharacter = 'princess' | 'dinosaur' | 'puppy' | 'unicorn';
+
+const PROFILE_EMOJI_BY_CHARACTER: Record<ProfileCharacter, string> = {
+  princess: '🌸',
+  dinosaur: '🫧',
+  puppy: '🐶',
+  unicorn: '🦄',
+};
+
+const HOSTED_LEVEL_BY_STAGE: Record<HostedActivityId, Partial<Record<number, string>>> = {
+  'memory-garden': { 1: 'level-1', 4: 'level-2' },
+  'listening-shop': { 2: 'shop-level-1', 5: 'shop-level-2' },
+};
+
+const PROFILE_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i;
 
 export interface HostedActivityContext {
   activityId: HostedActivityId;
@@ -8,6 +24,8 @@ export interface HostedActivityContext {
   profileId: string;
   profileName: string;
   profileEmoji: string;
+  profileLanguage: ProfileLanguage;
+  profileCharacter: ProfileCharacter;
   stageId: number;
 }
 
@@ -29,17 +47,31 @@ export function readHostedActivityContext(): HostedActivityContext | null {
   const profileId = params.get('profile');
   const profileName = params.get('profileName');
   const profileEmoji = params.get('profileEmoji');
+  const profileLanguage = params.get('profileLanguage');
+  const profileCharacter = params.get('profileCharacter');
   const stageId = Number(params.get('stage'));
   const supportedActivities = new Set<HostedActivityId>(['memory-garden', 'listening-shop']);
+  const supportedLanguages = new Set<ProfileLanguage>(['en', 'he']);
+  const supportedCharacters = new Set<ProfileCharacter>(['princess', 'dinosaur', 'puppy', 'unicorn']);
+  const expectedLevel = supportedActivities.has(activityId as HostedActivityId)
+    ? HOSTED_LEVEL_BY_STAGE[activityId as HostedActivityId][stageId]
+    : undefined;
 
   if (host !== 'world-map'
     || !supportedActivities.has(activityId as HostedActivityId)
     || !levelId
     || !profileId
+    || profileId.length > 64
+    || !PROFILE_ID_PATTERN.test(profileId)
     || !profileName
+    || profileName.length > 12
+    || profileName !== profileName.trim()
     || !profileEmoji
+    || !supportedLanguages.has(profileLanguage as ProfileLanguage)
+    || !supportedCharacters.has(profileCharacter as ProfileCharacter)
     || !Number.isInteger(stageId)
-    || stageId < 1) {
+    || expectedLevel !== levelId
+    || PROFILE_EMOJI_BY_CHARACTER[profileCharacter as ProfileCharacter] !== profileEmoji) {
     throw new Error('Invalid hosted activity context');
   }
 
@@ -49,6 +81,8 @@ export function readHostedActivityContext(): HostedActivityContext | null {
     profileId,
     profileName,
     profileEmoji,
+    profileLanguage: profileLanguage as ProfileLanguage,
+    profileCharacter: profileCharacter as ProfileCharacter,
     stageId,
   };
 }
