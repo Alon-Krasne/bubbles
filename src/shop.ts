@@ -404,6 +404,7 @@ export function initShopGame(deps: ShopDeps) {
 
   function renderShelves() {
     const order = requireCurrentOrder();
+    const learningLanguage = getLearningLanguage();
     shelves.innerHTML = '';
     shelves.style.setProperty('--shop-shelf-columns', String(Math.min(4, order.shelfItems.length)));
 
@@ -412,14 +413,20 @@ export function initShopGame(deps: ShopDeps) {
       tile.type = 'button';
       tile.className = 'shop-item-tile';
       tile.dataset.itemId = item.id;
-      tile.setAttribute('aria-label', `פריט: ${item.hebrew}`);
+      tile.setAttribute('aria-label', learningLanguage === 'he' ? item.hebrew : item.english);
 
-      const drawing = document.createElement('span');
-      drawing.className = 'shop-item-drawing';
-      drawing.setAttribute('aria-hidden', 'true');
-      drawing.textContent = item.drawing;
+      const choice = document.createElement('span');
+      if (learningLanguage === 'he') {
+        choice.className = 'shop-item-word';
+        choice.dir = 'rtl';
+        choice.textContent = item.hebrew;
+      } else {
+        choice.className = 'shop-item-drawing';
+        choice.setAttribute('aria-hidden', 'true');
+        choice.textContent = item.drawing;
+      }
 
-      tile.append(drawing);
+      tile.append(choice);
       tile.addEventListener('click', () => selectItem(item, tile));
       shelves.append(tile);
     });
@@ -479,7 +486,8 @@ export function initShopGame(deps: ShopDeps) {
     const basketRect = basket.getBoundingClientRect();
     const fly = document.createElement('span');
     fly.className = 'shop-fly-item';
-    fly.textContent = item.drawing;
+    fly.classList.toggle('is-word', getLearningLanguage() === 'he');
+    fly.textContent = getLearningLanguage() === 'he' ? item.hebrew : item.drawing;
     fly.style.setProperty('--shop-fly-x', `${basketRect.left + basketRect.width / 2 - tileRect.left - tileRect.width / 2}px`);
     fly.style.setProperty('--shop-fly-y', `${basketRect.top + basketRect.height / 2 - tileRect.top - tileRect.height / 2}px`);
     tile.append(fly);
@@ -503,10 +511,10 @@ export function initShopGame(deps: ShopDeps) {
     order.targets.forEach((target) => {
       const itemProgress = document.createElement('span');
       itemProgress.className = 'shop-basket-item';
-      // Hide the target's drawing until it is served at least once,
-      // so the basket never reveals the answer before listening.
-      const drawing = target.served > 0 ? target.item.drawing : '❓';
-      itemProgress.textContent = `${drawing} ${target.served}/${target.required}`;
+      // Keep the requested item hidden until it has been served,
+      // so the basket never reveals the answer before listening or reading.
+      const servedItem = getLearningLanguage() === 'he' ? target.item.hebrew : target.item.drawing;
+      itemProgress.textContent = `${target.served > 0 ? servedItem : '❓'} ${target.served}/${target.required}`;
       basket.append(itemProgress);
     });
   }

@@ -327,13 +327,9 @@ function renderProfile() {
 
 function renderDropZones() {
   const profile = getProfile();
-  const state = getState();
-  const pendingZoneIds = new Set(getRequest().targets
-    .filter((target) => !state.placedObjectIds.has(target.objectId))
-    .map((target) => target.zoneId));
   dropLayer.innerHTML = '';
 
-  ZONES.filter((zone) => pendingZoneIds.has(zone.id)).forEach((zone) => {
+  ZONES.forEach((zone) => {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'drop-zone';
@@ -445,13 +441,8 @@ function selectObject(objectId) {
 }
 
 function refreshPlacementCues() {
-  const state = getState();
-  const validZoneIds = new Set(getRequest().targets
-    .filter((target) => target.objectId === selectedObjectId && !state.placedObjectIds.has(target.objectId))
-    .map((target) => target.zoneId));
-
   document.querySelectorAll('.drop-zone').forEach((zone) => {
-    zone.classList.toggle('is-placement-cue', validZoneIds.has(zone.dataset.zone));
+    zone.classList.toggle('is-placement-cue', selectedObjectId !== null);
   });
 }
 
@@ -525,6 +516,7 @@ function celebratePlacement() {
 function showGentleRetry(objectId) {
   selectedObjectId = null;
   renderObjectDrawer();
+  refreshPlacementCues();
   const button = document.querySelector(`[data-object-id="${objectId}"]`);
   button.classList.remove('is-returning');
   void button.offsetWidth;

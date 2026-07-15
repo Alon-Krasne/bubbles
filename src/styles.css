@@ -2705,6 +2705,18 @@ canvas {
     filter: drop-shadow(0 4px 0 rgba(57, 118, 142, 0.1));
 }
 
+.shop-item-word {
+    max-width: 100%;
+    padding: 8px 12px;
+    color: #243E4B;
+    font-family: 'Rubik', sans-serif;
+    font-size: clamp(24px, 3.2vw, 38px);
+    font-weight: 900;
+    line-height: 1.15;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
 .shop-item-tile.is-correct {
     animation: shopCorrectPop 0.42s ease both;
 }
@@ -2722,6 +2734,14 @@ canvas {
     pointer-events: none;
     transform: translate(-50%, -50%);
     animation: shopFlyToBasket 0.58s ease-in forwards;
+}
+
+.shop-fly-item.is-word {
+    color: #243E4B;
+    font-family: 'Rubik', sans-serif;
+    font-size: 24px;
+    font-weight: 900;
+    white-space: nowrap;
 }
 
 .shop-feedback {
