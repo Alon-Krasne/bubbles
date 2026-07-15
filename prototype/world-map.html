@@ -39,17 +39,11 @@
         </div>
 
         <div class="world-actions">
-          <div class="star-total" aria-label="8 מתוך 45 כוכבים">
+          <div class="star-total" aria-label="8 מתוך 15 כוכבים">
             <span aria-hidden="true">★</span>
             <strong id="star-total">8</strong>
-            <small>/45</small>
+            <small id="star-total-max">/15</small>
           </div>
-          <button class="icon-button" id="sound-button" type="button" aria-label="השתקת צלילים" title="צלילים">
-            <span class="sound-symbol" aria-hidden="true"></span>
-          </button>
-          <button class="icon-button" id="settings-button" type="button" aria-label="הגדרות" title="הגדרות">
-            <span aria-hidden="true">⚙</span>
-          </button>
         </div>
       </header>
 
@@ -85,23 +79,34 @@
         </button>
       </section>
 
-      <div class="settings-popover" id="settings-popover" hidden>
-        <strong>הגדרות</strong>
-        <div>
-          <span>צלילים</span>
-          <button type="button" aria-label="צלילים פעילים" aria-pressed="true">פעיל</button>
-        </div>
-        <div>
-          <span>תנועה</span>
-          <button type="button" aria-label="תנועה פעילה" aria-pressed="true">פעילה</button>
-        </div>
-      </div>
-
       <div class="launch-overlay" id="launch-overlay" aria-hidden="true">
         <img id="launch-character" src="../src/assets/characters/princess/princess_celebrate_1.webp" alt="">
         <strong id="launch-title">המשימה מתחילה!</strong>
         <span aria-hidden="true">★</span>
       </div>
+
+      <section class="world-complete-overlay" id="world-complete-overlay" aria-hidden="true" inert>
+        <div class="world-complete-sparkles" aria-hidden="true">
+          <span>★</span><span>✦</span><span>★</span><span>✦</span><span>★</span>
+        </div>
+        <div class="world-complete-dialog" role="dialog" aria-modal="true" aria-labelledby="world-complete-title">
+          <img id="world-complete-character" src="../src/assets/characters/princess/princess_celebrate_1.webp" alt="">
+          <div class="world-complete-copy">
+            <span class="world-complete-kicker">כל הכבוד!</span>
+            <h2 id="world-complete-title">הפרק הראשון הושלם!</h2>
+            <p>
+              <strong>סיימתם את כל 5 השלבים שפתוחים עכשיו.</strong>
+              <span><span aria-hidden="true">🔒</span> עוד הרפתקאות בדרך!</span>
+            </p>
+            <div class="world-complete-stars" aria-live="polite">
+              <span aria-hidden="true">★</span>
+              <strong id="world-complete-score">15 / 15</strong>
+              <span>כוכבים</span>
+            </div>
+            <button id="world-complete-button" type="button">חזרה למסלול</button>
+          </div>
+        </div>
+      </section>
 
       <section class="activity-overlay" id="activity-overlay" aria-label="משחק פעיל" aria-hidden="true">
         <iframe id="activity-frame" title="המשחק הפעיל" allow="autoplay"></iframe>

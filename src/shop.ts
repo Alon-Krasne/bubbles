@@ -1,5 +1,6 @@
 import { COLOR_VOCAB_WORDS, VOCAB_WORDS, type VocabWord } from './words';
 import type { HostedActivitySession } from './hostedActivity';
+import { calculateMasteryStars } from '../prototype/shared/activity-scoring.mjs';
 
 export interface ShopProfile {
   id: string;
@@ -257,9 +258,14 @@ export function initShopGame(deps: ShopDeps) {
   function openLevel(levelId: ShopLevelId) {
     deps.showScreen('shop-screen');
     if (deps.hostedSession) {
-      const levelListButton = requireElement<HTMLButtonElement>('shop-level-list-btn');
-      levelListButton.textContent = 'חזרה למסלול';
-      levelListButton.setAttribute('aria-label', 'חזרה למסלול');
+      requireElement<HTMLButtonElement>('shop-level-list-btn').hidden = true;
+      const celebrationButton = requireElement<HTMLButtonElement>('shop-celebration-next-btn');
+      celebrationButton.textContent = 'חזרה למסלול';
+      celebrationButton.setAttribute('aria-label', 'חזרה למסלול');
+      const backButton = requireElement<HTMLButtonElement>('shop-back-btn');
+      backButton.querySelector<HTMLElement>('span:last-child')!.textContent = 'חזרה למסלול';
+      backButton.setAttribute('aria-label', 'חזרה למסלול');
+      backButton.title = 'חזרה למסלול';
     }
     startLevel(levelId);
   }
@@ -296,7 +302,11 @@ export function initShopGame(deps: ShopDeps) {
 
   function finishShopCelebration() {
     if (deps.hostedSession) {
-      deps.hostedSession.complete(calculateStars(state.mistakes));
+      deps.hostedSession.complete(calculateMasteryStars({
+        mistakes: state.mistakes,
+        challengeSize: state.activeLevel.customerCount,
+        solutionHints: 0,
+      }));
       return;
     }
     returnToLevelList();
@@ -579,7 +589,11 @@ export function initShopGame(deps: ShopDeps) {
   function completeLevel() {
     clearShopTimers();
     state.locked = true;
-    const stars = calculateStars(state.mistakes);
+    const stars = calculateMasteryStars({
+      mistakes: state.mistakes,
+      challengeSize: state.activeLevel.customerCount,
+      solutionHints: 0,
+    });
     if (!deps.hostedSession) {
       saveLevelStars(state.activeLevel.id, stars);
       renderLevelList();
@@ -814,16 +828,6 @@ function pluralize(english: string) {
     return `${english}es`;
   }
   return `${english}s`;
-}
-
-function calculateStars(mistakes: number) {
-  if (mistakes === 0) {
-    return 3;
-  }
-  if (mistakes <= 2) {
-    return 2;
-  }
-  return 1;
 }
 
 function isOrderComplete(order: ShopOrder) {

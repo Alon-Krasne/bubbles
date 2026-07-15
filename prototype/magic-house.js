@@ -1,3 +1,5 @@
+import { calculateMasteryStars } from './shared/activity-scoring.mjs';
+
 const OBJECTS = [
   { id: 'pillow', labels: { en: 'pillow', he: 'כרית' }, sprite: ['0%', '0%'] },
   { id: 'ball', labels: { en: 'ball', he: 'כדור' }, sprite: ['33.333%', '0%'] },
@@ -274,6 +276,8 @@ function createProfileState() {
     requestIndex: 0,
     completedRequests: 0,
     helpLevel: 0,
+    mistakes: 0,
+    solutionHints: 0,
     placedObjectIds: new Set(),
     locked: false,
   };
@@ -454,7 +458,7 @@ function attemptPlacement(objectId, zoneId) {
 
   const target = getRequest().targets.find((candidate) => candidate.objectId === objectId && candidate.zoneId === zoneId);
   if (!target) {
-    showGentleRetry(objectId);
+    rejectPlacement(objectId);
     return;
   }
 
@@ -525,6 +529,11 @@ function showGentleRetry(objectId) {
   speakSentence();
 }
 
+function rejectPlacement(objectId) {
+  getState().mistakes += 1;
+  showGentleRetry(objectId);
+}
+
 function showSuccessToast(request) {
   const profile = getProfile();
   if (feedbackTimer) {
@@ -553,7 +562,11 @@ function useHelp() {
     return;
   }
 
+  const previousHelpLevel = state.helpLevel;
   state.helpLevel = Math.min(3, state.helpLevel + 1);
+  if (previousHelpLevel < 3 && state.helpLevel === 3) {
+    state.solutionHints += 1;
+  }
   if (state.helpLevel === 1) {
     speakSentence();
   }
@@ -587,14 +600,23 @@ function updateHelpDots() {
 }
 
 function updateStars() {
-  const completed = getState().completedRequests;
-  const count = completed >= 6 ? 3 : completed >= 5 ? 2 : completed >= 4 ? 1 : 0;
+  const state = getState();
+  const count = state.completedRequests === REQUESTS.length ? getFinalStars() : 0;
   const stars = requireElement('stars').querySelectorAll('span');
   stars.forEach((star, index) => {
     star.classList.toggle('is-filled', index < count);
     star.textContent = index < count ? '★' : '☆';
   });
   requireElement('stars').setAttribute('aria-label', `${count} מתוך 3 כוכבים`);
+}
+
+function getFinalStars() {
+  const state = getState();
+  return calculateMasteryStars({
+    mistakes: state.mistakes,
+    challengeSize: REQUESTS.length,
+    solutionHints: state.solutionHints,
+  });
 }
 
 function speakSentence() {
@@ -632,8 +654,9 @@ function showCelebration() {
   celebration.dir = profile.primary === 'en' ? 'ltr' : 'rtl';
   requireElement('celebration-title').textContent = profile.primary === 'en' ? 'The room is ready!' : 'החדר מוכן!';
   requireElement('celebration-copy').textContent = profile.primary === 'en' ? 'You built a magical bedroom!' : 'בנית חדר שינה קסום!';
+  requireElement('celebration-stars').textContent = '★'.repeat(getFinalStars());
   requireElement('replay-button').textContent = hostContext
-    ? (profile.primary === 'en' ? 'Back to trail' : 'חזרה למסלול')
+    ? 'חזרה למסלול'
     : (profile.primary === 'en' ? 'Play again' : 'שחקו שוב');
   magicHouse.classList.add('is-celebrating');
   celebration.classList.add('is-visible');
@@ -662,7 +685,7 @@ function completeTrailStage() {
   }
 
   trailResultSent = true;
-  postTrailMessage('bubbles.activity.complete', 3);
+  postTrailMessage('bubbles.activity.complete', getFinalStars());
 }
 
 function exitToTrail() {
@@ -752,7 +775,7 @@ function attachPointerDrag(button, object) {
       if (target) {
         attemptPlacement(object.id, target.dataset.zone);
       } else {
-        showGentleRetry(object.id);
+        rejectPlacement(object.id);
       }
       return;
     }
@@ -833,7 +856,7 @@ trailBackButton.addEventListener('click', exitToTrail);
 requireElement('replay-button').addEventListener('click', handleCelebrationAction);
 roomCanvas.addEventListener('click', (event) => {
   if (selectedObjectId && !event.target.closest('.drop-zone')) {
-    showGentleRetry(selectedObjectId);
+    rejectPlacement(selectedObjectId);
   }
 });
 

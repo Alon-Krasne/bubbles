@@ -16,6 +16,10 @@ const stages = [
   { id: 15, x: 87, y: 28, game: 'bubbles', available: false, symbol: '★', title: 'מסיבת המילים', description: 'משימת הסיום של עולם הבועות' },
 ];
 
+const availableStages = stages.filter((stage) => stage.available);
+const availableStarTotal = availableStages.length * 3;
+const lastAvailableStageId = availableStages[availableStages.length - 1].id;
+
 const DEFAULT_PROFILES = [
   { id: 'lotem', name: 'לוטם', character: 'princess', learningLanguage: 'en' },
   { id: 'tom', name: 'תום', character: 'dinosaur', learningLanguage: 'he' },
@@ -66,11 +70,11 @@ const profileMenu = document.getElementById('profile-menu');
 const profileMenuList = document.getElementById('profile-menu-list');
 const editProfileButton = document.getElementById('edit-profile-button');
 const chooseProfileButton = document.getElementById('choose-profile-button');
-const settingsButton = document.getElementById('settings-button');
-const settingsPopover = document.getElementById('settings-popover');
-const soundButton = document.getElementById('sound-button');
 const launchOverlay = document.getElementById('launch-overlay');
 const launchCharacter = document.getElementById('launch-character');
+const worldCompleteOverlay = document.getElementById('world-complete-overlay');
+const worldCompleteCharacter = document.getElementById('world-complete-character');
+const worldCompleteButton = document.getElementById('world-complete-button');
 const traveller = document.getElementById('traveller');
 const travellerImage = document.getElementById('traveller-image');
 const activityOverlay = document.getElementById('activity-overlay');
@@ -98,7 +102,6 @@ validateWorldState();
 let selectedStage = stages.find((stage) => stage.id === getRouteProgress(activeProfileId).currentStage);
 let editingProfileId = null;
 let editorReturnsToGate = true;
-let soundEnabled = true;
 let activeLaunch = null;
 let launchTimer = null;
 
@@ -396,7 +399,6 @@ function renderGateProfiles() {
 
 function openGate() {
   closeProfileMenu();
-  settingsPopover.hidden = true;
   profileGate.hidden = false;
   world.inert = true;
   world.setAttribute('aria-hidden', 'true');
@@ -415,7 +417,6 @@ function toggleProfileMenu() {
   const willOpen = profileMenu.hidden;
   profileMenu.hidden = !willOpen;
   profileButton.setAttribute('aria-expanded', String(willOpen));
-  settingsPopover.hidden = true;
 }
 
 function closeProfileMenu() {
@@ -544,12 +545,6 @@ function confirmProfileDeletion() {
   openGate();
 }
 
-function toggleSound() {
-  soundEnabled = !soundEnabled;
-  soundButton.querySelector('.sound-symbol').classList.toggle('is-muted', !soundEnabled);
-  soundButton.setAttribute('aria-label', soundEnabled ? 'השתקת צלילים' : 'הפעלת צלילים');
-}
-
 function launchSelectedStage() {
   if (!selectedStage) {
     return;
@@ -617,7 +612,7 @@ function closeActivity() {
 }
 
 function setWorldInteractionLocked(locked) {
-  [document.querySelector('.world-chrome'), route, stagePanel, settingsPopover].forEach((element) => {
+  [document.querySelector('.world-chrome'), route, stagePanel].forEach((element) => {
     element.inert = locked;
   });
 }
@@ -635,6 +630,10 @@ function completeLaunchedStage(launch, stars = 3) {
   const nextStage = isCurrentStage
     ? stages.find((stage) => stage.id === completedStage.id + 1 && stage.available)
     : null;
+  const worldComplete = previousStars === 0
+    && isCurrentStage
+    && completedStage.id === lastAvailableStageId
+    && !nextStage;
 
   if (!nextStage) {
     saveWorldProgress();
@@ -643,13 +642,13 @@ function completeLaunchedStage(launch, stars = 3) {
       renderRoute();
       selectStage(completedStage);
     }
-    return;
+    return { worldComplete };
   }
 
   progress.currentStage = nextStage.id;
   saveWorldProgress();
   if (launch.profileId !== activeProfileId) {
-    return;
+    return { worldComplete: false };
   }
   updateStarTotal(progress);
   renderRoute();
@@ -663,6 +662,25 @@ function completeLaunchedStage(launch, stars = 3) {
     travellerImage.src = getCharacterAsset(profile.character, 'idle');
     selectStage(nextStage);
   }, 760);
+  return { worldComplete: false };
+}
+
+function showWorldComplete(profile, progress) {
+  worldCompleteCharacter.src = getCharacterAsset(profile.character, 'celebrate');
+  document.getElementById('world-complete-score').textContent = `${getEarnedStarTotal(progress)} / ${availableStarTotal}`;
+  setWorldInteractionLocked(true);
+  worldCompleteOverlay.inert = false;
+  worldCompleteOverlay.classList.add('is-visible');
+  worldCompleteOverlay.setAttribute('aria-hidden', 'false');
+  worldCompleteButton.focus();
+}
+
+function closeWorldComplete() {
+  worldCompleteOverlay.classList.remove('is-visible');
+  worldCompleteOverlay.setAttribute('aria-hidden', 'true');
+  worldCompleteOverlay.inert = true;
+  setWorldInteractionLocked(false);
+  document.querySelector(`[data-stage="${selectedStage.id}"]`).focus();
 }
 
 function handleActivityMessage(event) {
@@ -696,21 +714,31 @@ function handleActivityMessage(event) {
 
   const completedLaunch = activeLaunch;
   closeActivity();
+  const result = completeLaunchedStage(completedLaunch, message.stars);
+  if (result.worldComplete) {
+    showWorldComplete(getProfile(completedLaunch.profileId), getRouteProgress(completedLaunch.profileId));
+    return;
+  }
+
   launchCharacter.src = getCharacterAsset(completedLaunch.profileCharacter, 'celebrate');
   document.getElementById('launch-title').textContent = 'כל הכבוד!';
   launchOverlay.classList.add('is-visible');
   launchOverlay.setAttribute('aria-hidden', 'false');
-  completeLaunchedStage(completedLaunch, message.stars);
   window.setTimeout(() => {
     launchOverlay.classList.remove('is-visible');
     launchOverlay.setAttribute('aria-hidden', 'true');
   }, 1250);
 }
 
+function getEarnedStarTotal(progress) {
+  return Object.values(progress.progress).reduce((total, stars) => total + stars, 0);
+}
+
 function updateStarTotal(progress) {
-  const earnedStars = Object.values(progress.progress).reduce((total, stars) => total + stars, 0);
+  const earnedStars = getEarnedStarTotal(progress);
   document.getElementById('star-total').textContent = String(earnedStars);
-  document.querySelector('.star-total').setAttribute('aria-label', `${earnedStars} מתוך 45 כוכבים`);
+  document.getElementById('star-total-max').textContent = `/${availableStarTotal}`;
+  document.querySelector('.star-total').setAttribute('aria-label', `${earnedStars} מתוך ${availableStarTotal} כוכבים`);
 }
 
 profileButton.addEventListener('click', toggleProfileMenu);
@@ -728,14 +756,14 @@ confirmDeleteButton.addEventListener('click', confirmProfileDeletion);
 profileNameInput.addEventListener('input', () => profileNameInput.setCustomValidity(''));
 panelClose.addEventListener('click', () => stagePanel.classList.remove('is-open'));
 playButton.addEventListener('click', launchSelectedStage);
-soundButton.addEventListener('click', toggleSound);
-settingsButton.addEventListener('click', () => {
-  settingsPopover.hidden = !settingsPopover.hidden;
-  closeProfileMenu();
-});
+worldCompleteButton.addEventListener('click', closeWorldComplete);
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') {
+    if (worldCompleteOverlay.classList.contains('is-visible')) {
+      closeWorldComplete();
+      return;
+    }
     if (!profileEditor.hidden) {
       closeProfileEditor();
       return;
@@ -745,7 +773,6 @@ document.addEventListener('keydown', (event) => {
       return;
     }
     closeProfileMenu();
-    settingsPopover.hidden = true;
     stagePanel.classList.remove('is-open');
   }
 });

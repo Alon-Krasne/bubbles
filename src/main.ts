@@ -10,6 +10,7 @@ import {
   type ProfileCharacter,
   type ProfileLanguage,
 } from './hostedActivity';
+import { calculateMasteryStars } from '../prototype/shared/activity-scoring.mjs';
 
 // Version badge
 const versionBadge = document.getElementById('version-badge');
@@ -315,6 +316,8 @@ let memorySecondCard: HTMLDivElement | null = null;
 let memoryMatchedPairs = new Set<string>();
 let memoryLocked = false;
 let memoryNeedsMismatchDismiss = false;
+let memoryMistakes = 0;
+let memoryRoundStars = 3;
 let memoryToastTimer: number | null = null;
 let memoryWinReturnTimer: number | null = null;
 const MEMORY_WIN_RETURN_DELAY_MS = 2400;
@@ -729,7 +732,7 @@ function returnFromMemoryRound() {
 
 function finishMemoryCelebration() {
   if (isHostedMemoryActivity()) {
-    requireHostedActivitySession().complete(3);
+    requireHostedActivitySession().complete(memoryRoundStars);
     return;
   }
   returnToMemoryMapAfterWin();
@@ -745,9 +748,10 @@ function openHostedActivity() {
     if (!level || level.locked) {
       throw new Error(`Invalid hosted memory level ${hostedActivityContext.levelId}`);
     }
-    const mapButton = requireElement<HTMLButtonElement>('memory-map-btn');
-    mapButton.textContent = 'חזרה למסלול';
-    mapButton.setAttribute('aria-label', 'חזרה למסלול');
+    requireElement<HTMLButtonElement>('memory-map-btn').hidden = true;
+    const celebrationButton = requireElement<HTMLButtonElement>('memory-celebration-next-btn');
+    celebrationButton.textContent = 'חזרה למסלול';
+    celebrationButton.setAttribute('aria-label', 'חזרה למסלול');
     const backButton = requireElement<HTMLButtonElement>('memory-back-btn');
     backButton.querySelector<HTMLElement>('span:last-child')!.textContent = 'חזרה למסלול';
     backButton.setAttribute('aria-label', 'חזרה למסלול');
@@ -894,6 +898,8 @@ function startMemoryRound(level: MemoryLevel) {
   memorySecondCard = null;
   memoryLocked = false;
   memoryNeedsMismatchDismiss = false;
+  memoryMistakes = 0;
+  memoryRoundStars = 3;
 
   const pairCount = level.pairs;
   const selectedWords = selectMemoryWords(level);
@@ -1061,6 +1067,7 @@ function handleMemoryCardClick(cardButton: HTMLDivElement) {
   if (isMatch) {
     matchMemoryCards();
   } else {
+    memoryMistakes += 1;
     memoryNeedsMismatchDismiss = true;
     updateMemoryStatus('לא זוג. לחצו כדי לסגור ולנסות שוב');
   }
@@ -1096,14 +1103,19 @@ function matchMemoryCards() {
   memorySecondCard = null;
   memoryLocked = false;
   if (isComplete) {
+    memoryRoundStars = calculateMasteryStars({
+      mistakes: memoryMistakes,
+      challengeSize: pairCount,
+      solutionHints: 0,
+    });
     if (!isHostedMemoryActivity()) {
-      saveMemoryLevelStars(activeMemoryLevel.id, 3);
+      saveMemoryLevelStars(activeMemoryLevel.id, memoryRoundStars);
     }
-    showMemoryCelebration();
+    showMemoryCelebration(memoryRoundStars);
     clearMemoryWinReturnTimer();
     memoryWinReturnTimer = window.setTimeout(() => {
       if (isHostedMemoryActivity()) {
-        requireHostedActivitySession().complete(3);
+        requireHostedActivitySession().complete(memoryRoundStars);
         return;
       }
       returnToMemoryMapAfterWin();
@@ -1476,11 +1488,12 @@ function showMemoryToast(matchedWord: MemoryWord) {
   }, 3000);
 }
 
-function showMemoryCelebration() {
+function showMemoryCelebration(stars: number) {
   const celebration = requireElement<HTMLDivElement>('memory-celebration');
   const subtitle = requireElement<HTMLDivElement>('memory-celebration-subtitle');
   const profile = getActiveProfile().name;
-  subtitle.textContent = `${profile}, ${activeMemoryLevel.title} הושלם עם 3 כוכבים`;
+  requireElement<HTMLDivElement>('memory-celebration-stars').textContent = '⭐'.repeat(stars);
+  subtitle.textContent = `${profile}, ${activeMemoryLevel.title} הושלם עם ${stars} כוכבים`;
 
   requireElement<HTMLElement>('memory-game-area').classList.add('is-completing');
   celebration.classList.add('is-visible');
