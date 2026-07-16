@@ -273,6 +273,8 @@ function readHostContext() {
 
 function createProfileState() {
   return {
+    requests: shuffle(REQUESTS),
+    objects: shuffle(OBJECTS),
     requestIndex: 0,
     completedRequests: 0,
     helpLevel: 0,
@@ -292,7 +294,7 @@ function getState() {
 }
 
 function getRequest() {
-  return REQUESTS[getState().requestIndex];
+  return getState().requests[getState().requestIndex];
 }
 
 function getPrimarySentence(request = getRequest()) {
@@ -322,11 +324,13 @@ function render() {
 function renderProfile() {
   const profile = getProfile();
   magicHouse.classList.toggle('is-rtl', profile.primary === 'he');
+  magicHouse.classList.toggle('is-hebrew-learning', profile.primary === 'he');
   requireElement('profile-avatar').textContent = profile.avatar;
   requireElement('profile-name').textContent = profile.name;
   requireElement('profile-language').textContent = profile.languageLabel;
   guideCharacter.src = profile.idleCharacter;
   requireElement('celebration-character').src = profile.happyCharacter;
+  requireElement('sound-button').hidden = profile.primary === 'he';
 }
 
 function renderDropZones() {
@@ -358,7 +362,7 @@ function renderObjectDrawer() {
   removeDragGhosts();
   objectList.innerHTML = '';
 
-  OBJECTS.forEach((object) => {
+  state.objects.forEach((object) => {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'object-button';
@@ -367,19 +371,22 @@ function renderObjectDrawer() {
     button.disabled = state.placedObjectIds.has(object.id);
     button.classList.toggle('is-placed', state.placedObjectIds.has(object.id));
     button.classList.toggle('is-selected', selectedObjectId === object.id);
+    button.classList.add(profile.primary === 'he' ? 'is-word-choice' : 'is-image-choice');
     button.setAttribute('aria-pressed', String(selectedObjectId === object.id));
     button.setAttribute('aria-label', object.labels[profile.primary]);
 
-    const art = document.createElement('span');
-    art.className = 'object-art';
-    setSpritePosition(art, object);
-
-    const label = document.createElement('span');
-    label.className = 'object-label';
-    label.textContent = object.labels[profile.primary];
-    label.dir = profile.primary === 'en' ? 'ltr' : 'rtl';
-
-    button.append(art, label);
+    if (profile.primary === 'en') {
+      const art = document.createElement('span');
+      art.className = 'object-art';
+      setSpritePosition(art, object);
+      button.append(art);
+    } else {
+      const label = document.createElement('span');
+      label.className = 'object-label';
+      label.textContent = object.labels.he;
+      label.dir = 'rtl';
+      button.append(label);
+    }
     button.addEventListener('click', () => selectObject(object.id));
     attachPointerDrag(button, object);
     objectList.append(button);
@@ -567,7 +574,7 @@ function useHelp() {
   if (previousHelpLevel < 3 && state.helpLevel === 3) {
     state.solutionHints += 1;
   }
-  if (state.helpLevel === 1) {
+  if (state.helpLevel === 1 && getProfile().primary === 'en') {
     speakSentence();
   }
   applyHelpState();
@@ -576,7 +583,9 @@ function useHelp() {
 function applyHelpState() {
   const state = getState();
   const request = getRequest();
-  instructionPanel.classList.toggle('show-keywords', state.helpLevel >= 2);
+  const keywordHelpLevel = getProfile().primary === 'he' ? 1 : 2;
+  instructionPanel.classList.toggle('show-keywords', state.helpLevel >= keywordHelpLevel);
+  translationElement.hidden = state.helpLevel < 3;
 
   document.querySelectorAll('.object-button').forEach((button) => {
     const isTarget = request.targets.some((target) => target.objectId === button.dataset.objectId && !state.placedObjectIds.has(target.objectId));
@@ -584,9 +593,7 @@ function applyHelpState() {
   });
 
   document.querySelectorAll('.drop-zone').forEach((zone) => {
-    const isTarget = request.targets.some((target) => target.zoneId === zone.dataset.zone && !state.placedObjectIds.has(target.objectId));
-    zone.classList.toggle('is-current', isTarget);
-    zone.classList.toggle('is-hinted', state.helpLevel >= 3 && isTarget);
+    zone.classList.remove('is-current', 'is-hinted');
   });
 
   refreshPlacementCues();
@@ -620,12 +627,20 @@ function getFinalStars() {
 }
 
 function speakSentence() {
+  if (getProfile().primary === 'he') {
+    return;
+  }
   sentenceAudio.currentTime = 0;
   void sentenceAudio.play();
 }
 
 function prepareSentenceAudio() {
-  sentenceAudio.src = `./assets/magic-house/audio/${getProfile().primary}/request-${getState().requestIndex + 1}.wav`;
+  if (getProfile().primary === 'he') {
+    stopSentenceAudio();
+    sentenceAudio.removeAttribute('src');
+    return;
+  }
+  sentenceAudio.src = `./assets/magic-house/audio/${getProfile().primary}/${getRequest().id}.wav`;
   sentenceAudio.load();
 }
 
@@ -752,7 +767,13 @@ function attachPointerDrag(button, object) {
       removeDragGhosts();
       ghost = document.createElement('span');
       ghost.className = 'drag-ghost';
-      setSpritePosition(ghost, object);
+      if (getProfile().primary === 'he') {
+        ghost.classList.add('is-word');
+        ghost.textContent = object.labels.he;
+        ghost.dir = 'rtl';
+      } else {
+        setSpritePosition(ghost, object);
+      }
       document.body.append(ghost);
     }
 
@@ -804,6 +825,15 @@ function attachPointerDrag(button, object) {
 
 function removeDragGhosts() {
   document.querySelectorAll('.drag-ghost').forEach((ghost) => ghost.remove());
+}
+
+function shuffle(items) {
+  const shuffled = [...items];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+  return shuffled;
 }
 
 function setSpritePosition(element, object) {

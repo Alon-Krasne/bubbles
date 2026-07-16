@@ -12,7 +12,7 @@ const PROFILE_EMOJI_BY_CHARACTER: Record<ProfileCharacter, string> = {
 };
 
 const HOSTED_LEVEL_BY_STAGE: Record<HostedActivityId, Partial<Record<number, string>>> = {
-  'memory-garden': { 1: 'level-1', 4: 'level-2' },
+  'memory-garden': { 1: 'level-1', 4: 'level-2', 6: 'level-3' },
   'listening-shop': { 2: 'shop-level-1', 5: 'shop-level-2' },
 };
 

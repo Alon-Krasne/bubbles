@@ -227,6 +227,8 @@ export function initShopGame(deps: ShopDeps) {
     locked: false,
     customerEmoji: SHOP_CUSTOMER_EMOJIS[0],
     customerName: SHOP_CUSTOMER_NAMES[0],
+    targetDeck: [] as ShopItem[],
+    lastTargetId: null as string | null,
     timers: [] as number[],
   };
 
@@ -375,6 +377,8 @@ export function initShopGame(deps: ShopDeps) {
     state.mistakes = 0;
     state.roundCoins = 0;
     state.locked = false;
+    state.targetDeck = shuffle(getLevelTargetSource(level));
+    state.lastTargetId = null;
     requireElement<HTMLElement>('shop-profile-badge').textContent = `${deps.getActiveProfile().name} משחק/ת`;
     clearShopTimers();
     hideCelebration();
@@ -400,15 +404,23 @@ export function initShopGame(deps: ShopDeps) {
     renderCustomer();
     renderShelves();
     renderBasket();
-    setFeedback('הקשיבו להזמנה ובחרו מהמדף');
+    const isEnglishLearning = getLearningLanguage() === 'en';
+    setFeedback(isEnglishLearning ? 'הקשיבו להזמנה ובחרו מהמדף' : 'קראו את ההזמנה ובחרו מהמדף');
     updateHud();
-    scheduleTimer(() => speakOrder(), 600);
+    if (isEnglishLearning) {
+      scheduleTimer(() => speakOrder(), 600);
+    }
   }
 
   function renderCustomer() {
+    const isEnglishLearning = getLearningLanguage() === 'en';
+    const orderPrompt = requireElement<HTMLElement>('shop-order-prompt');
     requireElement<HTMLElement>('shop-customer-avatar').textContent = state.customerEmoji;
     requireElement<HTMLElement>('shop-customer-name').textContent = state.customerName;
-    requireElement<HTMLElement>('shop-order-prompt').textContent = 'אני רוצה בבקשה...';
+    orderPrompt.textContent = isEnglishLearning ? 'אני רוצה בבקשה...' : requireCurrentOrder().sentence;
+    orderPrompt.dir = 'rtl';
+    requireElement<HTMLButtonElement>('shop-replay-btn').hidden = !isEnglishLearning;
+    requireElement<HTMLButtonElement>('shop-order-replay-btn').hidden = !isEnglishLearning;
     requireElement<HTMLElement>('shop-customer-card').classList.remove('is-happy', 'is-leaving');
   }
 
@@ -454,9 +466,11 @@ export function initShopGame(deps: ShopDeps) {
       tile.classList.remove('is-wrong');
       void tile.offsetWidth;
       tile.classList.add('is-wrong');
-      setFeedback('כמעט. מקשיבים שוב');
+      setFeedback(getLearningLanguage() === 'en' ? 'כמעט. מקשיבים שוב' : 'כמעט. קוראים שוב');
       updateHud();
-      scheduleTimer(() => speakOrder(), 180);
+      if (getLearningLanguage() === 'en') {
+        scheduleTimer(() => speakOrder(), 180);
+      }
       return;
     }
 
@@ -472,17 +486,22 @@ export function initShopGame(deps: ShopDeps) {
     if (isOrderComplete(order)) {
       state.locked = true;
       state.servedCustomers += 1;
+      updateHud();
       setFeedback('תודה רבה!');
       requireElement<HTMLElement>('shop-customer-card').classList.add('is-happy');
-      scheduleTimer(() => speakText(createConfirmationSentence(item, getLearningLanguage()), getLearningLanguage()), 120);
-      scheduleTimer(() => speakText(createThankYouSentence(getLearningLanguage()), getLearningLanguage()), 1120);
+      if (getLearningLanguage() === 'en') {
+        scheduleTimer(() => speakText(createConfirmationSentence(item, 'en'), 'en'), 120);
+        scheduleTimer(() => speakText(createThankYouSentence('en'), 'en'), 1120);
+      }
       scheduleTimer(() => {
         requireElement<HTMLElement>('shop-customer-card').classList.add('is-leaving');
       }, 1460);
       scheduleTimer(() => nextCustomer(), 1860);
     } else {
       setFeedback('יפה! ממשיכים למלא את הסל');
-      speakText(createConfirmationSentence(item, getLearningLanguage()), getLearningLanguage());
+      if (getLearningLanguage() === 'en') {
+        speakText(createConfirmationSentence(item, 'en'), 'en');
+      }
     }
   }
 
@@ -562,7 +581,7 @@ export function initShopGame(deps: ShopDeps) {
   }
 
   function replayOrder() {
-    if (state.currentOrder) {
+    if (state.currentOrder && getLearningLanguage() === 'en') {
       speakOrder();
     }
   }
@@ -625,17 +644,10 @@ export function initShopGame(deps: ShopDeps) {
 
   function createOrder(): ShopOrder {
     const level = state.activeLevel;
-    if (level.id === 'shop-level-1' && state.servedCustomers === 0) {
-      const banana = getShopItem('banana');
-      return createLocalizedOrder(
-        'Can I have a banana, please?',
-        [banana, getShopItem('apple'), getShopItem('milk'), getShopItem('bread')],
-        [{ item: banana, required: 1, served: 0 }],
-      );
-    }
+    const source = getLevelTargetSource(level);
 
     if (level.mode === 'color') {
-      const target = randomFrom(COLOR_ITEMS);
+      const [target] = drawTargetItems(source, 1);
       return createLocalizedOrder(
         createRequestSentence(definitePhrase(target)),
         createShelf(COLOR_ITEMS, [target], level.shelfSize),
@@ -644,7 +656,7 @@ export function initShopGame(deps: ShopDeps) {
     }
 
     if (level.mode === 'quantity') {
-      const target = randomFrom(getShopItems(SHOP_QUANTITY_ITEM_IDS));
+      const [target] = drawTargetItems(source, 1);
       const quantity = 1 + Math.floor(Math.random() * 3);
       return createLocalizedOrder(
         createRequestSentence(quantityPhrase(target, quantity)),
@@ -654,8 +666,7 @@ export function initShopGame(deps: ShopDeps) {
     }
 
     if (level.mode === 'double') {
-      const source = getShopItems(SHOP_DOUBLE_ITEM_IDS);
-      const targets = shuffle(source).slice(0, 2);
+      const targets = drawTargetItems(source, 2);
       return createLocalizedOrder(
         createRequestSentence(`${indefinitePhrase(targets[0])} and ${indefinitePhrase(targets[1])}`),
         createShelf(source, targets, level.shelfSize),
@@ -663,13 +674,44 @@ export function initShopGame(deps: ShopDeps) {
       );
     }
 
-    const source = getShopItems(level.id === 'shop-level-2' ? SHOP_LEVEL_2_ITEM_IDS : SHOP_LEVEL_1_ITEM_IDS);
-    const target = randomFrom(source);
+    const [target] = drawTargetItems(source, 1);
     return createLocalizedOrder(
       createRequestSentence(indefinitePhrase(target)),
       createShelf(source, [target], level.shelfSize),
       [{ item: target, required: 1, served: 0 }],
     );
+  }
+
+  function drawTargetItems(source: ShopItem[], count: number) {
+    const targets: ShopItem[] = [];
+
+    while (targets.length < count) {
+      if (state.targetDeck.length === 0) {
+        state.targetDeck = shuffle(source);
+        if (state.targetDeck.length > 1 && state.targetDeck[0].id === state.lastTargetId) {
+          [state.targetDeck[0], state.targetDeck[1]] = [state.targetDeck[1], state.targetDeck[0]];
+        }
+      }
+
+      const target = state.targetDeck.shift()!;
+      targets.push(target);
+      state.lastTargetId = target.id;
+    }
+
+    return targets;
+  }
+
+  function getLevelTargetSource(level: ShopLevel) {
+    if (level.mode === 'color') {
+      return COLOR_ITEMS;
+    }
+    if (level.mode === 'quantity') {
+      return getShopItems(SHOP_QUANTITY_ITEM_IDS);
+    }
+    if (level.mode === 'double') {
+      return getShopItems(SHOP_DOUBLE_ITEM_IDS);
+    }
+    return getShopItems(level.id === 'shop-level-2' ? SHOP_LEVEL_2_ITEM_IDS : SHOP_LEVEL_1_ITEM_IDS);
   }
 
   function isLevelLocked(index: number) {
@@ -851,7 +893,12 @@ function randomFrom<T>(items: T[]) {
 }
 
 function shuffle<T>(items: T[]) {
-  return [...items].sort(() => Math.random() - 0.5);
+  const shuffled = [...items];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+  return shuffled;
 }
 
 function capitalize(text: string) {

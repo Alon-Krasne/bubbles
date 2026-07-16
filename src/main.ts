@@ -72,7 +72,7 @@ interface MemoryLevel {
   subtitle: string;
   pairs: number;
   icon: string;
-  hints: string[];
+  wordPool: string[];
   locked: boolean;
   reward?: string;
 }
@@ -100,7 +100,7 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     subtitle: 'חיות קלות',
     pairs: MEMORY_DIFFICULTY_PAIRS.easy,
     icon: '🐶',
-    hints: ['dog', 'cat', 'bird', 'rabbit'],
+    wordPool: ['dog', 'cat', 'bird', 'rabbit', 'fish', 'bear', 'fox', 'frog', 'cow', 'pig', 'sheep', 'duck'],
     locked: false,
   },
   {
@@ -110,7 +110,7 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     subtitle: 'פירות',
     pairs: MEMORY_DIFFICULTY_PAIRS.medium,
     icon: '🍎',
-    hints: ['apple', 'banana', 'orange', 'strawberry', 'grapes', 'pear'],
+    wordPool: ['apple', 'banana', 'orange', 'strawberry', 'grapes', 'pear', 'watermelon', 'peach', 'pineapple', 'lemon', 'cherries'],
     locked: false,
   },
   {
@@ -120,7 +120,7 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     subtitle: 'טבע ושמיים',
     pairs: MEMORY_DIFFICULTY_PAIRS.hard,
     icon: '☀️',
-    hints: ['sun', 'moon', 'tree', 'flower', 'star', 'cloud', 'rainbow', 'mountain'],
+    wordPool: ['sun', 'moon', 'tree', 'flower', 'star', 'cloud', 'rainbow', 'mountain', 'rain', 'leaf', 'snowflake', 'fire', 'volcano', 'ocean', 'cactus'],
     locked: false,
     reward: '🎁',
   },
@@ -131,7 +131,7 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     subtitle: 'אוכל בסיסי',
     pairs: MEMORY_DIFFICULTY_PAIRS.easy,
     icon: '🥛',
-    hints: ['bread', 'milk', 'egg', 'cheese'],
+    wordPool: ['bread', 'milk', 'egg', 'cheese', 'water', 'rice', 'soup', 'honey', 'sandwich', 'corn', 'potato', 'carrot'],
     locked: true,
   },
   {
@@ -141,7 +141,7 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     subtitle: 'צעצועים ולימודים',
     pairs: MEMORY_DIFFICULTY_PAIRS.medium,
     icon: '⚽',
-    hints: ['ball', 'book', 'pencil', 'crayon', 'backpack', 'balloon'],
+    wordPool: ['ball', 'book', 'pencil', 'crayon', 'backpack', 'balloon', 'kite', 'teddy-bear'],
     locked: true,
     reward: '🎁',
   },
@@ -152,7 +152,7 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     subtitle: 'נסיעות',
     pairs: MEMORY_DIFFICULTY_PAIRS.medium,
     icon: '🚗',
-    hints: ['car', 'bus', 'train', 'airplane', 'boat', 'bicycle'],
+    wordPool: ['car', 'bus', 'train', 'airplane', 'boat', 'bicycle', 'scooter', 'tractor', 'taxi', 'rocket'],
     locked: true,
   },
   {
@@ -162,7 +162,7 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     subtitle: 'חיות גדולות',
     pairs: MEMORY_DIFFICULTY_PAIRS.hard,
     icon: '🐘',
-    hints: ['elephant', 'giraffe', 'zebra', 'lion', 'tiger', 'panda', 'monkey', 'bear'],
+    wordPool: ['elephant', 'giraffe', 'zebra', 'lion', 'tiger', 'panda', 'monkey', 'bear', 'horse', 'cow', 'whale', 'dolphin', 'penguin', 'turtle'],
     locked: true,
   },
   {
@@ -172,7 +172,7 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     subtitle: 'בגדים',
     pairs: MEMORY_DIFFICULTY_PAIRS.easy,
     icon: '👕',
-    hints: ['hat', 'shirt', 'shoe', 'sock'],
+    wordPool: ['hat', 'shirt', 'shoe', 'sock', 'dress', 'pants', 'coat', 'scarf', 'glove'],
     locked: true,
     reward: '🎁',
   },
@@ -183,7 +183,7 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     subtitle: 'דברים בבית',
     pairs: MEMORY_DIFFICULTY_PAIRS.medium,
     icon: '🏠',
-    hints: ['house', 'bed', 'chair', 'lamp', 'cup', 'key'],
+    wordPool: ['house', 'door', 'bed', 'chair', 'couch', 'lamp', 'key', 'clock', 'cup', 'plate', 'spoon', 'fork', 'toothbrush', 'soap', 'scissors', 'phone', 'umbrella', 'radio'],
     locked: true,
   },
   {
@@ -193,7 +193,7 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     subtitle: 'ירקות ופירות',
     pairs: MEMORY_DIFFICULTY_PAIRS.hard,
     icon: '🥕',
-    hints: ['tomato', 'carrot', 'corn', 'potato', 'mushroom', 'lemon', 'watermelon', 'pineapple'],
+    wordPool: ['tomato', 'carrot', 'corn', 'potato', 'mushroom', 'lemon', 'watermelon', 'pineapple', 'apple', 'banana', 'orange', 'strawberry', 'grapes', 'pear', 'peach', 'cherries'],
     locked: true,
   },
   {
@@ -203,7 +203,7 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     subtitle: 'גוף',
     pairs: MEMORY_DIFFICULTY_PAIRS.easy,
     icon: '👁️',
-    hints: ['eye', 'ear', 'nose', 'mouth'],
+    wordPool: ['eye', 'ear', 'nose', 'mouth', 'tooth', 'hand', 'foot', 'brain'],
     locked: true,
     reward: '🎁',
   },
@@ -214,7 +214,7 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     subtitle: 'אנשים וגוף',
     pairs: MEMORY_DIFFICULTY_PAIRS.medium,
     icon: '🧒',
-    hints: ['baby', 'child', 'girl', 'boy', 'teacher', 'hand'],
+    wordPool: ['baby', 'child', 'girl', 'boy', 'teacher', 'eye', 'ear', 'nose', 'mouth', 'tooth', 'hand', 'foot', 'brain'],
     locked: true,
   },
   {
@@ -224,7 +224,7 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     subtitle: 'פינוקים',
     pairs: MEMORY_DIFFICULTY_PAIRS.hard,
     icon: '🍰',
-    hints: ['cake', 'cookie', 'ice-cream', 'pizza', 'hamburger', 'fries', 'sandwich', 'candy'],
+    wordPool: ['cake', 'cookie', 'ice-cream', 'pizza', 'hamburger', 'fries', 'sandwich', 'candy', 'chocolate', 'doughnut', 'honey', 'spaghetti', 'soup', 'rice'],
     locked: true,
   },
   {
@@ -234,7 +234,7 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     subtitle: 'צבעים וחפצים',
     pairs: MEMORY_DIFFICULTY_PAIRS.medium,
     icon: '💙',
-    hints: ['red-heart', 'blue-heart', 'yellow-heart', 'green-heart', 'red-book', 'blue-book'],
+    wordPool: ['red-heart', 'blue-heart', 'yellow-heart', 'green-heart', 'purple-heart', 'red-book', 'blue-book', 'orange-book', 'green-book', 'red-square', 'blue-square', 'yellow-square', 'green-square'],
     locked: true,
   },
   {
@@ -244,7 +244,7 @@ const MEMORY_LEVELS: MemoryLevel[] = [
     subtitle: 'מילים מוכרות',
     pairs: MEMORY_DIFFICULTY_PAIRS.hard,
     icon: '👑',
-    hints: ['dog', 'apple', 'house', 'car', 'ball', 'tree', 'fish', 'flower'],
+    wordPool: ['dog', 'cat', 'fish', 'bird', 'apple', 'banana', 'bread', 'milk', 'house', 'bed', 'chair', 'lamp', 'car', 'bus', 'train', 'bicycle', 'ball', 'book', 'pencil', 'balloon', 'tree', 'flower', 'sun', 'cloud'],
     locked: true,
     reward: '🏆',
   },
@@ -886,8 +886,14 @@ function startMemoryLevel(levelId: MemoryLevelId) {
   levelMap.classList.add('hidden');
   levelMap.classList.remove('is-returning');
   gameArea.classList.remove('hidden', 'is-completing');
-  requireElement<HTMLElement>('memory-level-title').textContent = `${level.title} - ${level.subtitle}`;
+  requireElement<HTMLElement>('memory-level-title').textContent = `${getMemoryStageTitle(level)} - ${level.subtitle}`;
   startMemoryRound(level);
+}
+
+function getMemoryStageTitle(level: MemoryLevel) {
+  return hostedActivityContext?.activityId === 'memory-garden'
+    ? `שלב ${hostedActivityContext.stageId}`
+    : level.title;
 }
 
 function startMemoryRound(level: MemoryLevel) {
@@ -924,7 +930,7 @@ function startMemoryRound(level: MemoryLevel) {
 
   memoryCards = shuffleMemoryCards(cards);
   renderMemoryBoard();
-  updateMemoryStatus(`${level.title}: הפכו שני קלפים שמתחברים`);
+  updateMemoryStatus(`${getMemoryStageTitle(level)}: הפכו שני קלפים שמתחברים`);
   hideMemoryToast();
 }
 
@@ -947,17 +953,11 @@ function shuffleMemoryWords(words: MemoryWord[]): MemoryWord[] {
 }
 
 function selectMemoryWords(level: MemoryLevel) {
-  const selectedWords = level.hints.map(getMemoryWord);
-  if (selectedWords.length >= level.pairs) {
-    const hintWords = selectedWords.length > level.pairs ? shuffleMemoryWords(selectedWords) : selectedWords;
-    return hintWords.slice(0, level.pairs);
+  if (level.wordPool.length < level.pairs) {
+    throw new Error(`Memory level ${level.id} needs at least ${level.pairs} words`);
   }
 
-  const selectedIds = new Set(selectedWords.map((word) => word.id));
-  const fillerWords = MEMORY_WORDS
-    .filter((word) => !selectedIds.has(word.id))
-    .slice(0, level.pairs - selectedWords.length);
-  return [...selectedWords, ...fillerWords];
+  return shuffleMemoryWords(level.wordPool.map(getMemoryWord)).slice(0, level.pairs);
 }
 
 function getMemoryWord(wordId: string) {
@@ -1008,7 +1008,7 @@ function renderMemoryBoard() {
 
     front.append(word);
 
-    if (card.kind === targetCardKind) {
+    if (card.kind === targetCardKind && learningLanguage === 'en') {
       const spokenWord = card.kind === 'english' ? card.english : card.text;
       const soundButton = document.createElement('button');
       soundButton.type = 'button';
@@ -1095,7 +1095,7 @@ function matchMemoryCards() {
   const matchedWord = getMemoryWord(wordId);
   const pairCount = activeMemoryLevel.pairs;
   const isComplete = memoryMatchedPairs.size === pairCount;
-  const message = isComplete ? `${activeMemoryLevel.title} הושלם!` : `זוג מנצח: ${matchedWord.hebrew} ו-${matchedWord.english}`;
+  const message = isComplete ? `${getMemoryStageTitle(activeMemoryLevel)} הושלם!` : `זוג מנצח: ${matchedWord.hebrew} ו-${matchedWord.english}`;
   const learningLanguage = hostedActivityContext?.profileLanguage ?? 'en';
   speakMemoryWord(learningLanguage === 'en' ? matchedWord.english : matchedWord.hebrew, learningLanguage);
 
@@ -1493,7 +1493,7 @@ function showMemoryCelebration(stars: number) {
   const subtitle = requireElement<HTMLDivElement>('memory-celebration-subtitle');
   const profile = getActiveProfile().name;
   requireElement<HTMLDivElement>('memory-celebration-stars').textContent = '⭐'.repeat(stars);
-  subtitle.textContent = `${profile}, ${activeMemoryLevel.title} הושלם עם ${stars} כוכבים`;
+  subtitle.textContent = `${profile}, ${getMemoryStageTitle(activeMemoryLevel)} הושלם עם ${stars} כוכבים`;
 
   requireElement<HTMLElement>('memory-game-area').classList.add('is-completing');
   celebration.classList.add('is-visible');

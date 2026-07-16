@@ -4,7 +4,7 @@ const stages = [
   { id: 3, x: 22, y: 70, game: 'house', available: true, activity: 'magic-house', level: 'bedroom-1', entry: './magic-house.html', title: 'חדר השינה הקסום', description: 'מסדרים את החדר לפי משפטים באנגלית ובעברית' },
   { id: 4, x: 18, y: 57, game: 'memory', available: true, activity: 'memory-garden', level: 'level-2', entry: '../index.html', title: 'פירות צבעוניים', description: 'מוצאים זוגות של מילים ופירות' },
   { id: 5, x: 29, y: 47, game: 'shop', available: true, activity: 'listening-shop', level: 'shop-level-2', entry: '../index.html', title: 'החנות מתמלאת', description: 'מקשיבים להזמנה ובוחרים מהמדף' },
-  { id: 6, x: 40, y: 45, game: 'bubbles', available: false, title: 'שומעים ותופסים', description: 'מוצאים את המילה בין הבועות' },
+  { id: 6, x: 40, y: 45, game: 'memory', available: true, activity: 'memory-garden', level: 'level-3', entry: '../index.html', title: 'טבע ושמיים', description: 'מוצאים שמונה זוגות של מילים מהטבע' },
   { id: 7, x: 50, y: 51, game: 'memory', available: false, title: 'טבע ושמיים', description: 'מחברים מילים מהעולם שסביבנו' },
   { id: 8, x: 59, y: 60, game: 'shop', available: false, title: 'אחת שתיים שלוש', description: 'ממלאים הזמנות עם כמויות' },
   { id: 9, x: 68, y: 67, game: 'bubbles', available: false, title: 'שומעים וכותבים', description: 'שומעים מילה ומוצאים איך כותבים אותה' },
@@ -99,6 +99,7 @@ let profiles = loadProfiles();
 let routeProgress = loadWorldProgress();
 let activeProfileId = loadActiveProfileId();
 validateWorldState();
+upgradeStageSixProgress();
 let selectedStage = stages.find((stage) => stage.id === getRouteProgress(activeProfileId).currentStage);
 let editingProfileId = null;
 let editorReturnsToGate = true;
@@ -148,6 +149,22 @@ function validateWorldState() {
 
   if (!profileIds.has(activeProfileId)) {
     throw new Error(`Invalid active world profile ${activeProfileId}`);
+  }
+}
+
+function upgradeStageSixProgress() {
+  let changed = false;
+
+  profiles.forEach((profile) => {
+    const progress = getRouteProgress(profile.id);
+    if (progress.currentStage === 5 && progress.progress[5] > 0) {
+      progress.currentStage = 6;
+      changed = true;
+    }
+  });
+
+  if (changed) {
+    saveWorldProgress();
   }
 }
 
@@ -667,6 +684,7 @@ function completeLaunchedStage(launch, stars = 3) {
 
 function showWorldComplete(profile, progress) {
   worldCompleteCharacter.src = getCharacterAsset(profile.character, 'celebrate');
+  document.getElementById('world-complete-stage-copy').textContent = `סיימתם את כל ${availableStages.length} השלבים שפתוחים עכשיו.`;
   document.getElementById('world-complete-score').textContent = `${getEarnedStarTotal(progress)} / ${availableStarTotal}`;
   setWorldInteractionLocked(true);
   worldCompleteOverlay.inert = false;

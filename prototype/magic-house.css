@@ -302,6 +302,21 @@ body {
   direction: rtl;
 }
 
+.magic-house.is-hebrew-learning .instruction-panel {
+  grid-template-columns: 64px minmax(0, 1fr) 64px;
+  direction: ltr;
+}
+
+.magic-house.is-hebrew-learning .sentence-copy {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.magic-house.is-hebrew-learning .help-button {
+  grid-column: 1;
+  grid-row: 1;
+}
+
 .profile-button {
   justify-self: start;
   width: 210px;
@@ -449,7 +464,7 @@ body {
 
 .progress-cluster > strong {
   font-family: 'Secular One', sans-serif;
-  font-size: 20px;
+  font-size: 24px;
 }
 
 .instruction-panel {
@@ -651,7 +666,7 @@ body {
   color: var(--ink);
   font-size: 15px;
   font-weight: 900;
-  line-height: 1.15;
+  line-height: 1.25;
 }
 
 .success-toast-star {
@@ -705,6 +720,16 @@ body {
   touch-action: none;
 }
 
+.object-button.is-image-choice,
+.object-button.is-word-choice {
+  grid-template-rows: 1fr;
+}
+
+.object-button.is-word-choice {
+  padding: 12px 8px;
+  background: rgba(255, 252, 240, 0.92);
+}
+
 .object-button:hover,
 .object-button:focus-visible,
 .object-button.is-selected {
@@ -746,12 +771,11 @@ body {
 
 .object-label {
   width: 100%;
-  overflow: hidden;
-  font-size: 15px;
+  font-size: 24px;
   font-weight: 900;
+  line-height: 1.25;
   text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .drag-ghost {
@@ -767,6 +791,23 @@ body {
   opacity: 0.9;
   transform: translate(-50%, -50%) scale(1.08);
   pointer-events: none;
+}
+
+.drag-ghost.is-word {
+  width: auto;
+  min-width: 112px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  border: 3px solid white;
+  border-radius: 8px;
+  padding: 8px 14px;
+  background: #fff9dc;
+  color: var(--ink);
+  font-family: 'Rubik', sans-serif;
+  font-size: 22px;
+  font-weight: 900;
+  white-space: nowrap;
 }
 
 .celebration {
@@ -952,6 +993,10 @@ body {
     gap: 8px;
   }
 
+  .magic-house.is-hebrew-learning .instruction-panel {
+    grid-template-columns: 58px minmax(0, 1fr) 58px;
+  }
+
   .sound-button,
   .help-button {
     width: 56px;
@@ -1012,7 +1057,8 @@ body {
   }
 
   .object-label {
-    font-size: 13px;
+    font-size: 18px;
+    line-height: 1.25;
   }
 }
 
