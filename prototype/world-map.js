@@ -1,21 +1,7 @@
-const stages = [
-  { id: 1, x: 8, y: 90, game: 'memory', available: true, activity: 'memory-garden', level: 'level-1', entry: '../index.html', title: 'חיות ראשונות', description: 'מוצאים זוגות של מילים וחיות' },
-  { id: 2, x: 15, y: 82, game: 'shop', available: true, activity: 'listening-shop', level: 'shop-level-1', entry: '../index.html', title: 'הקנייה הראשונה', description: 'מקשיבים ומגישים פריט לקונה' },
-  { id: 3, x: 22, y: 70, game: 'house', available: true, activity: 'magic-house', level: 'bedroom-1', entry: './magic-house.html', title: 'חדר השינה הקסום', description: 'מסדרים את החדר לפי משפטים באנגלית ובעברית' },
-  { id: 4, x: 18, y: 57, game: 'memory', available: true, activity: 'memory-garden', level: 'level-2', entry: '../index.html', title: 'פירות צבעוניים', description: 'מוצאים זוגות של מילים ופירות' },
-  { id: 5, x: 29, y: 47, game: 'shop', available: true, activity: 'listening-shop', level: 'shop-level-2', entry: '../index.html', title: 'החנות מתמלאת', description: 'מקשיבים להזמנה ובוחרים מהמדף' },
-  { id: 6, x: 40, y: 45, game: 'memory', available: true, activity: 'memory-garden', level: 'level-3', entry: '../index.html', title: 'טבע ושמיים', description: 'מוצאים שמונה זוגות של מילים מהטבע' },
-  { id: 7, x: 50, y: 51, game: 'memory', available: false, title: 'טבע ושמיים', description: 'מחברים מילים מהעולם שסביבנו' },
-  { id: 8, x: 59, y: 60, game: 'shop', available: false, title: 'אחת שתיים שלוש', description: 'ממלאים הזמנות עם כמויות' },
-  { id: 9, x: 68, y: 67, game: 'bubbles', available: false, title: 'שומעים וכותבים', description: 'שומעים מילה ומוצאים איך כותבים אותה' },
-  { id: 10, x: 77, y: 72, game: 'memory', available: false, title: 'דברים בבית', description: 'מגלים מילים שמכירים מהבית' },
-  { id: 11, x: 86, y: 66, game: 'shop', available: false, title: 'צבעים בחנות', description: 'מקשיבים לצבע ובוחרים נכון' },
-  { id: 12, x: 89, y: 54, game: 'bubbles', available: false, title: 'מבול מילים', description: 'תופסים רצף של מילים נכונות' },
-  { id: 13, x: 84, y: 43, game: 'memory', available: false, title: 'נוסעים רחוק', description: 'מחברים מילים של כלי תחבורה' },
-  { id: 14, x: 78, y: 35, game: 'shop', available: false, title: 'הזמנה כפולה', description: 'זוכרים שני פריטים בהזמנה אחת' },
-  { id: 15, x: 87, y: 28, game: 'bubbles', available: false, symbol: '★', title: 'מסיבת המילים', description: 'משימת הסיום של עולם הבועות' },
-];
+import { TRAIL_STAGES } from './shared/trail-catalog.mjs';
+import { createTrackProgress, migrateTrackProgress } from './shared/track-progress.mjs';
 
+const stages = TRAIL_STAGES;
 const availableStages = stages.filter((stage) => stage.available);
 const availableStarTotal = availableStages.length * 3;
 const lastAvailableStageId = availableStages[availableStages.length - 1].id;
@@ -42,15 +28,9 @@ const languageOptions = {
   he: { label: 'עברית', learningLabel: 'לומדים עברית' },
 };
 
-const gameLabels = {
-  memory: 'גן מילים',
-  shop: 'החנות הקטנה',
-  bubbles: 'בועות מילים',
-  house: 'הבית הקסום',
-};
-
 const WORLD_PROFILES_STORAGE_KEY = 'bubble_world_map_profiles_v1';
-const WORLD_PROGRESS_STORAGE_KEY = 'bubble_world_map_progress_v1';
+const WORLD_PROGRESS_STORAGE_KEY = 'bubble_world_map_progress_v2';
+const LEGACY_WORLD_PROGRESS_STORAGE_KEY = 'bubble_world_map_progress_v1';
 const WORLD_ACTIVE_PROFILE_STORAGE_KEY = 'bubble_world_map_profile_v1';
 const ACTIVITY_MESSAGE_VERSION = 1;
 const PROFILE_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i;
@@ -94,12 +74,20 @@ const deleteConfirm = document.getElementById('delete-confirm');
 const deleteConfirmCopy = document.getElementById('delete-confirm-copy');
 const cancelDeleteButton = document.getElementById('cancel-delete-button');
 const confirmDeleteButton = document.getElementById('confirm-delete-button');
+const trackResetSection = document.getElementById('track-reset-section');
+const trackStageSelect = document.getElementById('track-stage-select');
+const trackResetButton = document.getElementById('track-reset-button');
+const trackResetConfirm = document.getElementById('track-reset-confirm');
+const trackResetCopy = document.getElementById('track-reset-copy');
+const cancelTrackResetButton = document.getElementById('cancel-track-reset-button');
+const confirmTrackResetButton = document.getElementById('confirm-track-reset-button');
+const trackResetStatus = document.getElementById('track-reset-status');
 
 let profiles = loadProfiles();
 let routeProgress = loadWorldProgress();
 let activeProfileId = loadActiveProfileId();
 validateWorldState();
-upgradeStageSixProgress();
+upgradeCompletedFrontier();
 let selectedStage = stages.find((stage) => stage.id === getRouteProgress(activeProfileId).currentStage);
 let editingProfileId = null;
 let editorReturnsToGate = true;
@@ -152,13 +140,13 @@ function validateWorldState() {
   }
 }
 
-function upgradeStageSixProgress() {
+function upgradeCompletedFrontier() {
   let changed = false;
 
   profiles.forEach((profile) => {
     const progress = getRouteProgress(profile.id);
-    if (progress.currentStage === 5 && progress.progress[5] > 0) {
-      progress.currentStage = 6;
+    while (progress.progress[progress.currentStage] > 0 && progress.currentStage < lastAvailableStageId) {
+      progress.currentStage += 1;
       changed = true;
     }
   });
@@ -187,6 +175,17 @@ function loadWorldProgress() {
   const saved = localStorage.getItem(WORLD_PROGRESS_STORAGE_KEY);
   if (saved) {
     return JSON.parse(saved);
+  }
+
+  const legacy = localStorage.getItem(LEGACY_WORLD_PROGRESS_STORAGE_KEY);
+  if (legacy) {
+    const legacyProgress = JSON.parse(legacy);
+    const migratedProgress = Object.fromEntries(Object.entries(legacyProgress).map(([profileId, progress]) => [
+      profileId,
+      migrateTrackProgress(progress, 6, stages.length),
+    ]));
+    localStorage.setItem(WORLD_PROGRESS_STORAGE_KEY, JSON.stringify(migratedProgress));
+    return migratedProgress;
   }
 
   const initialProgress = structuredClone(DEFAULT_ROUTE_PROGRESS);
@@ -252,6 +251,9 @@ function renderRoute() {
     button.classList.toggle('is-selected', selectedStage?.id === stage.id);
     button.dataset.stage = String(stage.id);
     button.dataset.game = stage.game;
+    button.dataset.activity = stage.activity;
+    button.dataset.level = stage.level;
+    button.dataset.difficulty = String(stage.difficultyRank);
     button.style.left = `${stage.x}%`;
     button.style.top = `${stage.y}%`;
     button.disabled = state === 'locked';
@@ -293,6 +295,11 @@ function renderRoute() {
 
 function renderLockedRoute() {
   const firstLockedStage = stages.find((stage) => !stage.available);
+  if (!firstLockedStage) {
+    lockedRouteMist.removeAttribute('d');
+    lockedRouteDashes.removeAttribute('d');
+    return;
+  }
   const previousStage = stages.find((stage) => stage.id === firstLockedStage.id - 1);
   const lockedPoints = [previousStage, ...stages.filter((stage) => !stage.available)];
   const path = lockedPoints.reduce((result, point, index) => {
@@ -317,7 +324,7 @@ function selectStage(stage) {
   const progress = getRouteProgress();
   const stars = progress.progress[stage.id] || 0;
   renderActivityIcon(panelIcon, stage);
-  panelKicker.textContent = `${gameLabels[stage.game]} · שלב ${stage.id} · ${languageOptions[profile.learningLanguage].label}`;
+  panelKicker.textContent = `${stage.gameLabel} · ${stage.difficultyLabel} · שלב ${stage.id} · ${languageOptions[profile.learningLanguage].label}`;
   panelTitle.textContent = stage.title;
   panelDescription.textContent = stage.description;
   panelStars.textContent = `${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}`;
@@ -460,6 +467,13 @@ function openProfileEditor(profileId) {
   profileForm.elements.learningLanguage.value = learningLanguage;
   deleteProfileButton.hidden = isCreating || profiles.length === 1;
   deleteConfirm.hidden = true;
+  profileForm.classList.remove('is-confirming-track-reset');
+  trackResetSection.hidden = isCreating;
+  trackResetConfirm.hidden = true;
+  trackResetStatus.textContent = '';
+  if (!isCreating) {
+    renderTrackResetOptions(profileId);
+  }
   profileEditor.hidden = false;
   profileEditor.setAttribute('aria-hidden', 'false');
   profileNameInput.focus();
@@ -467,6 +481,8 @@ function openProfileEditor(profileId) {
 
 function closeProfileEditor() {
   deleteConfirm.hidden = true;
+  trackResetConfirm.hidden = true;
+  profileForm.classList.remove('is-confirming-track-reset');
   profileEditor.hidden = true;
   profileEditor.setAttribute('aria-hidden', 'true');
   editingProfileId = null;
@@ -479,6 +495,52 @@ function closeProfileEditor() {
     world.removeAttribute('aria-hidden');
     profileButton.focus();
   }
+}
+
+function renderTrackResetOptions(profileId) {
+  const currentStage = getRouteProgress(profileId).currentStage;
+  trackStageSelect.replaceChildren(...stages.map((stage) => {
+    const option = document.createElement('option');
+    option.value = String(stage.id);
+    option.textContent = `שלב ${stage.id}: ${stage.title}${stage.id === currentStage ? ' (השלב הנוכחי)' : ''}`;
+    return option;
+  }));
+  trackStageSelect.value = String(currentStage);
+  updateTrackResetCopy();
+}
+
+function updateTrackResetCopy() {
+  const stageId = Number(trackStageSelect.value);
+  if (stageId === 1) {
+    trackResetCopy.textContent = 'כל הכוכבים יימחקו והמסלול יתחיל משלב 1.';
+    return;
+  }
+  trackResetCopy.textContent = `שלבים 1 עד ${stageId - 1} יקבלו 3 כוכבים, ושלב ${stageId} ייפתח למשחק.`;
+}
+
+function requestTrackReset() {
+  updateTrackResetCopy();
+  deleteConfirm.hidden = true;
+  trackResetConfirm.hidden = false;
+  profileForm.classList.add('is-confirming-track-reset');
+  confirmTrackResetButton.focus();
+}
+
+function resetEditedProfileTrack() {
+  if (editingProfileId === null) {
+    throw new Error('Cannot reset a profile before it is created');
+  }
+  const stageId = Number(trackStageSelect.value);
+  routeProgress[editingProfileId] = createTrackProgress(stageId, stages.length);
+  saveWorldProgress();
+  if (editingProfileId === activeProfileId) {
+    setProfile(editingProfileId);
+  }
+  trackResetConfirm.hidden = true;
+  profileForm.classList.remove('is-confirming-track-reset');
+  renderTrackResetOptions(editingProfileId);
+  trackResetStatus.textContent = `המסלול הוחזר לשלב ${stageId}.`;
+  trackResetButton.focus();
 }
 
 function readProfileName() {
@@ -513,7 +575,7 @@ function saveProfileFromEditor(event) {
       learningLanguage,
     };
     profiles.push(profile);
-    routeProgress[profile.id] = { currentStage: 1, progress: {} };
+    routeProgress[profile.id] = createTrackProgress(1, stages.length);
     activeProfileId = profile.id;
     saveWorldProgress();
     saveProfiles();
@@ -541,6 +603,8 @@ function deleteEditedProfile() {
     throw new Error('The only world profile cannot be deleted');
   }
   deleteConfirmCopy.textContent = `למחוק את הפרופיל של ${getProfile(editingProfileId).name}?`;
+  trackResetConfirm.hidden = true;
+  profileForm.classList.remove('is-confirming-track-reset');
   deleteConfirm.hidden = false;
   cancelDeleteButton.focus();
 }
@@ -684,7 +748,7 @@ function completeLaunchedStage(launch, stars = 3) {
 
 function showWorldComplete(profile, progress) {
   worldCompleteCharacter.src = getCharacterAsset(profile.character, 'celebrate');
-  document.getElementById('world-complete-stage-copy').textContent = `סיימתם את כל ${availableStages.length} השלבים שפתוחים עכשיו.`;
+  document.getElementById('world-complete-stage-copy').textContent = `סיימתם את כל ${availableStages.length} שלבי המסלול.`;
   document.getElementById('world-complete-score').textContent = `${getEarnedStarTotal(progress)} / ${availableStarTotal}`;
   setWorldInteractionLocked(true);
   worldCompleteOverlay.inert = false;
@@ -771,6 +835,19 @@ cancelDeleteButton.addEventListener('click', () => {
   deleteProfileButton.focus();
 });
 confirmDeleteButton.addEventListener('click', confirmProfileDeletion);
+trackStageSelect.addEventListener('change', () => {
+  updateTrackResetCopy();
+  trackResetConfirm.hidden = true;
+  profileForm.classList.remove('is-confirming-track-reset');
+  trackResetStatus.textContent = '';
+});
+trackResetButton.addEventListener('click', requestTrackReset);
+cancelTrackResetButton.addEventListener('click', () => {
+  trackResetConfirm.hidden = true;
+  profileForm.classList.remove('is-confirming-track-reset');
+  trackResetButton.focus();
+});
+confirmTrackResetButton.addEventListener('click', resetEditedProfileTrack);
 profileNameInput.addEventListener('input', () => profileNameInput.setCustomValidity(''));
 panelClose.addEventListener('click', () => stagePanel.classList.remove('is-open'));
 playButton.addEventListener('click', launchSelectedStage);

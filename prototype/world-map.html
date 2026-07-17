@@ -39,10 +39,10 @@
         </div>
 
         <div class="world-actions">
-          <div class="star-total" aria-label="8 מתוך 18 כוכבים">
+          <div class="star-total" aria-label="8 מתוך 45 כוכבים">
             <span aria-hidden="true">★</span>
             <strong id="star-total">8</strong>
-            <small id="star-total-max">/18</small>
+            <small id="star-total-max">/45</small>
           </div>
         </div>
       </header>
@@ -95,12 +95,12 @@
             <span class="world-complete-kicker">כל הכבוד!</span>
             <h2 id="world-complete-title">הפרק הראשון הושלם!</h2>
             <p>
-              <strong id="world-complete-stage-copy">סיימתם את כל 6 השלבים שפתוחים עכשיו.</strong>
-              <span><span aria-hidden="true">🔒</span> עוד הרפתקאות בדרך!</span>
+              <strong id="world-complete-stage-copy">סיימתם את כל 15 שלבי המסלול.</strong>
+              <span>איזו דרך מדהימה עברתם!</span>
             </p>
             <div class="world-complete-stars" aria-live="polite">
               <span aria-hidden="true">★</span>
-              <strong id="world-complete-score">18 / 18</strong>
+              <strong id="world-complete-score">45 / 45</strong>
               <span>כוכבים</span>
             </div>
             <button id="world-complete-button" type="button">חזרה למסלול</button>
@@ -176,6 +176,21 @@
           <label><input type="radio" name="learningLanguage" value="en" required><span>אנגלית</span></label>
           <label><input type="radio" name="learningLanguage" value="he"><span>עברית</span></label>
         </div>
+      </fieldset>
+
+      <fieldset class="track-reset" id="track-reset-section">
+        <legend>המסלול והכוכבים</legend>
+        <div class="track-reset-controls">
+          <label for="track-stage-select">חזרה אל</label>
+          <select id="track-stage-select"></select>
+          <button id="track-reset-button" type="button">איפוס המסלול</button>
+        </div>
+        <div class="track-reset-confirm" id="track-reset-confirm" hidden>
+          <strong id="track-reset-copy"></strong>
+          <button class="cancel-track-reset-button" id="cancel-track-reset-button" type="button">ביטול</button>
+          <button class="confirm-track-reset-button" id="confirm-track-reset-button" type="button">כן, מאפסים</button>
+        </div>
+        <p class="track-reset-status" id="track-reset-status" aria-live="polite"></p>
       </fieldset>
 
       <div class="editor-actions">

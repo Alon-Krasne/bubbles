@@ -414,9 +414,9 @@ body {
 }
 
 .world-stage.is-selected {
-  outline: 4px solid rgba(255, 255, 255, 0.94);
+  outline: 5px solid #55bdb7;
   outline-offset: 4px;
-  filter: brightness(1.06) drop-shadow(0 0 9px rgba(255, 212, 93, 0.86));
+  filter: brightness(1.06) drop-shadow(0 0 9px rgba(255, 255, 255, 0.94));
 }
 
 .world-stage.is-complete {
@@ -478,24 +478,31 @@ body {
 
 .activity-symbol-memory::before,
 .activity-symbol-memory::after {
-  content: '';
   position: absolute;
   width: 68%;
   height: 82%;
+  display: grid;
+  place-items: center;
   border: 3px solid currentColor;
   border-radius: 4px;
   background: #fff8dd;
+  color: #8a4560;
+  font-family: 'Secular One', sans-serif;
+  font-size: clamp(9px, 0.9vw, 13px);
+  line-height: 1;
   box-shadow: inset 0 -5px 0 rgba(242, 160, 184, 0.3);
 }
 
 .activity-symbol-memory::before {
-  left: 0;
+  content: 'Aa';
+  left: -3px;
   top: 4px;
   transform: rotate(-8deg);
 }
 
 .activity-symbol-memory::after {
-  right: 0;
+  content: 'אב';
+  right: -3px;
   top: 0;
   transform: rotate(7deg);
 }
@@ -617,8 +624,8 @@ body {
   top: auto;
   bottom: -8px;
   right: -8px;
-  min-width: 25px;
-  height: 25px;
+  min-width: 30px;
+  height: 30px;
   display: grid;
   place-items: center;
   padding: 0 5px;
@@ -627,7 +634,7 @@ body {
   background: #ad5574;
   color: white;
   font-family: 'Secular One', sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1;
   box-shadow: 0 3px 0 rgba(99, 48, 68, 0.18);
 }
@@ -775,12 +782,10 @@ body {
 
 .panel-copy p {
   margin: 0;
-  overflow: hidden;
   color: #536f7a;
   font-size: 14px;
   font-weight: 800;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.2;
 }
 
 .panel-stars {
@@ -1304,6 +1309,22 @@ body {
   box-shadow: 0 10px 0 rgba(49, 119, 110, 0.2), 0 28px 64px rgba(43, 72, 80, 0.28);
 }
 
+.editor-dialog.is-confirming-track-reset {
+  gap-block: 6px;
+  padding-block: 14px 16px;
+}
+
+.editor-dialog.is-confirming-track-reset .track-reset-confirm {
+  min-height: 50px;
+  margin-top: 5px;
+  padding-block: 4px;
+}
+
+.editor-dialog.is-confirming-track-reset .track-reset-confirm button {
+  min-height: 42px;
+  padding-block: 4px;
+}
+
 .editor-close {
   position: absolute;
   top: -18px;
@@ -1325,6 +1346,7 @@ body {
 .editor-heading,
 .name-field,
 .character-picker,
+.track-reset,
 .editor-actions,
 .delete-confirm {
   grid-column: 1 / -1;
@@ -1477,6 +1499,89 @@ body {
   background: #fff;
   color: var(--berry);
   box-shadow: 0 3px 8px rgba(58, 92, 101, 0.16);
+}
+
+.track-reset {
+  padding-top: 13px !important;
+  border-top: 2px solid #d8e9e5 !important;
+}
+
+.track-reset-controls {
+  display: grid;
+  grid-template-columns: auto minmax(250px, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  color: var(--teal);
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.track-reset select {
+  min-width: 0;
+  height: 50px;
+  border: 3px solid #93cfc7;
+  border-radius: 7px;
+  padding-inline: 12px;
+  background: white;
+  color: var(--ink);
+  font-family: 'Secular One', sans-serif;
+  font-size: 17px;
+}
+
+.track-reset select:focus-visible,
+.track-reset button:focus-visible {
+  outline: 4px solid #ffd45d;
+  outline-offset: 2px;
+}
+
+#track-reset-button,
+.track-reset-confirm button {
+  min-height: 48px;
+  border: 3px solid white;
+  border-radius: 7px;
+  padding: 7px 16px;
+  color: white;
+  font-family: 'Secular One', sans-serif;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+#track-reset-button {
+  background: #718f98;
+  box-shadow: 0 5px 0 #4d6d77;
+}
+
+.track-reset-confirm {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 10px;
+  border: 2px solid #e9c26c;
+  border-radius: 7px;
+  padding: 8px 10px;
+  background: #fff9df;
+  color: #765b1f;
+}
+
+.track-reset-confirm strong {
+  margin-inline-end: auto;
+}
+
+.cancel-track-reset-button {
+  background: #718f98;
+}
+
+.confirm-track-reset-button {
+  background: #c84f5c;
+}
+
+.track-reset-status {
+  min-height: 20px;
+  margin: 5px 0 -5px;
+  color: #208e55;
+  font-weight: 900;
+  text-align: center;
 }
 
 .editor-actions {

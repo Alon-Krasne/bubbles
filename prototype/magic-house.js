@@ -1,4 +1,6 @@
 import { calculateMasteryStars } from './shared/activity-scoring.mjs';
+import { MAGIC_HOUSE_REQUESTS } from './shared/magic-house-content.mjs';
+import { TRAIL_STAGES, getGameLevel, getLanguagePolicy } from './shared/trail-catalog.mjs';
 
 const OBJECTS = [
   { id: 'pillow', labels: { en: 'pillow', he: 'כרית' }, sprite: ['0%', '0%'] },
@@ -49,80 +51,7 @@ const ROOM_MAP = {
   },
 };
 
-const REQUESTS = [
-  {
-    id: 'request-1',
-    targets: [{ objectId: 'pillow', zoneId: 'bed' }],
-    en: { sentence: 'Put the pillow on the bed.', keywords: ['pillow', 'on', 'bed'] },
-    success: { en: 'The pillow is on the bed!', he: 'הכרית על המיטה!' },
-    he: {
-      male: 'שים את הכרית על המיטה.',
-      female: 'שימי את הכרית על המיטה.',
-      keywords: ['הכרית', 'על', 'המיטה'],
-    },
-  },
-  {
-    id: 'request-2',
-    targets: [{ objectId: 'ball', zoneId: 'toy-box' }],
-    en: { sentence: 'Put the ball in the toy box.', keywords: ['ball', 'in', 'toy box'] },
-    success: { en: 'The ball is in the toy box!', he: 'הכדור בקופסת הצעצועים!' },
-    he: {
-      male: 'שים את הכדור בקופסת הצעצועים.',
-      female: 'שימי את הכדור בקופסת הצעצועים.',
-      keywords: ['הכדור', 'בקופסת הצעצועים'],
-    },
-  },
-  {
-    id: 'request-3',
-    targets: [{ objectId: 'book', zoneId: 'shelf' }],
-    en: { sentence: 'Put the blue book on the shelf.', keywords: ['blue book', 'on', 'shelf'] },
-    success: { en: 'The blue book is on the shelf!', he: 'הספר הכחול על המדף!' },
-    he: {
-      male: 'שים את הספר הכחול על המדף.',
-      female: 'שימי את הספר הכחול על המדף.',
-      keywords: ['הספר הכחול', 'על', 'המדף'],
-    },
-  },
-  {
-    id: 'request-4',
-    targets: [{ objectId: 'shoes', zoneId: 'under-bed' }],
-    en: { sentence: 'Put the shoes under the bed.', keywords: ['shoes', 'under', 'bed'] },
-    success: { en: 'The shoes are under the bed!', he: 'הנעליים מתחת למיטה!' },
-    he: {
-      male: 'שים את הנעליים מתחת למיטה.',
-      female: 'שימי את הנעליים מתחת למיטה.',
-      keywords: ['הנעליים', 'מתחת', 'למיטה'],
-    },
-  },
-  {
-    id: 'request-5',
-    targets: [{ objectId: 'yellow-lamp', zoneId: 'nightstand' }],
-    en: { sentence: 'Put the yellow lamp next to the bed.', keywords: ['yellow lamp', 'next to', 'bed'] },
-    success: { en: 'The yellow lamp is next to the bed!', he: 'המנורה הצהובה ליד המיטה!' },
-    he: {
-      male: 'שים את המנורה הצהובה ליד המיטה.',
-      female: 'שימי את המנורה הצהובה ליד המיטה.',
-      keywords: ['המנורה הצהובה', 'ליד', 'המיטה'],
-    },
-  },
-  {
-    id: 'request-6',
-    targets: [
-      { objectId: 'apple', zoneId: 'table' },
-      { objectId: 'teddy', zoneId: 'bed' },
-    ],
-    en: {
-      sentence: 'Put the red apple on the table and the teddy bear on the bed.',
-      keywords: ['red apple', 'table', 'teddy bear', 'bed'],
-    },
-    success: { en: 'The room looks magical!', he: 'החדר נראה קסום!' },
-    he: {
-      male: 'שים את התפוח האדום על השולחן ואת הדובי על המיטה.',
-      female: 'שימי את התפוח האדום על השולחן ואת הדובי על המיטה.',
-      keywords: ['התפוח האדום', 'השולחן', 'הדובי', 'המיטה'],
-    },
-  },
-];
+const REQUESTS = MAGIC_HOUSE_REQUESTS;
 
 const PROFILES = {
   lotem: {
@@ -186,6 +115,7 @@ const CHARACTER_EMOJIS = Object.freeze({
 const ACTIVITY_MESSAGE_VERSION = 1;
 const PROFILE_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i;
 const hostContext = readHostContext();
+const magicHouseLevel = getGameLevel('house', hostContext ? hostContext.levelId : 'bedroom-practice');
 const activeProfiles = hostContext
   ? { ...PROFILES, [hostContext.profileId]: hostContext.profile }
   : PROFILES;
@@ -237,10 +167,12 @@ function readHostContext() {
   const profileLanguage = params.get('profileLanguage');
   const profileCharacter = params.get('profileCharacter');
   const stageId = Number(params.get('stage'));
+  const stage = TRAIL_STAGES.find((candidate) => candidate.id === stageId);
   const characterAssets = CHARACTER_ASSETS[profileCharacter];
   if (host !== 'world-map'
     || activityId !== 'magic-house'
-    || levelId !== 'bedroom-1'
+    || stage?.activity !== activityId
+    || stage?.level !== levelId
     || !profileId
     || profileId.length > 64
     || !PROFILE_ID_PATTERN.test(profileId)
@@ -250,7 +182,6 @@ function readHostContext() {
     || !profileEmoji
     || !Object.prototype.hasOwnProperty.call(LANGUAGE_LABELS, profileLanguage)
     || !Object.prototype.hasOwnProperty.call(CHARACTER_ASSETS, profileCharacter)
-    || stageId !== 3
     || CHARACTER_EMOJIS[profileCharacter] !== profileEmoji) {
     throw new Error('Invalid Magic House host context');
   }
@@ -272,9 +203,10 @@ function readHostContext() {
 }
 
 function createProfileState() {
+  const requests = selectLevelRequests(magicHouseLevel);
   return {
-    requests: shuffle(REQUESTS),
-    objects: shuffle(OBJECTS),
+    requests,
+    objects: selectLevelObjects(requests, magicHouseLevel.drawerSize),
     requestIndex: 0,
     completedRequests: 0,
     helpLevel: 0,
@@ -283,6 +215,27 @@ function createProfileState() {
     placedObjectIds: new Set(),
     locked: false,
   };
+}
+
+function selectLevelRequests(level) {
+  const allowedIds = new Set(level.requestIds);
+  const allowedRequests = REQUESTS.filter((request) => allowedIds.has(request.id));
+  if (allowedRequests.length !== level.requestIds.length) {
+    throw new Error(`Magic House level ${level.id} has missing requests`);
+  }
+  return shuffle(allowedRequests).slice(0, level.requestCount);
+}
+
+function selectLevelObjects(requests, drawerSize) {
+  const targetIds = new Set(requests.flatMap((request) => request.targets.map((target) => target.objectId)));
+  const targetObjects = OBJECTS.filter((object) => targetIds.has(object.id));
+  if (targetObjects.length !== targetIds.size || targetObjects.length > drawerSize) {
+    throw new Error(`Magic House drawer cannot fit ${targetIds.size} target objects`);
+  }
+
+  const distractors = shuffle(OBJECTS.filter((object) => !targetIds.has(object.id)))
+    .slice(0, drawerSize - targetObjects.length);
+  return shuffle([...targetObjects, ...distractors]);
 }
 
 function getProfile() {
@@ -323,14 +276,16 @@ function render() {
 
 function renderProfile() {
   const profile = getProfile();
+  const learningPolicy = getLanguagePolicy(profile.primary);
   magicHouse.classList.toggle('is-rtl', profile.primary === 'he');
   magicHouse.classList.toggle('is-hebrew-learning', profile.primary === 'he');
   requireElement('profile-avatar').textContent = profile.avatar;
   requireElement('profile-name').textContent = profile.name;
   requireElement('profile-language').textContent = profile.languageLabel;
+  requireElement('room-level-title').textContent = magicHouseLevel.title;
   guideCharacter.src = profile.idleCharacter;
   requireElement('celebration-character').src = profile.happyCharacter;
-  requireElement('sound-button').hidden = profile.primary === 'he';
+  requireElement('sound-button').hidden = learningPolicy.prompt !== 'spoken-english';
 }
 
 function renderDropZones() {
@@ -359,6 +314,7 @@ function renderDropZones() {
 function renderObjectDrawer() {
   const state = getState();
   const profile = getProfile();
+  const learningPolicy = getLanguagePolicy(profile.primary);
   removeDragGhosts();
   objectList.innerHTML = '';
 
@@ -371,11 +327,11 @@ function renderObjectDrawer() {
     button.disabled = state.placedObjectIds.has(object.id);
     button.classList.toggle('is-placed', state.placedObjectIds.has(object.id));
     button.classList.toggle('is-selected', selectedObjectId === object.id);
-    button.classList.add(profile.primary === 'he' ? 'is-word-choice' : 'is-image-choice');
+    button.classList.add(learningPolicy.choices === 'written-hebrew' ? 'is-word-choice' : 'is-image-choice');
     button.setAttribute('aria-pressed', String(selectedObjectId === object.id));
     button.setAttribute('aria-label', object.labels[profile.primary]);
 
-    if (profile.primary === 'en') {
+    if (learningPolicy.choices === 'semantic-images') {
       const art = document.createElement('span');
       art.className = 'object-art';
       setSpritePosition(art, object);
@@ -423,7 +379,7 @@ function renderInstruction() {
   sentenceElement.innerHTML = highlightSentence(getPrimarySentence(request), getKeywords(request));
   translationElement.textContent = getTranslation(request);
   translationElement.hidden = true;
-  requireElement('request-progress').textContent = `${state.requestIndex + 1} / ${REQUESTS.length}`;
+  requireElement('request-progress').textContent = `${state.requestIndex + 1} / ${state.requests.length}`;
   prepareSentenceAudio();
   updateHelpDots();
 }
@@ -497,7 +453,7 @@ function completeRequest() {
 
   schedule(() => {
     hideSuccessToast();
-    if (state.completedRequests === REQUESTS.length) {
+    if (state.completedRequests === state.requests.length) {
       showCelebration();
       return;
     }
@@ -565,12 +521,12 @@ function hideSuccessToast() {
 
 function useHelp() {
   const state = getState();
-  if (state.locked) {
+  if (state.locked || state.helpLevel >= magicHouseLevel.maxHelpLevel) {
     return;
   }
 
   const previousHelpLevel = state.helpLevel;
-  state.helpLevel = Math.min(3, state.helpLevel + 1);
+  state.helpLevel = Math.min(magicHouseLevel.maxHelpLevel, state.helpLevel + 1);
   if (previousHelpLevel < 3 && state.helpLevel === 3) {
     state.solutionHints += 1;
   }
@@ -603,12 +559,13 @@ function applyHelpState() {
 
 function updateHelpDots() {
   const level = getState().helpLevel;
-  requireElement('help-level').textContent = `${'●'.repeat(level)}${'○'.repeat(3 - level)}`;
+  requireElement('help-level').textContent = `${'●'.repeat(level)}${'○'.repeat(magicHouseLevel.maxHelpLevel - level)}`;
+  helpButton.disabled = level >= magicHouseLevel.maxHelpLevel;
 }
 
 function updateStars() {
   const state = getState();
-  const count = state.completedRequests === REQUESTS.length ? getFinalStars() : 0;
+  const count = state.completedRequests === state.requests.length ? getFinalStars() : 0;
   const stars = requireElement('stars').querySelectorAll('span');
   stars.forEach((star, index) => {
     star.classList.toggle('is-filled', index < count);
@@ -621,13 +578,13 @@ function getFinalStars() {
   const state = getState();
   return calculateMasteryStars({
     mistakes: state.mistakes,
-    challengeSize: REQUESTS.length,
+    challengeSize: state.requests.length,
     solutionHints: state.solutionHints,
   });
 }
 
 function speakSentence() {
-  if (getProfile().primary === 'he') {
+  if (getLanguagePolicy(getProfile().primary).prompt !== 'spoken-english') {
     return;
   }
   sentenceAudio.currentTime = 0;
@@ -635,7 +592,7 @@ function speakSentence() {
 }
 
 function prepareSentenceAudio() {
-  if (getProfile().primary === 'he') {
+  if (getLanguagePolicy(getProfile().primary).prompt !== 'spoken-english') {
     stopSentenceAudio();
     sentenceAudio.removeAttribute('src');
     return;
@@ -902,3 +859,4 @@ document.addEventListener('keydown', (event) => {
 });
 
 render();
+speakSentence();

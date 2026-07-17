@@ -53,3 +53,30 @@ Acceptance judge: automated `agent-browser` sessions against the hosted trail at
 - Store receipt: a complete round exhausted the shuffled target deck before repeating; English showed image choices plus replay audio, while Hebrew showed the full written request plus written choices and no replay controls.
 - Magic House receipt: six requests completed in shuffled order with matching audio in English; Hebrew showed word-only choices, no audio control, and all destination cues remained visually equivalent.
 - Progression receipt: a persisted profile with stage 5 stars was upgraded to stage 6; completing stage 6 recorded its best stars and displayed the six-stage completion state.
+
+## Generated trail catalog
+
+- [x] One shared catalog generates game levels and all route launch metadata.
+- [x] Memory Garden exposes pair-count and vocabulary-pool knobs.
+- [x] Store exposes customer-count, shelf-size, and order-mode knobs.
+- [x] Magic House exposes request-pool, request-count, and drawer-size knobs.
+- [x] All 15 route stages launch implemented games and unlock sequentially.
+- [x] Difficulty never decreases between appearances of the same game.
+- [x] English and Hebrew learning policies remain fixed across generated levels.
+- [x] `npm run test:trail` validates references, policies, difficulty, and the 45-star total.
+
+## Track reset and vocabulary breadth
+
+- [x] Profile settings can reset the track to any of the 15 stages.
+- [x] Resetting to stage N gives stages 1 through N-1 three stars and leaves stage N playable with zero stars.
+- [x] Version-1 stage-6 progress is migrated without crediting the replacement activity.
+- [x] Vocabulary expanded from 151 to 214 unique English/Hebrew entries with no niqqud.
+- [x] Routed Memory pools contain 161 non-overlapping words and increase through 4, 6, 8, 9, and 10 pairs.
+- [x] Store item pools are generated from the shared catalog and contain 12, 20, 16, 16, and 61 words.
+- [x] Every one of the 214 catalog words is reachable through the 15-stage route.
+- [x] Per-profile coverage decks exhaust Memory and Store pools before repeating answers.
+- [x] Memory and Store runtime speech is assembled only from committed vocabulary recordings.
+- [x] Generate and commit the 243 Google Gemini 3.1 Flash TTS vocabulary clips after network export approval.
+- [x] Validate all 243 MP3s decode and remain within the expected spoken-clip duration range.
+- [x] Verify the production single-file build inlines all 243 recordings.
+- [ ] Confirm Memory word playback and Store sentence playback on the PR preview; local agent-browser reached its external usage limit during the final click-through.

@@ -1723,7 +1723,7 @@ canvas {
     z-index: 2;
     width: min(94vw, 840px);
     display: grid;
-    grid-template-columns: repeat(4, minmax(88px, 1fr));
+    grid-template-columns: repeat(var(--memory-columns, 4), minmax(88px, 1fr));
     gap: clamp(10px, 1.8vw, 16px);
     padding: clamp(12px, 2.2vw, 20px);
     border-radius: 34px;
@@ -1737,7 +1737,29 @@ canvas {
 }
 
 .memory-board[data-difficulty="hard"] {
-    grid-template-columns: repeat(4, minmax(82px, 1fr));
+    grid-template-columns: repeat(var(--memory-columns, 4), minmax(82px, 1fr));
+}
+
+.memory-board[data-pairs="9"] .memory-card,
+.memory-board[data-pairs="10"] .memory-card {
+    min-height: clamp(72px, 8vw, 84px);
+}
+
+.memory-board[data-pairs="9"],
+.memory-board[data-pairs="10"] {
+    gap: 12px;
+    padding: 12px;
+}
+
+.memory-board[data-pairs="9"] .memory-card-word,
+.memory-board[data-pairs="10"] .memory-card-word {
+    font-size: clamp(17px, 2.2vw, 24px);
+}
+
+.memory-board[data-pairs="9"] .memory-card-drawing,
+.memory-board[data-pairs="10"] .memory-card-drawing {
+    margin-bottom: 2px;
+    font-size: clamp(27px, 3.3vw, 36px);
 }
 
 .memory-card {

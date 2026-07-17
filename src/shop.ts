@@ -1,6 +1,15 @@
-import { COLOR_VOCAB_WORDS, VOCAB_WORDS, type VocabWord } from './words';
+import { VOCAB_WORDS, type VocabWord } from './words';
 import type { HostedActivitySession } from './hostedActivity';
 import { calculateMasteryStars } from '../prototype/shared/activity-scoring.mjs';
+import { GAME_LEVELS, getLanguagePolicy } from '../prototype/shared/trail-catalog.mjs';
+import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
+import {
+  playRecordedSequence,
+  stopRecordedSpeech,
+  vocabularyPluralAudio,
+  vocabularyUiAudio,
+  vocabularyWordAudio,
+} from './recordedSpeech';
 
 export interface ShopProfile {
   id: string;
@@ -29,6 +38,8 @@ interface ShopLevel {
   customerCount: number;
   shelfSize: number;
   mode: ShopLevelMode;
+  itemPool: string[];
+  difficultyRank: number;
 }
 
 interface ShopOrderTarget {
@@ -39,13 +50,24 @@ interface ShopOrderTarget {
 
 interface ShopOrder {
   sentence: string;
+  audioSources: string[];
   shelfItems: ShopItem[];
   targets: ShopOrderTarget[];
 }
 
+interface SpokenPhrase {
+  text: string;
+  audioSources: string[];
+}
+
+interface EnglishRequest {
+  sentence: string;
+  audioSources: string[];
+}
+
 const SHOP_LEVEL_PROGRESS_STORAGE_KEY = 'bubble_shop_levels';
 const SHOP_COINS_STORAGE_KEY = 'bubble_shop_coins';
-const SHOP_SPEECH_RATE = 0.72;
+const SHOP_WORD_DECK_STORAGE_KEY = 'bubble_shop_word_decks_v1';
 const SHOP_WIN_RETURN_DELAY_MS = 2400;
 const SHOP_CUSTOMER_EMOJIS = ['🐰', '🐻', '🐱', '🦊', '🐸', '🐼', '🐵', '🐨'];
 const SHOP_CUSTOMER_NAMES = ['נוני', 'מימי', 'קוקו', 'לילי', 'פופי', 'טופי', 'קיקי', 'בוני'];
@@ -61,9 +83,11 @@ const MASS_ITEMS = new Set([
   'corn',
   'fries',
   'grapes',
+  'glue',
   'honey',
   'ice-cream',
   'milk',
+  'paper',
   'rice',
   'scissors',
   'soup',
@@ -78,144 +102,9 @@ const PLURALS: Record<string, string> = {
   strawberry: 'strawberries',
   tomato: 'tomatoes',
 };
-const SHOP_ITEMS: ShopItem[] = VOCAB_WORDS.filter((word) => word.shoppable && word.category !== 'colors');
-const COLOR_ITEMS: ShopItem[] = COLOR_VOCAB_WORDS;
-const SHOP_LEVEL_1_ITEM_IDS = ['banana', 'apple', 'milk', 'bread'];
-const SHOP_LEVEL_2_ITEM_IDS = [
-  'banana',
-  'apple',
-  'milk',
-  'bread',
-  'egg',
-  'cheese',
-  'water',
-  'cake',
-  'cookie',
-  'orange',
-  'strawberry',
-  'carrot',
-  'tomato',
-  'ball',
-  'book',
-  'hat',
-  'shoe',
-  'cup',
-];
-const SHOP_QUANTITY_ITEM_IDS = [
-  'banana',
-  'apple',
-  'egg',
-  'cake',
-  'cookie',
-  'orange',
-  'strawberry',
-  'carrot',
-  'tomato',
-  'potato',
-  'mushroom',
-  'pear',
-  'peach',
-  'doughnut',
-];
-const SHOP_DOUBLE_ITEM_IDS = [
-  'banana',
-  'apple',
-  'milk',
-  'bread',
-  'egg',
-  'cheese',
-  'water',
-  'cake',
-  'cookie',
-  'ice-cream',
-  'orange',
-  'strawberry',
-  'carrot',
-  'tomato',
-  'corn',
-  'pizza',
-  'sandwich',
-  'ball',
-  'book',
-  'hat',
-  'shoe',
-  'cup',
-];
+const SHOP_ITEMS: ShopItem[] = VOCAB_WORDS.filter((word) => word.shoppable);
 
-const SHOP_LEVELS: ShopLevel[] = [
-  {
-    id: 'shop-level-1',
-    title: 'קונים ראשונים',
-    subtitle: '5 קונים, 4 פריטים',
-    icon: '🍌',
-    customerCount: 5,
-    shelfSize: 4,
-    mode: 'single',
-  },
-  {
-    id: 'shop-level-2',
-    title: 'החנות מתמלאת',
-    subtitle: '6 קונים, 6 פריטים',
-    icon: '🥛',
-    customerCount: 6,
-    shelfSize: 6,
-    mode: 'single',
-  },
-  {
-    id: 'shop-level-3',
-    title: 'אחת, שתיים, שלוש',
-    subtitle: 'כמויות של 1-3',
-    icon: '🍎',
-    customerCount: 6,
-    shelfSize: 6,
-    mode: 'quantity',
-  },
-  {
-    id: 'shop-level-4',
-    title: 'צבעים בחנות',
-    subtitle: 'מקשיבים לצבע',
-    icon: '💙',
-    customerCount: 6,
-    shelfSize: 8,
-    mode: 'color',
-  },
-  {
-    id: 'shop-level-5',
-    title: 'הזמנה כפולה',
-    subtitle: 'שני פריטים לקונה',
-    icon: '🛒',
-    customerCount: 6,
-    shelfSize: 6,
-    mode: 'double',
-  },
-];
-
-export function speakEnglish(text: string, rate = SHOP_SPEECH_RATE) {
-  speakText(text, 'en', rate);
-}
-
-function speakText(text: string, language: 'en' | 'he', rate = SHOP_SPEECH_RATE) {
-  if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
-    return;
-  }
-
-  const synth = window.speechSynthesis;
-  synth.cancel();
-
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = language === 'en' ? 'en-US' : 'he-IL';
-  utterance.rate = rate;
-  utterance.pitch = 1.08;
-
-  const voices = synth.getVoices();
-  const languagePrefix = language === 'en' ? 'en' : 'he';
-  const voice = voices.find((candidate) => candidate.lang.toLowerCase().startsWith(languagePrefix));
-  if (voice) {
-    utterance.voice = voice;
-  }
-
-  synth.speak(utterance);
-}
+const SHOP_LEVELS = GAME_LEVELS.shop as readonly ShopLevel[];
 
 export function initShopGame(deps: ShopDeps) {
   const state = {
@@ -227,8 +116,6 @@ export function initShopGame(deps: ShopDeps) {
     locked: false,
     customerEmoji: SHOP_CUSTOMER_EMOJIS[0],
     customerName: SHOP_CUSTOMER_NAMES[0],
-    targetDeck: [] as ShopItem[],
-    lastTargetId: null as string | null,
     timers: [] as number[],
   };
 
@@ -275,7 +162,7 @@ export function initShopGame(deps: ShopDeps) {
   function leaveShop() {
     clearShopTimers();
     hideCelebration();
-    stopSpeech();
+    stopRecordedSpeech();
     state.currentOrder = null;
     state.locked = false;
   }
@@ -289,7 +176,7 @@ export function initShopGame(deps: ShopDeps) {
   function returnToLevelList() {
     clearShopTimers();
     hideCelebration();
-    stopSpeech();
+    stopRecordedSpeech();
     showLevelList();
   }
 
@@ -377,8 +264,6 @@ export function initShopGame(deps: ShopDeps) {
     state.mistakes = 0;
     state.roundCoins = 0;
     state.locked = false;
-    state.targetDeck = shuffle(getLevelTargetSource(level));
-    state.lastTargetId = null;
     requireElement<HTMLElement>('shop-profile-badge').textContent = `${deps.getActiveProfile().name} משחק/ת`;
     clearShopTimers();
     hideCelebration();
@@ -404,7 +289,7 @@ export function initShopGame(deps: ShopDeps) {
     renderCustomer();
     renderShelves();
     renderBasket();
-    const isEnglishLearning = getLearningLanguage() === 'en';
+    const isEnglishLearning = getLanguagePolicy(getLearningLanguage()).prompt === 'spoken-english';
     setFeedback(isEnglishLearning ? 'הקשיבו להזמנה ובחרו מהמדף' : 'קראו את ההזמנה ובחרו מהמדף');
     updateHud();
     if (isEnglishLearning) {
@@ -413,7 +298,7 @@ export function initShopGame(deps: ShopDeps) {
   }
 
   function renderCustomer() {
-    const isEnglishLearning = getLearningLanguage() === 'en';
+    const isEnglishLearning = getLanguagePolicy(getLearningLanguage()).prompt === 'spoken-english';
     const orderPrompt = requireElement<HTMLElement>('shop-order-prompt');
     requireElement<HTMLElement>('shop-customer-avatar').textContent = state.customerEmoji;
     requireElement<HTMLElement>('shop-customer-name').textContent = state.customerName;
@@ -427,6 +312,7 @@ export function initShopGame(deps: ShopDeps) {
   function renderShelves() {
     const order = requireCurrentOrder();
     const learningLanguage = getLearningLanguage();
+    const learningPolicy = getLanguagePolicy(learningLanguage);
     shelves.innerHTML = '';
     shelves.style.setProperty('--shop-shelf-columns', String(Math.min(4, order.shelfItems.length)));
 
@@ -438,7 +324,7 @@ export function initShopGame(deps: ShopDeps) {
       tile.setAttribute('aria-label', learningLanguage === 'he' ? item.hebrew : item.english);
 
       const choice = document.createElement('span');
-      if (learningLanguage === 'he') {
+      if (learningPolicy.choices === 'written-hebrew') {
         choice.className = 'shop-item-word';
         choice.dir = 'rtl';
         choice.textContent = item.hebrew;
@@ -487,20 +373,22 @@ export function initShopGame(deps: ShopDeps) {
       state.locked = true;
       state.servedCustomers += 1;
       updateHud();
-      setFeedback('תודה רבה!');
+      setFeedback(createSuccessFeedback(item, getLearningLanguage()));
       requireElement<HTMLElement>('shop-customer-card').classList.add('is-happy');
       if (getLearningLanguage() === 'en') {
-        scheduleTimer(() => speakText(createConfirmationSentence(item, 'en'), 'en'), 120);
-        scheduleTimer(() => speakText(createThankYouSentence('en'), 'en'), 1120);
+        scheduleTimer(() => playRecordedSequence([
+          vocabularyWordAudio(item.id),
+          vocabularyUiAudio('thank-you'),
+        ]), 120);
       }
       scheduleTimer(() => {
         requireElement<HTMLElement>('shop-customer-card').classList.add('is-leaving');
       }, 1460);
       scheduleTimer(() => nextCustomer(), 1860);
     } else {
-      setFeedback('יפה! ממשיכים למלא את הסל');
+      setFeedback(`${createSuccessFeedback(item, getLearningLanguage())} ממשיכים למלא את הסל`);
       if (getLearningLanguage() === 'en') {
-        speakText(createConfirmationSentence(item, 'en'), 'en');
+        playRecordedSequence([vocabularyWordAudio(item.id)]);
       }
     }
   }
@@ -587,7 +475,7 @@ export function initShopGame(deps: ShopDeps) {
   }
 
   function speakOrder() {
-    speakText(requireCurrentOrder().sentence, getLearningLanguage());
+    playRecordedSequence(requireCurrentOrder().audioSources);
   }
 
   function getLearningLanguage(): 'en' | 'he' {
@@ -595,14 +483,14 @@ export function initShopGame(deps: ShopDeps) {
   }
 
   function createLocalizedOrder(
-    englishSentence: string,
+    englishRequest: EnglishRequest,
     shelfItems: ShopItem[],
     targets: ShopOrderTarget[],
   ): ShopOrder {
     const sentence = getLearningLanguage() === 'en'
-      ? englishSentence
+      ? englishRequest.sentence
       : createHebrewRequestSentence(targets);
-    return { sentence, shelfItems, targets };
+    return { sentence, audioSources: englishRequest.audioSources, shelfItems, targets };
   }
 
   function completeLevel() {
@@ -647,71 +535,58 @@ export function initShopGame(deps: ShopDeps) {
     const source = getLevelTargetSource(level);
 
     if (level.mode === 'color') {
-      const [target] = drawTargetItems(source, 1);
+      const [target] = drawTargetItems(1);
       return createLocalizedOrder(
-        createRequestSentence(definitePhrase(target)),
-        createShelf(COLOR_ITEMS, [target], level.shelfSize),
+        createEnglishRequest(definitePhrase(target)),
+        createShelf(source, [target], level.shelfSize),
         [{ item: target, required: 1, served: 0 }],
       );
     }
 
     if (level.mode === 'quantity') {
-      const [target] = drawTargetItems(source, 1);
+      const [target] = drawTargetItems(1);
       const quantity = 1 + Math.floor(Math.random() * 3);
       return createLocalizedOrder(
-        createRequestSentence(quantityPhrase(target, quantity)),
-        createShelf(getShopItems(SHOP_LEVEL_2_ITEM_IDS), [target], level.shelfSize),
+        createEnglishRequest(quantityPhrase(target, quantity)),
+        createShelf(source, [target], level.shelfSize),
         [{ item: target, required: quantity, served: 0 }],
       );
     }
 
     if (level.mode === 'double') {
-      const targets = drawTargetItems(source, 2);
+      const targets = drawTargetItems(2);
       return createLocalizedOrder(
-        createRequestSentence(`${indefinitePhrase(targets[0])} and ${indefinitePhrase(targets[1])}`),
+        createEnglishRequest(joinPhrases(indefinitePhrase(targets[0]), indefinitePhrase(targets[1]))),
         createShelf(source, targets, level.shelfSize),
         targets.map((item) => ({ item, required: 1, served: 0 })),
       );
     }
 
-    const [target] = drawTargetItems(source, 1);
+    const [target] = drawTargetItems(1);
     return createLocalizedOrder(
-      createRequestSentence(indefinitePhrase(target)),
+      createEnglishRequest(indefinitePhrase(target)),
       createShelf(source, [target], level.shelfSize),
       [{ item: target, required: 1, served: 0 }],
     );
   }
 
-  function drawTargetItems(source: ShopItem[], count: number) {
-    const targets: ShopItem[] = [];
-
-    while (targets.length < count) {
-      if (state.targetDeck.length === 0) {
-        state.targetDeck = shuffle(source);
-        if (state.targetDeck.length > 1 && state.targetDeck[0].id === state.lastTargetId) {
-          [state.targetDeck[0], state.targetDeck[1]] = [state.targetDeck[1], state.targetDeck[0]];
-        }
-      }
-
-      const target = state.targetDeck.shift()!;
-      targets.push(target);
-      state.lastTargetId = target.id;
-    }
-
-    return targets;
+  function drawTargetItems(count: number) {
+    const decks = JSON.parse(localStorage.getItem(SHOP_WORD_DECK_STORAGE_KEY) || '{}');
+    const profileId = deps.getActiveProfile().id;
+    const profileDecks = decks[profileId] || {};
+    const result = drawVocabularyRound({
+      pool: state.activeLevel.itemPool,
+      count,
+      state: profileDecks[state.activeLevel.id] || null,
+    });
+    profileDecks[state.activeLevel.id] = result.state;
+    decks[profileId] = profileDecks;
+    localStorage.setItem(SHOP_WORD_DECK_STORAGE_KEY, JSON.stringify(decks));
+    return result.selection.map(getShopItem);
   }
 
   function getLevelTargetSource(level: ShopLevel) {
-    if (level.mode === 'color') {
-      return COLOR_ITEMS;
-    }
-    if (level.mode === 'quantity') {
-      return getShopItems(SHOP_QUANTITY_ITEM_IDS);
-    }
-    if (level.mode === 'double') {
-      return getShopItems(SHOP_DOUBLE_ITEM_IDS);
-    }
-    return getShopItems(level.id === 'shop-level-2' ? SHOP_LEVEL_2_ITEM_IDS : SHOP_LEVEL_1_ITEM_IDS);
+    return getShopItems(level.itemPool);
   }
 
   function isLevelLocked(index: number) {
@@ -790,43 +665,24 @@ function createShelf(source: ShopItem[], targets: ShopItem[], shelfSize: number)
   return shuffle([...targets, ...fillers]);
 }
 
-function createRequestSentence(phrase: string) {
+function createEnglishRequest(phrase: SpokenPhrase): EnglishRequest {
   return randomFrom([
-    `Can I have ${phrase}, please?`,
-    `I want ${phrase}, please!`,
-    `I would like ${phrase}, please.`,
-    `Do you have ${phrase}?`,
-  ]);
-}
-
-function createConfirmationSentence(item: ShopItem, language: 'en' | 'he') {
-  if (language === 'he') {
-    return `הנה ${item.hebrew}!`;
-  }
-
-  const phrase = item.category === 'colors' ? definitePhrase(item) : indefinitePhrase(item);
-  const capitalizedPhrase = capitalize(phrase);
-  const frames = [
-    `Here you go! ${capitalizedPhrase}!`,
-    `${capitalizedPhrase}! Great!`,
-  ];
-
-  if (!MASS_ITEMS.has(item.id)) {
-    frames.push(`Yes! Here is ${phrase}.`);
-  }
-
-  return randomFrom(frames);
-}
-
-function createThankYouSentence(language: 'en' | 'he') {
-  if (language === 'he') {
-    return 'תודה רבה!';
-  }
-
-  return randomFrom([
-    'Thank you! Goodbye!',
-    'Thank you so much!',
-    'Yay! Thank you!',
+    {
+      sentence: `Can I have ${phrase.text}, please?`,
+      audioSources: [vocabularyUiAudio('can-i-have'), ...phrase.audioSources, vocabularyUiAudio('please')],
+    },
+    {
+      sentence: `I want ${phrase.text}, please!`,
+      audioSources: [vocabularyUiAudio('i-want'), ...phrase.audioSources, vocabularyUiAudio('please')],
+    },
+    {
+      sentence: `I would like ${phrase.text}, please.`,
+      audioSources: [vocabularyUiAudio('i-would-like'), ...phrase.audioSources, vocabularyUiAudio('please')],
+    },
+    {
+      sentence: `Do you have ${phrase.text}?`,
+      audioSources: [vocabularyUiAudio('do-you-have'), ...phrase.audioSources],
+    },
   ]);
 }
 
@@ -841,21 +697,46 @@ function createHebrewRequestSentence(targets: ShopOrderTarget[]) {
     : `אפשר בבקשה ${target.item.hebrew}, בכמות ${target.required}?`;
 }
 
+function createSuccessFeedback(item: ShopItem, language: 'en' | 'he') {
+  return language === 'en'
+    ? `✨ ${item.english} ${item.drawing}`
+    : `✨ ${item.hebrew} ${item.drawing}`;
+}
+
 function indefinitePhrase(item: ShopItem) {
   if (MASS_ITEMS.has(item.id)) {
-    return item.english;
+    return { text: item.english, audioSources: [vocabularyWordAudio(item.id)] };
   }
 
   const article = /^[aeiou]/i.test(item.english) ? 'an' : 'a';
-  return `${article} ${item.english}`;
+  return {
+    text: `${article} ${item.english}`,
+    audioSources: [vocabularyUiAudio(article), vocabularyWordAudio(item.id)],
+  };
 }
 
 function definitePhrase(item: ShopItem) {
-  return `the ${item.english}`;
+  return {
+    text: `the ${item.english}`,
+    audioSources: [vocabularyUiAudio('the'), vocabularyWordAudio(item.id)],
+  };
 }
 
 function quantityPhrase(item: ShopItem, quantity: number) {
-  return `${NUMBER_WORDS[quantity]} ${quantity === 1 ? item.english : pluralize(item.english)}`;
+  return {
+    text: `${NUMBER_WORDS[quantity]} ${quantity === 1 ? item.english : pluralize(item.english)}`,
+    audioSources: [
+      vocabularyUiAudio(NUMBER_WORDS[quantity]),
+      quantity === 1 ? vocabularyWordAudio(item.id) : vocabularyPluralAudio(item.id),
+    ],
+  };
+}
+
+function joinPhrases(first: SpokenPhrase, second: SpokenPhrase): SpokenPhrase {
+  return {
+    text: `${first.text} and ${second.text}`,
+    audioSources: [...first.audioSources, vocabularyUiAudio('and'), ...second.audioSources],
+  };
 }
 
 function pluralize(english: string) {
@@ -899,14 +780,4 @@ function shuffle<T>(items: T[]) {
     [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
   }
   return shuffled;
-}
-
-function capitalize(text: string) {
-  return `${text.charAt(0).toUpperCase()}${text.slice(1)}`;
-}
-
-function stopSpeech() {
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-  }
 }
