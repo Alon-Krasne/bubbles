@@ -470,6 +470,7 @@ function openProfileEditor(profileId) {
   profileForm.classList.remove('is-confirming-track-reset');
   trackResetSection.hidden = isCreating;
   trackResetConfirm.hidden = true;
+  trackResetButton.disabled = false;
   trackResetStatus.textContent = '';
   if (!isCreating) {
     renderTrackResetOptions(profileId);
@@ -507,14 +508,34 @@ function renderTrackResetOptions(profileId) {
   }));
   trackStageSelect.value = String(currentStage);
   updateTrackResetCopy();
+  updateTrackResetAvailability();
+}
+
+function updateTrackResetAvailability() {
+  if (editingProfileId === null) {
+    trackResetButton.disabled = true;
+    return;
+  }
+  const stageId = Number(trackStageSelect.value);
+  const current = getRouteProgress(editingProfileId);
+  const reset = createTrackProgress(stageId, stages.length);
+  const hasSameStars = stages.every((stage) => (
+    (current.progress[stage.id] || 0) === (reset.progress[stage.id] || 0)
+  ));
+  trackResetButton.disabled = current.currentStage === reset.currentStage && hasSameStars;
 }
 
 function updateTrackResetCopy() {
   const stageId = Number(trackStageSelect.value);
+  confirmTrackResetButton.classList.toggle('is-destructive', stageId === 1);
   if (stageId === 1) {
+    trackResetButton.textContent = 'איפוס להתחלה';
+    confirmTrackResetButton.textContent = 'כן, מאפסים עכשיו';
     trackResetCopy.textContent = 'כל הכוכבים יימחקו והמסלול יתחיל משלב 1.';
     return;
   }
+  trackResetButton.textContent = 'עדכון ההתקדמות';
+  confirmTrackResetButton.textContent = 'כן, מעדכנים עכשיו';
   trackResetCopy.textContent = `שלבים 1 עד ${stageId - 1} יקבלו 3 כוכבים, ושלב ${stageId} ייפתח למשחק.`;
 }
 
@@ -522,6 +543,7 @@ function requestTrackReset() {
   updateTrackResetCopy();
   deleteConfirm.hidden = true;
   trackResetConfirm.hidden = false;
+  trackResetButton.disabled = true;
   profileForm.classList.add('is-confirming-track-reset');
   confirmTrackResetButton.focus();
 }
@@ -537,9 +559,12 @@ function resetEditedProfileTrack() {
     setProfile(editingProfileId);
   }
   trackResetConfirm.hidden = true;
+  trackResetButton.disabled = false;
   profileForm.classList.remove('is-confirming-track-reset');
   renderTrackResetOptions(editingProfileId);
-  trackResetStatus.textContent = `המסלול הוחזר לשלב ${stageId}.`;
+  trackResetStatus.textContent = stageId === 1
+    ? 'המסלול אופס ונשמר מיד. אין צורך ללחוץ על שמירה.'
+    : `ההתקדמות עד שלב ${stageId} נשמרה מיד. אין צורך ללחוץ על שמירה.`;
   trackResetButton.focus();
 }
 
@@ -838,12 +863,14 @@ confirmDeleteButton.addEventListener('click', confirmProfileDeletion);
 trackStageSelect.addEventListener('change', () => {
   updateTrackResetCopy();
   trackResetConfirm.hidden = true;
+  updateTrackResetAvailability();
   profileForm.classList.remove('is-confirming-track-reset');
   trackResetStatus.textContent = '';
 });
 trackResetButton.addEventListener('click', requestTrackReset);
 cancelTrackResetButton.addEventListener('click', () => {
   trackResetConfirm.hidden = true;
+  updateTrackResetAvailability();
   profileForm.classList.remove('is-confirming-track-reset');
   trackResetButton.focus();
 });

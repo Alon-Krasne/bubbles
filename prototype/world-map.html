@@ -179,23 +179,23 @@
       </fieldset>
 
       <fieldset class="track-reset" id="track-reset-section">
-        <legend>המסלול והכוכבים</legend>
+        <legend>התקדמות במסלול</legend>
         <div class="track-reset-controls">
-          <label for="track-stage-select">חזרה אל</label>
+          <label for="track-stage-select">השלב הבא למשחק</label>
           <select id="track-stage-select"></select>
-          <button id="track-reset-button" type="button">איפוס המסלול</button>
+          <button id="track-reset-button" type="button">עדכון ההתקדמות</button>
         </div>
         <div class="track-reset-confirm" id="track-reset-confirm" hidden>
           <strong id="track-reset-copy"></strong>
           <button class="cancel-track-reset-button" id="cancel-track-reset-button" type="button">ביטול</button>
-          <button class="confirm-track-reset-button" id="confirm-track-reset-button" type="button">כן, מאפסים</button>
+          <button class="confirm-track-reset-button" id="confirm-track-reset-button" type="button">כן, מעדכנים עכשיו</button>
         </div>
         <p class="track-reset-status" id="track-reset-status" aria-live="polite"></p>
       </fieldset>
 
       <div class="editor-actions">
+        <button class="delete-profile-button" id="delete-profile-button" type="button"><span aria-hidden="true">🗑️</span> מחיקת פרופיל</button>
         <button class="save-profile-button" type="submit">שמירה</button>
-        <button class="delete-profile-button" id="delete-profile-button" type="button">מחיקה</button>
       </div>
       <div class="delete-confirm" id="delete-confirm" hidden>
         <strong id="delete-confirm-copy"></strong>
