@@ -855,10 +855,7 @@ canvas {
     min-width: min(74vw, 420px);
     padding: 12px 42px 16px;
     border-radius: 28px;
-    background:
-        radial-gradient(circle at 7% 50%, #58C4BB 0 5px, transparent 6px),
-        radial-gradient(circle at 93% 50%, #58C4BB 0 5px, transparent 6px),
-        linear-gradient(180deg, #FFF8EC 0%, #F4E0CF 100%);
+    background: linear-gradient(180deg, #FFF8EC 0%, #F4E0CF 100%);
     border: 5px solid rgba(126, 207, 188, 0.92);
     font-size: clamp(48px, 7vw, 82px);
     line-height: 0.95;
@@ -1870,9 +1867,7 @@ canvas {
 }
 
 .memory-card-sound {
-    position: absolute;
-    left: 9px;
-    top: 9px;
+    position: static;
     width: 46px;
     height: 46px;
     display: inline-flex;
@@ -1883,12 +1878,33 @@ canvas {
     background: linear-gradient(180deg, #FFE66D 0%, #FFB84D 100%);
     color: #39768E;
     font-size: 21px;
+    text-indent: 2px;
     cursor: pointer;
     box-shadow:
         0 4px 0 rgba(196, 126, 25, 0.34),
         0 8px 14px rgba(57, 118, 142, 0.14),
         inset 0 2px 0 rgba(255,255,255,0.74);
     transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.memory-card-front.has-sound {
+    display: grid;
+    grid-template-rows: auto auto;
+    align-content: center;
+    justify-items: center;
+    gap: clamp(6px, 1vw, 10px);
+    padding: 7px;
+}
+
+.memory-card-front.has-sound .memory-card-word {
+    grid-row: 1;
+    font-size: clamp(16px, min(3.4vw, calc(36px - var(--word-length) * 1.4px)), 34px);
+    overflow-wrap: normal;
+    white-space: nowrap;
+}
+
+.memory-card-front.has-sound .memory-card-sound {
+    grid-row: 2;
 }
 
 .memory-card-sound:hover,
@@ -4332,8 +4348,6 @@ td {
     }
 
     .memory-card-sound {
-        left: 7px;
-        top: 7px;
         width: 42px;
         height: 42px;
         font-size: 18px;
@@ -5043,8 +5057,6 @@ td {
     }
 
     .memory-card-sound {
-        left: 5px;
-        top: 5px;
         width: 36px;
         height: 36px;
         font-size: 16px;

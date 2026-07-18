@@ -14,6 +14,9 @@ assert.equal(vocabularyIds.size, VOCAB_WORDS.length, 'vocabulary ids must be uni
 assert.equal(englishWords.size, VOCAB_WORDS.length, 'English vocabulary text must be unique');
 assert.equal(hebrewWords.size, VOCAB_WORDS.length, 'Hebrew vocabulary text must be unique');
 assert.ok(VOCAB_WORDS.every((word) => !niqqudPattern.test(word.hebrew)), 'Hebrew learning material must not contain niqqud');
+
+const calculator = VOCAB_WORDS.find((word) => word.id === 'calculator');
+assert.equal(calculator?.drawing, '🖩', 'calculator vocabulary must use the pocket-calculator symbol, not the abacus emoji');
 assert.ok(!niqqudPattern.test(JSON.stringify(MAGIC_HOUSE_REQUESTS)), 'Magic House learning material must not contain niqqud');
 assert.ok(!niqqudPattern.test(JSON.stringify(TRAIL_STAGES)), 'Trail learning material must not contain niqqud');
 

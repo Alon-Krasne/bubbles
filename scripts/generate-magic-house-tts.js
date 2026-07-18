@@ -5,25 +5,14 @@ const apiKey = process.env.GEMINI_API_KEY;
 if (!apiKey) {
   throw new Error('GEMINI_API_KEY is required');
 }
-
-const lines = {
-  en: [
-    'Put the pillow on the bed.',
-    'Put the ball in the toy box.',
-    'Put the blue book on the shelf.',
-    'Put the shoes under the bed.',
-    'Put the yellow lamp next to the bed.',
-    'Put the red apple on the table and the teddy bear on the bed.',
-  ],
-  he: [
-    'שים את הכרית על המיטה.',
-    'שים את הכדור בקופסת הצעצועים.',
-    'שים את הספר הכחול על המדף.',
-    'שים את הנעליים מתחת למיטה.',
-    'שים את המנורה הצהובה ליד המיטה.',
-    'שים את התפוח האדום על השולחן ואת הדובי על המיטה.',
-  ],
-};
+const startRequest = Number(process.env.TTS_START_REQUEST || 1);
+if (!Number.isInteger(startRequest) || startRequest < 1) {
+  throw new Error('TTS_START_REQUEST must be a positive integer');
+}
+const endRequest = Number(process.env.TTS_END_REQUEST || Number.MAX_SAFE_INTEGER);
+if (!Number.isInteger(endRequest) || endRequest < startRequest) {
+  throw new Error('TTS_END_REQUEST must be an integer greater than or equal to TTS_START_REQUEST');
+}
 
 const voices = {
   en: 'Leda',
@@ -94,8 +83,16 @@ function createWaveFile(pcm, sampleRate, channels) {
 }
 
 async function main() {
+  const { MAGIC_HOUSE_REQUESTS } = await import('../prototype/shared/magic-house-content.mjs');
+  const lines = {
+    en: MAGIC_HOUSE_REQUESTS.map((request) => request.en.sentence),
+    he: MAGIC_HOUSE_REQUESTS.map((request) => request.he.male),
+  };
   for (const [language, transcripts] of Object.entries(lines)) {
     for (const [index, transcript] of transcripts.entries()) {
+      if (index + 1 < startRequest || index + 1 > endRequest) {
+        continue;
+      }
       await generateLine(language, transcript, index);
     }
   }

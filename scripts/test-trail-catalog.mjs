@@ -41,6 +41,14 @@ for (const game of ['memory', 'shop', 'house']) {
   assert.deepEqual(ranks, [1, 2, 3, 4, 5], `${game} difficulty must increase at every appearance`);
 }
 
+for (const levelId of ['bedroom-1', 'bedroom-2', 'bedroom-3']) {
+  const level = getGameLevel('house', levelId);
+  assert.ok(
+    level.requestIds.length > level.requestCount,
+    `${levelId} must choose from more room requests than it plays so consecutive sessions can vary objects and destinations`,
+  );
+}
+
 assert.throws(() => createMagicHouseLevel({
   id: 'invalid-two-object-request',
   difficultyRank: 1,

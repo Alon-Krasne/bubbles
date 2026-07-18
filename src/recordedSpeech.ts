@@ -1,7 +1,7 @@
 const AUDIO_ELEMENT_ID = 'recorded-speech';
 const VOCABULARY_AUDIO = import.meta.glob('./assets/audio/vocabulary/en/**/*.mp3', {
   eager: true,
-  query: '?inline',
+  query: '?url',
   import: 'default',
 }) as Record<string, string>;
 

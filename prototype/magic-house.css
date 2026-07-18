@@ -233,7 +233,7 @@ body {
 }
 
 /* The toy chest's front wall hides the lower portion of the ball. */
-.placed-object[data-object-id='ball'] {
+.placed-object[data-object-id='ball'][data-zone-id='toy-box'] {
   clip-path: inset(0 0 38% 0);
 }
 
@@ -463,6 +463,7 @@ body {
 }
 
 .progress-cluster > strong {
+  color: #922c57;
   font-family: 'Secular One', sans-serif;
   font-size: 24px;
 }
@@ -580,6 +581,7 @@ body {
 
 .instruction-panel.show-keywords .sentence .keyword,
 .instruction-panel.is-success .sentence .keyword {
+  margin-inline: 1px;
   padding-inline: 3px;
   background: #fff0a4;
   color: var(--berry);
@@ -618,7 +620,7 @@ body {
 .success-toast {
   position: absolute;
   z-index: 45;
-  top: 230px;
+  top: 190px;
   left: 50%;
   width: min(430px, 82vw);
   min-height: 96px;
@@ -671,8 +673,8 @@ body {
 
 .success-toast-star {
   color: var(--gold);
-  font-size: 42px;
-  text-shadow: 0 3px 0 #b77621;
+  font-size: 38px;
+  text-shadow: 0 2px 0 #b77621;
   animation: successStarSpin 700ms 160ms cubic-bezier(0.2, 0.8, 0.2, 1.25) both;
 }
 
@@ -750,8 +752,50 @@ body {
 
 .object-button.is-placed {
   pointer-events: none;
-  opacity: 0.32;
-  filter: saturate(0.55);
+  border-color: rgba(55, 160, 111, 0.78);
+  background: rgba(232, 255, 239, 0.88);
+  filter: none;
+}
+
+.object-button.is-placed::after {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: #2f9f6b;
+  color: white;
+  content: '\2713';
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 3px 0 rgba(30, 111, 73, 0.35);
+}
+
+.placed-object[data-object-id='shoes'][data-zone-id='nightstand']::after {
+  left: 18%;
+  right: 18%;
+  bottom: 3%;
+  background: rgba(74, 45, 29, 0.42);
+  filter: blur(3px);
+}
+
+.placed-object[data-object-id='pillow'][data-zone-id='bed'] {
+  filter: drop-shadow(0 6px 4px rgba(74, 45, 29, 0.42));
+}
+
+.guide-character,
+.guide-ground-shadow {
+  transition: opacity 150ms ease;
+}
+
+.magic-house.is-showing-success .guide-character,
+.magic-house.is-showing-success .guide-ground-shadow {
+  opacity: 0;
 }
 
 .object-button.is-returning {
@@ -1016,7 +1060,7 @@ body {
   }
 
   .success-toast {
-    top: 216px;
+    top: 170px;
     width: min(390px, 78vw);
     min-height: 88px;
     grid-template-columns: 92px minmax(0, 1fr) 40px;

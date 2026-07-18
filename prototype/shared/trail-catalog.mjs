@@ -139,7 +139,7 @@ const MEMORY_LEVELS = Object.freeze([
     wordPool: ['dog', 'cat', 'bird', 'rabbit', 'fish', 'bear', 'fox', 'frog', 'cow', 'pig', 'sheep', 'duck', 'panda', 'monkey', 'lion', 'tiger', 'horse', 'chicken', 'bee', 'snail', 'koala', 'penguin', 'elephant', 'giraffe', 'zebra', 'turtle', 'whale', 'dolphin', 'butterfly', 'unicorn'], locked: false,
   }),
   createMemoryLevel({
-    id: 'level-2', difficulty: 'medium', difficultyRank: 2, title: 'שלב 2', subtitle: 'פירות', pairs: 6, icon: '🍎',
+    id: 'level-2', difficulty: 'medium', difficultyRank: 2, title: 'שלב 2', subtitle: 'אוכל ופירות', pairs: 6, icon: '🍎',
     wordPool: ['apple', 'banana', 'orange', 'strawberry', 'grapes', 'pear', 'watermelon', 'peach', 'pineapple', 'lemon', 'cherries', 'tomato', 'carrot', 'corn', 'potato', 'mushroom', 'bread', 'egg', 'cheese', 'milk', 'water', 'cake', 'cookie', 'honey', 'hamburger', 'fries', 'rice', 'spaghetti', 'soup', 'candy', 'chocolate'], locked: false,
   }),
   createMemoryLevel({
@@ -207,8 +207,8 @@ const SHOP_LEVELS = Object.freeze([
 const MAGIC_REQUEST_IDS = Object.freeze(MAGIC_HOUSE_REQUESTS.map((request) => request.id));
 const MAGIC_HOUSE_LEVELS = Object.freeze([
   createMagicHouseLevel({ id: 'bedroom-practice', difficultyRank: 1, title: 'חדר אימון', requestIds: MAGIC_REQUEST_IDS, requestCount: 6, drawerSize: 8, maxHelpLevel: 3 }),
-  createMagicHouseLevel({ id: 'bedroom-1', difficultyRank: 1, title: 'החדר הראשון', requestIds: MAGIC_REQUEST_IDS.slice(0, 3), requestCount: 3, drawerSize: 5, maxHelpLevel: 3 }),
-  createMagicHouseLevel({ id: 'bedroom-2', difficultyRank: 2, title: 'עוד סדר בחדר', requestIds: MAGIC_REQUEST_IDS.slice(0, 5), requestCount: 4, drawerSize: 6, maxHelpLevel: 3 }),
+  createMagicHouseLevel({ id: 'bedroom-1', difficultyRank: 1, title: 'החדר הראשון', requestIds: MAGIC_REQUEST_IDS, requestCount: 3, drawerSize: 5, maxHelpLevel: 3 }),
+  createMagicHouseLevel({ id: 'bedroom-2', difficultyRank: 2, title: 'עוד סדר בחדר', requestIds: MAGIC_REQUEST_IDS, requestCount: 4, drawerSize: 6, maxHelpLevel: 3 }),
   createMagicHouseLevel({ id: 'bedroom-3', difficultyRank: 3, title: 'משפטים ארוכים', requestIds: MAGIC_REQUEST_IDS, requestCount: 5, drawerSize: 7, maxHelpLevel: 2 }),
   createMagicHouseLevel({ id: 'bedroom-4', difficultyRank: 4, title: 'אלופי החדר', requestIds: MAGIC_REQUEST_IDS, requestCount: 6, drawerSize: 8, maxHelpLevel: 2 }),
   createMagicHouseLevel({ id: 'bedroom-5', difficultyRank: 5, title: 'אלופי הבית הקסום', requestIds: MAGIC_REQUEST_IDS, requestCount: 6, drawerSize: 8, maxHelpLevel: 1 }),
@@ -263,7 +263,7 @@ export const TRAIL_STAGES = Object.freeze([
   createTrailStage({ id: 1, x: 8, y: 90, game: 'memory', level: 'level-1', title: 'חיות ראשונות', description: 'מוצאים זוגות של מילים וחיות' }),
   createTrailStage({ id: 2, x: 15, y: 82, game: 'shop', level: 'shop-level-1', title: 'הקנייה הראשונה', description: 'מקשיבים ומגישים פריט לקונה' }),
   createTrailStage({ id: 3, x: 22, y: 70, game: 'house', level: 'bedroom-1', title: 'החדר הראשון', description: 'מסדרים שלושה חפצים לפי משפטים' }),
-  createTrailStage({ id: 4, x: 18, y: 57, game: 'memory', level: 'level-2', title: 'פירות צבעוניים', description: 'מוצאים שישה זוגות מתוך מאגר פירות משתנה' }),
+  createTrailStage({ id: 4, x: 18, y: 57, game: 'memory', level: 'level-2', title: 'אוכל צבעוני', description: 'מוצאים שישה זוגות מתוך מאגר אוכל ופירות משתנה' }),
   createTrailStage({ id: 5, x: 29, y: 47, game: 'shop', level: 'shop-level-2', title: 'החנות מתמלאת', description: 'בוחרים מתוך מדף גדול ומגוון יותר' }),
   createTrailStage({ id: 6, x: 40, y: 45, game: 'house', level: 'bedroom-2', title: 'עוד סדר בחדר', description: 'מסדרים ארבעה חפצים מתוך מגירה גדולה יותר' }),
   createTrailStage({ id: 7, x: 50, y: 51, game: 'memory', level: 'level-3', title: 'טבע ושמיים', description: 'מוצאים שמונה זוגות של מילים מהטבע' }),

@@ -678,6 +678,11 @@ body {
   transition: left 700ms cubic-bezier(0.22, 0.8, 0.26, 1), top 700ms cubic-bezier(0.22, 0.8, 0.26, 1);
 }
 
+.traveller[data-stage='6'] {
+  width: clamp(86px, 9vw, 120px);
+  height: clamp(86px, 9vw, 120px);
+}
+
 .traveller img {
   position: relative;
   z-index: 2;
@@ -808,6 +813,8 @@ body {
   color: white;
   font-family: 'Secular One', sans-serif;
   font-size: 21px;
+  line-height: 1;
+  padding-block: 3px 0;
   box-shadow: 0 7px 0 #159b49, 0 12px 20px rgba(29, 117, 63, 0.2);
   cursor: pointer;
   transition: transform 160ms ease;

@@ -78,5 +78,30 @@ Acceptance judge: automated `agent-browser` sessions against the hosted trail at
 - [x] Memory and Store runtime speech is assembled only from committed vocabulary recordings.
 - [x] Generate and commit the 243 Google Gemini 3.1 Flash TTS vocabulary clips after network export approval.
 - [x] Validate all 243 MP3s decode and remain within the expected spoken-clip duration range.
-- [x] Verify the production single-file build inlines all 243 recordings.
+- [x] Preserve the prior inline-asset bundle lifecycle while the online production build emits recordings as lazy assets; full offline trail packaging remains outside this correction pass.
 - [ ] Confirm Memory word playback and Store sentence playback on the PR preview; local agent-browser reached its external usage limit during the final click-through.
+
+## July 17 correction pass
+
+User reports: Memory speaker overlaps the word; Magic House repeats the same room round; Memory reports success before the final cards finish opening; the stage-6 traveller disappears; game startup is slow; and calculator uses an abacus drawing.
+
+Acceptance tests:
+
+- [x] `npm run test:magic-house-variation` prevents consecutive request-set repeats.
+- [x] `npm run test:memory-completion` delays completion until the final transform transition and fires once.
+- [x] `npm run test:traveller-position` places the stage-6 traveller below the route, outside the stage panel footprint.
+- [x] `npm run test:vocabulary` requires a calculator drawing rather than the abacus emoji.
+- [x] `npm run test:fast-start` performs a fresh build, then requires a sub-2 MB entry and all 243 recordings as emitted assets; current result is 565,958 bytes and 243 files.
+- [x] Validate the Memory card, stage-6 traveller, and consecutive Magic House rounds with `agent-browser` at 1024 x 768.
+- [x] Run the complete regression suite, visual review, and version bump.
+- [x] Commit, push, and update PR #29.
+
+Browser receipts at 1024 x 768:
+
+- Stage 6 traveller is visible below its route node and no longer hidden by the stage panel.
+- Magic House now has two authored six-request layouts with different object/location pairs and 24 matching English/Hebrew recordings. A deterministic regression test proves a reordered copy of the previous room cannot win before the alternate layout is considered.
+- A browser replay seeded with requests 1-6 selected only requests 7-12 on the following complete room. The corrected ball request used `bedside-floor`, with matching English and Hebrew text/audio.
+- Memory completion stayed hidden immediately after all 12 cards were matched, then appeared only after the 320 ms final flip transition.
+- The watermelon stress card fits one line with 21 px margins; word and speaker button share the same horizontal center.
+- Production Play-to-visible-and-interactive Magic House launch measured 1,149 ms after parallelizing iframe loading with the launch celebration, down from 1,434 ms before that change.
+- Gemini 3.1 Pro final Magic House verdict: APPROVE with no blocker/high/medium findings. Its three low notes (ball grounding, pillow contrast, and keyword spacing) were applied afterward.

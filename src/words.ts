@@ -185,7 +185,7 @@ export const VOCAB_WORDS: VocabWord[] = [
   { id: 'glue', english: 'glue', hebrew: 'דבק', drawing: '🧴', category: 'school', shoppable: true },
   { id: 'paper', english: 'paper', hebrew: 'נייר', drawing: '📄', category: 'school', shoppable: true },
   { id: 'computer', english: 'computer', hebrew: 'מחשב', drawing: '💻', category: 'school', shoppable: true },
-  { id: 'calculator', english: 'calculator', hebrew: 'מחשבון', drawing: '🧮', category: 'school', shoppable: true },
+  { id: 'calculator', english: 'calculator', hebrew: 'מחשבון', drawing: '🖩', category: 'school', shoppable: true },
   { id: 'paintbrush', english: 'paintbrush', hebrew: 'מכחול', drawing: '🖌️', category: 'school', shoppable: true },
   { id: 'camera', english: 'camera', hebrew: 'מצלמה', drawing: '📷', category: 'school', shoppable: true },
   { id: 'map', english: 'map', hebrew: 'מפה', drawing: '🗺️', category: 'school', shoppable: true },

@@ -1,5 +1,6 @@
 import { calculateMasteryStars } from './shared/activity-scoring.mjs';
-import { MAGIC_HOUSE_REQUESTS } from './shared/magic-house-content.mjs';
+import { MAGIC_HOUSE_REQUEST_LAYOUTS, MAGIC_HOUSE_REQUESTS } from './shared/magic-house-content.mjs';
+import { selectVariedRequestIds } from './shared/magic-house-variation.mjs';
 import { TRAIL_STAGES, getGameLevel, getLanguagePolicy } from './shared/trail-catalog.mjs';
 
 const OBJECTS = [
@@ -18,7 +19,8 @@ const ZONES = [
   { id: 'toy-box', labels: { en: 'toy box', he: 'קופסת צעצועים' } },
   { id: 'shelf', labels: { en: 'shelf', he: 'מדף' } },
   { id: 'under-bed', labels: { en: 'under the bed', he: 'מתחת למיטה' } },
-  { id: 'nightstand', labels: { en: 'next to the bed', he: 'ליד המיטה' } },
+  { id: 'bedside-floor', labels: { en: 'next to the bed', he: 'ליד המיטה' } },
+  { id: 'nightstand', labels: { en: 'nightstand', he: 'שידה' } },
   { id: 'table', labels: { en: 'table', he: 'שולחן' } },
 ];
 
@@ -27,6 +29,7 @@ const ZONE_CUE_COLORS = Object.freeze({
   'toy-box': { color: '#07988b', fill: 'rgba(7, 152, 139, 0.1)' },
   shelf: { color: '#7357d9', fill: 'rgba(115, 87, 217, 0.1)' },
   'under-bed': { color: '#d3a215', fill: 'rgba(211, 162, 21, 0.1)' },
+  'bedside-floor': { color: '#e07a2f', fill: 'rgba(224, 122, 47, 0.1)' },
   nightstand: { color: '#2877d4', fill: 'rgba(40, 119, 212, 0.1)' },
   table: { color: '#2d9b60', fill: 'rgba(45, 155, 96, 0.1)' },
 });
@@ -37,17 +40,23 @@ const ROOM_MAP = {
     'toy-box': { left: '26%', top: '50%', width: '13%', height: '23%' },
     shelf: { left: '26%', top: '27%', width: '13%', height: '20%' },
     'under-bed': { left: '39.5%', top: '64%', width: '12%', height: '18%' },
+    'bedside-floor': { left: '38.5%', top: '56%', width: '11%', height: '22%' },
     nightstand: { left: '63.5%', top: '53%', width: '12%', height: '22%' },
     table: { left: '45.5%', top: '66%', width: '18%', height: '25%' },
   },
   placements: {
-    pillow: { left: '49%', top: '45%', width: '8%' },
-    ball: { left: '33%', top: '61%', width: '5.5%' },
-    book: { left: '32.5%', top: '35%', width: '6.5%' },
-    shoes: { left: '42.5%', top: '68.5%', width: '9%' },
-    'yellow-lamp': { left: '69%', top: '55%', width: '7%' },
-    apple: { left: '55%', top: '70%', width: '6%' },
-    teddy: { left: '55%', top: '51%', width: '8%' },
+    'pillow:bed': { left: '49%', top: '49%', width: '8%' },
+    'ball:toy-box': { left: '33%', top: '61%', width: '5.5%' },
+    'book:shelf': { left: '32.5%', top: '35%', width: '6.5%' },
+    'shoes:under-bed': { left: '42.5%', top: '68.5%', width: '9%' },
+    'yellow-lamp:nightstand': { left: '69%', top: '55%', width: '7%' },
+    'apple:table': { left: '57%', top: '70%', width: '6%' },
+    'teddy:bed': { left: '55%', top: '51%', width: '8%' },
+    'teddy:toy-box': { left: '32.5%', top: '58%', width: '8%' },
+    'ball:bedside-floor': { left: '43%', top: '67%', width: '5.5%' },
+    'book:table': { left: '50%', top: '71.5%', width: '6.5%' },
+    'shoes:nightstand': { left: '68%', top: '63%', width: '7.5%' },
+    'blue-lamp:shelf': { left: '32.5%', top: '33%', width: '7%' },
   },
 };
 
@@ -113,6 +122,7 @@ const CHARACTER_EMOJIS = Object.freeze({
 });
 
 const ACTIVITY_MESSAGE_VERSION = 1;
+const PREVIOUS_REQUESTS_STORAGE_PREFIX = 'magic-house-previous-requests-v1';
 const PROFILE_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i;
 const hostContext = readHostContext();
 const magicHouseLevel = getGameLevel('house', hostContext ? hostContext.levelId : 'bedroom-practice');
@@ -121,7 +131,7 @@ const activeProfiles = hostContext
   : PROFILES;
 
 const objectById = new Map(OBJECTS.map((object) => [object.id, object]));
-const profileStates = new Map(Object.keys(activeProfiles).map((profileId) => [profileId, createProfileState()]));
+const profileStates = new Map(Object.keys(activeProfiles).map((profileId) => [profileId, createProfileState(profileId)]));
 const timers = new Set();
 
 let activeProfileId = hostContext ? hostContext.profileId : 'lotem';
@@ -202,8 +212,8 @@ function readHostContext() {
   };
 }
 
-function createProfileState() {
-  const requests = selectLevelRequests(magicHouseLevel);
+function createProfileState(profileId) {
+  const requests = selectLevelRequests(magicHouseLevel, profileId);
   return {
     requests,
     objects: selectLevelObjects(requests, magicHouseLevel.drawerSize),
@@ -213,17 +223,29 @@ function createProfileState() {
     mistakes: 0,
     solutionHints: 0,
     placedObjectIds: new Set(),
+    placedZoneByObjectId: new Map(),
     locked: false,
   };
 }
 
-function selectLevelRequests(level) {
+function selectLevelRequests(level, profileId) {
   const allowedIds = new Set(level.requestIds);
   const allowedRequests = REQUESTS.filter((request) => allowedIds.has(request.id));
   if (allowedRequests.length !== level.requestIds.length) {
     throw new Error(`Magic House level ${level.id} has missing requests`);
   }
-  return shuffle(allowedRequests).slice(0, level.requestCount);
+  const storageKey = `${PREVIOUS_REQUESTS_STORAGE_PREFIX}:${profileId}:${level.id}`;
+  const savedPreviousIds = localStorage.getItem(storageKey);
+  const previousIds = savedPreviousIds ? JSON.parse(savedPreviousIds) : null;
+  const selectedIds = selectVariedRequestIds({
+    requestIds: level.requestIds,
+    requestLayouts: MAGIC_HOUSE_REQUEST_LAYOUTS,
+    count: level.requestCount,
+    previousIds,
+  });
+  localStorage.setItem(storageKey, JSON.stringify(selectedIds));
+  const requestById = new Map(allowedRequests.map((request) => [request.id, request]));
+  return selectedIds.map((requestId) => requestById.get(requestId));
 }
 
 function selectLevelObjects(requests, drawerSize) {
@@ -354,12 +376,16 @@ function renderObjectDrawer() {
 function renderPlacedObjects() {
   placedLayer.innerHTML = '';
 
-  getState().placedObjectIds.forEach((objectId) => {
+  getState().placedZoneByObjectId.forEach((zoneId, objectId) => {
     const object = objectById.get(objectId);
-    const placement = ROOM_MAP.placements[objectId];
+    const placement = ROOM_MAP.placements[`${objectId}:${zoneId}`];
+    if (!object || !placement) {
+      throw new Error(`Missing room placement for ${objectId}:${zoneId}`);
+    }
     const placed = document.createElement('span');
     placed.className = 'placed-object';
     placed.dataset.objectId = objectId;
+    placed.dataset.zoneId = zoneId;
     placed.setAttribute('aria-hidden', 'true');
     placed.style.left = placement.left;
     placed.style.top = placement.top;
@@ -426,6 +452,7 @@ function attemptPlacement(objectId, zoneId) {
   }
 
   state.placedObjectIds.add(objectId);
+  state.placedZoneByObjectId.set(objectId, zoneId);
   selectedObjectId = null;
   renderDropZones();
   renderPlacedObjects();
@@ -510,11 +537,13 @@ function showSuccessToast(request) {
   requireElement('success-toast-message').textContent = request.success[profile.primary];
   successToast.classList.remove('is-visible');
   void successToast.offsetWidth;
+  magicHouse.classList.add('is-showing-success');
   successToast.classList.add('is-visible');
   successToast.setAttribute('aria-hidden', 'false');
 }
 
 function hideSuccessToast() {
+  magicHouse.classList.remove('is-showing-success');
   successToast.classList.remove('is-visible');
   successToast.setAttribute('aria-hidden', 'true');
 }
@@ -564,8 +593,7 @@ function updateHelpDots() {
 }
 
 function updateStars() {
-  const state = getState();
-  const count = state.completedRequests === state.requests.length ? getFinalStars() : 0;
+  const count = getFinalStars();
   const stars = requireElement('stars').querySelectorAll('span');
   stars.forEach((star, index) => {
     star.classList.toggle('is-filled', index < count);

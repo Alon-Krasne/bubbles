@@ -203,7 +203,7 @@ export function initShopGame(deps: ShopDeps) {
 
   function renderLevelList() {
     const profile = deps.getActiveProfile();
-    requireElement<HTMLElement>('shop-profile-badge').textContent = `${profile.name} משחק/ת`;
+    requireElement<HTMLElement>('shop-profile-badge').textContent = `המסלול של ${profile.name}`;
     updateCoinBadges();
 
     trail.innerHTML = '';
@@ -264,7 +264,7 @@ export function initShopGame(deps: ShopDeps) {
     state.mistakes = 0;
     state.roundCoins = 0;
     state.locked = false;
-    requireElement<HTMLElement>('shop-profile-badge').textContent = `${deps.getActiveProfile().name} משחק/ת`;
+    requireElement<HTMLElement>('shop-profile-badge').textContent = `המסלול של ${deps.getActiveProfile().name}`;
     clearShopTimers();
     hideCelebration();
     levelMap.classList.add('hidden');

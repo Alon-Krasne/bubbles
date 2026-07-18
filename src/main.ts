@@ -14,6 +14,7 @@ import { calculateMasteryStars } from '../prototype/shared/activity-scoring.mjs'
 import { GAME_LEVELS, getLanguagePolicy } from '../prototype/shared/trail-catalog.mjs';
 import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
 import { playRecordedSequence, vocabularyWordAudio } from './recordedSpeech';
+import { afterMemoryCardReveal } from './memoryCompletion';
 
 // Version badge
 const versionBadge = document.getElementById('version-badge');
@@ -508,7 +509,7 @@ function syncActiveProfileUI() {
   p1Name = profile.name;
 
   requireElement<HTMLElement>('active-profile-name').textContent = profile.name;
-  requireElement<HTMLElement>('memory-profile-badge').textContent = `${profile.name} משחק/ת`;
+  requireElement<HTMLElement>('memory-profile-badge').textContent = `המסלול של ${profile.name}`;
 
   const p1Input = document.getElementById('p1-name') as HTMLInputElement | null;
   if (p1Input) {
@@ -833,6 +834,7 @@ function renderMemoryBoard() {
     const word = document.createElement('span');
     word.className = 'memory-card-word';
     word.textContent = card.text;
+    word.style.setProperty('--word-length', String(card.text.length));
 
     const learningLanguage = hostedActivityContext?.profileLanguage ?? 'en';
     const learningPolicy = getLanguagePolicy(learningLanguage);
@@ -849,6 +851,7 @@ function renderMemoryBoard() {
     front.append(word);
 
     if (card.kind === targetCardKind && learningPolicy.prompt === 'spoken-english') {
+      front.classList.add('has-sound');
       const soundButton = document.createElement('button');
       soundButton.type = 'button';
       soundButton.className = 'memory-card-sound';
@@ -952,18 +955,26 @@ function matchMemoryCards() {
     if (!isHostedMemoryActivity()) {
       saveMemoryLevelStars(activeMemoryLevel.id, memoryRoundStars);
     }
-    showMemoryCelebration(memoryRoundStars);
-    clearMemoryWinReturnTimer();
-    memoryWinReturnTimer = window.setTimeout(() => {
-      if (isHostedMemoryActivity()) {
-        requireHostedActivitySession().complete(memoryRoundStars);
-        return;
-      }
-      returnToMemoryMapAfterWin();
-    }, MEMORY_WIN_RETURN_DELAY_MS);
+    const finalCardFront = secondCard.querySelector<HTMLElement>('.memory-card-front');
+    if (!finalCardFront) {
+      throw new Error('Final Memory card is missing its front face');
+    }
+    afterMemoryCardReveal(finalCardFront, finishMemoryRound);
   }
   updateMemoryStatus(message);
   showMemoryToast(matchedWord);
+}
+
+function finishMemoryRound() {
+  showMemoryCelebration(memoryRoundStars);
+  clearMemoryWinReturnTimer();
+  memoryWinReturnTimer = window.setTimeout(() => {
+    if (isHostedMemoryActivity()) {
+      requireHostedActivitySession().complete(memoryRoundStars);
+      return;
+    }
+    returnToMemoryMapAfterWin();
+  }, MEMORY_WIN_RETURN_DELAY_MS);
 }
 
 function closeUnmatchedMemoryCards() {

@@ -1,5 +1,6 @@
 import { TRAIL_STAGES } from './shared/trail-catalog.mjs';
 import { createTrackProgress, migrateTrackProgress } from './shared/track-progress.mjs';
+import { getTravellerPosition } from './shared/traveller-position.mjs';
 
 const stages = TRAIL_STAGES;
 const availableStages = stages.filter((stage) => stage.available);
@@ -93,6 +94,8 @@ let editingProfileId = null;
 let editorReturnsToGate = true;
 let activeLaunch = null;
 let launchTimer = null;
+let launchStartedAt = 0;
+const MIN_LAUNCH_CELEBRATION_MS = 350;
 
 function validateWorldState() {
   if (!Array.isArray(profiles) || profiles.length === 0) {
@@ -356,13 +359,19 @@ function setProfile(profileId) {
   traveller.setAttribute('aria-label', `${profile.name} בשלב ${progress.currentStage}`);
 
   const stage = stages.find((candidate) => candidate.id === progress.currentStage);
-  traveller.style.left = `${stage.x + 1}%`;
-  traveller.style.top = `${stage.y - 8}%`;
+  positionTraveller(stage);
   selectedStage = stage;
   renderRoute();
   selectStage(stage);
   renderProfileMenu();
   closeProfileMenu();
+}
+
+function positionTraveller(stage) {
+  const position = getTravellerPosition(stage);
+  traveller.dataset.stage = String(stage.id);
+  traveller.style.left = `${position.x}%`;
+  traveller.style.top = `${position.y}%`;
 }
 
 function renderProfileMenu() {
@@ -679,11 +688,10 @@ function launchSelectedStage() {
     throw new Error(`Stage ${stage.id} has no playable activity`);
   }
 
-  launchTimer = window.setTimeout(() => openActivity(launch, stage.entry), 650);
+  loadActivity(launch, stage.entry);
 }
 
-function openActivity(launch, entry) {
-  launchTimer = null;
+function loadActivity(launch, entry) {
   if (launch !== activeLaunch) {
     return;
   }
@@ -698,7 +706,26 @@ function openActivity(launch, entry) {
     profileLanguage: launch.profileLanguage,
     profileCharacter: launch.profileCharacter,
   });
+  launchStartedAt = performance.now();
   activityFrame.src = `${entry}?${params}`;
+}
+
+function revealLoadedActivity() {
+  const launch = activeLaunch;
+  if (!launch) {
+    return;
+  }
+
+  const elapsed = performance.now() - launchStartedAt;
+  const remainingCelebration = Math.max(0, MIN_LAUNCH_CELEBRATION_MS - elapsed);
+  launchTimer = window.setTimeout(() => openActivity(launch), remainingCelebration);
+}
+
+function openActivity(launch) {
+  launchTimer = null;
+  if (launch !== activeLaunch) {
+    return;
+  }
   activityOverlay.classList.add('is-visible');
   activityOverlay.setAttribute('aria-hidden', 'false');
   launchOverlay.classList.remove('is-visible');
@@ -760,8 +787,7 @@ function completeLaunchedStage(launch, stars = 3) {
   renderRoute();
 
   travellerImage.src = getCharacterAsset(profile.character, 'walk');
-  traveller.style.left = `${nextStage.x + 1}%`;
-  traveller.style.top = `${nextStage.y - 8}%`;
+  positionTraveller(nextStage);
   traveller.setAttribute('aria-label', `${profile.name} בשלב ${progress.currentStage}`);
 
   window.setTimeout(() => {
@@ -878,6 +904,7 @@ confirmTrackResetButton.addEventListener('click', resetEditedProfileTrack);
 profileNameInput.addEventListener('input', () => profileNameInput.setCustomValidity(''));
 panelClose.addEventListener('click', () => stagePanel.classList.remove('is-open'));
 playButton.addEventListener('click', launchSelectedStage);
+activityFrame.addEventListener('load', revealLoadedActivity);
 worldCompleteButton.addEventListener('click', closeWorldComplete);
 
 document.addEventListener('keydown', (event) => {

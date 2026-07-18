@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url';
 import { viteSingleFile } from 'vite-plugin-singlefile';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const inlineAssets = process.env.npm_lifecycle_event === 'bundle'
+  || process.env.npm_lifecycle_event === 'share';
 
 export default defineConfig({
   base: './',
@@ -13,12 +15,13 @@ export default defineConfig({
   plugins: [
     viteSingleFile({
       removeViteModuleLoader: true,
+      useRecommendedBuildConfig: inlineAssets,
     }),
   ],
   build: {
     target: 'es2019',
     cssCodeSplit: false,
-    assetsInlineLimit: 100000000,
+    assetsInlineLimit: inlineAssets ? 100000000 : 0,
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
