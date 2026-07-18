@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { basename, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
 const distIndex = resolve(root, 'dist/index.html');
@@ -16,11 +16,21 @@ function listFiles(directory) {
 }
 
 const indexBytes = statSync(distIndex).size;
+const indexHtml = readFileSync(distIndex, 'utf8');
 const sourceAudioCount = listFiles(sourceAudio).filter((path) => path.endsWith('.mp3')).length;
-const builtAudioCount = listFiles(distAssets).filter((path) => path.endsWith('.mp3')).length;
+const builtAudioPaths = listFiles(distAssets).filter((path) => path.endsWith('.mp3'));
+const builtAudioCount = builtAudioPaths.length;
 
 assert.ok(indexBytes < 2_000_000, `online entrypoint must stay below 2 MB; received ${indexBytes} bytes`);
 assert.equal(builtAudioCount, sourceAudioCount, 'online build must emit every recorded vocabulary clip as a lazy asset');
+const missingAssetPrefixes = builtAudioPaths
+  .map((path) => basename(path))
+  .filter((filename) => !indexHtml.includes(`assets/${filename}`));
+assert.deepEqual(
+  missingAssetPrefixes,
+  [],
+  'every emitted recording must retain its assets/ URL after the JavaScript chunk is inlined',
+);
 assert.match(
   worldMapSource,
   /activityFrame\.addEventListener\('load', revealLoadedActivity\)/,

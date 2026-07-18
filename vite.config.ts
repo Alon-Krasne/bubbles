@@ -9,6 +9,15 @@ const inlineAssets = process.env.npm_lifecycle_event === 'bundle'
 
 export default defineConfig({
   base: './',
+  experimental: {
+    renderBuiltUrl(filename, { hostType }) {
+      if (!inlineAssets && hostType === 'js') {
+        return {
+          runtime: `new URL(${JSON.stringify(`./${filename}`)}, document.baseURI).href`,
+        };
+      }
+    },
+  },
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version || '0.0.0'),
   },
