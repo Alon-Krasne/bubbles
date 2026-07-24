@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>בועות!</title>
+    <script>
+        const entryParams = new URLSearchParams(window.location.search);
+        if (entryParams.get('host') !== 'world-map') {
+            window.location.replace(new URL('prototype/world-map.html', window.location.href));
+        }
+    </script>
     
 </head>
 <body>
@@ -97,7 +103,7 @@
                 <p class="memory-kicker">משחק זוגות בלי זמן</p>
                 <h1 class="memory-title">גן מילים</h1>
                 <p class="memory-subtitle">מצאו זוגות של עברית ואנגלית</p>
-                <p id="memory-profile-badge" class="memory-profile-badge">לוטם משחק/ת</p>
+                <p id="memory-profile-badge" class="memory-profile-badge">המסלול של לוטם</p>
                 <p id="memory-stars-badge" class="memory-stars-badge" aria-live="polite">
                     <span>כוכבים</span>
                     <strong id="memory-stars-count">0/9</strong>
@@ -130,7 +136,7 @@
 
             <div id="memory-celebration" class="memory-celebration" role="status" aria-live="polite" aria-hidden="true">
                 <div class="memory-celebration-content">
-                    <div class="memory-celebration-stars" aria-hidden="true">⭐⭐⭐</div>
+                    <div id="memory-celebration-stars" class="memory-celebration-stars" aria-hidden="true">⭐⭐⭐</div>
                     <div class="memory-celebration-title">כל הכבוד!</div>
                     <div class="memory-celebration-subtitle" id="memory-celebration-subtitle"></div>
                     <button type="button" id="memory-celebration-next-btn" class="memory-celebration-next-btn">למפת השלבים</button>
@@ -150,7 +156,7 @@
                     <p class="shop-kicker">משחק הקשבה באנגלית</p>
                     <h1 class="shop-title">החנות הקטנה</h1>
                     <p class="shop-subtitle">הקשיבו לקונה ובחרו את הפריט מהמדף</p>
-                    <p id="shop-profile-badge" class="shop-profile-badge">לוטם משחק/ת</p>
+                    <p id="shop-profile-badge" class="shop-profile-badge">המסלול של לוטם</p>
                     <p class="shop-coins-badge" aria-live="polite">
                         <span>מטבעות</span>
                         <strong id="shop-coins-count">0</strong>

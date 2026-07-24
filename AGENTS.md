@@ -23,7 +23,7 @@
 - Sparkle particle effects on bubble catch
 - Persistent high scores (localStorage)
 - No power-ups in MVP
-- Visual effects only (no audio for now)
+- The original Bubbles canvas mode remains visual-only until its vocabulary redesign; educational games use committed Google TTS recordings for learning prompts
 
 ## Technical Stack
 - Vanilla HTML5

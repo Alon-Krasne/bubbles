@@ -8,6 +8,8 @@ const copies = [
   ['src/assets/memory/memory-garden-map-bg-v2.png', 'dist/src/assets/memory/memory-garden-map-bg-v2.png'],
   ['src/assets/characters/princess', 'dist/src/assets/characters/princess'],
   ['src/assets/characters/dinosaur', 'dist/src/assets/characters/dinosaur'],
+  ['src/assets/characters/puppy', 'dist/src/assets/characters/puppy'],
+  ['src/assets/characters/unicorn', 'dist/src/assets/characters/unicorn'],
 ];
 
 copies.forEach(([source, destination]) => {
@@ -16,4 +18,4 @@ copies.forEach(([source, destination]) => {
   cpSync(resolve(root, source), target, { recursive: true });
 });
 
-console.log('Copied unified world map prototype into dist.');
+console.log('Copied educational game prototypes into dist.');

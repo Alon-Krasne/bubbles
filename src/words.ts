@@ -1,4 +1,4 @@
-export type WordCategory = 'animals' | 'food' | 'home' | 'clothes' | 'body' | 'nature' | 'transport' | 'toys' | 'people' | 'colors';
+export type WordCategory = 'animals' | 'food' | 'home' | 'clothes' | 'body' | 'nature' | 'transport' | 'toys' | 'people' | 'colors' | 'school' | 'places' | 'sports' | 'actions';
 
 export interface VocabWord {
   id: string;
@@ -23,6 +23,9 @@ export const COLOR_VOCAB_WORDS: VocabWord[] = [
   { id: 'blue-square', english: 'blue square', hebrew: 'ריבוע כחול', drawing: '🟦', category: 'colors', shoppable: true },
   { id: 'yellow-square', english: 'yellow square', hebrew: 'ריבוע צהוב', drawing: '🟨', category: 'colors', shoppable: true },
   { id: 'green-square', english: 'green square', hebrew: 'ריבוע ירוק', drawing: '🟩', category: 'colors', shoppable: true },
+  { id: 'orange-heart', english: 'orange heart', hebrew: 'לב כתום', drawing: '🧡', category: 'colors', shoppable: true },
+  { id: 'brown-circle', english: 'brown circle', hebrew: 'עיגול חום', drawing: '🟤', category: 'colors', shoppable: true },
+  { id: 'white-circle', english: 'white circle', hebrew: 'עיגול לבן', drawing: '⚪', category: 'colors', shoppable: true },
 ];
 
 export const VOCAB_WORDS: VocabWord[] = [
@@ -172,6 +175,70 @@ export const VOCAB_WORDS: VocabWord[] = [
   { id: 'girl', english: 'girl', hebrew: 'ילדה', drawing: '👧', category: 'people' },
   { id: 'boy', english: 'boy', hebrew: 'ילד', drawing: '👦', category: 'people' },
   { id: 'teacher', english: 'teacher', hebrew: 'מורה', drawing: '🧑‍🏫', category: 'people' },
+
+  { id: 'classroom', english: 'classroom', hebrew: 'כיתה', drawing: '🏫', category: 'school' },
+  { id: 'desk', english: 'desk', hebrew: 'שולחן כתיבה', drawing: '🪑✏️', category: 'school', shoppable: true },
+  { id: 'notebook', english: 'notebook', hebrew: 'מחברת', drawing: '📓', category: 'school', shoppable: true },
+  { id: 'ruler', english: 'ruler', hebrew: 'סרגל', drawing: '📏', category: 'school', shoppable: true },
+  { id: 'eraser', english: 'eraser', hebrew: 'מחק', drawing: '🧽', category: 'school', shoppable: true },
+  { id: 'marker', english: 'marker', hebrew: 'טוש', drawing: '🖊️', category: 'school', shoppable: true },
+  { id: 'glue', english: 'glue', hebrew: 'דבק', drawing: '🧴', category: 'school', shoppable: true },
+  { id: 'paper', english: 'paper', hebrew: 'נייר', drawing: '📄', category: 'school', shoppable: true },
+  { id: 'computer', english: 'computer', hebrew: 'מחשב', drawing: '💻', category: 'school', shoppable: true },
+  { id: 'calculator', english: 'calculator', hebrew: 'מחשבון', drawing: '🖩', category: 'school', shoppable: true },
+  { id: 'paintbrush', english: 'paintbrush', hebrew: 'מכחול', drawing: '🖌️', category: 'school', shoppable: true },
+  { id: 'camera', english: 'camera', hebrew: 'מצלמה', drawing: '📷', category: 'school', shoppable: true },
+  { id: 'map', english: 'map', hebrew: 'מפה', drawing: '🗺️', category: 'school', shoppable: true },
+  { id: 'calendar', english: 'calendar', hebrew: 'לוח שנה', drawing: '📅', category: 'school', shoppable: true },
+  { id: 'dictionary', english: 'dictionary', hebrew: 'מילון', drawing: '📕', category: 'school', shoppable: true },
+
+  { id: 'park', english: 'park', hebrew: 'פארק', drawing: '🏞️', category: 'places' },
+  { id: 'playground', english: 'playground', hebrew: 'מגרש משחקים', drawing: '🛝', category: 'places' },
+  { id: 'school', english: 'school', hebrew: 'בית ספר', drawing: '🏫', category: 'places' },
+  { id: 'library', english: 'library', hebrew: 'ספרייה', drawing: '📚', category: 'places' },
+  { id: 'hospital', english: 'hospital', hebrew: 'בית חולים', drawing: '🏥', category: 'places' },
+  { id: 'supermarket', english: 'supermarket', hebrew: 'סופרמרקט', drawing: '🛒', category: 'places' },
+  { id: 'beach', english: 'beach', hebrew: 'חוף', drawing: '🏖️', category: 'places' },
+  { id: 'zoo', english: 'zoo', hebrew: 'גן חיות', drawing: '🦁', category: 'places' },
+  { id: 'farm', english: 'farm', hebrew: 'חווה', drawing: '🚜', category: 'places' },
+  { id: 'cinema', english: 'cinema', hebrew: 'קולנוע', drawing: '🎬', category: 'places' },
+  { id: 'restaurant', english: 'restaurant', hebrew: 'מסעדה', drawing: '🍽️', category: 'places' },
+  { id: 'bakery', english: 'bakery', hebrew: 'מאפייה', drawing: '🥖', category: 'places' },
+  { id: 'station', english: 'station', hebrew: 'תחנה', drawing: '🚉', category: 'places' },
+  { id: 'airport', english: 'airport', hebrew: 'נמל תעופה', drawing: '🛫', category: 'places' },
+  { id: 'bridge', english: 'bridge', hebrew: 'גשר', drawing: '🌉', category: 'places' },
+
+  { id: 'basketball', english: 'basketball', hebrew: 'כדורסל', drawing: '🏀', category: 'sports', shoppable: true },
+  { id: 'tennis', english: 'tennis', hebrew: 'טניס', drawing: '🎾', category: 'sports' },
+  { id: 'baseball', english: 'baseball', hebrew: 'בייסבול', drawing: '⚾', category: 'sports', shoppable: true },
+  { id: 'volleyball', english: 'volleyball', hebrew: 'כדורעף', drawing: '🏐', category: 'sports', shoppable: true },
+  { id: 'football', english: 'football', hebrew: 'כדורגל', drawing: '⚽', category: 'sports', shoppable: true },
+  { id: 'badminton', english: 'badminton', hebrew: 'בדמינטון', drawing: '🏸', category: 'sports' },
+  { id: 'table-tennis', english: 'table tennis', hebrew: 'טניס שולחן', drawing: '🏓', category: 'sports' },
+  { id: 'swimming', english: 'swimming', hebrew: 'שחייה', drawing: '🏊', category: 'sports' },
+  { id: 'running', english: 'running', hebrew: 'ריצה', drawing: '🏃', category: 'sports' },
+  { id: 'cycling', english: 'cycling', hebrew: 'רכיבה על אופניים', drawing: '🚴', category: 'sports' },
+  { id: 'gymnastics', english: 'gymnastics', hebrew: 'התעמלות', drawing: '🤸', category: 'sports' },
+  { id: 'goal', english: 'goal', hebrew: 'שער', drawing: '🥅', category: 'sports' },
+  { id: 'medal', english: 'medal', hebrew: 'מדליה', drawing: '🏅', category: 'sports', shoppable: true },
+  { id: 'trophy', english: 'trophy', hebrew: 'גביע', drawing: '🏆', category: 'sports', shoppable: true },
+  { id: 'skateboard', english: 'skateboard', hebrew: 'סקייטבורד', drawing: '🛹', category: 'sports', shoppable: true },
+
+  { id: 'run', english: 'run', hebrew: 'לרוץ', drawing: '🏃', category: 'actions' },
+  { id: 'walk', english: 'walk', hebrew: 'ללכת', drawing: '🚶', category: 'actions' },
+  { id: 'jump', english: 'jump', hebrew: 'לקפוץ', drawing: '🤸', category: 'actions' },
+  { id: 'swim', english: 'swim', hebrew: 'לשחות', drawing: '🏊', category: 'actions' },
+  { id: 'dance', english: 'dance', hebrew: 'לרקוד', drawing: '💃', category: 'actions' },
+  { id: 'sing', english: 'sing', hebrew: 'לשיר', drawing: '🎤', category: 'actions' },
+  { id: 'read', english: 'read', hebrew: 'לקרוא', drawing: '📖', category: 'actions' },
+  { id: 'write', english: 'write', hebrew: 'לכתוב', drawing: '✍️', category: 'actions' },
+  { id: 'draw', english: 'draw', hebrew: 'לצייר', drawing: '🎨', category: 'actions' },
+  { id: 'eat', english: 'eat', hebrew: 'לאכול', drawing: '🍽️', category: 'actions' },
+  { id: 'drink', english: 'drink', hebrew: 'לשתות', drawing: '🥤', category: 'actions' },
+  { id: 'sleep', english: 'sleep', hebrew: 'לישון', drawing: '😴', category: 'actions' },
+  { id: 'laugh', english: 'laugh', hebrew: 'לצחוק', drawing: '😄', category: 'actions' },
+  { id: 'cry', english: 'cry', hebrew: 'לבכות', drawing: '😢', category: 'actions' },
+  { id: 'listen', english: 'listen', hebrew: 'להקשיב', drawing: '👂', category: 'actions' },
 
   ...COLOR_VOCAB_WORDS,
 ];

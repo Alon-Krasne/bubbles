@@ -2,8 +2,19 @@ import './styles.css';
 import { GameApp } from './game/GameApp';
 import { FigureType } from './entities/Character';
 import { FallingItemMode } from './entities/Bubble';
-import { initShopGame } from './shop';
+import { initShopGame, type ShopLevelId } from './shop';
 import { VOCAB_WORDS, type VocabWord } from './words';
+import {
+  createHostedActivitySession,
+  readHostedActivityContext,
+  type ProfileCharacter,
+  type ProfileLanguage,
+} from './hostedActivity';
+import { calculateMasteryStars } from '../prototype/shared/activity-scoring.mjs';
+import { GAME_LEVELS, getLanguagePolicy } from '../prototype/shared/trail-catalog.mjs';
+import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
+import { playRecordedSequence, vocabularyWordAudio } from './recordedSpeech';
+import { afterMemoryCardReveal } from './memoryCompletion';
 
 // Version badge
 const versionBadge = document.getElementById('version-badge');
@@ -14,6 +25,10 @@ if (versionBadge) {
 // Initialize game
 const gameApp = new GameApp();
 let shopGame: ReturnType<typeof initShopGame> | null = null;
+const hostedActivityContext = readHostedActivityContext();
+const hostedActivitySession = hostedActivityContext
+  ? createHostedActivitySession(hostedActivityContext)
+  : null;
 
 type ScreenId = 'game-select-screen' | 'memory-screen' | 'shop-screen' | 'start-screen' | 'game-hud' | 'end-screen';
 type MemoryDifficulty = 'easy' | 'medium' | 'hard';
@@ -39,6 +54,8 @@ interface KidProfile {
   id: string;
   name: string;
   emoji: string;
+  language?: ProfileLanguage;
+  character?: ProfileCharacter;
 }
 
 type MemoryWord = VocabWord;
@@ -59,7 +76,8 @@ interface MemoryLevel {
   subtitle: string;
   pairs: number;
   icon: string;
-  hints: string[];
+  wordPool: string[];
+  difficultyRank: number;
   locked: boolean;
   reward?: string;
 }
@@ -73,170 +91,7 @@ const MEMORY_MAP_ACTIVE_PATH_POINT_COUNT = 3;
 const MEMORY_WORDS: MemoryWord[] = VOCAB_WORDS;
 const MEMORY_WORD_BY_ID = new Map(MEMORY_WORDS.map((word) => [word.id, word]));
 
-const MEMORY_DIFFICULTY_PAIRS: Record<MemoryDifficulty, number> = {
-  easy: 4,
-  medium: 6,
-  hard: 8,
-};
-
-const MEMORY_LEVELS: MemoryLevel[] = [
-  {
-    id: 'level-1',
-    difficulty: 'easy',
-    title: 'שלב 1',
-    subtitle: 'חיות קלות',
-    pairs: MEMORY_DIFFICULTY_PAIRS.easy,
-    icon: '🐶',
-    hints: ['dog', 'cat', 'bird', 'rabbit'],
-    locked: false,
-  },
-  {
-    id: 'level-2',
-    difficulty: 'medium',
-    title: 'שלב 2',
-    subtitle: 'פירות',
-    pairs: MEMORY_DIFFICULTY_PAIRS.medium,
-    icon: '🍎',
-    hints: ['apple', 'banana', 'orange', 'strawberry', 'grapes', 'pear'],
-    locked: false,
-  },
-  {
-    id: 'level-3',
-    difficulty: 'hard',
-    title: 'שלב 3',
-    subtitle: 'טבע ושמיים',
-    pairs: MEMORY_DIFFICULTY_PAIRS.hard,
-    icon: '☀️',
-    hints: ['sun', 'moon', 'tree', 'flower', 'star', 'cloud', 'rainbow', 'mountain'],
-    locked: false,
-    reward: '🎁',
-  },
-  {
-    id: 'level-4',
-    difficulty: 'easy',
-    title: 'שלב 4',
-    subtitle: 'אוכל בסיסי',
-    pairs: MEMORY_DIFFICULTY_PAIRS.easy,
-    icon: '🥛',
-    hints: ['bread', 'milk', 'egg', 'cheese'],
-    locked: true,
-  },
-  {
-    id: 'level-5',
-    difficulty: 'medium',
-    title: 'שלב 5',
-    subtitle: 'צעצועים ולימודים',
-    pairs: MEMORY_DIFFICULTY_PAIRS.medium,
-    icon: '⚽',
-    hints: ['ball', 'book', 'pencil', 'crayon', 'backpack', 'balloon'],
-    locked: true,
-    reward: '🎁',
-  },
-  {
-    id: 'level-6',
-    difficulty: 'medium',
-    title: 'שלב 6',
-    subtitle: 'נסיעות',
-    pairs: MEMORY_DIFFICULTY_PAIRS.medium,
-    icon: '🚗',
-    hints: ['car', 'bus', 'train', 'airplane', 'boat', 'bicycle'],
-    locked: true,
-  },
-  {
-    id: 'level-7',
-    difficulty: 'hard',
-    title: 'שלב 7',
-    subtitle: 'חיות גדולות',
-    pairs: MEMORY_DIFFICULTY_PAIRS.hard,
-    icon: '🐘',
-    hints: ['elephant', 'giraffe', 'zebra', 'lion', 'tiger', 'panda', 'monkey', 'bear'],
-    locked: true,
-  },
-  {
-    id: 'level-8',
-    difficulty: 'easy',
-    title: 'שלב 8',
-    subtitle: 'בגדים',
-    pairs: MEMORY_DIFFICULTY_PAIRS.easy,
-    icon: '👕',
-    hints: ['hat', 'shirt', 'shoe', 'sock'],
-    locked: true,
-    reward: '🎁',
-  },
-  {
-    id: 'level-9',
-    difficulty: 'medium',
-    title: 'שלב 9',
-    subtitle: 'דברים בבית',
-    pairs: MEMORY_DIFFICULTY_PAIRS.medium,
-    icon: '🏠',
-    hints: ['house', 'bed', 'chair', 'lamp', 'cup', 'key'],
-    locked: true,
-  },
-  {
-    id: 'level-10',
-    difficulty: 'hard',
-    title: 'שלב 10',
-    subtitle: 'ירקות ופירות',
-    pairs: MEMORY_DIFFICULTY_PAIRS.hard,
-    icon: '🥕',
-    hints: ['tomato', 'carrot', 'corn', 'potato', 'mushroom', 'lemon', 'watermelon', 'pineapple'],
-    locked: true,
-  },
-  {
-    id: 'level-11',
-    difficulty: 'easy',
-    title: 'שלב 11',
-    subtitle: 'גוף',
-    pairs: MEMORY_DIFFICULTY_PAIRS.easy,
-    icon: '👁️',
-    hints: ['eye', 'ear', 'nose', 'mouth'],
-    locked: true,
-    reward: '🎁',
-  },
-  {
-    id: 'level-12',
-    difficulty: 'medium',
-    title: 'שלב 12',
-    subtitle: 'אנשים וגוף',
-    pairs: MEMORY_DIFFICULTY_PAIRS.medium,
-    icon: '🧒',
-    hints: ['baby', 'child', 'girl', 'boy', 'teacher', 'hand'],
-    locked: true,
-  },
-  {
-    id: 'level-13',
-    difficulty: 'hard',
-    title: 'שלב 13',
-    subtitle: 'פינוקים',
-    pairs: MEMORY_DIFFICULTY_PAIRS.hard,
-    icon: '🍰',
-    hints: ['cake', 'cookie', 'ice-cream', 'pizza', 'hamburger', 'fries', 'sandwich', 'candy'],
-    locked: true,
-  },
-  {
-    id: 'level-14',
-    difficulty: 'medium',
-    title: 'שלב 14',
-    subtitle: 'צבעים וחפצים',
-    pairs: MEMORY_DIFFICULTY_PAIRS.medium,
-    icon: '💙',
-    hints: ['red-heart', 'blue-heart', 'yellow-heart', 'green-heart', 'red-book', 'blue-book'],
-    locked: true,
-  },
-  {
-    id: 'level-15',
-    difficulty: 'hard',
-    title: 'שלב 15',
-    subtitle: 'מילים מוכרות',
-    pairs: MEMORY_DIFFICULTY_PAIRS.hard,
-    icon: '👑',
-    hints: ['dog', 'apple', 'house', 'car', 'ball', 'tree', 'fish', 'flower'],
-    locked: true,
-    reward: '🏆',
-  },
-];
-
+const MEMORY_LEVELS = GAME_LEVELS.memory as readonly MemoryLevel[];
 const MEMORY_ROUTE_POINTS: MemoryRoutePoint[] = [
   { x: 16, y: 62 },
   { x: 30, y: 44 },
@@ -264,6 +119,7 @@ const MEMORY_MAP_AREAS: MemoryMapArea[] = [
 const PROFILE_STORAGE_KEY = 'bubble_kid_profiles';
 const ACTIVE_PROFILE_STORAGE_KEY = 'bubble_active_kid_profile';
 const MEMORY_LEVEL_PROGRESS_STORAGE_KEY = 'bubble_memory_garden_levels';
+const MEMORY_WORD_DECK_STORAGE_KEY = 'bubble_memory_word_decks_v1';
 const DEFAULT_KID_PROFILES: KidProfile[] = [
   { id: 'lotem', name: 'לוטם', emoji: '🌸' },
   { id: 'tom', name: 'תום', emoji: '🫧' },
@@ -303,6 +159,8 @@ let memorySecondCard: HTMLDivElement | null = null;
 let memoryMatchedPairs = new Set<string>();
 let memoryLocked = false;
 let memoryNeedsMismatchDismiss = false;
+let memoryMistakes = 0;
+let memoryRoundStars = 3;
 let memoryToastTimer: number | null = null;
 let memoryWinReturnTimer: number | null = null;
 const MEMORY_WIN_RETURN_DELAY_MS = 2400;
@@ -348,6 +206,7 @@ function setupUI() {
     showScreen,
     getActiveProfile,
     returnToGameSelect,
+    hostedSession: hostedActivityContext?.activityId === 'listening-shop' ? hostedActivitySession : null,
   });
 
   requireElement<HTMLButtonElement>('add-profile-btn').addEventListener('click', addProfileFromInput);
@@ -466,10 +325,10 @@ function setupUI() {
   requireElement<HTMLButtonElement>('select-shop-btn').addEventListener('click', () => shopGame?.openShop());
   requireElement<HTMLButtonElement>('back-to-games-btn').addEventListener('click', returnToGameSelect);
   requireElement<HTMLButtonElement>('start-btn').addEventListener('click', startGame);
-  requireElement<HTMLButtonElement>('memory-back-btn').addEventListener('click', returnToGameSelect);
-  requireElement<HTMLButtonElement>('memory-map-btn').addEventListener('click', showMemoryLevelMap);
+  requireElement<HTMLButtonElement>('memory-back-btn').addEventListener('click', returnFromMemoryScreen);
+  requireElement<HTMLButtonElement>('memory-map-btn').addEventListener('click', returnFromMemoryRound);
   requireElement<HTMLButtonElement>('memory-new-garden-btn').addEventListener('click', () => startMemoryLevel(activeMemoryLevel.id));
-  requireElement<HTMLButtonElement>('memory-celebration-next-btn').addEventListener('click', returnToMemoryMapAfterWin);
+  requireElement<HTMLButtonElement>('memory-celebration-next-btn').addEventListener('click', finishMemoryCelebration);
 
   // Restart button
   document.getElementById('restart-btn')?.addEventListener('click', returnToStart);
@@ -494,6 +353,19 @@ function setupUI() {
 }
 
 function loadProfiles() {
+  if (hostedActivityContext) {
+    kidProfiles = [{
+      id: hostedActivityContext.profileId,
+      name: hostedActivityContext.profileName,
+      emoji: hostedActivityContext.profileEmoji,
+      language: hostedActivityContext.profileLanguage,
+      character: hostedActivityContext.profileCharacter,
+    }];
+    activeProfileId = hostedActivityContext.profileId;
+    p1Name = hostedActivityContext.profileName;
+    return;
+  }
+
   const savedProfiles = localStorage.getItem(PROFILE_STORAGE_KEY);
   kidProfiles = savedProfiles ? JSON.parse(savedProfiles) : DEFAULT_KID_PROFILES.map((profile) => ({ ...profile }));
 
@@ -519,6 +391,9 @@ function getActiveProfile(): KidProfile {
 }
 
 function saveProfiles() {
+  if (hostedActivityContext) {
+    return;
+  }
   localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(kidProfiles));
   localStorage.setItem(ACTIVE_PROFILE_STORAGE_KEY, activeProfileId);
 }
@@ -634,7 +509,7 @@ function syncActiveProfileUI() {
   p1Name = profile.name;
 
   requireElement<HTMLElement>('active-profile-name').textContent = profile.name;
-  requireElement<HTMLElement>('memory-profile-badge').textContent = `${profile.name} משחק/ת`;
+  requireElement<HTMLElement>('memory-profile-badge').textContent = `המסלול של ${profile.name}`;
 
   const p1Input = document.getElementById('p1-name') as HTMLInputElement | null;
   if (p1Input) {
@@ -656,9 +531,87 @@ function openBubblesSetup() {
 
 function openMemoryGarden() {
   shopGame?.leaveShop();
-  gameApp.returnToStart();
+  if (!hostedActivityContext) {
+    gameApp.returnToStart();
+  }
   showScreen('memory-screen');
   showMemoryLevelMap();
+}
+
+function isHostedMemoryActivity() {
+  return hostedActivityContext?.activityId === 'memory-garden';
+}
+
+function requireHostedActivitySession() {
+  if (!hostedActivitySession) {
+    throw new Error('Missing hosted activity session');
+  }
+  return hostedActivitySession;
+}
+
+function exitHostedMemoryActivity() {
+  clearMemoryMismatchState();
+  clearMemoryWinReturnTimer();
+  hideMemoryToast();
+  hideMemoryCelebration();
+  requireHostedActivitySession().exit();
+}
+
+function returnFromMemoryScreen() {
+  if (isHostedMemoryActivity()) {
+    exitHostedMemoryActivity();
+    return;
+  }
+  returnToGameSelect();
+}
+
+function returnFromMemoryRound() {
+  if (isHostedMemoryActivity()) {
+    exitHostedMemoryActivity();
+    return;
+  }
+  showMemoryLevelMap();
+}
+
+function finishMemoryCelebration() {
+  if (isHostedMemoryActivity()) {
+    requireHostedActivitySession().complete(memoryRoundStars);
+    return;
+  }
+  returnToMemoryMapAfterWin();
+}
+
+function openHostedActivity() {
+  if (!hostedActivityContext) {
+    return;
+  }
+
+  if (hostedActivityContext.activityId === 'memory-garden') {
+    const level = MEMORY_LEVELS.find((candidate) => candidate.id === hostedActivityContext.levelId);
+    if (!level) {
+      throw new Error(`Invalid hosted memory level ${hostedActivityContext.levelId}`);
+    }
+    requireElement<HTMLButtonElement>('memory-map-btn').hidden = true;
+    const celebrationButton = requireElement<HTMLButtonElement>('memory-celebration-next-btn');
+    celebrationButton.textContent = 'חזרה למסלול';
+    celebrationButton.setAttribute('aria-label', 'חזרה למסלול');
+    const backButton = requireElement<HTMLButtonElement>('memory-back-btn');
+    backButton.querySelector<HTMLElement>('span:last-child')!.textContent = 'חזרה למסלול';
+    backButton.setAttribute('aria-label', 'חזרה למסלול');
+    backButton.title = 'חזרה למסלול';
+    openMemoryGarden();
+    startMemoryLevel(level.id);
+    return;
+  }
+
+  const shopLevelIds = GAME_LEVELS.shop.map((level) => level.id as ShopLevelId);
+  if (!shopLevelIds.includes(hostedActivityContext.levelId as ShopLevelId)) {
+    throw new Error(`Invalid hosted shop level ${hostedActivityContext.levelId}`);
+  }
+  if (!shopGame) {
+    throw new Error('Shop game is not initialized');
+  }
+  shopGame.openLevel(hostedActivityContext.levelId as ShopLevelId);
 }
 
 function startGame() {
@@ -758,7 +711,7 @@ function startMemoryLevel(levelId: MemoryLevelId) {
   if (!level) {
     throw new Error(`Missing memory level ${levelId}`);
   }
-  if (level.locked) {
+  if (level.locked && !isHostedMemoryActivity()) {
     throw new Error(`Memory level ${levelId} is locked`);
   }
 
@@ -770,8 +723,14 @@ function startMemoryLevel(levelId: MemoryLevelId) {
   levelMap.classList.add('hidden');
   levelMap.classList.remove('is-returning');
   gameArea.classList.remove('hidden', 'is-completing');
-  requireElement<HTMLElement>('memory-level-title').textContent = `${level.title} - ${level.subtitle}`;
+  requireElement<HTMLElement>('memory-level-title').textContent = `${getMemoryStageTitle(level)} - ${level.subtitle}`;
   startMemoryRound(level);
+}
+
+function getMemoryStageTitle(level: MemoryLevel) {
+  return hostedActivityContext?.activityId === 'memory-garden'
+    ? `שלב ${hostedActivityContext.stageId}`
+    : level.title;
 }
 
 function startMemoryRound(level: MemoryLevel) {
@@ -782,6 +741,8 @@ function startMemoryRound(level: MemoryLevel) {
   memorySecondCard = null;
   memoryLocked = false;
   memoryNeedsMismatchDismiss = false;
+  memoryMistakes = 0;
+  memoryRoundStars = 3;
 
   const pairCount = level.pairs;
   const selectedWords = selectMemoryWords(level);
@@ -806,7 +767,7 @@ function startMemoryRound(level: MemoryLevel) {
 
   memoryCards = shuffleMemoryCards(cards);
   renderMemoryBoard();
-  updateMemoryStatus(`${level.title}: הפכו שני קלפים שמתחברים`);
+  updateMemoryStatus(`${getMemoryStageTitle(level)}: הפכו שני קלפים שמתחברים`);
   hideMemoryToast();
 }
 
@@ -819,27 +780,22 @@ function shuffleMemoryCards(cards: MemoryCard[]): MemoryCard[] {
   return shuffled;
 }
 
-function shuffleMemoryWords(words: MemoryWord[]): MemoryWord[] {
-  const shuffled = [...words];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
-}
-
 function selectMemoryWords(level: MemoryLevel) {
-  const selectedWords = level.hints.map(getMemoryWord);
-  if (selectedWords.length >= level.pairs) {
-    const hintWords = selectedWords.length > level.pairs ? shuffleMemoryWords(selectedWords) : selectedWords;
-    return hintWords.slice(0, level.pairs);
+  if (level.wordPool.length < level.pairs) {
+    throw new Error(`Memory level ${level.id} needs at least ${level.pairs} words`);
   }
 
-  const selectedIds = new Set(selectedWords.map((word) => word.id));
-  const fillerWords = MEMORY_WORDS
-    .filter((word) => !selectedIds.has(word.id))
-    .slice(0, level.pairs - selectedWords.length);
-  return [...selectedWords, ...fillerWords];
+  const decks = JSON.parse(localStorage.getItem(MEMORY_WORD_DECK_STORAGE_KEY) || '{}');
+  const profileDecks = decks[activeProfileId] || {};
+  const result = drawVocabularyRound({
+    pool: level.wordPool,
+    count: level.pairs,
+    state: profileDecks[level.id] || null,
+  });
+  profileDecks[level.id] = result.state;
+  decks[activeProfileId] = profileDecks;
+  localStorage.setItem(MEMORY_WORD_DECK_STORAGE_KEY, JSON.stringify(decks));
+  return result.selection.map(getMemoryWord);
 }
 
 function getMemoryWord(wordId: string) {
@@ -854,6 +810,8 @@ function renderMemoryBoard() {
   const board = requireElement<HTMLDivElement>('memory-board');
   board.innerHTML = '';
   board.dataset.difficulty = memoryDifficulty;
+  board.dataset.pairs = String(activeMemoryLevel.pairs);
+  board.style.setProperty('--memory-columns', activeMemoryLevel.pairs === 9 ? '6' : activeMemoryLevel.pairs >= 10 ? '5' : '4');
 
   memoryCards.forEach((card) => {
     const button = document.createElement('div');
@@ -868,7 +826,7 @@ function renderMemoryBoard() {
 
     const back = document.createElement('span');
     back.className = 'memory-card-back';
-    back.textContent = '❋';
+    back.textContent = '✦';
 
     const front = document.createElement('span');
     front.className = 'memory-card-front';
@@ -876,8 +834,13 @@ function renderMemoryBoard() {
     const word = document.createElement('span');
     word.className = 'memory-card-word';
     word.textContent = card.text;
+    word.style.setProperty('--word-length', String(card.text.length));
 
-    if (card.kind === 'hebrew') {
+    const learningLanguage = hostedActivityContext?.profileLanguage ?? 'en';
+    const learningPolicy = getLanguagePolicy(learningLanguage);
+    const targetCardKind: MemoryCardKind = learningPolicy.target.startsWith('english') ? 'english' : 'hebrew';
+
+    if (card.kind !== targetCardKind) {
       const drawing = document.createElement('span');
       drawing.className = 'memory-card-drawing';
       drawing.setAttribute('aria-hidden', 'true');
@@ -887,7 +850,8 @@ function renderMemoryBoard() {
 
     front.append(word);
 
-    if (card.kind === 'english') {
+    if (card.kind === targetCardKind && learningPolicy.prompt === 'spoken-english') {
+      front.classList.add('has-sound');
       const soundButton = document.createElement('button');
       soundButton.type = 'button';
       soundButton.className = 'memory-card-sound';
@@ -897,7 +861,7 @@ function renderMemoryBoard() {
       soundButton.textContent = '🔊';
       soundButton.addEventListener('click', (event) => {
         event.stopPropagation();
-        speakMemoryWord(card.english);
+        speakMemoryWord(card.wordId);
       });
       soundButton.addEventListener('keydown', (event) => {
         event.stopPropagation();
@@ -945,6 +909,7 @@ function handleMemoryCardClick(cardButton: HTMLDivElement) {
   if (isMatch) {
     matchMemoryCards();
   } else {
+    memoryMistakes += 1;
     memoryNeedsMismatchDismiss = true;
     updateMemoryStatus('לא זוג. לחצו כדי לסגור ולנסות שוב');
   }
@@ -972,24 +937,44 @@ function matchMemoryCards() {
   const matchedWord = getMemoryWord(wordId);
   const pairCount = activeMemoryLevel.pairs;
   const isComplete = memoryMatchedPairs.size === pairCount;
-  const message = isComplete ? `${activeMemoryLevel.title} הושלם!` : `זוג מנצח: ${matchedWord.hebrew} ו-${matchedWord.english}`;
-  speakMemoryWord(matchedWord.english);
+  const message = isComplete ? `${getMemoryStageTitle(activeMemoryLevel)} הושלם!` : `זוג מנצח: ${matchedWord.hebrew} ו-${matchedWord.english}`;
+  const learningLanguage = hostedActivityContext?.profileLanguage ?? 'en';
+  if (learningLanguage === 'en') {
+    speakMemoryWord(matchedWord.id);
+  }
 
   memoryFirstCard = null;
   memorySecondCard = null;
   memoryLocked = false;
   if (isComplete) {
-    saveMemoryLevelStars(activeMemoryLevel.id, 3);
-    showMemoryCelebration();
-    clearMemoryWinReturnTimer();
-    memoryWinReturnTimer = window.setTimeout(() => {
-      returnToMemoryMapAfterWin();
-    }, MEMORY_WIN_RETURN_DELAY_MS);
+    memoryRoundStars = calculateMasteryStars({
+      mistakes: memoryMistakes,
+      challengeSize: pairCount,
+      solutionHints: 0,
+    });
+    if (!isHostedMemoryActivity()) {
+      saveMemoryLevelStars(activeMemoryLevel.id, memoryRoundStars);
+    }
+    const finalCardFront = secondCard.querySelector<HTMLElement>('.memory-card-front');
+    if (!finalCardFront) {
+      throw new Error('Final Memory card is missing its front face');
+    }
+    afterMemoryCardReveal(finalCardFront, finishMemoryRound);
   }
   updateMemoryStatus(message);
-  if (!isComplete) {
-    showMemoryToast(matchedWord);
-  }
+  showMemoryToast(matchedWord);
+}
+
+function finishMemoryRound() {
+  showMemoryCelebration(memoryRoundStars);
+  clearMemoryWinReturnTimer();
+  memoryWinReturnTimer = window.setTimeout(() => {
+    if (isHostedMemoryActivity()) {
+      requireHostedActivitySession().complete(memoryRoundStars);
+      return;
+    }
+    returnToMemoryMapAfterWin();
+  }, MEMORY_WIN_RETURN_DELAY_MS);
 }
 
 function closeUnmatchedMemoryCards() {
@@ -1302,14 +1287,8 @@ function setMemorySoundButtonFocus(cardButton: HTMLDivElement, isFocusable: bool
   }
 }
 
-function speakMemoryWord(word: string) {
-  window.speechSynthesis.cancel();
-
-  const utterance = new SpeechSynthesisUtterance(word);
-  utterance.lang = 'en-US';
-  utterance.rate = 0.82;
-  utterance.pitch = 1.08;
-  window.speechSynthesis.speak(utterance);
+function speakMemoryWord(wordId: string) {
+  playRecordedSequence([vocabularyWordAudio(wordId)]);
 }
 
 function showMemoryToast(matchedWord: MemoryWord) {
@@ -1353,11 +1332,12 @@ function showMemoryToast(matchedWord: MemoryWord) {
   }, 3000);
 }
 
-function showMemoryCelebration() {
+function showMemoryCelebration(stars: number) {
   const celebration = requireElement<HTMLDivElement>('memory-celebration');
   const subtitle = requireElement<HTMLDivElement>('memory-celebration-subtitle');
   const profile = getActiveProfile().name;
-  subtitle.textContent = `${profile}, ${activeMemoryLevel.title} הושלם עם 3 כוכבים`;
+  requireElement<HTMLDivElement>('memory-celebration-stars').textContent = '⭐'.repeat(stars);
+  subtitle.textContent = `${profile}, ${getMemoryStageTitle(activeMemoryLevel)} הושלם עם ${stars} כוכבים`;
 
   requireElement<HTMLElement>('memory-game-area').classList.add('is-completing');
   celebration.classList.add('is-visible');
@@ -1649,9 +1629,16 @@ gameApp.onGameEnd = (score) => {
   showEndScreen(score);
 };
 
-// Initialize
-gameApp.init().then(() => {
+function initializeUI() {
   loadPreferences();
   setupUI();
   loadHighScores();
-});
+  openHostedActivity();
+}
+
+// Initialize
+if (hostedActivityContext) {
+  initializeUI();
+} else {
+  gameApp.init().then(initializeUI);
+}
