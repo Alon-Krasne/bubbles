@@ -247,6 +247,11 @@ body {
 
 .drop-zone[data-zone='under-bed'] .drop-zone-label {
   top: 50%;
+  max-width: 132px;
+}
+
+.drop-zone[data-zone='under-bed']::before {
+  inset: -6% 0;
 }
 
 .drop-zone[data-zone='table'] .drop-zone-label {
