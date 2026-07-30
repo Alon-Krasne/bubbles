@@ -14,6 +14,11 @@ assert.deepEqual(
   'the alternate ball request must use the visibly readable floor position beside the bed',
 );
 assert.match(requestById.get('request-8').en.sentence, /next to the bed/i);
+assert.deepEqual(
+  requestById.get('request-5').targets,
+  [{ objectId: 'yellow-lamp', zoneId: 'bedside-floor' }],
+  'next to the bed must resolve to the same unambiguous floor destination in every layout',
+);
 
 MAGIC_HOUSE_REQUEST_LAYOUTS.forEach((layout) => {
   assert.equal(layout.length, 6, 'each complete room layout must contain six requests');

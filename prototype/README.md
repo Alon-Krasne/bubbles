@@ -20,7 +20,7 @@ Open `http://127.0.0.1:5173/prototype/magic-house.html` to test the bedroom dire
 
 The room contains six cumulative English/Hebrew placement requests, profile-aware Google TTS, tap and pointer-drag placement, graduated help, non-punitive feedback, success toasts, and completion stars. Its full-room environment is generated with Nano Banana Pro (`gemini-3-pro-image`) from the original bedroom reference; it keeps the calibrated furniture layout while extending the scene to the frame edges.
 
-Pointer dragging uses one gesture path across mouse and touch. Failed drops always remove the drag ghost and return the tray object to rest. Drop zones and final object positions share the calibrated `ROOM_MAP` in `magic-house.js`. Selecting or dragging an object gives every destination the same projected glow, so the interaction communicates where objects can be placed without revealing the correct location.
+Pointer dragging uses one gesture path across mouse and touch. Failed drops always remove the drag ghost and return the tray object to rest. Drop zones and final object positions share the calibrated room map in `shared/magic-house-room.mjs`. Selecting or dragging an object gives every destination the same projected glow and learning-language label; English labels include a small Hebrew location gloss, while the second help step highlights the exact requested destination.
 
 When opened from the trail, Magic House receives the active profile and stage context through its URL, locks profile switching, and posts either a verified completion result or an explicit exit back to the same-origin trail. Direct access keeps the existing replay flow.
 

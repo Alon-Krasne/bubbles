@@ -1,5 +1,10 @@
 import { calculateMasteryStars } from './shared/activity-scoring.mjs';
 import { MAGIC_HOUSE_REQUEST_LAYOUTS, MAGIC_HOUSE_REQUESTS } from './shared/magic-house-content.mjs';
+import {
+  MAGIC_HOUSE_ROOM_MAP as ROOM_MAP,
+  MAGIC_HOUSE_ZONE_CUE_COLORS as ZONE_CUE_COLORS,
+  MAGIC_HOUSE_ZONES as ZONES,
+} from './shared/magic-house-room.mjs';
 import { selectVariedRequestIds } from './shared/magic-house-variation.mjs';
 import { TRAIL_STAGES, getGameLevel, getLanguagePolicy } from './shared/trail-catalog.mjs';
 
@@ -13,52 +18,6 @@ const OBJECTS = [
   { id: 'teddy', labels: { en: 'teddy bear', he: 'דובי' }, sprite: ['66.667%', '100%'] },
   { id: 'blue-lamp', labels: { en: 'blue lamp', he: 'מנורה כחולה' }, sprite: ['100%', '100%'] },
 ];
-
-const ZONES = [
-  { id: 'bed', labels: { en: 'bed', he: 'מיטה' } },
-  { id: 'toy-box', labels: { en: 'toy box', he: 'קופסת צעצועים' } },
-  { id: 'shelf', labels: { en: 'shelf', he: 'מדף' } },
-  { id: 'under-bed', labels: { en: 'under the bed', he: 'מתחת למיטה' } },
-  { id: 'bedside-floor', labels: { en: 'next to the bed', he: 'ליד המיטה' } },
-  { id: 'nightstand', labels: { en: 'nightstand', he: 'שידה' } },
-  { id: 'table', labels: { en: 'table', he: 'שולחן' } },
-];
-
-const ZONE_CUE_COLORS = Object.freeze({
-  bed: { color: '#d94fa1', fill: 'rgba(217, 79, 161, 0.1)' },
-  'toy-box': { color: '#07988b', fill: 'rgba(7, 152, 139, 0.1)' },
-  shelf: { color: '#7357d9', fill: 'rgba(115, 87, 217, 0.1)' },
-  'under-bed': { color: '#d3a215', fill: 'rgba(211, 162, 21, 0.1)' },
-  'bedside-floor': { color: '#e07a2f', fill: 'rgba(224, 122, 47, 0.1)' },
-  nightstand: { color: '#2877d4', fill: 'rgba(40, 119, 212, 0.1)' },
-  table: { color: '#2d9b60', fill: 'rgba(45, 155, 96, 0.1)' },
-});
-
-const ROOM_MAP = {
-  zones: {
-    bed: { left: '38.5%', top: '37%', width: '22%', height: '27%' },
-    'toy-box': { left: '26%', top: '50%', width: '13%', height: '23%' },
-    shelf: { left: '26%', top: '27%', width: '13%', height: '20%' },
-    'under-bed': { left: '39.5%', top: '64%', width: '12%', height: '18%' },
-    'bedside-floor': { left: '38.5%', top: '56%', width: '11%', height: '22%' },
-    nightstand: { left: '63.5%', top: '53%', width: '12%', height: '22%' },
-    table: { left: '45.5%', top: '66%', width: '18%', height: '25%' },
-  },
-  placements: {
-    'pillow:bed': { left: '49%', top: '49%', width: '8%' },
-    'ball:toy-box': { left: '33%', top: '61%', width: '5.5%' },
-    'book:shelf': { left: '32.5%', top: '35%', width: '6.5%' },
-    'shoes:under-bed': { left: '42.5%', top: '68.5%', width: '9%' },
-    'yellow-lamp:nightstand': { left: '69%', top: '55%', width: '7%' },
-    'apple:table': { left: '57%', top: '70%', width: '6%' },
-    'teddy:bed': { left: '55%', top: '51%', width: '8%' },
-    'teddy:toy-box': { left: '32.5%', top: '58%', width: '8%' },
-    'ball:bedside-floor': { left: '43%', top: '67%', width: '5.5%' },
-    'book:table': { left: '50%', top: '71.5%', width: '6.5%' },
-    'shoes:nightstand': { left: '68%', top: '63%', width: '7.5%' },
-    'blue-lamp:shelf': { left: '32.5%', top: '33%', width: '7%' },
-  },
-};
 
 const REQUESTS = MAGIC_HOUSE_REQUESTS;
 
@@ -319,10 +278,34 @@ function renderDropZones() {
     button.type = 'button';
     button.className = 'drop-zone';
     button.dataset.zone = zone.id;
-    button.setAttribute('aria-label', zone.labels[profile.primary]);
+    button.setAttribute(
+      'aria-label',
+      profile.primary === 'en'
+        ? `${zone.labels.en} — ${zone.labels.he}`
+        : zone.labels.he,
+    );
     Object.assign(button.style, ROOM_MAP.zones[zone.id]);
     button.style.setProperty('--zone-cue-color', ZONE_CUE_COLORS[zone.id].color);
     button.style.setProperty('--zone-cue-fill', ZONE_CUE_COLORS[zone.id].fill);
+
+    const label = document.createElement('span');
+    label.className = 'drop-zone-label';
+
+    const primaryLabel = document.createElement('strong');
+    primaryLabel.lang = profile.primary;
+    primaryLabel.dir = profile.primary === 'en' ? 'ltr' : 'rtl';
+    primaryLabel.textContent = zone.labels[profile.primary];
+
+    label.append(primaryLabel);
+    if (profile.primary === 'en') {
+      const supportingLabel = document.createElement('small');
+      supportingLabel.className = 'drop-zone-translation';
+      supportingLabel.lang = 'he';
+      supportingLabel.dir = 'rtl';
+      supportingLabel.textContent = zone.labels.he;
+      label.append(supportingLabel);
+    }
+    button.append(label);
     button.addEventListener('click', (event) => {
       event.stopPropagation();
       attemptPlacement(selectedObjectId, zone.id);
@@ -578,7 +561,11 @@ function applyHelpState() {
   });
 
   document.querySelectorAll('.drop-zone').forEach((zone) => {
-    zone.classList.remove('is-current', 'is-hinted');
+    const isTarget = request.targets.some((target) => (
+      target.zoneId === zone.dataset.zone && !state.placedObjectIds.has(target.objectId)
+    ));
+    zone.classList.remove('is-current');
+    zone.classList.toggle('is-hinted', state.helpLevel >= 2 && isTarget);
   });
 
   refreshPlacementCues();
