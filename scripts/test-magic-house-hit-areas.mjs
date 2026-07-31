@@ -1,17 +1,17 @@
 import assert from 'node:assert/strict';
 
 import {
-  MAGIC_HOUSE_ROOM_MAP,
   MAGIC_HOUSE_ZONES,
 } from '../prototype/shared/magic-house-room.mjs';
 
 const toNumber = (percentage) => Number.parseFloat(percentage);
 
 const rectangles = MAGIC_HOUSE_ZONES.map((zone) => {
-  const layout = MAGIC_HOUSE_ROOM_MAP.zones[zone.id];
-  assert.ok(layout, `zone ${zone.id} needs an authored room position`);
+  const { layout } = zone;
   assert.ok(zone.labels.en, `zone ${zone.id} needs an English label`);
   assert.ok(zone.labels.he, `zone ${zone.id} needs a Hebrew label`);
+  assert.ok(zone.cue.color, `zone ${zone.id} needs a cue color`);
+  assert.ok(zone.cue.fill, `zone ${zone.id} needs a cue fill`);
 
   const left = toNumber(layout.left);
   const top = toNumber(layout.top);

@@ -1,9 +1,8 @@
 import { calculateMasteryStars } from './shared/activity-scoring.mjs';
 import { MAGIC_HOUSE_REQUEST_LAYOUTS, MAGIC_HOUSE_REQUESTS } from './shared/magic-house-content.mjs';
 import {
-  MAGIC_HOUSE_ROOM_MAP as ROOM_MAP,
-  MAGIC_HOUSE_ZONE_CUE_COLORS as ZONE_CUE_COLORS,
-  MAGIC_HOUSE_ZONES as ZONES,
+  MAGIC_HOUSE_PLACEMENTS,
+  MAGIC_HOUSE_ZONES,
 } from './shared/magic-house-room.mjs';
 import { selectVariedRequestIds } from './shared/magic-house-variation.mjs';
 import { TRAIL_STAGES, getGameLevel, getLanguagePolicy } from './shared/trail-catalog.mjs';
@@ -273,7 +272,7 @@ function renderDropZones() {
   const profile = getProfile();
   dropLayer.innerHTML = '';
 
-  ZONES.forEach((zone) => {
+  MAGIC_HOUSE_ZONES.forEach((zone) => {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'drop-zone';
@@ -284,9 +283,9 @@ function renderDropZones() {
         ? `${zone.labels.en} — ${zone.labels.he}`
         : zone.labels.he,
     );
-    Object.assign(button.style, ROOM_MAP.zones[zone.id]);
-    button.style.setProperty('--zone-cue-color', ZONE_CUE_COLORS[zone.id].color);
-    button.style.setProperty('--zone-cue-fill', ZONE_CUE_COLORS[zone.id].fill);
+    Object.assign(button.style, zone.layout);
+    button.style.setProperty('--zone-cue-color', zone.cue.color);
+    button.style.setProperty('--zone-cue-fill', zone.cue.fill);
 
     const label = document.createElement('span');
     label.className = 'drop-zone-label';
@@ -299,7 +298,6 @@ function renderDropZones() {
     label.append(primaryLabel);
     if (profile.primary === 'en') {
       const supportingLabel = document.createElement('small');
-      supportingLabel.className = 'drop-zone-translation';
       supportingLabel.lang = 'he';
       supportingLabel.dir = 'rtl';
       supportingLabel.textContent = zone.labels.he;
@@ -361,7 +359,7 @@ function renderPlacedObjects() {
 
   getState().placedZoneByObjectId.forEach((zoneId, objectId) => {
     const object = objectById.get(objectId);
-    const placement = ROOM_MAP.placements[`${objectId}:${zoneId}`];
+    const placement = MAGIC_HOUSE_PLACEMENTS[`${objectId}:${zoneId}`];
     if (!object || !placement) {
       throw new Error(`Missing room placement for ${objectId}:${zoneId}`);
     }
@@ -417,9 +415,7 @@ function selectObject(objectId) {
 }
 
 function refreshPlacementCues() {
-  document.querySelectorAll('.drop-zone').forEach((zone) => {
-    zone.classList.toggle('is-placement-cue', selectedObjectId !== null);
-  });
+  dropLayer.classList.toggle('is-placement-cue', selectedObjectId !== null);
 }
 
 function attemptPlacement(objectId, zoneId) {
@@ -564,7 +560,6 @@ function applyHelpState() {
     const isTarget = request.targets.some((target) => (
       target.zoneId === zone.dataset.zone && !state.placedObjectIds.has(target.objectId)
     ));
-    zone.classList.remove('is-current');
     zone.classList.toggle('is-hinted', state.helpLevel >= 2 && isTarget);
   });
 
