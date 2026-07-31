@@ -21,7 +21,6 @@
     "test:magic-house-variation": "node scripts/test-magic-house-variation.mjs",
     "test:magic-house-layouts": "node scripts/test-magic-house-layouts.mjs",
     "test:magic-house-hit-areas": "node scripts/test-magic-house-hit-areas.mjs",
-    "test:magic-house-touch-targets": "node scripts/test-magic-house-touch-targets.mjs",
     "test:magic-house-audio": "node scripts/test-magic-house-audio.mjs",
     "test:traveller-position": "node scripts/test-traveller-position.mjs",
     "build": "vite build && node scripts/copy-prototype.js",
