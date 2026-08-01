@@ -45,7 +45,7 @@ export const MAGIC_HOUSE_REQUESTS = Object.freeze([
   }),
   Object.freeze({
     id: 'request-5',
-    targets: Object.freeze([Object.freeze({ objectId: 'yellow-lamp', zoneId: 'nightstand' })]),
+    targets: Object.freeze([Object.freeze({ objectId: 'yellow-lamp', zoneId: 'bedside-floor' })]),
     en: Object.freeze({ sentence: 'Put the yellow lamp next to the bed.', keywords: Object.freeze(['yellow lamp', 'next to', 'bed']) }),
     success: Object.freeze({ en: 'The yellow lamp is next to the bed!', he: 'המנורה הצהובה ליד המיטה!' }),
     he: Object.freeze({

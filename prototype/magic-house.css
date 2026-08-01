@@ -19,6 +19,15 @@
   --cream: #fff8e9;
   --gold: #f9bf36;
   --green: #35c96b;
+  --zone-label-border: rgba(255, 255, 255, 0.94);
+  --zone-label-bg: rgba(255, 251, 239, 0.94);
+  --zone-label-shadow: rgba(126, 91, 70, 0.2);
+  --zone-label-soft-shadow: rgba(76, 68, 63, 0.16);
+  --zone-hint-label-bg: #fff8cf;
+  --zone-hint-bg: rgba(255, 235, 142, 0.38);
+  --zone-hint-ring: #fff;
+  --zone-hint-shadow: rgba(184, 119, 33, 0.3);
+  --zone-hint-glow: rgba(255, 196, 47, 0.72);
   --drawer-height: clamp(156px, 20vh, 180px);
 }
 
@@ -123,10 +132,10 @@ body {
 
 .drop-zone {
   position: absolute;
-  min-width: 120px;
-  min-height: 100px;
+  min-width: 0;
+  min-height: 0;
   border: 3px dashed transparent;
-  border-radius: 8px;
+  border-radius: 50%;
   background: transparent;
   cursor: pointer;
   transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease, filter 180ms ease;
@@ -151,7 +160,7 @@ body {
 }
 
 .drop-zone::after {
-  top: 50%;
+  top: 34%;
   left: 50%;
   width: 28px;
   height: 28px;
@@ -165,42 +174,105 @@ body {
   transform: translate(-50%, -50%) scale(0.55);
 }
 
-.drop-zone.is-placement-cue {
+.is-placement-cue > .drop-zone {
   filter: drop-shadow(0 0 6px rgba(217, 168, 38, 0.72));
 }
 
-.drop-zone.is-placement-cue::before,
-.drop-zone.is-placement-cue::after {
+.is-placement-cue > .drop-zone::before,
+.is-placement-cue > .drop-zone::after {
   opacity: 1;
 }
 
-.drop-zone.is-placement-cue::after {
+.is-placement-cue > .drop-zone::after {
   transform: translate(-50%, -50%) scale(1);
 }
 
-.drop-zone.is-placement-cue::before {
+.is-placement-cue > .drop-zone::before {
   border-color: #d9a826;
   background: rgba(111, 224, 210, 0.24);
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.82), 0 0 8px 3px rgba(255, 229, 118, 0.28);
   transform: rotate(-8deg) skewX(-16deg) scale(1);
 }
 
-.drop-zone:focus-visible,
-.drop-zone.is-ready {
+.drop-zone-label {
+  position: absolute;
+  z-index: 2;
+  top: 62%;
+  left: 50%;
+  width: max-content;
+  max-width: clamp(88px, 9vw, 132px);
+  display: grid;
+  gap: 1px;
+  border: 2px solid var(--zone-label-border);
+  border-radius: 10px;
+  padding: 3px 8px 4px;
+  background: var(--zone-label-bg);
+  box-shadow: 0 4px 0 var(--zone-label-shadow), 0 7px 16px var(--zone-label-soft-shadow);
+  color: var(--ink);
+  opacity: 0;
+  text-align: center;
+  transform: translate(-50%, -50%) scale(0.82);
+  transition: opacity 160ms ease, transform 180ms ease;
+  pointer-events: none;
+}
+
+.drop-zone-label strong {
+  color: var(--zone-cue-color);
+  font-family: 'Secular One', sans-serif;
+  font-size: clamp(12px, 1vw, 16px);
+  line-height: 1.05;
+}
+
+.drop-zone-label small {
+  color: var(--ink);
+  font-size: clamp(10px, 0.8vw, 13px);
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.is-placement-cue > .drop-zone .drop-zone-label,
+.drop-zone.is-hinted .drop-zone-label {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.drop-zone[data-zone='bedside-floor'] .drop-zone-label {
+  top: 72%;
+}
+
+.drop-zone[data-zone='under-bed'] .drop-zone-label {
+  top: 50%;
+  max-width: 132px;
+}
+
+.drop-zone[data-zone='under-bed']::before {
+  inset: -6% 0;
+}
+
+.drop-zone:focus-visible {
   outline: none;
   border-color: rgba(255, 255, 255, 0.82);
   background: rgba(255, 225, 113, 0.16);
   filter: drop-shadow(0 0 8px rgba(255, 227, 112, 0.8));
 }
 
-.drop-zone.is-current {
-  z-index: 1;
-}
-
-.drop-zone.is-hinted:not(.is-placement-cue) {
+.drop-zone.is-hinted {
   border-color: rgba(255, 204, 74, 0.96);
   background: rgba(255, 235, 142, 0.24);
   animation: hintGlow 1.2s ease-in-out infinite;
+}
+
+.drop-zone.is-hinted::before {
+  border-color: var(--gold);
+  background: var(--zone-hint-bg);
+  box-shadow: 0 0 0 3px var(--zone-hint-ring), 0 0 18px 8px var(--zone-hint-glow);
+  opacity: 1;
+}
+
+.drop-zone.is-hinted .drop-zone-label {
+  border-color: var(--gold);
+  background: var(--zone-hint-label-bg);
+  box-shadow: 0 4px 0 var(--zone-hint-shadow), 0 0 16px var(--zone-hint-glow);
 }
 
 .placed-object {
