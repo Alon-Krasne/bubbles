@@ -60,6 +60,7 @@ The catalog exposes fixed English and Hebrew policies. Difficulty levels may cha
 
 - English: spoken English prompt, semantic image choices, no image on the English answer target.
 - Hebrew: written Hebrew prompt and choices, no answer image, and no pre-answer speech.
+- Magic House keeps object choices within those policies; after an object is selected, English destination labels include a small Hebrew location gloss so room vocabulary cannot block placement. Hebrew destination labels remain Hebrew-only.
 - No niqqud in learning material.
 
 ## Validation
