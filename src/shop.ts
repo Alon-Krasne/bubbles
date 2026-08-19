@@ -191,11 +191,13 @@ export function initShopGame(deps: ShopDeps) {
 
   function finishShopCelebration() {
     if (deps.hostedSession) {
-      deps.hostedSession.complete(calculateMasteryStars({
+      const stars = calculateMasteryStars({
         mistakes: state.mistakes,
         challengeSize: state.activeLevel.customerCount,
         solutionHints: 0,
-      }));
+      });
+      leaveShop();
+      deps.hostedSession.complete(stars);
       return;
     }
     returnToLevelList();
@@ -508,6 +510,7 @@ export function initShopGame(deps: ShopDeps) {
     showCelebration(stars);
     scheduleTimer(() => {
       if (deps.hostedSession) {
+        leaveShop();
         deps.hostedSession.complete(stars);
         return;
       }

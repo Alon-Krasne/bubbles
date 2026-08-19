@@ -13,7 +13,7 @@ import {
 import { calculateMasteryStars } from '../prototype/shared/activity-scoring.mjs';
 import { GAME_LEVELS, getLanguagePolicy } from '../prototype/shared/trail-catalog.mjs';
 import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
-import { playRecordedSequence, vocabularyWordAudio } from './recordedSpeech';
+import { playRecordedSequence, stopRecordedSpeech, vocabularyWordAudio } from './recordedSpeech';
 import { afterMemoryCardReveal } from './memoryCompletion';
 
 // Version badge
@@ -522,6 +522,7 @@ function syncActiveProfileUI() {
 
 function openBubblesSetup() {
   shopGame?.leaveShop();
+  stopRecordedSpeech();
   clearMemoryMismatchState();
   clearMemoryWinReturnTimer();
   hideMemoryToast();
@@ -550,6 +551,7 @@ function requireHostedActivitySession() {
 }
 
 function exitHostedMemoryActivity() {
+  stopRecordedSpeech();
   clearMemoryMismatchState();
   clearMemoryWinReturnTimer();
   hideMemoryToast();
@@ -575,6 +577,7 @@ function returnFromMemoryRound() {
 
 function finishMemoryCelebration() {
   if (isHostedMemoryActivity()) {
+    stopRecordedSpeech();
     requireHostedActivitySession().complete(memoryRoundStars);
     return;
   }
@@ -616,6 +619,7 @@ function openHostedActivity() {
 
 function startGame() {
   shopGame?.leaveShop();
+  stopRecordedSpeech();
   clearMemoryMismatchState();
   hideMemoryToast();
   showScreen('game-hud');
@@ -629,6 +633,7 @@ function startGame() {
 
 function returnToGameSelect() {
   shopGame?.leaveShop();
+  stopRecordedSpeech();
   clearMemoryMismatchState();
   clearMemoryWinReturnTimer();
   hideMemoryToast();
@@ -639,6 +644,7 @@ function returnToGameSelect() {
 
 function returnToStart() {
   shopGame?.leaveShop();
+  stopRecordedSpeech();
   clearMemoryMismatchState();
   clearMemoryWinReturnTimer();
   hideMemoryToast();
@@ -694,6 +700,7 @@ function loadHighScores() {
 }
 
 function showMemoryLevelMap() {
+  stopRecordedSpeech();
   clearMemoryMismatchState();
   clearMemoryWinReturnTimer();
   hideMemoryToast();
@@ -734,6 +741,7 @@ function getMemoryStageTitle(level: MemoryLevel) {
 }
 
 function startMemoryRound(level: MemoryLevel) {
+  stopRecordedSpeech();
   clearMemoryMismatchState();
   memoryDifficulty = level.difficulty;
   memoryMatchedPairs = new Set<string>();
@@ -970,6 +978,7 @@ function finishMemoryRound() {
   clearMemoryWinReturnTimer();
   memoryWinReturnTimer = window.setTimeout(() => {
     if (isHostedMemoryActivity()) {
+      stopRecordedSpeech();
       requireHostedActivitySession().complete(memoryRoundStars);
       return;
     }

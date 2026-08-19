@@ -1,6 +1,6 @@
 {
   "name": "bubbles-game",
-  "version": "7.12.3",
+  "version": "7.12.4",
   "description": "בועות! - A cooperative bubble-catching game for two players",
   "main": "index.html",
   "scripts": {
@@ -15,6 +15,7 @@
     "test:vocabulary-audio": "node scripts/test-vocabulary-audio.mjs",
     "test:store-audio": "node scripts/test-store-audio.mjs",
     "test:audio-integrity": "node scripts/test-audio-integrity.mjs",
+    "test:audio-playback": "node --experimental-strip-types scripts/test-audio-playback-queue.mjs",
     "pretest:fast-start": "npm run build",
     "test:fast-start": "node scripts/test-fast-start-build.mjs",
     "test:memory-completion": "node --experimental-strip-types scripts/test-memory-completion.mjs",
