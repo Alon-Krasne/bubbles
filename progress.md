@@ -105,3 +105,89 @@ Browser receipts at 1024 x 768:
 - The watermelon stress card fits one line with 21 px margins; word and speaker button share the same horizontal center.
 - Production Play-to-visible-and-interactive Magic House launch measured 1,149 ms after parallelizing iframe loading with the launch celebration, down from 1,434 ms before that change.
 - Gemini 3.1 Pro final Magic House verdict: APPROVE with no blocker/high/medium findings. Its three low notes (ball grounding, pillow contrast, and keyword spacing) were applied afterward.
+
+## August 21 Listening Shop timing follow-up
+
+User follow-up: keep the completed request visible until the item + “thank you” audio finishes, show the next customer immediately when “thank you” ends, and play recorded speech 20% faster.
+
+Acceptance target:
+
+- [x] Recorded vocabulary speech plays at `1.2×`.
+- [x] The completed customer/request remains visible for the entire confirmation sequence.
+- [x] The next customer appears immediately after confirmation audio ends, with no additional pause.
+- [x] Queue, Store audio, build, and real-Chrome checks pass without playback or console errors.
+
+Implementation notes:
+
+- Recorded speech now assigns `playbackRate = 1.2` before every clip.
+- Queue completion callbacks run only after successful playback; superseded and cancelled requests never complete.
+- English Store customer advancement is driven by the item + “thank you” sequence completion; Hebrew keeps its existing text-only timing.
+- The queue completion regression was observed failing before implementation and now passes.
+
+Browser receipt: before the change, playback was `1.0×` and the customer changed about 1.4 seconds before “thank you” ended. In the final Chrome run, every recorded clip reported `1.2×`; all samples through the final `1.64 s` “thank you” frame kept the original customer at opacity `1` without the leaving class, and the next customer appeared 0.6 ms after the clip ended. Both replay controls were disabled during confirmation and re-enabled for the next customer. The page error log was empty and the console contained only Vite connection messages.
+
+### Voice-speed correction
+
+The user found the `1.2×` result still perceptually slow. The immutable correction target is `1.5×`, with the committed `1.64 s` “thank you” clip completing within `1.2 s` in Chrome while preserving the confirmation-completion transition and an empty page-error log.
+
+Before correction, Chrome confirmed that the audio path was applying `1.2×`, but “thank you” still took `1,418.8 ms` of wall-clock time. This rules out a bypassed playback path and identifies the problem as insufficient speed-up.
+
+After correction, Chrome reported `1.5×` and completed that same clip in `1,162.4 ms`, passing the `1.2 s` threshold. In a full Store round, the selected word and “thank you” both played at `1.5×`; the completed customer stayed fully visible with no leaving class through the final audio frame, and the next request began 0.7 ms after “thank you” ended. Replay controls unlocked for the next customer, the page-error log was empty, and visual inspection found the post-transition layout intact.
+
+## August 21 Shop state and forgiving stars correction
+
+User follow-up: the Shop answer/progress UI still changed before “thank you,” in-progress play reset to an older state, and star scoring must never disappoint a child with a hidden penalty.
+
+Acceptance target:
+
+- [x] Customer, prompt, basket, served count, coins, feedback, and shelf remain visibly unchanged until `thank-you.mp3` ends.
+- [x] The next request renders immediately after “thank you,” with no added pause.
+- [x] The exact in-progress customer, order, shelf, mistakes, coins, and served count survive a hard reload after every committed interaction.
+- [x] Completing a Shop level clears only that level's in-progress session.
+- [x] Help never costs a star; forgiving mistake thresholds are the only scoring input.
+- [x] Every one-, two-, or three-star result displays all three slots.
+
+Before correction, Chrome showed the first customer changing from `0/5`, `0` coins, and `❓ 0/1` to `1/5`, `1` coin, and the revealed answer 121.8 ms before selected-word audio began; “thank you” ended another 2,158.8 ms later. A hard reload then reset `1/5` to `0/5`, and local storage contained no Shop session.
+
+After correction, every observed UI value stayed unchanged through the `thank-you.mp3` `ended` event and the next request rendered 1.0 ms later. A hard reload reproduced the exact customer, shelf, stored request, `1/5`, and coin count byte-for-byte. Completing all five customers removed the session and displayed a visible `★★★` celebration. The Chrome page-error log was empty.
+
+Scoring now awards three stars through mistakes on half the round's challenges, two stars through twice the challenge count, and one star beyond that. The strongest help no longer affects scoring. Celebration screens and completed route nodes use `★★★`, `★★☆`, or `★☆☆` so the result is always visibly out of three.
+
+## August 21 Memory Garden completion correction
+
+User follow-up: Memory Garden must not celebrate or leave the activity while any matched pair is still visually closed or mid-reveal.
+
+Acceptance target:
+
+- [x] Completion requires exactly two rendered cards per configured pair.
+- [x] Every rendered card is both matched and face-up before completion can proceed.
+- [x] Celebration waits for every active card-front animation, not only the second card in the final pair.
+- [x] Hosted route completion remains blocked until after the fully revealed celebration.
+- [x] The targeted regression, production build, and real-Chrome trace pass without page errors.
+
+Before correction, the isolated completion path fired as soon as the second final card emitted `transitionend`, even when another card was explicitly still mid-reveal.
+
+After correction, Chrome observed all eight cards matched and face-up 30 ms after the last selection, with four card-front animations still active and celebration correctly hidden. Celebration appeared only after all active animations reached zero. At that frame all eight cards were matched and face-up; the hosted completion message followed 2,401.7 ms later. The page-error log was empty.
+
+## August 21 failure-path hardening
+
+Review follow-up: a failed audio clip locked the Shop confirmation forever, an unhandled rejection could strand Memory completion, and corrupt storage could crash session restore.
+
+Acceptance target:
+
+- [x] A failed `thank-you` clip still serves the customer, unlocks replay controls, and starts the next request.
+- [x] Queue semantics stay unchanged: completion fires only after successful playback; superseded and cancelled requests never complete or fail.
+- [x] Memory celebration proceeds (with a logged error) even if the reveal wait rejects.
+- [x] Corrupt or malformed Shop session storage reads as absent, is repaired by the next save, and failed writes never throw.
+- [x] `npm run test:audio-playback`, `test:shop-session`, `test:memory-completion`, `test:activity-scoring`, `tsc --noEmit`, and the production build pass.
+
+## August 21 basket animation restore
+
+User follow-up: the correct final pick must fly to the basket and move the basket count 0→1 immediately, with the word + "thank you" audio following — not after the audio.
+
+Acceptance target:
+
+- [x] The completing English selection commits visually at tap time (fly animation, basket reveal, coins, served count, happy customer).
+- [x] The next customer still appears only when the confirmation audio ends (or fails), preserving the no-extra-pause timing.
+- [x] The committed selection persists immediately, so a mid-audio reload keeps the served state.
+- [x] Targeted tests, typecheck, and production build pass.

@@ -1,10 +1,14 @@
-export function calculateMasteryStars({ mistakes, challengeSize, solutionHints }) {
-  const confidentMistakeLimit = Math.max(1, Math.ceil(challengeSize / 3));
-  if (mistakes <= confidentMistakeLimit && solutionHints === 0) {
+export function calculateMasteryStars({ mistakes, challengeSize }) {
+  const confidentMistakeLimit = Math.max(1, Math.ceil(challengeSize / 2));
+  if (mistakes <= confidentMistakeLimit) {
     return 3;
   }
-  if (mistakes <= challengeSize) {
+  if (mistakes <= challengeSize * 2) {
     return 2;
   }
   return 1;
+}
+
+export function formatStarRating(stars) {
+  return `${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}`;
 }

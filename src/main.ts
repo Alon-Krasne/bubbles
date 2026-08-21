@@ -10,11 +10,11 @@ import {
   type ProfileCharacter,
   type ProfileLanguage,
 } from './hostedActivity';
-import { calculateMasteryStars } from '../prototype/shared/activity-scoring.mjs';
+import { calculateMasteryStars, formatStarRating } from '../prototype/shared/activity-scoring.mjs';
 import { GAME_LEVELS, getLanguagePolicy } from '../prototype/shared/trail-catalog.mjs';
 import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
-import { playRecordedSequence, vocabularyWordAudio } from './recordedSpeech';
-import { afterMemoryCardReveal } from './memoryCompletion';
+import { playRecordedSequence, stopRecordedSpeech, vocabularyWordAudio } from './recordedSpeech';
+import { waitForMemoryBoardReveal } from './memoryCompletion';
 
 // Version badge
 const versionBadge = document.getElementById('version-badge');
@@ -522,6 +522,7 @@ function syncActiveProfileUI() {
 
 function openBubblesSetup() {
   shopGame?.leaveShop();
+  stopRecordedSpeech();
   clearMemoryMismatchState();
   clearMemoryWinReturnTimer();
   hideMemoryToast();
@@ -550,6 +551,7 @@ function requireHostedActivitySession() {
 }
 
 function exitHostedMemoryActivity() {
+  stopRecordedSpeech();
   clearMemoryMismatchState();
   clearMemoryWinReturnTimer();
   hideMemoryToast();
@@ -575,6 +577,7 @@ function returnFromMemoryRound() {
 
 function finishMemoryCelebration() {
   if (isHostedMemoryActivity()) {
+    stopRecordedSpeech();
     requireHostedActivitySession().complete(memoryRoundStars);
     return;
   }
@@ -616,6 +619,7 @@ function openHostedActivity() {
 
 function startGame() {
   shopGame?.leaveShop();
+  stopRecordedSpeech();
   clearMemoryMismatchState();
   hideMemoryToast();
   showScreen('game-hud');
@@ -629,6 +633,7 @@ function startGame() {
 
 function returnToGameSelect() {
   shopGame?.leaveShop();
+  stopRecordedSpeech();
   clearMemoryMismatchState();
   clearMemoryWinReturnTimer();
   hideMemoryToast();
@@ -639,6 +644,7 @@ function returnToGameSelect() {
 
 function returnToStart() {
   shopGame?.leaveShop();
+  stopRecordedSpeech();
   clearMemoryMismatchState();
   clearMemoryWinReturnTimer();
   hideMemoryToast();
@@ -694,6 +700,7 @@ function loadHighScores() {
 }
 
 function showMemoryLevelMap() {
+  stopRecordedSpeech();
   clearMemoryMismatchState();
   clearMemoryWinReturnTimer();
   hideMemoryToast();
@@ -734,6 +741,7 @@ function getMemoryStageTitle(level: MemoryLevel) {
 }
 
 function startMemoryRound(level: MemoryLevel) {
+  stopRecordedSpeech();
   clearMemoryMismatchState();
   memoryDifficulty = level.difficulty;
   memoryMatchedPairs = new Set<string>();
@@ -950,16 +958,18 @@ function matchMemoryCards() {
     memoryRoundStars = calculateMasteryStars({
       mistakes: memoryMistakes,
       challengeSize: pairCount,
-      solutionHints: 0,
     });
     if (!isHostedMemoryActivity()) {
       saveMemoryLevelStars(activeMemoryLevel.id, memoryRoundStars);
     }
-    const finalCardFront = secondCard.querySelector<HTMLElement>('.memory-card-front');
-    if (!finalCardFront) {
-      throw new Error('Final Memory card is missing its front face');
-    }
-    afterMemoryCardReveal(finalCardFront, finishMemoryRound);
+    const board = requireElement<HTMLDivElement>('memory-board');
+    const renderedCards = Array.from(board.querySelectorAll<HTMLElement>('.memory-card'));
+    void waitForMemoryBoardReveal(renderedCards, pairCount)
+      .then(finishMemoryRound)
+      .catch((error) => {
+        console.error('Memory reveal wait failed', error);
+        finishMemoryRound();
+      });
   }
   updateMemoryStatus(message);
   showMemoryToast(matchedWord);
@@ -970,6 +980,7 @@ function finishMemoryRound() {
   clearMemoryWinReturnTimer();
   memoryWinReturnTimer = window.setTimeout(() => {
     if (isHostedMemoryActivity()) {
+      stopRecordedSpeech();
       requireHostedActivitySession().complete(memoryRoundStars);
       return;
     }
@@ -1336,7 +1347,7 @@ function showMemoryCelebration(stars: number) {
   const celebration = requireElement<HTMLDivElement>('memory-celebration');
   const subtitle = requireElement<HTMLDivElement>('memory-celebration-subtitle');
   const profile = getActiveProfile().name;
-  requireElement<HTMLDivElement>('memory-celebration-stars').textContent = '⭐'.repeat(stars);
+  requireElement<HTMLDivElement>('memory-celebration-stars').textContent = formatStarRating(stars);
   subtitle.textContent = `${profile}, ${getMemoryStageTitle(activeMemoryLevel)} הושלם עם ${stars} כוכבים`;
 
   requireElement<HTMLElement>('memory-game-area').classList.add('is-completing');
