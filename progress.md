@@ -152,3 +152,19 @@ Before correction, Chrome showed the first customer changing from `0/5`, `0` coi
 After correction, every observed UI value stayed unchanged through the `thank-you.mp3` `ended` event and the next request rendered 1.0 ms later. A hard reload reproduced the exact customer, shelf, stored request, `1/5`, and coin count byte-for-byte. Completing all five customers removed the session and displayed a visible `★★★` celebration. The Chrome page-error log was empty.
 
 Scoring now awards three stars through mistakes on half the round's challenges, two stars through twice the challenge count, and one star beyond that. The strongest help no longer affects scoring. Celebration screens and completed route nodes use `★★★`, `★★☆`, or `★☆☆` so the result is always visibly out of three.
+
+## August 21 Memory Garden completion correction
+
+User follow-up: Memory Garden must not celebrate or leave the activity while any matched pair is still visually closed or mid-reveal.
+
+Acceptance target:
+
+- [x] Completion requires exactly two rendered cards per configured pair.
+- [x] Every rendered card is both matched and face-up before completion can proceed.
+- [x] Celebration waits for every active card-front animation, not only the second card in the final pair.
+- [x] Hosted route completion remains blocked until after the fully revealed celebration.
+- [x] The targeted regression, production build, and real-Chrome trace pass without page errors.
+
+Before correction, the isolated completion path fired as soon as the second final card emitted `transitionend`, even when another card was explicitly still mid-reveal.
+
+After correction, Chrome observed all eight cards matched and face-up 30 ms after the last selection, with four card-front animations still active and celebration correctly hidden. Celebration appeared only after all active animations reached zero. At that frame all eight cards were matched and face-up; the hosted completion message followed 2,401.7 ms later. The page-error log was empty.

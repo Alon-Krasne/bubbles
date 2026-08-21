@@ -14,7 +14,7 @@ import { calculateMasteryStars, formatStarRating } from '../prototype/shared/act
 import { GAME_LEVELS, getLanguagePolicy } from '../prototype/shared/trail-catalog.mjs';
 import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
 import { playRecordedSequence, stopRecordedSpeech, vocabularyWordAudio } from './recordedSpeech';
-import { afterMemoryCardReveal } from './memoryCompletion';
+import { waitForMemoryBoardReveal } from './memoryCompletion';
 
 // Version badge
 const versionBadge = document.getElementById('version-badge');
@@ -962,11 +962,9 @@ function matchMemoryCards() {
     if (!isHostedMemoryActivity()) {
       saveMemoryLevelStars(activeMemoryLevel.id, memoryRoundStars);
     }
-    const finalCardFront = secondCard.querySelector<HTMLElement>('.memory-card-front');
-    if (!finalCardFront) {
-      throw new Error('Final Memory card is missing its front face');
-    }
-    afterMemoryCardReveal(finalCardFront, finishMemoryRound);
+    const board = requireElement<HTMLDivElement>('memory-board');
+    const renderedCards = Array.from(board.querySelectorAll<HTMLElement>('.memory-card'));
+    void waitForMemoryBoardReveal(renderedCards, pairCount).then(finishMemoryRound);
   }
   updateMemoryStatus(message);
   showMemoryToast(matchedWord);
