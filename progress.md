@@ -125,3 +125,11 @@ Implementation notes:
 - The queue completion regression was observed failing before implementation and now passes.
 
 Browser receipt: before the change, playback was `1.0×` and the customer changed about 1.4 seconds before “thank you” ended. In the final Chrome run, every recorded clip reported `1.2×`; all samples through the final `1.64 s` “thank you” frame kept the original customer at opacity `1` without the leaving class, and the next customer appeared 0.6 ms after the clip ended. Both replay controls were disabled during confirmation and re-enabled for the next customer. The page error log was empty and the console contained only Vite connection messages.
+
+### Voice-speed correction
+
+The user found the `1.2×` result still perceptually slow. The immutable correction target is `1.5×`, with the committed `1.64 s` “thank you” clip completing within `1.2 s` in Chrome while preserving the confirmation-completion transition and an empty page-error log.
+
+Before correction, Chrome confirmed that the audio path was applying `1.2×`, but “thank you” still took `1,418.8 ms` of wall-clock time. This rules out a bypassed playback path and identifies the problem as insufficient speed-up.
+
+After correction, Chrome reported `1.5×` and completed that same clip in `1,162.4 ms`, passing the `1.2 s` threshold. In a full Store round, the selected word and “thank you” both played at `1.5×`; the completed customer stayed fully visible with no leaving class through the final audio frame, and the next request began 0.7 ms after “thank you” ended. Replay controls unlocked for the next customer, the page-error log was empty, and visual inspection found the post-transition layout intact.

@@ -1,7 +1,7 @@
 import { createLatestPlaybackQueue } from './audioPlaybackQueue';
 
 const AUDIO_ELEMENT_ID = 'recorded-speech';
-const RECORDED_SPEECH_PLAYBACK_RATE = 1.2;
+const RECORDED_SPEECH_PLAYBACK_RATE = 1.5;
 const VOCABULARY_AUDIO = import.meta.glob('./assets/audio/vocabulary/en/**/*.mp3', {
   eager: true,
   query: '?url',
