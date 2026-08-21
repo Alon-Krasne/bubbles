@@ -191,3 +191,18 @@ Acceptance target:
 - [x] The next customer still appears only when the confirmation audio ends (or fails), preserving the no-extra-pause timing.
 - [x] The committed selection persists immediately, so a mid-audio reload keeps the served state.
 - [x] Targeted tests, typecheck, and production build pass.
+
+## August 21 The Busy Park (הפארק) new game mode
+
+User request: review current games and add a new type of educational game (I-spy / scene search) to expand learning recognition paths into contextual scene finding.
+
+Acceptance target:
+
+- [x] Full playable 4th game mode "הפארק" (The Busy Park) with 5 difficulty levels (4 to 8 targets, 6 to 14 scene items).
+- [x] English learning uses spoken voice prompts with replay button + semantic drawings in the scene; Hebrew uses written prompts + written choices revealed upon finding.
+- [x] Lush kawaii park backdrop (sun, clouds, hills, trees, pond with ripples, winding path, picnic blanket) with 14 position slots.
+- [x] Responsive layout with 4-card game select grid.
+- [x] Coverage deck per profile and level avoids repeats until pool exhaustion.
+- [x] Star mastery calculation (1-3 stars) and persistent level progression per profile.
+- [x] `window.render_game_to_text()` hook exposed for automated verification.
+- [x] `npm run test:park`, `test:trail`, `test:vocabulary`, `tsc --noEmit`, and production build pass.

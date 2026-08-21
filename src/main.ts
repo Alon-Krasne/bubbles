@@ -3,6 +3,7 @@ import { GameApp } from './game/GameApp';
 import { FigureType } from './entities/Character';
 import { FallingItemMode } from './entities/Bubble';
 import { initShopGame, type ShopLevelId } from './shop';
+import { initParkGame, type ParkLevelId } from './park';
 import { VOCAB_WORDS, type VocabWord } from './words';
 import {
   createHostedActivitySession,
@@ -25,12 +26,13 @@ if (versionBadge) {
 // Initialize game
 const gameApp = new GameApp();
 let shopGame: ReturnType<typeof initShopGame> | null = null;
+let parkGame: ReturnType<typeof initParkGame> | null = null;
 const hostedActivityContext = readHostedActivityContext();
 const hostedActivitySession = hostedActivityContext
   ? createHostedActivitySession(hostedActivityContext)
   : null;
 
-type ScreenId = 'game-select-screen' | 'memory-screen' | 'shop-screen' | 'start-screen' | 'game-hud' | 'end-screen';
+type ScreenId = 'game-select-screen' | 'memory-screen' | 'shop-screen' | 'park-screen' | 'start-screen' | 'game-hud' | 'end-screen';
 type MemoryDifficulty = 'easy' | 'medium' | 'hard';
 type MemoryCardKind = 'hebrew' | 'english';
 type MemoryLevelId =
@@ -208,6 +210,12 @@ function setupUI() {
     returnToGameSelect,
     hostedSession: hostedActivityContext?.activityId === 'listening-shop' ? hostedActivitySession : null,
   });
+  parkGame = initParkGame({
+    showScreen,
+    getActiveProfile,
+    returnToGameSelect,
+    hostedSession: hostedActivityContext?.activityId === 'busy-park' ? hostedActivitySession : null,
+  });
 
   requireElement<HTMLButtonElement>('add-profile-btn').addEventListener('click', addProfileFromInput);
   requireElement<HTMLButtonElement>('rename-profile-btn').addEventListener('click', renameActiveProfileFromInput);
@@ -323,6 +331,7 @@ function setupUI() {
   requireElement<HTMLButtonElement>('select-bubbles-btn').addEventListener('click', openBubblesSetup);
   requireElement<HTMLButtonElement>('select-memory-btn').addEventListener('click', openMemoryGarden);
   requireElement<HTMLButtonElement>('select-shop-btn').addEventListener('click', () => shopGame?.openShop());
+  requireElement<HTMLButtonElement>('select-park-btn').addEventListener('click', () => parkGame?.openPark());
   requireElement<HTMLButtonElement>('back-to-games-btn').addEventListener('click', returnToGameSelect);
   requireElement<HTMLButtonElement>('start-btn').addEventListener('click', startGame);
   requireElement<HTMLButtonElement>('memory-back-btn').addEventListener('click', returnFromMemoryScreen);
@@ -522,6 +531,7 @@ function syncActiveProfileUI() {
 
 function openBubblesSetup() {
   shopGame?.leaveShop();
+  parkGame?.leavePark();
   stopRecordedSpeech();
   clearMemoryMismatchState();
   clearMemoryWinReturnTimer();
@@ -532,6 +542,7 @@ function openBubblesSetup() {
 
 function openMemoryGarden() {
   shopGame?.leaveShop();
+  parkGame?.leavePark();
   if (!hostedActivityContext) {
     gameApp.returnToStart();
   }
@@ -607,18 +618,34 @@ function openHostedActivity() {
     return;
   }
 
-  const shopLevelIds = GAME_LEVELS.shop.map((level) => level.id as ShopLevelId);
-  if (!shopLevelIds.includes(hostedActivityContext.levelId as ShopLevelId)) {
-    throw new Error(`Invalid hosted shop level ${hostedActivityContext.levelId}`);
+  if (hostedActivityContext.activityId === 'listening-shop') {
+    const shopLevelIds = GAME_LEVELS.shop.map((level) => level.id as ShopLevelId);
+    if (!shopLevelIds.includes(hostedActivityContext.levelId as ShopLevelId)) {
+      throw new Error(`Invalid hosted shop level ${hostedActivityContext.levelId}`);
+    }
+    if (!shopGame) {
+      throw new Error('Shop game is not initialized');
+    }
+    shopGame.openLevel(hostedActivityContext.levelId as ShopLevelId);
+    return;
   }
-  if (!shopGame) {
-    throw new Error('Shop game is not initialized');
+
+  if (hostedActivityContext.activityId === 'busy-park') {
+    const parkLevelIds = GAME_LEVELS.park.map((level) => level.id as ParkLevelId);
+    if (!parkLevelIds.includes(hostedActivityContext.levelId as ParkLevelId)) {
+      throw new Error(`Invalid hosted park level ${hostedActivityContext.levelId}`);
+    }
+    if (!parkGame) {
+      throw new Error('Park game is not initialized');
+    }
+    parkGame.openLevel(hostedActivityContext.levelId as ParkLevelId);
+    return;
   }
-  shopGame.openLevel(hostedActivityContext.levelId as ShopLevelId);
 }
 
 function startGame() {
   shopGame?.leaveShop();
+  parkGame?.leavePark();
   stopRecordedSpeech();
   clearMemoryMismatchState();
   hideMemoryToast();
@@ -633,6 +660,7 @@ function startGame() {
 
 function returnToGameSelect() {
   shopGame?.leaveShop();
+  parkGame?.leavePark();
   stopRecordedSpeech();
   clearMemoryMismatchState();
   clearMemoryWinReturnTimer();
@@ -644,6 +672,7 @@ function returnToGameSelect() {
 
 function returnToStart() {
   shopGame?.leaveShop();
+  parkGame?.leavePark();
   stopRecordedSpeech();
   clearMemoryMismatchState();
   clearMemoryWinReturnTimer();

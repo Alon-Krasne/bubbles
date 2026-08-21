@@ -89,6 +89,22 @@
                     </span>
                     <span class="game-card-action">בחרו</span>
                 </button>
+
+                <button type="button" class="game-choice-card game-choice-card-park" data-game="busy-park" id="select-park-btn">
+                    <span class="park-card-art" aria-hidden="true">
+                        <span class="park-art-sun">☀️</span>
+                        <span class="park-art-tree park-tree-1">🌳</span>
+                        <span class="park-art-tree park-tree-2">🌳</span>
+                        <span class="park-art-kite">🪁</span>
+                        <span class="park-art-dog">🐶</span>
+                        <span class="park-art-flower">🌸</span>
+                    </span>
+                    <span class="game-card-copy park-card-copy">
+                        <span class="game-card-name park-game-name">הפארק</span>
+                        <span class="game-card-meta">מחפשים ומוצאים בנוף</span>
+                    </span>
+                    <span class="game-card-action">בחרו</span>
+                </button>
             </div>
         </div>
 
@@ -208,6 +224,71 @@
                     <div class="shop-celebration-title">החנות הצליחה!</div>
                     <div id="shop-celebration-subtitle" class="shop-celebration-subtitle"></div>
                     <button type="button" id="shop-celebration-next-btn" class="shop-celebration-next-btn">לשלבים</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- The Busy Park Screen -->
+        <div id="park-screen" class="screen">
+            <button id="park-back-btn" class="back-to-games-btn" type="button" aria-label="חזרה לבחירת משחקים" title="חזרה לבחירת משחקים">
+                <span aria-hidden="true">‹</span>
+                <span>משחקים</span>
+            </button>
+
+            <section id="park-level-map" class="park-level-map" aria-label="שלבי הפארק">
+                <header class="park-header">
+                    <p class="park-kicker">משחק חיפוש בטבע</p>
+                    <h1 class="park-title">הפארק</h1>
+                    <p class="park-subtitle">הקשיבו או קראו, ומצאו את הפריטים בנוף</p>
+                    <p id="park-profile-badge" class="park-profile-badge">המסלול של לוטם</p>
+                </header>
+
+                <div id="park-level-trail" class="park-level-trail"></div>
+            </section>
+
+            <section id="park-game-area" class="park-game-area hidden" aria-label="משחק הפארק">
+                <div class="park-game-toolbar">
+                    <button type="button" id="park-level-list-btn" class="park-map-btn" aria-label="חזרה למפת שלבי הפארק">שלבים</button>
+                    <div id="park-game-level-title" class="park-game-level-title">שלב 1</div>
+                    <button type="button" id="park-replay-btn" class="park-replay-btn" aria-label="השמעת המילה שוב">🔊</button>
+                </div>
+
+                <div class="park-hud" aria-live="polite">
+                    <div id="park-found-progress" class="park-hud-pill">🔍 0/4</div>
+                    <div class="park-prompt-bubble">
+                        <span id="park-target-prompt" class="park-target-prompt">Where is the dog?</span>
+                    </div>
+                </div>
+
+                <div class="park-stage">
+                    <div id="park-scene" class="park-scene" aria-label="נוף הפארק">
+                        <div class="park-scene-backdrop" aria-hidden="true">
+                            <div class="park-scene-sun">☀️</div>
+                            <div class="park-scene-cloud park-scene-cloud-1">☁️</div>
+                            <div class="park-scene-cloud park-scene-cloud-2">☁️</div>
+                            <div class="park-scene-hill-left"></div>
+                            <div class="park-scene-hill-right"></div>
+                            <div class="park-scene-tree park-scene-tree-1">🌳</div>
+                            <div class="park-scene-tree park-scene-tree-2">🌲</div>
+                            <div class="park-scene-pond">
+                                <span class="park-pond-ripple"></span>
+                            </div>
+                            <div class="park-scene-path"></div>
+                            <div class="park-scene-blanket"></div>
+                        </div>
+                        <div id="park-hotspots" class="park-hotspots"></div>
+                    </div>
+                </div>
+
+                <div id="park-feedback" class="park-feedback" role="status" aria-live="polite"></div>
+            </section>
+
+            <div id="park-celebration" class="park-celebration" role="status" aria-live="polite" aria-hidden="true">
+                <div class="park-celebration-content">
+                    <div id="park-celebration-stars" class="park-celebration-stars" aria-hidden="true">⭐⭐⭐</div>
+                    <div class="park-celebration-title">מצאתם הכל!</div>
+                    <div id="park-celebration-subtitle" class="park-celebration-subtitle"></div>
+                    <button type="button" id="park-celebration-next-btn" class="park-celebration-next-btn">לשלבים</button>
                 </div>
             </div>
         </div>

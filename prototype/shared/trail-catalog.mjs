@@ -25,6 +25,7 @@ const GAME_DEFINITIONS = Object.freeze({
   memory: Object.freeze({ activity: 'memory-garden', entry: '../index.html', label: 'גן מילים' }),
   shop: Object.freeze({ activity: 'listening-shop', entry: '../index.html', label: 'החנות הקטנה' }),
   house: Object.freeze({ activity: 'magic-house', entry: './magic-house.html', label: 'הבית הקסום' }),
+  park: Object.freeze({ activity: 'busy-park', entry: '../index.html', label: 'הפארק' }),
 });
 
 export const MAGIC_REQUEST_TARGET_IDS = Object.freeze(Object.fromEntries(
@@ -86,6 +87,29 @@ export function createShopLevel({ id, difficultyRank, title, subtitle, icon, cus
     throw new Error(`Invalid Store level ${id}`);
   }
   return freezeLevel({ id, difficultyRank, title, subtitle, icon, customerCount, shelfSize, mode, itemPool: Object.freeze([...itemPool]) });
+}
+
+export function createParkLevel({ id, difficultyRank, title, subtitle, icon, findCount, sceneSize, itemPool }) {
+  if (!id
+    || !Number.isInteger(findCount)
+    || findCount < 1
+    || !Number.isInteger(sceneSize)
+    || sceneSize < findCount
+    || !Array.isArray(itemPool)
+    || itemPool.length < sceneSize
+    || new Set(itemPool).size !== itemPool.length) {
+    throw new Error(`Invalid Park level ${id}`);
+  }
+  return freezeLevel({
+    id,
+    difficultyRank,
+    title,
+    subtitle,
+    icon,
+    findCount,
+    sceneSize,
+    itemPool: Object.freeze([...itemPool]),
+  });
 }
 
 function getLargestMagicHouseTargetCount(requestIds, requestCount) {
@@ -204,6 +228,34 @@ const SHOP_LEVELS = Object.freeze([
   createShopLevel({ id: 'shop-level-5', difficultyRank: 5, title: 'הזמנה כפולה', subtitle: 'שני פריטים לקונה', icon: '🛒', customerCount: 7, shelfSize: 8, mode: 'double', itemPool: ['banana', 'apple', 'milk', 'bread', 'egg', 'cheese', 'water', 'cake', 'cookie', 'ice-cream', 'orange', 'strawberry', 'carrot', 'tomato', 'corn', 'pizza', 'sandwich', 'ball', 'book', 'hat', 'shoe', 'cup', 'notebook', 'ruler', 'marker', 'computer', 'camera', 'basketball', 'baseball', 'volleyball', 'medal', 'trophy', 'hamburger', 'fries', 'rice', 'spaghetti', 'soup', 'candy', 'chocolate', 'bed', 'chair', 'couch', 'lamp', 'key', 'clock', 'phone', 'umbrella', 'radio', 'shirt', 'dress', 'pants', 'sock', 'coat', 'scarf', 'glove', 'pencil', 'crayon', 'backpack', 'balloon', 'kite', 'teddy-bear'] }),
 ]);
 
+const PARK_LEVELS = Object.freeze([
+  createParkLevel({
+    id: 'park-level-1', difficultyRank: 1, title: 'חיות בפארק', subtitle: '4 מציאות, 6 חברים', icon: '🐶',
+    findCount: 4, sceneSize: 6,
+    itemPool: ['dog', 'cat', 'bird', 'rabbit', 'duck', 'frog', 'butterfly', 'bee', 'snail', 'turtle', 'fish', 'sheep'],
+  }),
+  createParkLevel({
+    id: 'park-level-2', difficultyRank: 2, title: 'שמים ודשא', subtitle: '5 מציאות בטבע', icon: '🌸',
+    findCount: 5, sceneSize: 8,
+    itemPool: ['sun', 'moon', 'star', 'cloud', 'rain', 'rainbow', 'tree', 'flower', 'leaf', 'mountain', 'cactus', 'snowflake', 'ocean', 'fire', 'volcano'],
+  }),
+  createParkLevel({
+    id: 'park-level-3', difficultyRank: 3, title: 'משחקים בחוץ', subtitle: '6 צעצועים ותנועה', icon: '🪁',
+    findCount: 6, sceneSize: 10,
+    itemPool: ['ball', 'balloon', 'kite', 'teddy-bear', 'bicycle', 'scooter', 'skateboard', 'boat', 'car', 'bus'],
+  }),
+  createParkLevel({
+    id: 'park-level-4', difficultyRank: 4, title: 'פיקניק', subtitle: '7 מציאות על הדשא', icon: '🧺',
+    findCount: 7, sceneSize: 12,
+    itemPool: ['apple', 'banana', 'ice-cream', 'cookie', 'sandwich', 'water', 'cake', 'grapes', 'watermelon', 'pizza', 'orange', 'strawberry'],
+  }),
+  createParkLevel({
+    id: 'park-level-5', difficultyRank: 5, title: 'הפארק המלא', subtitle: '8 מציאות בתוך המון', icon: '🌈',
+    findCount: 8, sceneSize: 14,
+    itemPool: ['dog', 'bird', 'tree', 'flower', 'sun', 'cloud', 'rainbow', 'ball', 'kite', 'balloon', 'bicycle', 'apple', 'ice-cream', 'butterfly', 'duck', 'bee', 'frog', 'teddy-bear'],
+  }),
+]);
+
 const MAGIC_REQUEST_IDS = Object.freeze(MAGIC_HOUSE_REQUESTS.map((request) => request.id));
 const MAGIC_HOUSE_LEVELS = Object.freeze([
   createMagicHouseLevel({ id: 'bedroom-practice', difficultyRank: 1, title: 'חדר אימון', requestIds: MAGIC_REQUEST_IDS, requestCount: 6, drawerSize: 8, maxHelpLevel: 3 }),
@@ -218,6 +270,7 @@ export const GAME_LEVELS = Object.freeze({
   memory: MEMORY_LEVELS,
   shop: SHOP_LEVELS,
   house: MAGIC_HOUSE_LEVELS,
+  park: PARK_LEVELS,
 });
 
 export function getGameLevel(game, levelId) {
@@ -314,6 +367,14 @@ export function validateTrailCatalog({ vocabularyIds, magicRequestIds }) {
     for (const requestId of level.requestIds) {
       if (!magicRequestIds.has(requestId)) {
         throw new Error(`Magic House level ${level.id} references unknown request ${requestId}`);
+      }
+    }
+  }
+
+  for (const level of PARK_LEVELS) {
+    for (const wordId of level.itemPool) {
+      if (!vocabularyIds.has(wordId)) {
+        throw new Error(`Park level ${level.id} references unknown word ${wordId}`);
       }
     }
   }
