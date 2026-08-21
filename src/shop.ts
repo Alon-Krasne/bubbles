@@ -391,12 +391,13 @@ export function initShopGame(deps: ShopDeps) {
     const completesOrder = willCompleteOrderAfterSelection(order, target);
     if (completesOrder && getLearningLanguage() === 'en') {
       state.locked = true;
+      commitCorrectSelection(target, item, tile);
+      state.servedCustomers += 1;
+      saveActiveShopSession();
       updateHud();
-      const advanceToNextCustomer = () => {
-        commitCorrectSelection(target, item, tile);
-        state.servedCustomers += 1;
-        nextCustomer();
-      };
+      setFeedback(createSuccessFeedback(item, getLearningLanguage()));
+      requireElement<HTMLElement>('shop-customer-card').classList.add('is-happy');
+      const advanceToNextCustomer = () => nextCustomer();
       scheduleTimer(() => playRecordedSequenceWithCompletion(
         [vocabularyWordAudio(item.id), vocabularyUiAudio('thank-you')],
         advanceToNextCustomer,

@@ -180,3 +180,14 @@ Acceptance target:
 - [x] Memory celebration proceeds (with a logged error) even if the reveal wait rejects.
 - [x] Corrupt or malformed Shop session storage reads as absent, is repaired by the next save, and failed writes never throw.
 - [x] `npm run test:audio-playback`, `test:shop-session`, `test:memory-completion`, `test:activity-scoring`, `tsc --noEmit`, and the production build pass.
+
+## August 21 basket animation restore
+
+User follow-up: the correct final pick must fly to the basket and move the basket count 0→1 immediately, with the word + "thank you" audio following — not after the audio.
+
+Acceptance target:
+
+- [x] The completing English selection commits visually at tap time (fly animation, basket reveal, coins, served count, happy customer).
+- [x] The next customer still appears only when the confirmation audio ends (or fails), preserving the no-extra-pause timing.
+- [x] The committed selection persists immediately, so a mid-audio reload keeps the served state.
+- [x] Targeted tests, typecheck, and production build pass.
