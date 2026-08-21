@@ -1,4 +1,4 @@
-import { calculateMasteryStars } from './shared/activity-scoring.mjs';
+import { calculateMasteryStars, formatStarRating } from './shared/activity-scoring.mjs';
 import { MAGIC_HOUSE_REQUEST_LAYOUTS, MAGIC_HOUSE_REQUESTS } from './shared/magic-house-content.mjs';
 import {
   MAGIC_HOUSE_PLACEMENTS,
@@ -179,7 +179,6 @@ function createProfileState(profileId) {
     completedRequests: 0,
     helpLevel: 0,
     mistakes: 0,
-    solutionHints: 0,
     placedObjectIds: new Set(),
     placedZoneByObjectId: new Map(),
     locked: false,
@@ -533,11 +532,7 @@ function useHelp() {
     return;
   }
 
-  const previousHelpLevel = state.helpLevel;
   state.helpLevel = Math.min(magicHouseLevel.maxHelpLevel, state.helpLevel + 1);
-  if (previousHelpLevel < 3 && state.helpLevel === 3) {
-    state.solutionHints += 1;
-  }
   if (state.helpLevel === 1 && getProfile().primary === 'en') {
     speakSentence();
   }
@@ -589,7 +584,6 @@ function getFinalStars() {
   return calculateMasteryStars({
     mistakes: state.mistakes,
     challengeSize: state.requests.length,
-    solutionHints: state.solutionHints,
   });
 }
 
@@ -636,7 +630,7 @@ function showCelebration() {
   celebration.dir = profile.primary === 'en' ? 'ltr' : 'rtl';
   requireElement('celebration-title').textContent = profile.primary === 'en' ? 'The room is ready!' : 'החדר מוכן!';
   requireElement('celebration-copy').textContent = profile.primary === 'en' ? 'You built a magical bedroom!' : 'בנית חדר שינה קסום!';
-  requireElement('celebration-stars').textContent = '★'.repeat(getFinalStars());
+  requireElement('celebration-stars').textContent = formatStarRating(getFinalStars());
   requireElement('replay-button').textContent = hostContext
     ? 'חזרה למסלול'
     : (profile.primary === 'en' ? 'Play again' : 'שחקו שוב');

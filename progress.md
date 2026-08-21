@@ -133,3 +133,22 @@ The user found the `1.2×` result still perceptually slow. The immutable correct
 Before correction, Chrome confirmed that the audio path was applying `1.2×`, but “thank you” still took `1,418.8 ms` of wall-clock time. This rules out a bypassed playback path and identifies the problem as insufficient speed-up.
 
 After correction, Chrome reported `1.5×` and completed that same clip in `1,162.4 ms`, passing the `1.2 s` threshold. In a full Store round, the selected word and “thank you” both played at `1.5×`; the completed customer stayed fully visible with no leaving class through the final audio frame, and the next request began 0.7 ms after “thank you” ended. Replay controls unlocked for the next customer, the page-error log was empty, and visual inspection found the post-transition layout intact.
+
+## August 21 Shop state and forgiving stars correction
+
+User follow-up: the Shop answer/progress UI still changed before “thank you,” in-progress play reset to an older state, and star scoring must never disappoint a child with a hidden penalty.
+
+Acceptance target:
+
+- [x] Customer, prompt, basket, served count, coins, feedback, and shelf remain visibly unchanged until `thank-you.mp3` ends.
+- [x] The next request renders immediately after “thank you,” with no added pause.
+- [x] The exact in-progress customer, order, shelf, mistakes, coins, and served count survive a hard reload after every committed interaction.
+- [x] Completing a Shop level clears only that level's in-progress session.
+- [x] Help never costs a star; forgiving mistake thresholds are the only scoring input.
+- [x] Every one-, two-, or three-star result displays all three slots.
+
+Before correction, Chrome showed the first customer changing from `0/5`, `0` coins, and `❓ 0/1` to `1/5`, `1` coin, and the revealed answer 121.8 ms before selected-word audio began; “thank you” ended another 2,158.8 ms later. A hard reload then reset `1/5` to `0/5`, and local storage contained no Shop session.
+
+After correction, every observed UI value stayed unchanged through the `thank-you.mp3` `ended` event and the next request rendered 1.0 ms later. A hard reload reproduced the exact customer, shelf, stored request, `1/5`, and coin count byte-for-byte. Completing all five customers removed the session and displayed a visible `★★★` celebration. The Chrome page-error log was empty.
+
+Scoring now awards three stars through mistakes on half the round's challenges, two stars through twice the challenge count, and one star beyond that. The strongest help no longer affects scoring. Celebration screens and completed route nodes use `★★★`, `★★☆`, or `★☆☆` so the result is always visibly out of three.

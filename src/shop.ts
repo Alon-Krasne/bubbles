@@ -1,8 +1,14 @@
 import { VOCAB_WORDS, type VocabWord } from './words';
 import type { HostedActivitySession } from './hostedActivity';
-import { calculateMasteryStars } from '../prototype/shared/activity-scoring.mjs';
+import { calculateMasteryStars, formatStarRating } from '../prototype/shared/activity-scoring.mjs';
 import { GAME_LEVELS, getLanguagePolicy } from '../prototype/shared/trail-catalog.mjs';
 import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
+import {
+  clearShopSession,
+  loadShopSession,
+  saveShopSession,
+  type ShopSessionSnapshot,
+} from './shopSession';
 import {
   playRecordedSequence,
   playRecordedSequenceWithCompletion,
@@ -195,7 +201,6 @@ export function initShopGame(deps: ShopDeps) {
       const stars = calculateMasteryStars({
         mistakes: state.mistakes,
         challengeSize: state.activeLevel.customerCount,
-        solutionHints: 0,
       });
       leaveShop();
       deps.hostedSession.complete(stars);
@@ -276,6 +281,24 @@ export function initShopGame(deps: ShopDeps) {
     requireElement<HTMLElement>('shop-game-level-title').textContent = level.title;
     setFeedback('קונה חדש/ה בדרך לחנות');
     updateHud();
+    const savedSession = loadShopSession(localStorage, deps.getActiveProfile().id, level.id);
+    if (savedSession) {
+      restoreShopSession(savedSession);
+      if (isOrderComplete(requireCurrentOrder())) {
+        nextCustomer();
+        return;
+      }
+      renderCustomer();
+      renderShelves();
+      renderBasket();
+      const isEnglishLearning = getLanguagePolicy(getLearningLanguage()).prompt === 'spoken-english';
+      setFeedback(isEnglishLearning ? 'הקשיבו להזמנה ובחרו מהמדף' : 'קראו את ההזמנה ובחרו מהמדף');
+      updateHud();
+      if (isEnglishLearning) {
+        scheduleTimer(() => speakOrder(), 600);
+      }
+      return;
+    }
     nextCustomer();
   }
 
@@ -295,6 +318,7 @@ export function initShopGame(deps: ShopDeps) {
     const isEnglishLearning = getLanguagePolicy(getLearningLanguage()).prompt === 'spoken-english';
     setFeedback(isEnglishLearning ? 'הקשיבו להזמנה ובחרו מהמדף' : 'קראו את ההזמנה ובחרו מהמדף');
     updateHud();
+    saveActiveShopSession();
     if (isEnglishLearning) {
       scheduleTimer(() => speakOrder(), 600);
     }
@@ -357,12 +381,52 @@ export function initShopGame(deps: ShopDeps) {
       tile.classList.add('is-wrong');
       setFeedback(getLearningLanguage() === 'en' ? 'כמעט. מקשיבים שוב' : 'כמעט. קוראים שוב');
       updateHud();
+      saveActiveShopSession();
       if (getLearningLanguage() === 'en') {
         scheduleTimer(() => replayOrder(), 180);
       }
       return;
     }
 
+    const completesOrder = willCompleteOrderAfterSelection(order, target);
+    if (completesOrder && getLearningLanguage() === 'en') {
+      state.locked = true;
+      updateHud();
+      scheduleTimer(() => playRecordedSequenceWithCompletion([
+        vocabularyWordAudio(item.id),
+        vocabularyUiAudio('thank-you'),
+      ], () => {
+        commitCorrectSelection(target, item, tile);
+        state.servedCustomers += 1;
+        nextCustomer();
+      }), 120);
+      return;
+    }
+
+    commitCorrectSelection(target, item, tile);
+
+    if (completesOrder) {
+      state.locked = true;
+      state.servedCustomers += 1;
+      saveActiveShopSession();
+      updateHud();
+      setFeedback(createSuccessFeedback(item, getLearningLanguage()));
+      requireElement<HTMLElement>('shop-customer-card').classList.add('is-happy');
+      scheduleTimer(() => {
+        requireElement<HTMLElement>('shop-customer-card').classList.add('is-leaving');
+      }, 1460);
+      scheduleTimer(() => nextCustomer(), 1860);
+      return;
+    }
+
+    setFeedback(`${createSuccessFeedback(item, getLearningLanguage())} ממשיכים למלא את הסל`);
+    saveActiveShopSession();
+    if (getLearningLanguage() === 'en') {
+      playRecordedSequence([vocabularyWordAudio(item.id)]);
+    }
+  }
+
+  function commitCorrectSelection(target: ShopOrderTarget, item: ShopItem, tile: HTMLButtonElement) {
     target.served += 1;
     state.roundCoins += 1;
     if (!deps.hostedSession) {
@@ -371,30 +435,6 @@ export function initShopGame(deps: ShopDeps) {
     animateCorrectTile(tile, item);
     renderBasket();
     updateHud();
-
-    if (isOrderComplete(order)) {
-      state.locked = true;
-      state.servedCustomers += 1;
-      updateHud();
-      setFeedback(createSuccessFeedback(item, getLearningLanguage()));
-      requireElement<HTMLElement>('shop-customer-card').classList.add('is-happy');
-      if (getLearningLanguage() === 'en') {
-        scheduleTimer(() => playRecordedSequenceWithCompletion([
-          vocabularyWordAudio(item.id),
-          vocabularyUiAudio('thank-you'),
-        ], nextCustomer), 120);
-      } else {
-        scheduleTimer(() => {
-          requireElement<HTMLElement>('shop-customer-card').classList.add('is-leaving');
-        }, 1460);
-        scheduleTimer(() => nextCustomer(), 1860);
-      }
-    } else {
-      setFeedback(`${createSuccessFeedback(item, getLearningLanguage())} ממשיכים למלא את הסל`);
-      if (getLearningLanguage() === 'en') {
-        playRecordedSequence([vocabularyWordAudio(item.id)]);
-      }
-    }
   }
 
   function animateCorrectTile(tile: HTMLButtonElement, item: ShopItem) {
@@ -499,13 +539,65 @@ export function initShopGame(deps: ShopDeps) {
     return { sentence, audioSources: englishRequest.audioSources, shelfItems, targets };
   }
 
+  function willCompleteOrderAfterSelection(order: ShopOrder, selectedTarget: ShopOrderTarget) {
+    return order.targets.every((target) => (
+      target === selectedTarget
+        ? target.served + 1 >= target.required
+        : target.served >= target.required
+    ));
+  }
+
+  function isOrderComplete(order: ShopOrder) {
+    return order.targets.every((target) => target.served >= target.required);
+  }
+
+  function saveActiveShopSession() {
+    const order = requireCurrentOrder();
+    saveShopSession(localStorage, deps.getActiveProfile().id, state.activeLevel.id, {
+      servedCustomers: state.servedCustomers,
+      mistakes: state.mistakes,
+      roundCoins: state.roundCoins,
+      customerEmoji: state.customerEmoji,
+      customerName: state.customerName,
+      currentOrder: {
+        sentence: order.sentence,
+        audioSources: [...order.audioSources],
+        shelfItemIds: order.shelfItems.map((item) => item.id),
+        targets: order.targets.map((target) => ({
+          itemId: target.item.id,
+          required: target.required,
+          served: target.served,
+        })),
+      },
+    });
+  }
+
+  function restoreShopSession(snapshot: ShopSessionSnapshot) {
+    state.servedCustomers = snapshot.servedCustomers;
+    state.mistakes = snapshot.mistakes;
+    state.roundCoins = snapshot.roundCoins;
+    state.customerEmoji = snapshot.customerEmoji;
+    state.customerName = snapshot.customerName;
+    state.currentOrder = {
+      sentence: snapshot.currentOrder.sentence,
+      audioSources: [...snapshot.currentOrder.audioSources],
+      shelfItems: snapshot.currentOrder.shelfItemIds.map(getShopItem),
+      targets: snapshot.currentOrder.targets.map((target) => ({
+        item: getShopItem(target.itemId),
+        required: target.required,
+        served: target.served,
+      })),
+    };
+    state.locked = false;
+  }
+
   function completeLevel() {
     clearShopTimers();
+    clearShopSession(localStorage, deps.getActiveProfile().id, state.activeLevel.id);
     state.locked = true;
     const stars = calculateMasteryStars({
       mistakes: state.mistakes,
       challengeSize: state.activeLevel.customerCount,
-      solutionHints: 0,
     });
     if (!deps.hostedSession) {
       saveLevelStars(state.activeLevel.id, stars);
@@ -524,7 +616,7 @@ export function initShopGame(deps: ShopDeps) {
 
   function showCelebration(stars: number) {
     gameArea.classList.add('is-completing');
-    requireElement<HTMLElement>('shop-celebration-stars').textContent = '⭐'.repeat(stars);
+    requireElement<HTMLElement>('shop-celebration-stars').textContent = formatStarRating(stars);
     requireElement<HTMLElement>('shop-celebration-subtitle').textContent =
       `${deps.getActiveProfile().name}, צברת ${stars} כוכבים ו-${state.roundCoins} מטבעות`;
     celebration.classList.add('is-visible');
@@ -758,10 +850,6 @@ function pluralize(english: string) {
     return `${english}es`;
   }
   return `${english}s`;
-}
-
-function isOrderComplete(order: ShopOrder) {
-  return order.targets.every((target) => target.served >= target.required);
 }
 
 function getShopItem(id: string) {

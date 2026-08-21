@@ -10,7 +10,7 @@ import {
   type ProfileCharacter,
   type ProfileLanguage,
 } from './hostedActivity';
-import { calculateMasteryStars } from '../prototype/shared/activity-scoring.mjs';
+import { calculateMasteryStars, formatStarRating } from '../prototype/shared/activity-scoring.mjs';
 import { GAME_LEVELS, getLanguagePolicy } from '../prototype/shared/trail-catalog.mjs';
 import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
 import { playRecordedSequence, stopRecordedSpeech, vocabularyWordAudio } from './recordedSpeech';
@@ -958,7 +958,6 @@ function matchMemoryCards() {
     memoryRoundStars = calculateMasteryStars({
       mistakes: memoryMistakes,
       challengeSize: pairCount,
-      solutionHints: 0,
     });
     if (!isHostedMemoryActivity()) {
       saveMemoryLevelStars(activeMemoryLevel.id, memoryRoundStars);
@@ -1345,7 +1344,7 @@ function showMemoryCelebration(stars: number) {
   const celebration = requireElement<HTMLDivElement>('memory-celebration');
   const subtitle = requireElement<HTMLDivElement>('memory-celebration-subtitle');
   const profile = getActiveProfile().name;
-  requireElement<HTMLDivElement>('memory-celebration-stars').textContent = '⭐'.repeat(stars);
+  requireElement<HTMLDivElement>('memory-celebration-stars').textContent = formatStarRating(stars);
   subtitle.textContent = `${profile}, ${getMemoryStageTitle(activeMemoryLevel)} הושלם עם ${stars} כוכבים`;
 
   requireElement<HTMLElement>('memory-game-area').classList.add('is-completing');

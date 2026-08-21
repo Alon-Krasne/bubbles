@@ -1,6 +1,7 @@
 import { TRAIL_STAGES } from './shared/trail-catalog.mjs';
 import { createTrackProgress, migrateTrackProgress } from './shared/track-progress.mjs';
 import { getTravellerPosition } from './shared/traveller-position.mjs';
+import { formatStarRating } from './shared/activity-scoring.mjs';
 
 const stages = TRAIL_STAGES;
 const availableStages = stages.filter((stage) => stage.available);
@@ -278,7 +279,7 @@ function renderRoute() {
       const starLabel = document.createElement('span');
       starLabel.className = 'stage-stars';
       starLabel.setAttribute('aria-hidden', 'true');
-      starLabel.textContent = '★'.repeat(stars);
+      starLabel.textContent = formatStarRating(stars);
       button.append(starLabel);
     }
 
