@@ -69,13 +69,42 @@ assert.deepEqual(cancellationErrors, [], 'cancellation must not report playback 
 
 const playbackFailure = new Error('playback failed');
 const reportedErrors = [];
+const completedAfterFailure = [];
+const notifiedFailures = [];
 const failingQueue = createLatestPlaybackQueue(
   async () => { throw playbackFailure; },
   (error) => reportedErrors.push(error),
 );
-failingQueue.request('failure', () => reportedErrors.push(new Error('failed playback completed')));
+failingQueue.request(
+  'failure',
+  () => completedAfterFailure.push('failure'),
+  (error) => notifiedFailures.push(error),
+);
 await new Promise((resolve) => setImmediate(resolve));
 assert.deepEqual(reportedErrors, [playbackFailure], 'playback failures must reach the required error handler');
+assert.deepEqual(notifiedFailures, [playbackFailure], 'playback failures must reach the per-request failure handler');
+assert.deepEqual(completedAfterFailure, [], 'failed playback must never complete');
+
+const recoveredCompletions = [];
+failingQueue.request('recovery', () => recoveredCompletions.push('recovery'));
+await new Promise((resolve) => setImmediate(resolve));
+assert.deepEqual(recoveredCompletions, [], 'the failing play function cannot complete');
+
+const supersededFailures = [];
+const latestFailures = [];
+const supersedingQueue = createLatestPlaybackQueue(
+  async (request) => {
+    if (request === 'doomed') {
+      throw playbackFailure;
+    }
+  },
+  () => {},
+);
+supersedingQueue.request('superseded', null, () => supersededFailures.push('superseded'));
+supersedingQueue.request('doomed', null, (error) => latestFailures.push(error));
+await new Promise((resolve) => setImmediate(resolve));
+assert.deepEqual(supersededFailures, [], 'a superseded pending request must not be notified of failure');
+assert.deepEqual(latestFailures, [playbackFailure], 'only the playing request receives its failure');
 
 console.log(JSON.stringify({
   started,

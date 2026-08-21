@@ -964,7 +964,12 @@ function matchMemoryCards() {
     }
     const board = requireElement<HTMLDivElement>('memory-board');
     const renderedCards = Array.from(board.querySelectorAll<HTMLElement>('.memory-card'));
-    void waitForMemoryBoardReveal(renderedCards, pairCount).then(finishMemoryRound);
+    void waitForMemoryBoardReveal(renderedCards, pairCount)
+      .then(finishMemoryRound)
+      .catch((error) => {
+        console.error('Memory reveal wait failed', error);
+        finishMemoryRound();
+      });
   }
   updateMemoryStatus(message);
   showMemoryToast(matchedWord);

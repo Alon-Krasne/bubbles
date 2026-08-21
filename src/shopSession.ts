@@ -32,12 +32,8 @@ export function loadShopSession(
   profileId: string,
   levelId: string,
 ): ShopSessionSnapshot | null {
-  const stored = storage.getItem(SHOP_SESSION_STORAGE_KEY);
-  if (stored === null) {
-    return null;
-  }
-  const sessions = JSON.parse(stored) as StoredShopSessions;
-  return sessions[profileId]?.[levelId] ?? null;
+  const session = readSessions(storage)[profileId]?.[levelId];
+  return isShopSessionSnapshot(session) ? session : null;
 }
 
 export function saveShopSession(
@@ -46,12 +42,11 @@ export function saveShopSession(
   levelId: string,
   snapshot: ShopSessionSnapshot,
 ) {
-  const stored = storage.getItem(SHOP_SESSION_STORAGE_KEY);
-  const sessions = stored === null ? {} : JSON.parse(stored) as StoredShopSessions;
+  const sessions = readSessions(storage);
   const profileSessions = sessions[profileId] ?? {};
   profileSessions[levelId] = snapshot;
   sessions[profileId] = profileSessions;
-  storage.setItem(SHOP_SESSION_STORAGE_KEY, JSON.stringify(sessions));
+  writeSessions(storage, sessions);
 }
 
 export function clearShopSession(storage: StorageLike, profileId: string, levelId: string) {
@@ -59,7 +54,51 @@ export function clearShopSession(storage: StorageLike, profileId: string, levelI
   if (stored === null) {
     return;
   }
-  const sessions = JSON.parse(stored) as StoredShopSessions;
+  const sessions = readSessions(storage);
   delete sessions[profileId]?.[levelId];
-  storage.setItem(SHOP_SESSION_STORAGE_KEY, JSON.stringify(sessions));
+  writeSessions(storage, sessions);
+}
+
+function readSessions(storage: StorageLike): StoredShopSessions {
+  const stored = storage.getItem(SHOP_SESSION_STORAGE_KEY);
+  if (stored === null) {
+    return {};
+  }
+  try {
+    const parsed: unknown = JSON.parse(stored);
+    if (!isPlainRecord(parsed)) {
+      return {};
+    }
+    return parsed as StoredShopSessions;
+  } catch {
+    return {};
+  }
+}
+
+function writeSessions(storage: StorageLike, sessions: StoredShopSessions) {
+  try {
+    storage.setItem(SHOP_SESSION_STORAGE_KEY, JSON.stringify(sessions));
+  } catch {
+    return;
+  }
+}
+
+function isShopSessionSnapshot(value: unknown): value is ShopSessionSnapshot {
+  if (!isPlainRecord(value)) {
+    return false;
+  }
+  const order = (value as { currentOrder?: unknown }).currentOrder;
+  if (!isPlainRecord(order)) {
+    return false;
+  }
+  return (
+    typeof order.sentence === 'string'
+    && Array.isArray(order.audioSources)
+    && Array.isArray(order.shelfItemIds)
+    && Array.isArray(order.targets)
+  );
+}
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

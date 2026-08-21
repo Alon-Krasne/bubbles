@@ -168,3 +168,15 @@ Acceptance target:
 Before correction, the isolated completion path fired as soon as the second final card emitted `transitionend`, even when another card was explicitly still mid-reveal.
 
 After correction, Chrome observed all eight cards matched and face-up 30 ms after the last selection, with four card-front animations still active and celebration correctly hidden. Celebration appeared only after all active animations reached zero. At that frame all eight cards were matched and face-up; the hosted completion message followed 2,401.7 ms later. The page-error log was empty.
+
+## August 21 failure-path hardening
+
+Review follow-up: a failed audio clip locked the Shop confirmation forever, an unhandled rejection could strand Memory completion, and corrupt storage could crash session restore.
+
+Acceptance target:
+
+- [x] A failed `thank-you` clip still serves the customer, unlocks replay controls, and starts the next request.
+- [x] Queue semantics stay unchanged: completion fires only after successful playback; superseded and cancelled requests never complete or fail.
+- [x] Memory celebration proceeds (with a logged error) even if the reveal wait rejects.
+- [x] Corrupt or malformed Shop session storage reads as absent, is repaired by the next save, and failed writes never throw.
+- [x] `npm run test:audio-playback`, `test:shop-session`, `test:memory-completion`, `test:activity-scoring`, `tsc --noEmit`, and the production build pass.

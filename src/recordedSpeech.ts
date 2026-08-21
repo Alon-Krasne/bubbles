@@ -46,16 +46,24 @@ export function playRecordedSequence(sources: string[]) {
   requestRecordedSequence(sources, null);
 }
 
-export function playRecordedSequenceWithCompletion(sources: string[], onCompleted: () => void) {
-  requestRecordedSequence(sources, onCompleted);
+export function playRecordedSequenceWithCompletion(
+  sources: string[],
+  onCompleted: () => void,
+  onFailed?: (error: unknown) => void,
+) {
+  requestRecordedSequence(sources, onCompleted, onFailed ?? null);
 }
 
-function requestRecordedSequence(sources: string[], onCompleted: (() => void) | null) {
+function requestRecordedSequence(
+  sources: string[],
+  onCompleted: (() => void) | null,
+  onFailed?: ((error: unknown) => void) | null,
+) {
   if (sources.length === 0) {
     throw new Error('Recorded speech requires at least one audio source');
   }
 
-  playbackQueue.request([...sources], onCompleted);
+  playbackQueue.request([...sources], onCompleted, onFailed);
 }
 
 function playSources(sources: string[], signal: AbortSignal) {
@@ -109,7 +117,7 @@ function playSources(sources: string[], signal: AbortSignal) {
     };
 
     audio.onended = playNext;
-    audio.onerror = () => fail(audio.error!);
+    audio.onerror = () => fail(audio.error ?? new Error('Recorded audio playback failed'));
     signal.addEventListener('abort', stopPlayback, { once: true });
     playNext();
   });

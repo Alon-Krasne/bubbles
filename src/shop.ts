@@ -392,14 +392,16 @@ export function initShopGame(deps: ShopDeps) {
     if (completesOrder && getLearningLanguage() === 'en') {
       state.locked = true;
       updateHud();
-      scheduleTimer(() => playRecordedSequenceWithCompletion([
-        vocabularyWordAudio(item.id),
-        vocabularyUiAudio('thank-you'),
-      ], () => {
+      const advanceToNextCustomer = () => {
         commitCorrectSelection(target, item, tile);
         state.servedCustomers += 1;
         nextCustomer();
-      }), 120);
+      };
+      scheduleTimer(() => playRecordedSequenceWithCompletion(
+        [vocabularyWordAudio(item.id), vocabularyUiAudio('thank-you')],
+        advanceToNextCustomer,
+        advanceToNextCustomer,
+      ), 120);
       return;
     }
 
