@@ -5,6 +5,7 @@ import { GAME_LEVELS, getLanguagePolicy } from '../prototype/shared/trail-catalo
 import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
 import {
   playRecordedSequence,
+  playRecordedSequenceWithCompletion,
   stopRecordedSpeech,
   vocabularyPluralAudio,
   vocabularyUiAudio,
@@ -357,7 +358,7 @@ export function initShopGame(deps: ShopDeps) {
       setFeedback(getLearningLanguage() === 'en' ? 'כמעט. מקשיבים שוב' : 'כמעט. קוראים שוב');
       updateHud();
       if (getLearningLanguage() === 'en') {
-        scheduleTimer(() => speakOrder(), 180);
+        scheduleTimer(() => replayOrder(), 180);
       }
       return;
     }
@@ -378,15 +379,16 @@ export function initShopGame(deps: ShopDeps) {
       setFeedback(createSuccessFeedback(item, getLearningLanguage()));
       requireElement<HTMLElement>('shop-customer-card').classList.add('is-happy');
       if (getLearningLanguage() === 'en') {
-        scheduleTimer(() => playRecordedSequence([
+        scheduleTimer(() => playRecordedSequenceWithCompletion([
           vocabularyWordAudio(item.id),
           vocabularyUiAudio('thank-you'),
-        ]), 120);
+        ], nextCustomer), 120);
+      } else {
+        scheduleTimer(() => {
+          requireElement<HTMLElement>('shop-customer-card').classList.add('is-leaving');
+        }, 1460);
+        scheduleTimer(() => nextCustomer(), 1860);
       }
-      scheduleTimer(() => {
-        requireElement<HTMLElement>('shop-customer-card').classList.add('is-leaving');
-      }, 1460);
-      scheduleTimer(() => nextCustomer(), 1860);
     } else {
       setFeedback(`${createSuccessFeedback(item, getLearningLanguage())} ממשיכים למלא את הסל`);
       if (getLearningLanguage() === 'en') {
@@ -442,6 +444,8 @@ export function initShopGame(deps: ShopDeps) {
     const level = state.activeLevel;
     requireElement<HTMLElement>('shop-served-progress').textContent = `🧺 ${state.servedCustomers}/${level.customerCount}`;
     requireElement<HTMLElement>('shop-round-coins').textContent = `🪙 ${getDisplayedCoins()}`;
+    requireElement<HTMLButtonElement>('shop-replay-btn').disabled = state.locked;
+    requireElement<HTMLButtonElement>('shop-order-replay-btn').disabled = state.locked;
 
     const order = state.currentOrder;
     if (!order) {
@@ -471,7 +475,7 @@ export function initShopGame(deps: ShopDeps) {
   }
 
   function replayOrder() {
-    if (state.currentOrder && getLearningLanguage() === 'en') {
+    if (!state.locked && state.currentOrder && getLearningLanguage() === 'en') {
       speakOrder();
     }
   }

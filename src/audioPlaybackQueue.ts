@@ -1,5 +1,5 @@
 export interface LatestPlaybackQueue<T> {
-  request(value: T): void;
+  request(value: T, onCompleted: (() => void) | null): void;
   clear(): void;
 }
 
@@ -12,6 +12,7 @@ export function createLatestPlaybackQueue<T>(
   let activeController: AbortController | null = null;
   let generation = 0;
   let hasPendingRequest = false;
+  let pendingOnCompleted: (() => void) | null = null;
   let pendingRequest: T;
   let running = false;
 
@@ -21,12 +22,17 @@ export function createLatestPlaybackQueue<T>(
     try {
       while (runGeneration === generation && hasPendingRequest) {
         const request = pendingRequest;
+        const onCompleted = pendingOnCompleted;
         hasPendingRequest = false;
+        pendingOnCompleted = null;
         const controller = new AbortController();
         activeController = controller;
 
         try {
           await play(request, controller.signal);
+          if (!controller.signal.aborted && onCompleted) {
+            onCompleted();
+          }
         } catch (error) {
           if (!controller.signal.aborted) {
             onError(error);
@@ -46,8 +52,9 @@ export function createLatestPlaybackQueue<T>(
   }
 
   return {
-    request(value: T) {
+    request(value: T, onCompleted: (() => void) | null) {
       pendingRequest = value;
+      pendingOnCompleted = onCompleted;
       hasPendingRequest = true;
       if (!running) {
         void drain(generation);
@@ -57,6 +64,7 @@ export function createLatestPlaybackQueue<T>(
     clear() {
       generation += 1;
       hasPendingRequest = false;
+      pendingOnCompleted = null;
       activeController?.abort();
     },
   };

@@ -1,6 +1,7 @@
 import { createLatestPlaybackQueue } from './audioPlaybackQueue';
 
 const AUDIO_ELEMENT_ID = 'recorded-speech';
+const RECORDED_SPEECH_PLAYBACK_RATE = 1.2;
 const VOCABULARY_AUDIO = import.meta.glob('./assets/audio/vocabulary/en/**/*.mp3', {
   eager: true,
   query: '?url',
@@ -42,11 +43,19 @@ function requireVocabularyAudio(path: string) {
 }
 
 export function playRecordedSequence(sources: string[]) {
+  requestRecordedSequence(sources, null);
+}
+
+export function playRecordedSequenceWithCompletion(sources: string[], onCompleted: () => void) {
+  requestRecordedSequence(sources, onCompleted);
+}
+
+function requestRecordedSequence(sources: string[], onCompleted: (() => void) | null) {
   if (sources.length === 0) {
     throw new Error('Recorded speech requires at least one audio source');
   }
 
-  playbackQueue.request([...sources]);
+  playbackQueue.request([...sources], onCompleted);
 }
 
 function playSources(sources: string[], signal: AbortSignal) {
@@ -87,6 +96,7 @@ function playSources(sources: string[], signal: AbortSignal) {
       }
 
       audio.src = sources[sourceIndex];
+      audio.playbackRate = RECORDED_SPEECH_PLAYBACK_RATE;
       audio.dataset.sequenceIndex = String(sourceIndex);
       audio.dataset.sequenceLength = String(sources.length);
       sourceIndex += 1;

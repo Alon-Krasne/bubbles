@@ -105,3 +105,23 @@ Browser receipts at 1024 x 768:
 - The watermelon stress card fits one line with 21 px margins; word and speaker button share the same horizontal center.
 - Production Play-to-visible-and-interactive Magic House launch measured 1,149 ms after parallelizing iframe loading with the launch celebration, down from 1,434 ms before that change.
 - Gemini 3.1 Pro final Magic House verdict: APPROVE with no blocker/high/medium findings. Its three low notes (ball grounding, pillow contrast, and keyword spacing) were applied afterward.
+
+## August 21 Listening Shop timing follow-up
+
+User follow-up: keep the completed request visible until the item + “thank you” audio finishes, show the next customer immediately when “thank you” ends, and play recorded speech 20% faster.
+
+Acceptance target:
+
+- [x] Recorded vocabulary speech plays at `1.2×`.
+- [x] The completed customer/request remains visible for the entire confirmation sequence.
+- [x] The next customer appears immediately after confirmation audio ends, with no additional pause.
+- [x] Queue, Store audio, build, and real-Chrome checks pass without playback or console errors.
+
+Implementation notes:
+
+- Recorded speech now assigns `playbackRate = 1.2` before every clip.
+- Queue completion callbacks run only after successful playback; superseded and cancelled requests never complete.
+- English Store customer advancement is driven by the item + “thank you” sequence completion; Hebrew keeps its existing text-only timing.
+- The queue completion regression was observed failing before implementation and now passes.
+
+Browser receipt: before the change, playback was `1.0×` and the customer changed about 1.4 seconds before “thank you” ended. In the final Chrome run, every recorded clip reported `1.2×`; all samples through the final `1.64 s` “thank you” frame kept the original customer at opacity `1` without the leaving class, and the next customer appeared 0.6 ms after the clip ended. Both replay controls were disabled during confirmation and re-enabled for the next customer. The page error log was empty and the console contained only Vite connection messages.
