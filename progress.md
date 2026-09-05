@@ -191,3 +191,27 @@ Acceptance target:
 - [x] The next customer still appears only when the confirmation audio ends (or fails), preserving the no-extra-pause timing.
 - [x] The committed selection persists immediately, so a mid-audio reload keeps the served state.
 - [x] Targeted tests, typecheck, and production build pass.
+
+## September 5 English translation hints
+
+User request: In the English-learning path, let a child hover over learning words and objects to see their Hebrew translations.
+
+Immutable acceptance target:
+
+- [x] Memory Garden English word cards expose their Hebrew gloss after the card is revealed, on hover and keyboard focus.
+- [x] Listening Shop image choices expose their Hebrew gloss on hover and keyboard focus.
+- [x] Magic House instruction vocabulary, drawer objects, and room destinations expose Hebrew glosses on hover and keyboard focus.
+- [x] Hebrew-learning activities contain no English-to-Hebrew translation affordances.
+- [x] Translation hints do not intercept clicks, reveal closed Memory cards, or change game answers.
+- [x] Targeted browser checks, typecheck, regression tests, production build, and visual review pass. The repository's explicit `agent-browser`-only rule superseded the generic web-game client named in the original target.
+
+Red receipt: English Memory rendered 4 English cards and 0 `[data-hebrew-translation]` elements before implementation.
+
+Green receipts:
+
+- Production Memory kept closed cards at zero translation affordances, then showed the revealed word's Hebrew gloss on hover and keyboard focus; matched translated cards remained keyboard-focusable.
+- Production Shop exposed Hebrew glosses on all four image choices while preserving correct-answer selection and hiding the hint outside hover/focus.
+- Production Magic House exposed glosses for every instruction token, all five drawer objects, and all seven room destinations without changing help highlighting or placement behavior.
+- Direct Hebrew-path checks returned zero translation affordances in Memory, Shop, and Magic House.
+- All 18 package regression scripts, `npx tsc --noEmit`, `npm run test:fast-start`, and production `agent-browser` checks passed. Production screenshots were reviewed at 1024 x 768 with no clipping or obscured controls.
+- A read-only external screenshot review was not run because permission to export the local screenshots was denied; local visual inspection was the final visual judge.

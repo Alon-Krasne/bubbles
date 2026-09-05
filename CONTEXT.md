@@ -1,0 +1,31 @@
+# Bubbles Learning World
+
+Bubbles Learning World is a child-focused route of short language-learning activities. It supports separate English-learning and Hebrew-learning paths for each player profile.
+
+## Language
+
+**Learning item**:
+An English word, pictured choice, movable object, or named destination that carries vocabulary needed to play an activity.
+_Avoid_: UI label, decoration
+
+**Translation hint**:
+An optional Hebrew gloss attached to a learning item in the English-learning path. It helps a learner continue without revealing unrelated game answers.
+_Avoid_: Answer hint, full interface translation
+
+**English-learning path**:
+The activity mode in which the learner listens to or reads English and may request Hebrew meaning through translation hints.
+_Avoid_: English game
+
+**Hebrew-learning path**:
+The activity mode in which the learner reads Hebrew prompts and choices; English-to-Hebrew translation hints do not appear.
+_Avoid_: Hebrew game
+
+## Example dialogue
+
+> **Designer:** Is the Shop basket button a learning item?
+>
+> **Developer:** No. The pictured apple on the shelf is a learning item, but navigation and game controls are not.
+>
+> **Designer:** What happens in the English-learning path when the learner hovers over the apple?
+>
+> **Developer:** Its translation hint shows “תפוח”. The same hint is available when the item receives keyboard focus.

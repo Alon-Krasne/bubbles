@@ -1,6 +1,6 @@
 {
   "name": "bubbles-game",
-  "version": "7.13.3",
+  "version": "7.14.0",
   "description": "בועות! - A cooperative bubble-catching game for two players",
   "main": "index.html",
   "scripts": {
@@ -10,6 +10,7 @@
     "test:trail": "node --experimental-strip-types scripts/test-trail-catalog.mjs",
     "test:track": "node scripts/test-track-progress.mjs",
     "test:vocabulary": "node --experimental-strip-types scripts/test-vocabulary.mjs",
+    "test:translations": "node --experimental-strip-types scripts/test-translation-hints.mjs",
     "test:vocabulary-deck": "node scripts/test-vocabulary-deck.mjs",
     "test:route-vocabulary": "node --experimental-strip-types scripts/test-route-vocabulary.mjs",
     "test:vocabulary-audio": "node scripts/test-vocabulary-audio.mjs",

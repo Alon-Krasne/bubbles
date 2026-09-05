@@ -15,6 +15,10 @@ import { GAME_LEVELS, getLanguagePolicy } from '../prototype/shared/trail-catalo
 import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
 import { playRecordedSequence, stopRecordedSpeech, vocabularyWordAudio } from './recordedSpeech';
 import { waitForMemoryBoardReveal } from './memoryCompletion';
+import {
+  addHebrewTranslationHint,
+  removeHebrewTranslationHint,
+} from '../prototype/shared/translation-hint.mjs';
 
 // Version badge
 const versionBadge = document.getElementById('version-badge');
@@ -926,6 +930,10 @@ function handleMemoryCardClick(cardButton: HTMLDivElement) {
 function revealMemoryCard(cardButton: HTMLDivElement) {
   cardButton.classList.add('is-face-up');
   cardButton.setAttribute('aria-label', cardButton.textContent?.trim() || 'קלף פתוח');
+  if ((hostedActivityContext?.profileLanguage ?? 'en') === 'en'
+    && cardButton.dataset.kind === 'english') {
+    addHebrewTranslationHint(cardButton, getMemoryWord(cardButton.dataset.wordId as string).hebrew);
+  }
   setMemorySoundButtonFocus(cardButton, true);
 }
 
@@ -936,8 +944,8 @@ function matchMemoryCards() {
 
   firstCard.classList.add('is-matched');
   secondCard.classList.add('is-matched');
-  firstCard.removeAttribute('tabindex');
-  secondCard.removeAttribute('tabindex');
+  keepMatchedTranslationFocusable(firstCard);
+  keepMatchedTranslationFocusable(secondCard);
   setMemorySoundButtonFocus(firstCard, true);
   setMemorySoundButtonFocus(secondCard, true);
   memoryMatchedPairs.add(wordId);
@@ -975,6 +983,15 @@ function matchMemoryCards() {
   showMemoryToast(matchedWord);
 }
 
+function keepMatchedTranslationFocusable(cardButton: HTMLDivElement) {
+  if (cardButton.hasAttribute('data-hebrew-translation')) {
+    cardButton.tabIndex = 0;
+    cardButton.setAttribute('role', 'group');
+    return;
+  }
+  cardButton.removeAttribute('tabindex');
+}
+
 function finishMemoryRound() {
   showMemoryCelebration(memoryRoundStars);
   clearMemoryWinReturnTimer();
@@ -1003,6 +1020,8 @@ function closeUnmatchedMemoryCards() {
 
   firstCard.classList.remove('is-face-up');
   secondCard.classList.remove('is-face-up');
+  removeHebrewTranslationHint(firstCard);
+  removeHebrewTranslationHint(secondCard);
   firstCard.setAttribute('aria-label', 'קלף זיכרון סגור');
   secondCard.setAttribute('aria-label', 'קלף זיכרון סגור');
   setMemorySoundButtonFocus(firstCard, false);
