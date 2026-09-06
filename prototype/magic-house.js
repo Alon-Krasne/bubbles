@@ -279,7 +279,7 @@ function renderDropZones() {
     button.setAttribute(
       'aria-label',
       profile.primary === 'en'
-        ? `${zone.labels.en} — ${zone.labels.he}`
+        ? zone.labels.en
         : zone.labels.he,
     );
     Object.assign(button.style, zone.layout);
