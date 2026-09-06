@@ -8,6 +8,7 @@ function addHebrewTranslationHint(element, translation) {
   hint.lang = 'he';
   hint.dir = 'rtl';
   hint.setAttribute('role', 'tooltip');
+  hint.setAttribute('aria-hidden', 'true');
   hint.textContent = translation;
   element.dataset.hebrewTranslation = translation;
   element.setAttribute('aria-describedby', hint.id);

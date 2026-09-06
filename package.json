@@ -11,6 +11,7 @@
     "test:track": "node scripts/test-track-progress.mjs",
     "test:vocabulary": "node --experimental-strip-types scripts/test-vocabulary.mjs",
     "test:translations": "node --experimental-strip-types scripts/test-translation-hints.mjs",
+    "test:translation-accessibility": "node scripts/test-translation-accessibility.mjs",
     "test:vocabulary-deck": "node scripts/test-vocabulary-deck.mjs",
     "test:route-vocabulary": "node --experimental-strip-types scripts/test-route-vocabulary.mjs",
     "test:vocabulary-audio": "node scripts/test-vocabulary-audio.mjs",

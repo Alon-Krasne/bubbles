@@ -249,8 +249,8 @@ body {
   inset: -6% 0;
 }
 
-.drop-zone:hover .drop-zone-label,
-.drop-zone:focus-visible .drop-zone-label {
+.drop-zone[data-hebrew-translation]:hover .drop-zone-label,
+.drop-zone[data-hebrew-translation]:focus-visible .drop-zone-label {
   opacity: 1;
   transform: translate(-50%, -50%) scale(1);
 }
