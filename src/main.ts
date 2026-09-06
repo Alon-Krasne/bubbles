@@ -16,7 +16,8 @@ import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
 import { playRecordedSequence, stopRecordedSpeech, vocabularyWordAudio } from './recordedSpeech';
 import { waitForMemoryBoardReveal } from './memoryCompletion';
 import {
-  addHebrewTranslationHint,
+  applyEnglishLearningTranslationHint,
+  keepHebrewTranslationFocusable,
   removeHebrewTranslationHint,
 } from '../prototype/shared/translation-hint.mjs';
 
@@ -930,9 +931,10 @@ function handleMemoryCardClick(cardButton: HTMLDivElement) {
 function revealMemoryCard(cardButton: HTMLDivElement) {
   cardButton.classList.add('is-face-up');
   cardButton.setAttribute('aria-label', cardButton.textContent?.trim() || 'קלף פתוח');
-  if ((hostedActivityContext?.profileLanguage ?? 'en') === 'en'
-    && cardButton.dataset.kind === 'english') {
-    addHebrewTranslationHint(cardButton, getMemoryWord(cardButton.dataset.wordId as string).hebrew);
+  if (cardButton.dataset.kind === 'english') {
+    const learningLanguage = hostedActivityContext?.profileLanguage ?? 'en';
+    const hebrewTranslation = getMemoryWord(cardButton.dataset.wordId as string).hebrew;
+    applyEnglishLearningTranslationHint(cardButton, learningLanguage, hebrewTranslation);
   }
   setMemorySoundButtonFocus(cardButton, true);
 }
@@ -944,8 +946,8 @@ function matchMemoryCards() {
 
   firstCard.classList.add('is-matched');
   secondCard.classList.add('is-matched');
-  keepMatchedTranslationFocusable(firstCard);
-  keepMatchedTranslationFocusable(secondCard);
+  keepHebrewTranslationFocusable(firstCard);
+  keepHebrewTranslationFocusable(secondCard);
   setMemorySoundButtonFocus(firstCard, true);
   setMemorySoundButtonFocus(secondCard, true);
   memoryMatchedPairs.add(wordId);
@@ -981,15 +983,6 @@ function matchMemoryCards() {
   }
   updateMemoryStatus(message);
   showMemoryToast(matchedWord);
-}
-
-function keepMatchedTranslationFocusable(cardButton: HTMLDivElement) {
-  if (cardButton.hasAttribute('data-hebrew-translation')) {
-    cardButton.tabIndex = 0;
-    cardButton.setAttribute('role', 'group');
-    return;
-  }
-  cardButton.removeAttribute('tabindex');
 }
 
 function finishMemoryRound() {

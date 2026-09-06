@@ -3,7 +3,7 @@ import type { HostedActivitySession } from './hostedActivity';
 import { calculateMasteryStars, formatStarRating } from '../prototype/shared/activity-scoring.mjs';
 import { GAME_LEVELS, getLanguagePolicy } from '../prototype/shared/trail-catalog.mjs';
 import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
-import { addHebrewTranslationHint } from '../prototype/shared/translation-hint.mjs';
+import { applyEnglishLearningTranslationHint } from '../prototype/shared/translation-hint.mjs';
 import {
   clearShopSession,
   loadShopSession,
@@ -363,9 +363,7 @@ export function initShopGame(deps: ShopDeps) {
       }
 
       tile.append(choice);
-      if (learningLanguage === 'en') {
-        addHebrewTranslationHint(tile, item.hebrew);
-      }
+      applyEnglishLearningTranslationHint(tile, learningLanguage, item.hebrew);
       tile.addEventListener('click', () => selectItem(item, tile));
       shelves.append(tile);
     });

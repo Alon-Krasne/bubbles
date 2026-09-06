@@ -10,7 +10,7 @@ import {
 } from './shared/magic-house-room.mjs';
 import { selectVariedRequestIds } from './shared/magic-house-variation.mjs';
 import { TRAIL_STAGES, getGameLevel, getLanguagePolicy } from './shared/trail-catalog.mjs';
-import { addHebrewTranslationHint } from './shared/translation-hint.mjs';
+import { applyEnglishLearningTranslationHint } from './shared/translation-hint.mjs';
 
 const OBJECTS = MAGIC_HOUSE_OBJECTS;
 
@@ -349,9 +349,7 @@ function renderObjectDrawer() {
       label.dir = 'rtl';
       button.append(label);
     }
-    if (profile.primary === 'en') {
-      addHebrewTranslationHint(button, object.labels.he);
-    }
+    applyEnglishLearningTranslationHint(button, profile.primary, object.labels.he);
     button.addEventListener('click', () => selectObject(object.id));
     attachPointerDrag(button, object);
     objectList.append(button);
@@ -398,7 +396,7 @@ function renderInstruction() {
     sentenceElement.querySelectorAll('.translation-term').forEach((term) => {
       const english = term.textContent.toLocaleLowerCase();
       term.tabIndex = 0;
-      addHebrewTranslationHint(term, request.en.translations[english]);
+      applyEnglishLearningTranslationHint(term, profile.primary, request.en.translations[english]);
     });
   }
   translationElement.textContent = getTranslation(request);
