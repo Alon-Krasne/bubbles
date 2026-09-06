@@ -213,5 +213,5 @@ Green receipts:
 - Production Shop exposed Hebrew glosses on all four image choices while preserving correct-answer selection and hiding the hint outside hover/focus.
 - Production Magic House exposed glosses for every instruction token, all five drawer objects, and all seven room destinations without changing help highlighting or placement behavior.
 - Direct Hebrew-path checks returned zero translation affordances in Memory, Shop, and Magic House.
-- All 18 package regression scripts, `npx tsc --noEmit`, `npm run test:fast-start`, and production `agent-browser` checks passed. Production screenshots were reviewed at 1024 x 768 with no clipping or obscured controls.
+- All 20 package regression scripts, `npx tsc --noEmit`, `npm run test:fast-start`, and production `agent-browser` checks passed. Production screenshots were reviewed at 1024 x 768 with no clipping or obscured controls.
 - A read-only external screenshot review was not run because permission to export the local screenshots was denied; local visual inspection was the final visual judge.
