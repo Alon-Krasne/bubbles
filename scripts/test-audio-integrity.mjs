@@ -5,17 +5,7 @@ import { resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '../src/assets/audio/vocabulary/en');
 
-function collectMp3Files(directory) {
-  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    const path = resolve(directory, entry.name);
-    if (entry.isDirectory()) {
-      return collectMp3Files(path);
-    }
-    return entry.name.endsWith('.mp3') ? [path] : [];
-  });
-}
-
-const files = collectMp3Files(root);
+const files = readdirSync(root, { recursive: true }).filter((path) => path.endsWith('.mp3')).map((path) => resolve(root, path));
 const durations = files.map((file) => {
   const result = spawnSync('ffprobe', [
     '-v', 'error',

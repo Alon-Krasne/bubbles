@@ -1,15 +1,16 @@
 import { Application, Text } from 'pixi.js';
-import { GameState, GamePhase } from './GameState';
 import { BackgroundScene } from '../scenes/BackgroundScene';
 import { GameScene, PlayerConfig } from '../scenes/GameScene';
 import { FigureType } from '../entities/Character';
 import { FallingItemMode } from '../entities/Bubble';
 
+type GamePhase = 'START' | 'PLAYING' | 'END';
+
 export class GameApp {
   private app: Application | null = null;
   private background: BackgroundScene | null = null;
   private gameScene: GameScene | null = null;
-  private state = new GameState();
+  private state: { phase: GamePhase; score: number; timeLeft: number } = { phase: 'START', score: 0, timeLeft: 45 };
   private devOverlay: Text | null = null;
 
   // Game timer
@@ -199,7 +200,7 @@ export class GameApp {
   startGame(p1Config: PlayerConfig, p2Config: PlayerConfig, duration: number) {
     if (!this.gameScene) return;
 
-    this.state.setPhase('PLAYING');
+    this.state.phase = 'PLAYING';
     this.state.score = 0;
     this.state.timeLeft = duration;
 
@@ -229,7 +230,7 @@ export class GameApp {
       this.gameTimer = null;
     }
 
-    this.state.setPhase('END');
+    this.state.phase = 'END';
     this.gameScene?.clear();
     this.onGameEnd?.(this.state.score);
   }
@@ -240,7 +241,7 @@ export class GameApp {
       this.gameTimer = null;
     }
 
-    this.state.setPhase('START');
+    this.state.phase = 'START';
     this.gameScene?.clear();
   }
 

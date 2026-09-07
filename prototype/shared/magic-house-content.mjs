@@ -15,7 +15,6 @@ export const MAGIC_HOUSE_REQUESTS = Object.freeze([
     targets: Object.freeze([Object.freeze({ objectId: 'pillow', zoneId: 'bed' })]),
     en: Object.freeze({
       sentence: 'Put the pillow on the bed.',
-      keywords: Object.freeze(['put', 'the', 'pillow', 'on', 'bed']),
       helpKeywords: Object.freeze(['pillow', 'on', 'bed']),
       translations: Object.freeze({ put: 'לשים', the: 'ה־', pillow: 'כרית', on: 'על', bed: 'מיטה' }),
     }),
@@ -31,7 +30,6 @@ export const MAGIC_HOUSE_REQUESTS = Object.freeze([
     targets: Object.freeze([Object.freeze({ objectId: 'ball', zoneId: 'toy-box' })]),
     en: Object.freeze({
       sentence: 'Put the ball in the toy box.',
-      keywords: Object.freeze(['put', 'the', 'ball', 'in', 'toy box']),
       helpKeywords: Object.freeze(['ball', 'in', 'toy box']),
       translations: Object.freeze({ put: 'לשים', the: 'ה־', ball: 'כדור', in: 'בתוך', 'toy box': 'קופסת צעצועים' }),
     }),
@@ -47,7 +45,6 @@ export const MAGIC_HOUSE_REQUESTS = Object.freeze([
     targets: Object.freeze([Object.freeze({ objectId: 'book', zoneId: 'shelf' })]),
     en: Object.freeze({
       sentence: 'Put the blue book on the shelf.',
-      keywords: Object.freeze(['put', 'the', 'blue book', 'on', 'shelf']),
       helpKeywords: Object.freeze(['blue book', 'on', 'shelf']),
       translations: Object.freeze({ put: 'לשים', the: 'ה־', 'blue book': 'ספר כחול', on: 'על', shelf: 'מדף' }),
     }),
@@ -63,7 +60,6 @@ export const MAGIC_HOUSE_REQUESTS = Object.freeze([
     targets: Object.freeze([Object.freeze({ objectId: 'shoes', zoneId: 'under-bed' })]),
     en: Object.freeze({
       sentence: 'Put the shoes under the bed.',
-      keywords: Object.freeze(['put', 'the', 'shoes', 'under', 'bed']),
       helpKeywords: Object.freeze(['shoes', 'under', 'bed']),
       translations: Object.freeze({ put: 'לשים', the: 'ה־', shoes: 'נעליים', under: 'מתחת', bed: 'מיטה' }),
     }),
@@ -79,7 +75,6 @@ export const MAGIC_HOUSE_REQUESTS = Object.freeze([
     targets: Object.freeze([Object.freeze({ objectId: 'yellow-lamp', zoneId: 'bedside-floor' })]),
     en: Object.freeze({
       sentence: 'Put the yellow lamp next to the bed.',
-      keywords: Object.freeze(['put', 'the', 'yellow lamp', 'next to', 'bed']),
       helpKeywords: Object.freeze(['yellow lamp', 'next to', 'bed']),
       translations: Object.freeze({ put: 'לשים', the: 'ה־', 'yellow lamp': 'מנורה צהובה', 'next to': 'ליד', bed: 'מיטה' }),
     }),
@@ -98,7 +93,6 @@ export const MAGIC_HOUSE_REQUESTS = Object.freeze([
     ]),
     en: Object.freeze({
       sentence: 'Put the red apple on the table and the teddy bear on the bed.',
-      keywords: Object.freeze(['put', 'the', 'red apple', 'on', 'table', 'and', 'teddy bear', 'bed']),
       helpKeywords: Object.freeze(['red apple', 'table', 'teddy bear', 'bed']),
       translations: Object.freeze({ put: 'לשים', the: 'ה־', 'red apple': 'תפוח אדום', on: 'על', table: 'שולחן', and: 'ו־', 'teddy bear': 'דובי', bed: 'מיטה' }),
     }),
@@ -114,7 +108,6 @@ export const MAGIC_HOUSE_REQUESTS = Object.freeze([
     targets: Object.freeze([Object.freeze({ objectId: 'teddy', zoneId: 'toy-box' })]),
     en: Object.freeze({
       sentence: 'Put the teddy bear in the toy box.',
-      keywords: Object.freeze(['put', 'the', 'teddy bear', 'in', 'toy box']),
       helpKeywords: Object.freeze(['teddy bear', 'in', 'toy box']),
       translations: Object.freeze({ put: 'לשים', the: 'ה־', 'teddy bear': 'דובי', in: 'בתוך', 'toy box': 'קופסת צעצועים' }),
     }),
@@ -130,7 +123,6 @@ export const MAGIC_HOUSE_REQUESTS = Object.freeze([
     targets: Object.freeze([Object.freeze({ objectId: 'ball', zoneId: 'bedside-floor' })]),
     en: Object.freeze({
       sentence: 'Put the ball next to the bed.',
-      keywords: Object.freeze(['put', 'the', 'ball', 'next to', 'bed']),
       helpKeywords: Object.freeze(['ball', 'next to', 'bed']),
       translations: Object.freeze({ put: 'לשים', the: 'ה־', ball: 'כדור', 'next to': 'ליד', bed: 'מיטה' }),
     }),
@@ -146,7 +138,6 @@ export const MAGIC_HOUSE_REQUESTS = Object.freeze([
     targets: Object.freeze([Object.freeze({ objectId: 'book', zoneId: 'table' })]),
     en: Object.freeze({
       sentence: 'Put the blue book on the table.',
-      keywords: Object.freeze(['put', 'the', 'blue book', 'on', 'table']),
       helpKeywords: Object.freeze(['blue book', 'on', 'table']),
       translations: Object.freeze({ put: 'לשים', the: 'ה־', 'blue book': 'ספר כחול', on: 'על', table: 'שולחן' }),
     }),
@@ -162,7 +153,6 @@ export const MAGIC_HOUSE_REQUESTS = Object.freeze([
     targets: Object.freeze([Object.freeze({ objectId: 'shoes', zoneId: 'nightstand' })]),
     en: Object.freeze({
       sentence: 'Put the shoes on the nightstand.',
-      keywords: Object.freeze(['put', 'the', 'shoes', 'on', 'nightstand']),
       helpKeywords: Object.freeze(['shoes', 'on', 'nightstand']),
       translations: Object.freeze({ put: 'לשים', the: 'ה־', shoes: 'נעליים', on: 'על', nightstand: 'שידה' }),
     }),
@@ -178,7 +168,6 @@ export const MAGIC_HOUSE_REQUESTS = Object.freeze([
     targets: Object.freeze([Object.freeze({ objectId: 'blue-lamp', zoneId: 'shelf' })]),
     en: Object.freeze({
       sentence: 'Put the blue lamp on the shelf.',
-      keywords: Object.freeze(['put', 'the', 'blue lamp', 'on', 'shelf']),
       helpKeywords: Object.freeze(['blue lamp', 'on', 'shelf']),
       translations: Object.freeze({ put: 'לשים', the: 'ה־', 'blue lamp': 'מנורה כחולה', on: 'על', shelf: 'מדף' }),
     }),
@@ -197,7 +186,6 @@ export const MAGIC_HOUSE_REQUESTS = Object.freeze([
     ]),
     en: Object.freeze({
       sentence: 'Put the red apple on the table and the pillow on the bed.',
-      keywords: Object.freeze(['put', 'the', 'red apple', 'on', 'table', 'and', 'pillow', 'bed']),
       helpKeywords: Object.freeze(['red apple', 'table', 'pillow', 'bed']),
       translations: Object.freeze({ put: 'לשים', the: 'ה־', 'red apple': 'תפוח אדום', on: 'על', table: 'שולחן', and: 'ו־', pillow: 'כרית', bed: 'מיטה' }),
     }),

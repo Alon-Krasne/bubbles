@@ -215,3 +215,11 @@ Green receipts:
 - Direct Hebrew-path checks returned zero translation affordances in Memory, Shop, and Magic House.
 - All 20 package regression scripts, `npx tsc --noEmit`, `npm run test:fast-start`, and production `agent-browser` checks passed. Production screenshots were reviewed at 1024 x 768 with no clipping or obscured controls.
 - A read-only external screenshot review was not run because permission to export the local screenshots was denied; local visual inspection was the final visual judge.
+
+## September 7 simplification fixes
+
+- Consolidated translation assertions and tooltip styling; English Magic House terms now come from the translation dictionary.
+- Removed unused coming-soon/world-picker UI, the redundant GameState wrapper, and the unused texture packer (105 installed packages removed).
+- Replaced custom recursive test file walkers with Node's recursive directory listing; bumped to 7.14.1.
+- All 18 remaining regression scripts, TypeScript checks, and production build passed (573,507-byte entrypoint; 243 audio files).
+- Production browser checks confirmed visible, styled Hebrew hints in Memory, Shop, and Magic House.

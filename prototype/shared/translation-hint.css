@@ -1,0 +1,43 @@
+.hebrew-translation-hint {
+  position: absolute;
+  z-index: var(--translation-hint-z-index, 60);
+  left: 50%;
+  bottom: var(--translation-hint-bottom, calc(100% - 8px));
+  min-width: max-content;
+  max-width: min(220px, 80vw);
+  padding: 7px 13px 8px;
+  border: 3px solid rgba(255, 255, 255, 0.96);
+  border-radius: var(--translation-hint-radius, 16px);
+  background: linear-gradient(180deg, #fffdf4 0%, #fff3bd 100%);
+  color: #68415f;
+  font-family: 'Rubik', sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.15;
+  text-align: center;
+  white-space: normal;
+  box-shadow: 0 5px 0 rgba(176, 117, 76, 0.2), 0 12px 24px var(--translation-hint-shadow, rgba(57, 118, 142, 0.18));
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 7px) scale(0.92);
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.hebrew-translation-hint::after {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  border-right: 3px solid rgba(255, 255, 255, 0.96);
+  border-bottom: 3px solid rgba(255, 255, 255, 0.96);
+  background: #fff3bd;
+  content: '';
+  transform: translate(-50%, -7px) rotate(45deg);
+}
+
+[data-hebrew-translation]:hover > .hebrew-translation-hint,
+[data-hebrew-translation]:focus-visible > .hebrew-translation-hint {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}

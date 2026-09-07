@@ -62,6 +62,7 @@ const englishItem = new FakeElement();
 assert.equal(applyEnglishLearningTranslationHint(englishItem, 'en', 'תפוח'), true);
 assert.equal(englishItem.dataset.hebrewTranslation, 'תפוח');
 assert.equal(englishItem.children[0].attributes.get('role'), 'tooltip');
+assert.equal(englishItem.children[0].attributes.get('aria-hidden'), 'true');
 assert.equal(englishItem.children[0].lang, 'he');
 assert.equal(englishItem.children[0].dir, 'rtl');
 assert.equal(englishItem.attributes.get('aria-describedby'), englishItem.children[0].id);
@@ -100,22 +101,19 @@ for (const zone of MAGIC_HOUSE_ZONES) {
 }
 
 for (const request of MAGIC_HOUSE_REQUESTS) {
-  assert.deepEqual(
-    Object.keys(request.en.translations).sort(),
-    [...request.en.keywords].sort(),
-    `${request.id} must translate every highlighted English term exactly once`,
-  );
-  for (const translation of Object.values(request.en.translations)) {
+  for (const [english, translation] of Object.entries(request.en.translations)) {
+    assert.ok(request.en.sentence.toLocaleLowerCase().includes(english), `${request.id} must use ${english}`);
     assert.ok(translation.trim(), `${request.id} contains an empty Hebrew translation hint`);
   }
 }
 
-const [memorySource, shopSource, magicHouseSource, sharedStyles, magicHouseStyles] = await Promise.all([
+const [memorySource, shopSource, magicHouseSource, mainStyles, magicHouseStyles, translationHintStyles] = await Promise.all([
   readFile(new URL('../src/main.ts', import.meta.url), 'utf8'),
   readFile(new URL('../src/shop.ts', import.meta.url), 'utf8'),
   readFile(new URL('../prototype/magic-house.js', import.meta.url), 'utf8'),
   readFile(new URL('../src/styles.css', import.meta.url), 'utf8'),
   readFile(new URL('../prototype/magic-house.css', import.meta.url), 'utf8'),
+  readFile(new URL('../prototype/shared/translation-hint.css', import.meta.url), 'utf8'),
 ]);
 
 assert.match(memorySource, /applyEnglishLearningTranslationHint\(cardButton,/);
@@ -125,12 +123,16 @@ assert.match(shopSource, /applyEnglishLearningTranslationHint\(tile,/);
 assert.match(magicHouseSource, /applyEnglishLearningTranslationHint\(button,/);
 assert.match(magicHouseSource, /applyEnglishLearningTranslationHint\(term,/);
 assert.match(magicHouseSource, /button\.dataset\.hebrewTranslation = zone\.labels\.he/);
+assert.doesNotMatch(magicHouseSource, /`\$\{zone\.labels\.en\}\s+—\s+\$\{zone\.labels\.he\}`/);
+assert.match(magicHouseSource, /profile\.primary === 'en'\s*\? zone\.labels\.en\s*:\s*zone\.labels\.he/);
+assert.match(magicHouseSource, /button\.setAttribute\('aria-describedby', supportingLabel\.id\)/);
 
-for (const styles of [sharedStyles, magicHouseStyles]) {
-  assert.match(styles, /\.hebrew-translation-hint[\s\S]*?pointer-events:\s*none/);
-  assert.match(styles, /\[data-hebrew-translation\]:hover\s*>\s*\.hebrew-translation-hint/);
-  assert.match(styles, /\[data-hebrew-translation\]:focus-visible\s*>\s*\.hebrew-translation-hint/);
-}
-assert.match(sharedStyles, /\.memory-card:not\(\.is-face-up\):not\(\.is-matched\)\s*>\s*\.hebrew-translation-hint/);
+assert.match(translationHintStyles, /\.hebrew-translation-hint[\s\S]*?pointer-events:\s*none/);
+assert.ok(mainStyles.includes("@import '../prototype/shared/translation-hint.css'"));
+assert.ok(magicHouseStyles.includes("@import './shared/translation-hint.css'"));
+assert.match(translationHintStyles, /\[data-hebrew-translation\]:hover\s*>\s*\.hebrew-translation-hint/);
+assert.match(translationHintStyles, /\[data-hebrew-translation\]:focus-visible\s*>\s*\.hebrew-translation-hint/);
+assert.match(magicHouseStyles, /\.drop-zone\[data-hebrew-translation\]:hover\s+\.drop-zone-label/);
+assert.match(magicHouseStyles, /\.drop-zone\[data-hebrew-translation\]:focus-visible\s+\.drop-zone-label/);
 
 console.log(`Validated Hebrew translation behavior and catalog coverage for ${VOCAB_WORDS.length} vocabulary words, ${MAGIC_HOUSE_OBJECTS.length} Magic House objects, ${MAGIC_HOUSE_ZONES.length} destinations, and ${MAGIC_HOUSE_REQUESTS.length} requests.`);

@@ -1,6 +1,6 @@
 {
   "name": "bubbles-game",
-  "version": "7.14.0",
+  "version": "7.14.1",
   "description": "בועות! - A cooperative bubble-catching game for two players",
   "main": "index.html",
   "scripts": {
@@ -11,7 +11,6 @@
     "test:track": "node scripts/test-track-progress.mjs",
     "test:vocabulary": "node --experimental-strip-types scripts/test-vocabulary.mjs",
     "test:translations": "node --experimental-strip-types scripts/test-translation-hints.mjs",
-    "test:translation-accessibility": "node scripts/test-translation-accessibility.mjs",
     "test:vocabulary-deck": "node scripts/test-vocabulary-deck.mjs",
     "test:route-vocabulary": "node --experimental-strip-types scripts/test-route-vocabulary.mjs",
     "test:vocabulary-audio": "node scripts/test-vocabulary-audio.mjs",
@@ -27,7 +26,6 @@
     "test:magic-house-layouts": "node scripts/test-magic-house-layouts.mjs",
     "test:magic-house-hit-areas": "node scripts/test-magic-house-hit-areas.mjs",
     "test:magic-house-audio": "node scripts/test-magic-house-audio.mjs",
-    "test:magic-house-destination-accessibility": "node scripts/test-magic-house-destination-accessibility.mjs",
     "test:traveller-position": "node scripts/test-traveller-position.mjs",
     "build": "vite build && node scripts/copy-prototype.js",
     "generate:magic-house-tts": "node scripts/generate-magic-house-tts.js",
@@ -56,7 +54,6 @@
   },
   "devDependencies": {
     "@types/node": "^25.1.0",
-    "free-tex-packer-cli": "^0.3.0",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vite-plugin-singlefile": "^2.3.0"

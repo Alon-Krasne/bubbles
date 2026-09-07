@@ -241,7 +241,7 @@ function getKeywords(request = getRequest()) {
 }
 
 function getTranslationTerms(request = getRequest()) {
-  return getProfile().primary === 'en' ? request.en.keywords : [];
+  return getProfile().primary === 'en' ? Object.keys(request.en.translations) : [];
 }
 
 function render() {
