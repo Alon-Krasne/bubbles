@@ -4,6 +4,12 @@ Bubbles Learning World is a child-focused route of short language-learning activ
 
 ## Language
 
+**Shared family space**:
+The current collection of children's profiles and saves shared by everyone admitted to the game. It does not belong to an individual adult sign-in.
+
+**Round save**:
+A child's unfinished activity, including the selected challenges and actions already completed, which can be resumed later.
+
 **Learning item**:
 An English word, pictured choice, movable object, or named destination that carries vocabulary needed to play an activity.
 _Avoid_: UI label, decoration

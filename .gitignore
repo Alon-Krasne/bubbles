@@ -26,3 +26,5 @@ dist/
 build/
 .worktrees/
 /.opencode
+.wrangler/
+.dev.vars*

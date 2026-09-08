@@ -1,9 +1,11 @@
 {
   "name": "bubbles-game",
-  "version": "7.14.1",
+  "version": "7.15.0",
   "description": "בועות! - A cooperative bubble-catching game for two players",
   "main": "index.html",
   "scripts": {
+    "test:saves": "node scripts/test-save-service.mjs && node scripts/test-save-client.mjs && node scripts/test-round-saves.mjs && node scripts/test-save-body-limit.mjs",
+    "dev:cloud": "npm run build && wrangler pages dev dist",
     "dev": "vite",
     "start": "vite",
     "preview": "vite preview",
@@ -49,13 +51,16 @@
     "url": ""
   },
   "dependencies": {
+    "@cloudflare/pages-plugin-cloudflare-access": "^1.0.5",
     "pixi-filters": "^6.1.5",
     "pixi.js": "^8.15.0"
   },
   "devDependencies": {
     "@types/node": "^25.1.0",
+    "miniflare": "^5.20260907.0-alpha",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
-    "vite-plugin-singlefile": "^2.3.0"
+    "vite-plugin-singlefile": "^2.3.0",
+    "wrangler": "^4.129.1"
   }
 }

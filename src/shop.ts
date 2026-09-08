@@ -1,3 +1,4 @@
+import { saveStorage, recordStageCompletion } from '../prototype/shared/saves.mjs';
 import { VOCAB_WORDS, type VocabWord } from './words';
 import type { HostedActivitySession } from './hostedActivity';
 import { calculateMasteryStars, formatStarRating } from '../prototype/shared/activity-scoring.mjs';
@@ -282,7 +283,7 @@ export function initShopGame(deps: ShopDeps) {
     requireElement<HTMLElement>('shop-game-level-title').textContent = level.title;
     setFeedback('קונה חדש/ה בדרך לחנות');
     updateHud();
-    const savedSession = loadShopSession(localStorage, deps.getActiveProfile().id, level.id);
+    const savedSession = loadShopSession(getShopStorage(), deps.getActiveProfile().id, level.id);
     if (savedSession) {
       restoreShopSession(savedSession);
       if (isOrderComplete(requireCurrentOrder())) {
@@ -556,9 +557,22 @@ export function initShopGame(deps: ShopDeps) {
     return order.targets.every((target) => target.served >= target.required);
   }
 
+  function getShopStorage() {
+    const prefix = deps.getActiveProfile().id;
+    return {
+      getItem: (key: string) => saveStorage.getItem(`${prefix}-${key}`),
+      setItem: (key: string, value: string) => saveStorage.setItem(`${prefix}-${key}`, value),
+    };
+  }
+
   function saveActiveShopSession() {
     const order = requireCurrentOrder();
-    saveShopSession(localStorage, deps.getActiveProfile().id, state.activeLevel.id, {
+    if (deps.hostedSession && state.servedCustomers >= state.activeLevel.customerCount) {
+      recordStageCompletion(deps.hostedSession.context, calculateMasteryStars({
+        mistakes: state.mistakes, challengeSize: state.activeLevel.customerCount,
+      }));
+    }
+    saveShopSession(getShopStorage(), deps.getActiveProfile().id, state.activeLevel.id, {
       servedCustomers: state.servedCustomers,
       mistakes: state.mistakes,
       roundCoins: state.roundCoins,
@@ -598,7 +612,7 @@ export function initShopGame(deps: ShopDeps) {
 
   function completeLevel() {
     clearShopTimers();
-    clearShopSession(localStorage, deps.getActiveProfile().id, state.activeLevel.id);
+    clearShopSession(getShopStorage(), deps.getActiveProfile().id, state.activeLevel.id);
     state.locked = true;
     const stars = calculateMasteryStars({
       mistakes: state.mistakes,
@@ -675,7 +689,7 @@ export function initShopGame(deps: ShopDeps) {
   }
 
   function drawTargetItems(count: number) {
-    const decks = JSON.parse(localStorage.getItem(SHOP_WORD_DECK_STORAGE_KEY) || '{}');
+    const decks = JSON.parse(getShopStorage().getItem(SHOP_WORD_DECK_STORAGE_KEY) || '{}');
     const profileId = deps.getActiveProfile().id;
     const profileDecks = decks[profileId] || {};
     const result = drawVocabularyRound({
@@ -685,7 +699,7 @@ export function initShopGame(deps: ShopDeps) {
     });
     profileDecks[state.activeLevel.id] = result.state;
     decks[profileId] = profileDecks;
-    localStorage.setItem(SHOP_WORD_DECK_STORAGE_KEY, JSON.stringify(decks));
+    getShopStorage().setItem(SHOP_WORD_DECK_STORAGE_KEY, JSON.stringify(decks));
     return result.selection.map(getShopItem);
   }
 
@@ -703,7 +717,7 @@ export function initShopGame(deps: ShopDeps) {
   }
 
   function readLevelProgress(): Record<string, Partial<Record<ShopLevelId, number>>> {
-    return JSON.parse(localStorage.getItem(SHOP_LEVEL_PROGRESS_STORAGE_KEY) || '{}');
+    return JSON.parse(getShopStorage().getItem(SHOP_LEVEL_PROGRESS_STORAGE_KEY) || '{}');
   }
 
   function getLevelStars(levelId: ShopLevelId) {
@@ -717,11 +731,11 @@ export function initShopGame(deps: ShopDeps) {
     const profileProgress = progress[profileId] || {};
     profileProgress[levelId] = Math.max(profileProgress[levelId] || 0, stars);
     progress[profileId] = profileProgress;
-    localStorage.setItem(SHOP_LEVEL_PROGRESS_STORAGE_KEY, JSON.stringify(progress));
+    getShopStorage().setItem(SHOP_LEVEL_PROGRESS_STORAGE_KEY, JSON.stringify(progress));
   }
 
   function getCoins() {
-    const coins = JSON.parse(localStorage.getItem(SHOP_COINS_STORAGE_KEY) || '{}') as Record<string, number>;
+    const coins = JSON.parse(getShopStorage().getItem(SHOP_COINS_STORAGE_KEY) || '{}') as Record<string, number>;
     return coins[deps.getActiveProfile().id] || 0;
   }
 
@@ -730,9 +744,9 @@ export function initShopGame(deps: ShopDeps) {
   }
 
   function saveCoins(total: number) {
-    const coins = JSON.parse(localStorage.getItem(SHOP_COINS_STORAGE_KEY) || '{}') as Record<string, number>;
+    const coins = JSON.parse(getShopStorage().getItem(SHOP_COINS_STORAGE_KEY) || '{}') as Record<string, number>;
     coins[deps.getActiveProfile().id] = total;
-    localStorage.setItem(SHOP_COINS_STORAGE_KEY, JSON.stringify(coins));
+    getShopStorage().setItem(SHOP_COINS_STORAGE_KEY, JSON.stringify(coins));
   }
 
   function scheduleTimer(callback: () => void, delayMs: number) {

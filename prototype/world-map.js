@@ -1,7 +1,8 @@
 import { TRAIL_STAGES } from './shared/trail-catalog.mjs';
-import { createTrackProgress, migrateTrackProgress } from './shared/track-progress.mjs';
+import { createTrackProgress } from './shared/track-progress.mjs';
 import { getTravellerPosition } from './shared/traveller-position.mjs';
 import { formatStarRating } from './shared/activity-scoring.mjs';
+import { saveStorage } from './shared/saves.mjs';
 
 const stages = TRAIL_STAGES;
 const availableStages = stages.filter((stage) => stage.available);
@@ -12,11 +13,6 @@ const DEFAULT_PROFILES = [
   { id: 'lotem', name: 'לוטם', character: 'princess', learningLanguage: 'en' },
   { id: 'tom', name: 'תום', character: 'dinosaur', learningLanguage: 'he' },
 ];
-
-const DEFAULT_ROUTE_PROGRESS = {
-  lotem: { currentStage: 3, progress: { 1: 3, 2: 3 } },
-  tom: { currentStage: 2, progress: { 1: 3 } },
-};
 
 const characterOptions = {
   princess: { emoji: '🌸', label: 'נסיכה', directory: 'princess' },
@@ -31,8 +27,6 @@ const languageOptions = {
 };
 
 const WORLD_PROFILES_STORAGE_KEY = 'bubble_world_map_profiles_v1';
-const WORLD_PROGRESS_STORAGE_KEY = 'bubble_world_map_progress_v2';
-const LEGACY_WORLD_PROGRESS_STORAGE_KEY = 'bubble_world_map_progress_v1';
 const WORLD_ACTIVE_PROFILE_STORAGE_KEY = 'bubble_world_map_profile_v1';
 const ACTIVITY_MESSAGE_VERSION = 1;
 const PROFILE_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i;
@@ -161,54 +155,44 @@ function upgradeCompletedFrontier() {
 }
 
 function loadProfiles() {
-  const saved = localStorage.getItem(WORLD_PROFILES_STORAGE_KEY);
+  const saved = saveStorage.getItem(WORLD_PROFILES_STORAGE_KEY);
   if (saved) {
     return JSON.parse(saved);
   }
 
   const initialProfiles = structuredClone(DEFAULT_PROFILES);
-  localStorage.setItem(WORLD_PROFILES_STORAGE_KEY, JSON.stringify(initialProfiles));
+  saveStorage.setItem(WORLD_PROFILES_STORAGE_KEY, JSON.stringify(initialProfiles));
   return initialProfiles;
 }
 
 function saveProfiles() {
-  localStorage.setItem(WORLD_PROFILES_STORAGE_KEY, JSON.stringify(profiles));
+  saveStorage.setItem(WORLD_PROFILES_STORAGE_KEY, JSON.stringify(profiles));
 }
 
 function loadWorldProgress() {
-  const saved = localStorage.getItem(WORLD_PROGRESS_STORAGE_KEY);
-  if (saved) {
-    return JSON.parse(saved);
-  }
-
-  const legacy = localStorage.getItem(LEGACY_WORLD_PROGRESS_STORAGE_KEY);
-  if (legacy) {
-    const legacyProgress = JSON.parse(legacy);
-    const migratedProgress = Object.fromEntries(Object.entries(legacyProgress).map(([profileId, progress]) => [
-      profileId,
-      migrateTrackProgress(progress, 6, stages.length),
-    ]));
-    localStorage.setItem(WORLD_PROGRESS_STORAGE_KEY, JSON.stringify(migratedProgress));
-    return migratedProgress;
-  }
-
-  const initialProgress = structuredClone(DEFAULT_ROUTE_PROGRESS);
-  localStorage.setItem(WORLD_PROGRESS_STORAGE_KEY, JSON.stringify(initialProgress));
-  return initialProgress;
+  return Object.fromEntries(profiles.map(profile => {
+    const key = `route-${profile.id}`;
+    const saved = saveStorage.getItem(key);
+    const progress = saved ? JSON.parse(saved) : createTrackProgress(1, stages.length);
+    if (!saved) saveStorage.setItem(key, JSON.stringify(progress));
+    return [profile.id, progress];
+  }));
 }
 
 function saveWorldProgress() {
-  localStorage.setItem(WORLD_PROGRESS_STORAGE_KEY, JSON.stringify(routeProgress));
+  for (const profile of profiles) {
+    saveStorage.setItem(`route-${profile.id}`, JSON.stringify(routeProgress[profile.id]));
+  }
 }
 
 function loadActiveProfileId() {
   const saved = localStorage.getItem(WORLD_ACTIVE_PROFILE_STORAGE_KEY);
-  if (saved) {
+  if (saved && profiles.some(profile => profile.id === saved)) {
     return saved;
   }
 
-  localStorage.setItem(WORLD_ACTIVE_PROFILE_STORAGE_KEY, DEFAULT_PROFILES[0].id);
-  return DEFAULT_PROFILES[0].id;
+  localStorage.setItem(WORLD_ACTIVE_PROFILE_STORAGE_KEY, profiles[0].id);
+  return profiles[0].id;
 }
 
 function getProfile(profileId = activeProfileId) {
@@ -563,6 +547,7 @@ function resetEditedProfileTrack() {
     throw new Error('Cannot reset a profile before it is created');
   }
   const stageId = Number(trackStageSelect.value);
+  clearProfileRounds(editingProfileId);
   routeProgress[editingProfileId] = createTrackProgress(stageId, stages.length);
   saveWorldProgress();
   if (editingProfileId === activeProfileId) {
@@ -576,6 +561,13 @@ function resetEditedProfileTrack() {
     ? 'המסלול אופס ונשמר מיד. אין צורך ללחוץ על שמירה.'
     : `ההתקדמות עד שלב ${stageId} נשמרה מיד. אין צורך ללחוץ על שמירה.`;
   trackResetButton.focus();
+}
+
+function clearProfileRounds(profileId) {
+  for (const key of saveStorage.keys()) {
+    if (key.startsWith(`house-round-${profileId}-`) || key.startsWith(`memory-round-${profileId}-`)
+      || key === `${profileId}-bubble_shop_sessions_v1`) saveStorage.removeItem(key);
+  }
 }
 
 function readProfileName() {
@@ -617,6 +609,7 @@ function saveProfileFromEditor(event) {
     localStorage.setItem(WORLD_ACTIVE_PROFILE_STORAGE_KEY, activeProfileId);
   } else {
     const profile = getProfile(editingProfileId);
+    if (profile.learningLanguage !== learningLanguage) clearProfileRounds(profile.id);
     profile.name = name;
     profile.character = character;
     profile.learningLanguage = learningLanguage;
@@ -648,6 +641,8 @@ function confirmProfileDeletion() {
 
   const deletedIndex = profiles.findIndex((profile) => profile.id === editingProfileId);
   const deletedId = profiles[deletedIndex].id;
+  clearProfileRounds(deletedId);
+  saveStorage.removeItem(`route-${deletedId}`);
   profiles.splice(deletedIndex, 1);
   delete routeProgress[deletedId];
   if (activeProfileId === deletedId) {
