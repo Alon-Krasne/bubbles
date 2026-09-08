@@ -54,12 +54,14 @@
         <div class="sentence-copy">
           <p class="sentence" id="sentence" dir="ltr"></p>
           <p class="translation" id="translation" hidden></p>
-          <button type="button" id="house-translation-hint" class="translation-hint-button" hidden>💡 רמז</button>
         </div>
-        <button class="help-button" id="help-button" type="button" aria-label="עזרה" title="עזרה">
-          <span aria-hidden="true">?</span>
-          <small id="help-level">○○○</small>
-        </button>
+        <div class="instruction-actions">
+          <button type="button" id="house-translation-hint" class="translation-hint-button house-hint-button" hidden aria-label="הפעלת רמזי תרגום">💡</button>
+          <button class="help-button" id="help-button" type="button" aria-label="עזרה" title="עזרה">
+            <span aria-hidden="true">?</span>
+            <small id="help-level">○○○</small>
+          </button>
+        </div>
       </section>
 
       <div class="feedback" id="feedback" role="status" aria-live="polite"></div>

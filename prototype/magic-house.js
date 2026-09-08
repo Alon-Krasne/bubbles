@@ -400,7 +400,7 @@ function renderPlacedObjects() {
 }
 
 function renderInstruction() {
-  configureTranslationHintButton(requireElement('house-translation-hint'), getProfile().primary);
+  configureTranslationHintButton(requireElement('house-translation-hint'), getProfile().primary, true);
   const state = getState();
   const profile = getProfile();
   const request = getRequest();

@@ -401,7 +401,7 @@ body {
   grid-row: 1;
 }
 
-.magic-house.is-hebrew-learning .help-button {
+.magic-house.is-hebrew-learning .instruction-actions {
   grid-column: 1;
   grid-row: 1;
 }
@@ -505,7 +505,7 @@ body {
   display: grid;
   place-content: center;
   justify-items: center;
-  border-radius: 8px;
+  border-radius: 24px 24px 30px 30px;
   padding: 6px 22px;
   direction: rtl;
 }
@@ -562,17 +562,17 @@ body {
   z-index: 35;
   top: 92px;
   left: 50%;
-  width: min(720px, 68vw);
+  width: min(780px, 76vw);
   min-height: 82px;
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr) 64px;
+  grid-template-columns: 54px minmax(0, 1fr) 100px;
   align-items: center;
   gap: 13px;
   padding: 8px 12px;
   border: 4px solid rgba(255, 255, 255, 0.96);
-  border-radius: 8px;
-  background: rgba(255, 251, 242, 0.96);
-  box-shadow: 0 7px 0 rgba(132, 97, 76, 0.14), 0 18px 38px rgba(80, 74, 70, 0.17);
+  border-radius: 30px;
+  background: linear-gradient(165deg, #fffef8, #fff4e4);
+  box-shadow: 0 5px 0 rgba(171, 124, 83, 0.19), 0 12px 28px rgba(80, 74, 70, 0.14);
   transform: translateX(-50%);
   direction: ltr;
 }
@@ -650,6 +650,40 @@ body {
   text-align: center;
 }
 
+.instruction-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.instruction-actions .help-button,
+.instruction-actions .house-hint-button {
+  width: 46px;
+  min-width: 46px;
+  height: 46px;
+  padding: 0;
+  border-radius: 50%;
+  box-shadow: 0 3px 0 rgba(183, 128, 99, 0.2);
+}
+
+.instruction-actions .house-hint-button {
+  font-size: 22px;
+  background: #fff9e9;
+  transition: background 160ms ease, box-shadow 160ms ease;
+}
+
+.instruction-actions .house-hint-button[aria-pressed='true'] {
+  background: #ffe7a0;
+  box-shadow: 0 3px 0 #d5aa57, 0 0 0 3px rgba(255, 228, 139, 0.35);
+}
+
+.instruction-panel .sound-button {
+  width: 52px;
+  height: 52px;
+  box-shadow: 0 3px 0 rgba(183, 128, 99, 0.2);
+}
+
 .sentence,
 .translation {
   margin: 0;
@@ -660,15 +694,27 @@ body {
   color: var(--ink);
   font-family: 'Secular One', sans-serif;
   font-size: 29px;
-  line-height: 1.08;
+  line-height: 1.35;
 }
 
 .sentence .translation-term {
   position: relative;
   display: inline-block;
-  border-radius: 4px;
+  border-radius: 7px;
   cursor: help;
   transition: color 160ms ease, background-color 160ms ease;
+}
+
+.sentence .translation-term.keyword {
+  color: var(--teal);
+  text-decoration: underline dotted rgba(40, 125, 130, 0.4);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
+}
+
+.sentence .translation-term.keyword:nth-of-type(3n) {
+  color: var(--berry);
+  text-decoration-color: rgba(169, 79, 112, 0.4);
 }
 
 .sentence .translation-term:hover,
@@ -783,8 +829,8 @@ body {
   display: grid;
   place-items: center;
   border-top: 5px solid rgba(255, 255, 255, 0.78);
-  background: #efbc88;
-  box-shadow: inset 0 12px 0 rgba(255, 255, 255, 0.2), 0 -12px 32px rgba(102, 75, 57, 0.16);
+  background: linear-gradient(180deg, #f9d8b0, #eebf96);
+  box-shadow: inset 0 7px 0 rgba(255, 255, 255, 0.25), 0 -10px 28px rgba(102, 75, 57, 0.12);
   transition: opacity 180ms ease;
 }
 
@@ -811,9 +857,9 @@ body {
   grid-template-rows: 96px auto;
   place-items: center;
   border: 3px solid rgba(255, 255, 255, 0.78);
-  border-radius: 8px;
+  border-radius: 24px;
   padding: 4px 3px 5px;
-  background: rgba(255, 247, 223, 0.74);
+  background: radial-gradient(ellipse at 40% 20%, #fffdf3, #ffedcb);
   color: var(--ink);
   cursor: pointer;
   box-shadow: 0 7px 0 rgba(162, 93, 58, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.5);
@@ -1130,8 +1176,8 @@ body {
 
   .instruction-panel {
     top: 82px;
-    width: min(620px, 64vw);
-    grid-template-columns: 58px minmax(0, 1fr) 58px;
+    width: min(700px, 76vw);
+    grid-template-columns: 54px minmax(0, 1fr) 100px;
     min-height: 74px;
     gap: 8px;
   }
