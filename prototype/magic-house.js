@@ -13,6 +13,7 @@ import { TRAIL_STAGES, getGameLevel, getLanguagePolicy } from './shared/trail-ca
 import { applyEnglishLearningTranslationHint } from './shared/translation-hint.mjs';
 import { saveStorage, recordStageCompletion } from './shared/saves.mjs';
 import { snapshotHouseRound, restoreHouseRound } from './shared/magic-house-save.mjs';
+import { configureTranslationHintButton } from './shared/translation-hint-control.mjs';
 
 const OBJECTS = MAGIC_HOUSE_OBJECTS;
 
@@ -399,6 +400,7 @@ function renderPlacedObjects() {
 }
 
 function renderInstruction() {
+  configureTranslationHintButton(requireElement('house-translation-hint'), getProfile().primary);
   const state = getState();
   const profile = getProfile();
   const request = getRequest();

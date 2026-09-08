@@ -1,4 +1,5 @@
 import './styles.css';
+import { configureTranslationHintButton } from '../prototype/shared/translation-hint-control.mjs';
 import { saveStorage, recordStageCompletion, initializeSaves, showSaveLoadError } from '../prototype/shared/saves.mjs';
 import { GameApp } from './game/GameApp';
 import { FigureType } from './entities/Character';
@@ -740,6 +741,7 @@ function getMemoryStageTitle(level: MemoryLevel) {
 }
 
 function startMemoryRound(level: MemoryLevel) {
+  configureTranslationHintButton(requireElement<HTMLButtonElement>('memory-translation-hint'), hostedActivityContext?.profileLanguage ?? 'en');
   stopRecordedSpeech();
   clearMemoryMismatchState();
   memoryDifficulty = level.difficulty;

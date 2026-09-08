@@ -1,4 +1,5 @@
 import { saveStorage, recordStageCompletion } from '../prototype/shared/saves.mjs';
+import { configureTranslationHintButton } from '../prototype/shared/translation-hint-control.mjs';
 import { VOCAB_WORDS, type VocabWord } from './words';
 import type { HostedActivitySession } from './hostedActivity';
 import { calculateMasteryStars, formatStarRating } from '../prototype/shared/activity-scoring.mjs';
@@ -327,6 +328,7 @@ export function initShopGame(deps: ShopDeps) {
   }
 
   function renderCustomer() {
+    configureTranslationHintButton(requireElement<HTMLButtonElement>('shop-translation-hint'), getLearningLanguage());
     const isEnglishLearning = getLanguagePolicy(getLearningLanguage()).prompt === 'spoken-english';
     const orderPrompt = requireElement<HTMLElement>('shop-order-prompt');
     requireElement<HTMLElement>('shop-customer-avatar').textContent = state.customerEmoji;

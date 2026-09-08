@@ -36,8 +36,23 @@
   transform: translate(-50%, -7px) rotate(45deg);
 }
 
-[data-hebrew-translation]:hover > .hebrew-translation-hint,
-[data-hebrew-translation]:focus-visible > .hebrew-translation-hint {
+.translation-help-enabled [data-hebrew-translation]:hover > .hebrew-translation-hint,
+.translation-help-enabled [data-hebrew-translation]:focus-visible > .hebrew-translation-hint {
   opacity: 1;
   transform: translate(-50%, 0) scale(1);
 }
+
+.translation-hint-button {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 3px solid white;
+  border-radius: 18px;
+  background: #fff8df;
+  color: #68415f;
+  font: 700 16px 'Rubik', sans-serif;
+  box-shadow: 0 3px 0 #ddc987;
+  cursor: pointer;
+}
+
+.translation-hint-button[aria-pressed='true'] { background: #ffe48b; }
+.translation-hint-button:focus-visible { outline: 3px solid #68415f; outline-offset: 3px; }

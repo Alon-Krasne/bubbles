@@ -2414,7 +2414,7 @@ canvas {
 .shop-game-toolbar {
     width: min(94vw, 820px);
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
     align-items: center;
     gap: 12px;
 }
@@ -4333,7 +4333,7 @@ td {
     }
 
     .shop-game-toolbar {
-        grid-template-columns: auto 1fr auto;
+        grid-template-columns: auto minmax(0, 1fr) auto auto;
         width: min(94vw, 440px);
         gap: 8px;
     }

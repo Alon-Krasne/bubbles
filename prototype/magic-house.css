@@ -230,10 +230,15 @@ body {
 }
 
 .drop-zone-label small {
+  display: none;
   color: var(--ink);
   font-size: clamp(10px, 0.8vw, 13px);
   font-weight: 900;
   line-height: 1.05;
+}
+
+.translation-help-enabled .drop-zone-label small {
+  display: block;
 }
 
 .is-placement-cue > .drop-zone .drop-zone-label,
@@ -255,8 +260,8 @@ body {
   inset: -6% 0;
 }
 
-.drop-zone[data-hebrew-translation]:hover .drop-zone-label,
-.drop-zone[data-hebrew-translation]:focus-visible .drop-zone-label {
+.translation-help-enabled .drop-zone[data-hebrew-translation]:hover .drop-zone-label,
+.translation-help-enabled .drop-zone[data-hebrew-translation]:focus-visible .drop-zone-label {
   opacity: 1;
   transform: translate(-50%, -50%) scale(1);
 }
