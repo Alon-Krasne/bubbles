@@ -15,6 +15,11 @@ import { GAME_LEVELS, getLanguagePolicy } from '../prototype/shared/trail-catalo
 import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
 import { playRecordedSequence, stopRecordedSpeech, vocabularyWordAudio } from './recordedSpeech';
 import { waitForMemoryBoardReveal } from './memoryCompletion';
+import {
+  applyEnglishLearningTranslationHint,
+  keepHebrewTranslationFocusable,
+  removeHebrewTranslationHint,
+} from '../prototype/shared/translation-hint.mjs';
 
 // Version badge
 const versionBadge = document.getElementById('version-badge');
@@ -183,9 +188,6 @@ function loadPreferences() {
   const savedTheme = localStorage.getItem('bubble_background_theme');
   if (savedTheme) {
     gameApp.setTheme(savedTheme);
-    document.querySelectorAll('.world-btn').forEach((btn) => {
-      btn.classList.toggle('active', (btn as HTMLElement).dataset.theme === savedTheme);
-    });
   }
 
   const savedItems = localStorage.getItem('bubble_falling_items_mode') as FallingItemMode;
@@ -295,17 +297,6 @@ function setupUI() {
 
   // World Carousel
   setupWorldCarousel();
-
-  // World/theme picker (legacy - kept for compatibility)
-  document.querySelectorAll('.world-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.world-btn').forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      const theme = (btn as HTMLElement).dataset.theme || 'classic';
-      gameApp.setTheme(theme);
-      localStorage.setItem('bubble_background_theme', theme);
-    });
-  });
 
   // Falling items picker
   document.querySelectorAll('.items-btn').forEach((btn) => {
@@ -926,6 +917,11 @@ function handleMemoryCardClick(cardButton: HTMLDivElement) {
 function revealMemoryCard(cardButton: HTMLDivElement) {
   cardButton.classList.add('is-face-up');
   cardButton.setAttribute('aria-label', cardButton.textContent?.trim() || 'קלף פתוח');
+  if (cardButton.dataset.kind === 'english') {
+    const learningLanguage = hostedActivityContext?.profileLanguage ?? 'en';
+    const hebrewTranslation = getMemoryWord(cardButton.dataset.wordId as string).hebrew;
+    applyEnglishLearningTranslationHint(cardButton, learningLanguage, hebrewTranslation);
+  }
   setMemorySoundButtonFocus(cardButton, true);
 }
 
@@ -936,8 +932,8 @@ function matchMemoryCards() {
 
   firstCard.classList.add('is-matched');
   secondCard.classList.add('is-matched');
-  firstCard.removeAttribute('tabindex');
-  secondCard.removeAttribute('tabindex');
+  keepHebrewTranslationFocusable(firstCard);
+  keepHebrewTranslationFocusable(secondCard);
   setMemorySoundButtonFocus(firstCard, true);
   setMemorySoundButtonFocus(secondCard, true);
   memoryMatchedPairs.add(wordId);
@@ -1003,6 +999,8 @@ function closeUnmatchedMemoryCards() {
 
   firstCard.classList.remove('is-face-up');
   secondCard.classList.remove('is-face-up');
+  removeHebrewTranslationHint(firstCard);
+  removeHebrewTranslationHint(secondCard);
   firstCard.setAttribute('aria-label', 'קלף זיכרון סגור');
   secondCard.setAttribute('aria-label', 'קלף זיכרון סגור');
   setMemorySoundButtonFocus(firstCard, false);

@@ -8,17 +8,10 @@ const distAssets = resolve(root, 'dist/assets');
 const sourceAudio = resolve(root, 'src/assets/audio/vocabulary/en');
 const worldMapSource = readFileSync(resolve(root, 'prototype/world-map.js'), 'utf8');
 
-function listFiles(directory) {
-  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    const path = resolve(directory, entry.name);
-    return entry.isDirectory() ? listFiles(path) : [path];
-  });
-}
-
 const indexBytes = statSync(distIndex).size;
 const indexHtml = readFileSync(distIndex, 'utf8');
-const sourceAudioCount = listFiles(sourceAudio).filter((path) => path.endsWith('.mp3')).length;
-const builtAudioPaths = listFiles(distAssets).filter((path) => path.endsWith('.mp3'));
+const sourceAudioCount = readdirSync(sourceAudio, { recursive: true }).filter((path) => path.endsWith('.mp3')).length;
+const builtAudioPaths = readdirSync(distAssets, { recursive: true }).filter((path) => path.endsWith('.mp3'));
 const builtAudioCount = builtAudioPaths.length;
 
 assert.ok(indexBytes < 2_000_000, `online entrypoint must stay below 2 MB; received ${indexBytes} bytes`);

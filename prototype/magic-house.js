@@ -1,22 +1,18 @@
 import { calculateMasteryStars, formatStarRating } from './shared/activity-scoring.mjs';
-import { MAGIC_HOUSE_REQUEST_LAYOUTS, MAGIC_HOUSE_REQUESTS } from './shared/magic-house-content.mjs';
+import {
+  MAGIC_HOUSE_OBJECTS,
+  MAGIC_HOUSE_REQUEST_LAYOUTS,
+  MAGIC_HOUSE_REQUESTS,
+} from './shared/magic-house-content.mjs';
 import {
   MAGIC_HOUSE_PLACEMENTS,
   MAGIC_HOUSE_ZONES,
 } from './shared/magic-house-room.mjs';
 import { selectVariedRequestIds } from './shared/magic-house-variation.mjs';
 import { TRAIL_STAGES, getGameLevel, getLanguagePolicy } from './shared/trail-catalog.mjs';
+import { applyEnglishLearningTranslationHint } from './shared/translation-hint.mjs';
 
-const OBJECTS = [
-  { id: 'pillow', labels: { en: 'pillow', he: 'כרית' }, sprite: ['0%', '0%'] },
-  { id: 'ball', labels: { en: 'ball', he: 'כדור' }, sprite: ['33.333%', '0%'] },
-  { id: 'book', labels: { en: 'blue book', he: 'ספר כחול' }, sprite: ['66.667%', '0%'] },
-  { id: 'shoes', labels: { en: 'shoes', he: 'נעליים' }, sprite: ['100%', '0%'] },
-  { id: 'yellow-lamp', labels: { en: 'yellow lamp', he: 'מנורה צהובה' }, sprite: ['0%', '100%'] },
-  { id: 'apple', labels: { en: 'red apple', he: 'תפוח אדום' }, sprite: ['33.333%', '100%'] },
-  { id: 'teddy', labels: { en: 'teddy bear', he: 'דובי' }, sprite: ['66.667%', '100%'] },
-  { id: 'blue-lamp', labels: { en: 'blue lamp', he: 'מנורה כחולה' }, sprite: ['100%', '100%'] },
-];
+const OBJECTS = MAGIC_HOUSE_OBJECTS;
 
 const REQUESTS = MAGIC_HOUSE_REQUESTS;
 
@@ -241,7 +237,11 @@ function getTranslation(request = getRequest()) {
 
 function getKeywords(request = getRequest()) {
   const profile = getProfile();
-  return profile.primary === 'en' ? request.en.keywords : request.he.keywords;
+  return profile.primary === 'en' ? request.en.helpKeywords : request.he.keywords;
+}
+
+function getTranslationTerms(request = getRequest()) {
+  return getProfile().primary === 'en' ? Object.keys(request.en.translations) : [];
 }
 
 function render() {
@@ -279,7 +279,7 @@ function renderDropZones() {
     button.setAttribute(
       'aria-label',
       profile.primary === 'en'
-        ? `${zone.labels.en} — ${zone.labels.he}`
+        ? zone.labels.en
         : zone.labels.he,
     );
     Object.assign(button.style, zone.layout);
@@ -297,9 +297,13 @@ function renderDropZones() {
     label.append(primaryLabel);
     if (profile.primary === 'en') {
       const supportingLabel = document.createElement('small');
+      supportingLabel.id = `drop-zone-translation-${zone.id}`;
       supportingLabel.lang = 'he';
       supportingLabel.dir = 'rtl';
+      supportingLabel.setAttribute('role', 'tooltip');
       supportingLabel.textContent = zone.labels.he;
+      button.dataset.hebrewTranslation = zone.labels.he;
+      button.setAttribute('aria-describedby', supportingLabel.id);
       label.append(supportingLabel);
     }
     button.append(label);
@@ -345,6 +349,7 @@ function renderObjectDrawer() {
       label.dir = 'rtl';
       button.append(label);
     }
+    applyEnglishLearningTranslationHint(button, profile.primary, object.labels.he);
     button.addEventListener('click', () => selectObject(object.id));
     attachPointerDrag(button, object);
     objectList.append(button);
@@ -382,7 +387,18 @@ function renderInstruction() {
   instructionPanel.classList.remove('is-success', 'show-keywords');
   sentenceElement.dir = profile.primary === 'en' ? 'ltr' : 'rtl';
   translationElement.dir = profile.primary === 'en' ? 'rtl' : 'ltr';
-  sentenceElement.innerHTML = highlightSentence(getPrimarySentence(request), getKeywords(request));
+  sentenceElement.innerHTML = highlightSentence(
+    getPrimarySentence(request),
+    getKeywords(request),
+    getTranslationTerms(request),
+  );
+  if (profile.primary === 'en') {
+    sentenceElement.querySelectorAll('.translation-term').forEach((term) => {
+      const english = term.textContent.toLocaleLowerCase();
+      term.tabIndex = 0;
+      applyEnglishLearningTranslationHint(term, profile.primary, request.en.translations[english]);
+    });
+  }
   translationElement.textContent = getTranslation(request);
   translationElement.hidden = true;
   requireElement('request-progress').textContent = `${state.requestIndex + 1} / ${state.requests.length}`;
@@ -390,12 +406,21 @@ function renderInstruction() {
   updateHelpDots();
 }
 
-function highlightSentence(sentence, keywords) {
-  const sortedKeywords = [...keywords].sort((left, right) => right.length - left.length);
-  const pattern = new RegExp(`(${sortedKeywords.map(escapeRegExp).join('|')})`, 'gi');
+function highlightSentence(sentence, keywords, translationTerms) {
+  const allTerms = [...new Set([...keywords, ...translationTerms])];
+  const sortedTerms = allTerms.sort((left, right) => right.length - left.length);
+  const pattern = new RegExp(`(${sortedTerms.map(escapeRegExp).join('|')})`, 'gi');
   return sentence.split(pattern).map((part) => {
-    const isKeyword = sortedKeywords.some((keyword) => keyword.toLocaleLowerCase() === part.toLocaleLowerCase());
-    return isKeyword ? `<span class="keyword">${part}</span>` : part;
+    const normalizedPart = part.toLocaleLowerCase();
+    const isKeyword = keywords.some((keyword) => keyword.toLocaleLowerCase() === normalizedPart);
+    const hasTranslation = translationTerms.some((term) => term.toLocaleLowerCase() === normalizedPart);
+    if (!isKeyword && !hasTranslation) {
+      return part;
+    }
+    const classes = [isKeyword ? 'keyword' : '', hasTranslation ? 'translation-term' : '']
+      .filter(Boolean)
+      .join(' ');
+    return `<span class="${classes}">${part}</span>`;
   }).join('');
 }
 

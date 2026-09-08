@@ -5,7 +5,8 @@ The trail teaches the same vocabulary through different recognition paths withou
 ## English path
 
 - Store and Magic House lead with spoken English and semantic image choices.
-- In Magic House, selecting an object labels every destination in English with a small Hebrew location gloss so an unfamiliar room word cannot block placement. The second help step identifies the exact object and destination.
+- Learning items expose a Hebrew translation hint on hover or keyboard focus: revealed English word cards in Memory Garden, picture choices in the Store, and instruction terms, drawer objects, and destinations in Magic House.
+- In Magic House, hovering a destination or selecting an object labels it in English with a small Hebrew location gloss so an unfamiliar room word cannot block placement. The second help step identifies the exact object and destination.
 - Memory Garden combines written English, optional slower speech, and a Hebrew/image counterpart.
 - English answer targets do not show the answer image.
 - Memory and Store use committed Google Gemini 3.1 Flash TTS recordings. The same warm voice and slower learning pace are stable across browsers and devices.

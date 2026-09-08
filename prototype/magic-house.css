@@ -1,3 +1,5 @@
+@import './shared/translation-hint.css';
+
 @font-face {
   font-family: 'Rubik';
   src: url('../src/assets/fonts/rubik.woff2') format('woff2');
@@ -28,6 +30,10 @@
   --zone-hint-ring: #fff;
   --zone-hint-shadow: rgba(184, 119, 33, 0.3);
   --zone-hint-glow: rgba(255, 196, 47, 0.72);
+  --translation-hint-z-index: 80;
+  --translation-hint-bottom: calc(100% + 6px);
+  --translation-hint-radius: 14px;
+  --translation-hint-shadow: rgba(70, 72, 78, 0.2);
   --drawer-height: clamp(156px, 20vh, 180px);
 }
 
@@ -247,6 +253,12 @@ body {
 
 .drop-zone[data-zone='under-bed']::before {
   inset: -6% 0;
+}
+
+.drop-zone[data-hebrew-translation]:hover .drop-zone-label,
+.drop-zone[data-hebrew-translation]:focus-visible .drop-zone-label {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .drop-zone:focus-visible {
@@ -646,9 +658,19 @@ body {
   line-height: 1.08;
 }
 
-.sentence .keyword {
+.sentence .translation-term {
+  position: relative;
+  display: inline-block;
   border-radius: 4px;
+  cursor: help;
   transition: color 160ms ease, background-color 160ms ease;
+}
+
+.sentence .translation-term:hover,
+.sentence .translation-term:focus-visible {
+  background: #fff0a4;
+  color: var(--berry);
+  outline: none;
 }
 
 .instruction-panel.show-keywords .sentence .keyword,
