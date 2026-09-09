@@ -1,6 +1,6 @@
 {
   "name": "bubbles-game",
-  "version": "7.16.0",
+  "version": "7.16.1",
   "description": "בועות! - A cooperative bubble-catching game for two players",
   "main": "index.html",
   "scripts": {
@@ -27,6 +27,7 @@
     "test:magic-house-variation": "node scripts/test-magic-house-variation.mjs",
     "test:magic-house-layouts": "node scripts/test-magic-house-layouts.mjs",
     "test:magic-house-hit-areas": "node scripts/test-magic-house-hit-areas.mjs",
+    "test:moonlight-room": "node scripts/test-moonlight-room.mjs",
     "test:magic-house-audio": "node scripts/test-magic-house-audio.mjs",
     "test:traveller-position": "node scripts/test-traveller-position.mjs",
     "build": "vite build && node scripts/copy-prototype.js",

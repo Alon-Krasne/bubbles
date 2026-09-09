@@ -1,5 +1,24 @@
 Original prompt: Fix unlocked trail stages so they launch playable games and can be replayed while preserving the highest star score; add distinct highlighted Magic House placement targets when an item is selected or dragged.
 
+## September 9 Moonlight Storybook implementation (supersedes sun/treehouse)
+
+The daughter selected the night concept with the crescent moon and arched window. Implemented a clean generated moonlit environment plus a separate alpha sprite atlas, live DOM instructions and inventory on the painted golden ledge. No save IDs, save schema, request content, scoring, or language-policy changes. Recalibrated all furniture coordinates; preserved the artwork's aspect ratio at 1440×900 and 1024×768. Version 7.16.1.
+
+Acceptance receipts:
+
+- Before changing coordinates, `node scripts/test-moonlight-room.mjs` failed: `AssertionError [ERR_ASSERTION]: bed must cover its visible moonlit-room surface`. The independent fixture was kept unchanged.
+- After implementation, `npm run test:moonlight-room`: `PASS: all 7 moonlit-room surfaces and all 12 authored placements align with the new artwork.`
+- `npm run test:magic-house-hit-areas`: `{"zones":7,"overlaps":0,"bilingualLabels":true}`.
+- `npm run test:translations`: `Validated Hebrew translation behavior and catalog coverage for 214 vocabulary words, 8 Magic House objects, 7 destinations, and 12 requests.` / `PASS: translation help requires a hint click, toggles off, resets for each question, and stays hidden in Hebrew mode.`
+- `npm run test:magic-house-layouts`, `npm run test:magic-house-variation`, and `npm run test:magic-house-audio` exit 0; audio receipt: `{"requests":12,"decodedClips":24}`.
+- `node scripts/test-round-saves.mjs`: `PASS: Magic House restores placed objects and advances a completed request before its animation ends.`
+- `npx tsc --noEmit` exits 0. `npm run build`: `✓ built in 1.70s` / `Copied educational game prototypes into dist.`
+- `agent-browser --session moonlight` against `node scripts/serve-save-test.mjs` (isolated, temporary local D1): real pointer drag of book to table advanced to `2 / 6`, placed count `1`, hint `false`; reloading retained `2 / 6` and placed count `1`. Tooltip opacity was `0` before enabling the bulb and `1` after. Completed both six-question layouts through the real object/zone controls, covering all twelve placement keys, including both two-object requests.
+- Browser Hebrew mode: `{"hintHidden":true,"imageChoices":0,"speakerHidden":true,"translationTerms":0,"wordChoices":8}`. Trail stage 3: `{"choices":5,"homeVisible":true}`. Reduced motion: `{"animation":"0.001s","reduced":true}`. Speaker click: ready state `4`, English request WAV loaded, no new browser errors. Earlier initial autoplay / interrupted-play errors occurred during reload and rapid profile changes; no audio code was changed.
+- Screenshots inspected at `/tmp/moonlight-final-desktop.png`, `/tmp/moonlight-tablet.png`, `/tmp/moonlight-placed.png`, `/tmp/moonlight-second-layout.png`, `/tmp/moonlight-complete.png`, and `/tmp/moonlight-hebrew.png`. Adjusted teddy placement off the footboard onto the mattress after visual inspection.
+
+Design-consultant screenshot loop used as a local **provisional** proxy judge: category changed from flat attic to illustrated moonlit room; controls remain readable, all eight inventory items fit, and the furniture targets stay unobstructed. Final human verdict pending: user/daughter try the PR preview and approve the resemblance to their chosen moon concept. Landscape desktop/tablet only; no portrait-phone acceptance claimed. Do not merge automatically.
+
 ## September 9 Magic House storybook benchmark
 
 User approved beginning the app-wide visual direction with Magic House. Keep the existing room artwork, calibrated placement coordinates, learning policies and saves unchanged. Before-state: heavy separate tray cards, competing framed headings, mismatched emoji avatar. Visual judge: screenshot review at 1440x900 and 1024x768, then user approval before extending the direction to other games.
