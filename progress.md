@@ -223,3 +223,16 @@ Green receipts:
 - Replaced custom recursive test file walkers with Node's recursive directory listing; bumped to 7.14.1.
 - All 18 remaining regression scripts, TypeScript checks, and production build passed (573,507-byte entrypoint; 243 audio files).
 - Production browser checks confirmed visible, styled Hebrew hints in Memory, Shop, and Magic House.
+
+## September 8 opt-in translation hints
+
+- Added a 💡 hint control to English Memory, Shop, and Magic House rounds. Word/object translations stay hidden until the child turns the hint on; a new question/customer/round turns it off again.
+- Magic House destination Hebrew labels are also hidden until the hint is enabled, while the existing placement-highlight behavior remains available.
+- Added a focused control test plus source/style assertions. Translation tests, TypeScript, build, and fast-start checks pass. Magic House browser check confirmed tooltip opacity 0 before enabling, 1 after enabling, and 0 after disabling; screenshot visually inspected. Hint reset and Hebrew-mode hiding pass the control test.
+
+## Magic House visual refinement
+
+- Replaced the wide hint banner with a 46px bulb beside the existing help control; kept an accessible name and pressed state.
+- Colored key instruction words in teal and berry with subtle dotted underlines. Rounded the instruction/title panels and drawer tiles, softened shadows, and warmed the drawer background.
+- Inspected screenshots at 1280x720 and 1024x768, including a hovered Hebrew word tooltip and Hebrew mode. Browser confirmed bulb width 46, a visible כדור tooltip after enabling, one placed object, and hint reset to false on request 2/6. Hebrew mode hides the bulb.
+- `npm run test:translations` passes; `npx tsc --noEmit` and `git diff --check` exit 0. Browser reported the existing initial audio autoplay restriction before user interaction.

@@ -1,0 +1,39 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "bubbles",
+  "pages_build_output_dir": "dist",
+  "compatibility_date": "2026-09-08",
+  "vars": {
+    "ACCESS_DOMAIN": "https://krasne.cloudflareaccess.com",
+    "ACCESS_AUD": "8ba58012614e20ff0086f99441a2f058d3fe97ebf72199b128d3bc6065b56fe7"
+  },
+  "d1_databases": [{
+    "binding": "SAVES",
+    "database_name": "bubbles-saves-preview",
+    "database_id": "f502e7d7-1aec-42b2-a9a7-a44947a9f50e"
+  }],
+  "env": {
+    "preview": {
+      "vars": {
+        "ACCESS_DOMAIN": "https://krasne.cloudflareaccess.com",
+        "ACCESS_AUD": "8ba58012614e20ff0086f99441a2f058d3fe97ebf72199b128d3bc6065b56fe7"
+      },
+      "d1_databases": [{
+        "binding": "SAVES",
+        "database_name": "bubbles-saves-preview",
+        "database_id": "f502e7d7-1aec-42b2-a9a7-a44947a9f50e"
+      }]
+    },
+    "production": {
+      "vars": {
+        "ACCESS_DOMAIN": "https://krasne.cloudflareaccess.com",
+        "ACCESS_AUD": "8ba58012614e20ff0086f99441a2f058d3fe97ebf72199b128d3bc6065b56fe7"
+      },
+      "d1_databases": [{
+        "binding": "SAVES",
+        "database_name": "bubbles-saves-production",
+        "database_id": "9fa97a3e-9cd6-4dd8-b62a-45ef9e9e64bb"
+      }]
+    }
+  }
+}

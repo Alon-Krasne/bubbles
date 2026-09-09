@@ -11,6 +11,9 @@ import {
 import { selectVariedRequestIds } from './shared/magic-house-variation.mjs';
 import { TRAIL_STAGES, getGameLevel, getLanguagePolicy } from './shared/trail-catalog.mjs';
 import { applyEnglishLearningTranslationHint } from './shared/translation-hint.mjs';
+import { saveStorage, recordStageCompletion } from './shared/saves.mjs';
+import { snapshotHouseRound, restoreHouseRound } from './shared/magic-house-save.mjs';
+import { configureTranslationHintButton } from './shared/translation-hint-control.mjs';
 
 const OBJECTS = MAGIC_HOUSE_OBJECTS;
 
@@ -81,7 +84,7 @@ const PROFILE_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i;
 const hostContext = readHostContext();
 const magicHouseLevel = getGameLevel('house', hostContext ? hostContext.levelId : 'bedroom-practice');
 const activeProfiles = hostContext
-  ? { ...PROFILES, [hostContext.profileId]: hostContext.profile }
+  ? { [hostContext.profileId]: hostContext.profile }
   : PROFILES;
 
 const objectById = new Map(OBJECTS.map((object) => [object.id, object]));
@@ -167,8 +170,18 @@ function readHostContext() {
 }
 
 function createProfileState(profileId) {
+  const key = `house-round-${profileId}-${magicHouseLevel.id}`;
+  const saved = saveStorage.getItem(key);
+  if (saved) {
+    const snapshot = JSON.parse(saved);
+    if (snapshot.completedRequests < snapshot.requestIds.length) return restoreHouseRound(snapshot, REQUESTS, OBJECTS);
+    if (hostContext && !JSON.parse(saveStorage.getItem(`route-${profileId}`)).progress[hostContext.stageId]) {
+      recordStageCompletion(hostContext, calculateMasteryStars({ mistakes: snapshot.mistakes, challengeSize: snapshot.requestIds.length }));
+      return restoreHouseRound(snapshot, REQUESTS, OBJECTS);
+    }
+  }
   const requests = selectLevelRequests(magicHouseLevel, profileId);
-  return {
+  const state = {
     requests,
     objects: selectLevelObjects(requests, magicHouseLevel.drawerSize),
     requestIndex: 0,
@@ -179,6 +192,12 @@ function createProfileState(profileId) {
     placedZoneByObjectId: new Map(),
     locked: false,
   };
+  saveStorage.setItem(key, JSON.stringify(snapshotHouseRound(state)));
+  return state;
+}
+
+function saveRound() {
+  saveStorage.setItem(`house-round-${activeProfileId}-${magicHouseLevel.id}`, JSON.stringify(snapshotHouseRound(getState())));
 }
 
 function selectLevelRequests(level, profileId) {
@@ -381,6 +400,7 @@ function renderPlacedObjects() {
 }
 
 function renderInstruction() {
+  configureTranslationHintButton(requireElement('house-translation-hint'), getProfile().primary, true);
   const state = getState();
   const profile = getProfile();
   const request = getRequest();
@@ -467,6 +487,7 @@ function attemptPlacement(objectId, zoneId) {
   if (requestComplete) {
     completeRequest();
   } else {
+    saveRound();
     showFeedback(getProfile().primary === 'en' ? 'One more thing!' : 'עוד דבר אחד!');
   }
 }
@@ -475,6 +496,8 @@ function completeRequest() {
   const state = getState();
   state.locked = true;
   state.completedRequests += 1;
+  saveRound();
+  if (hostContext && state.completedRequests === state.requests.length) recordStageCompletion(hostContext, getFinalStars());
   instructionPanel.classList.add('is-success', 'show-keywords');
   translationElement.hidden = false;
   updateStars();
@@ -524,6 +547,7 @@ function showGentleRetry(objectId) {
 
 function rejectPlacement(objectId) {
   getState().mistakes += 1;
+  saveRound();
   showGentleRetry(objectId);
 }
 
@@ -558,6 +582,7 @@ function useHelp() {
   }
 
   state.helpLevel = Math.min(magicHouseLevel.maxHelpLevel, state.helpLevel + 1);
+  saveRound();
   if (state.helpLevel === 1 && getProfile().primary === 'en') {
     speakSentence();
   }
@@ -710,7 +735,8 @@ function handleCelebrationAction() {
 function resetActiveProfile() {
   clearTimers();
   stopSentenceAudio();
-  profileStates.set(activeProfileId, createProfileState());
+  saveStorage.removeItem(`house-round-${activeProfileId}-${magicHouseLevel.id}`);
+  profileStates.set(activeProfileId, createProfileState(activeProfileId));
   selectedObjectId = null;
   celebration.classList.remove('is-visible');
   celebration.setAttribute('aria-hidden', 'true');
@@ -888,4 +914,5 @@ document.addEventListener('keydown', (event) => {
 });
 
 render();
-speakSentence();
+if (getState().completedRequests === getState().requests.length) showCelebration();
+else speakSentence();
