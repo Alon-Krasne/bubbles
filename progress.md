@@ -1,5 +1,13 @@
 Original prompt: Fix unlocked trail stages so they launch playable games and can be replayed while preserving the highest star score; add distinct highlighted Magic House placement targets when an item is selected or dragged.
 
+## September 9 Shop written orders
+
+- User clarified that Memory hints work; the Shop must display the spoken English order instead of the generic Hebrew placeholder.
+- Render the existing saved order sentence with English language/LTR direction. Reuse the Hebrew request formatter for an opt-in hover/focus translation; reset the hint and replace its content for each customer. Hebrew mode stays Hebrew. No audio or save schema changes.
+- Red: `node scripts/test-shop-order-hint.mjs` failed with actual `אני רוצה בבקשה...` instead of an English request.
+- Green: `npm run test:shop-order-hint` returned `PASS: English order, opt-in Hebrew hover/focus, responsive layout, next-customer reset, and unchanged Hebrew mode.` The script uses agent-browser against `scripts/serve-save-test.mjs` after building; it covers desktop, tablet and mobile widths.
+- `npm run test:translations`, `npm run test:shop-session`, `npx tsc --noEmit`, `git diff --check`, and `npm run build` passed. Local visual review is provisional; confirm the customer sentence and Hebrew hover hint in the authenticated preview.
+
 ## September 9 Review fixes — version 7.16.2
 
 The user and daughter approved the moonlit visual direction. Addressed the local review's five-choice tablet inventory clipping and both Ponytail comments: removed three unused avatar properties and the title's redundant shared styles/resets. No save/protocol changes. Sprite cells now size to the smaller dimension of their button using native CSS container-relative units; see https://www.w3.org/TR/css-conditional-5/#container-lengths.
