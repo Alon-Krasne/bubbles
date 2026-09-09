@@ -1,5 +1,20 @@
 Original prompt: Fix unlocked trail stages so they launch playable games and can be replayed while preserving the highest star score; add distinct highlighted Magic House placement targets when an item is selected or dragged.
 
+## September 9 Review fixes — version 7.16.2
+
+The user and daughter approved the moonlit visual direction. Addressed the local review's five-choice tablet inventory clipping and both Ponytail comments: removed three unused avatar properties and the title's redundant shared styles/resets. No save/protocol changes. Sprite cells now size to the smaller dimension of their button using native CSS container-relative units; see https://www.w3.org/TR/css-conditional-5/#container-lengths.
+
+Acceptance receipts:
+
+- Before changing CSS, `node scripts/test-magic-house-inventory.mjs` failed with `Error: 5 choices: inventory overflows drawer`. The assertion fixture is unchanged after that red run.
+- After fixing CSS, the same test passed English/Hebrew at 1024×768 and 1440×900, each with `PASS: 5, 6, and 8 choices fit the drawer; sprites/labels fit touch-sized buttons.`
+- Both medium-reasoning Sol reviewers requested a self-contained test command. Accepted as one duplicate finding. Before adding its wrapper, `npm run test:magic-house-inventory` without a preview failed with `net::ERR_CONNECTION_REFUSED`. It now builds, owns the temporary preview server, waits for its startup, runs the unchanged browser fixture, and tears down. The named command passes all four language/viewport groups without a manually started server. The speculative cleanup-error masking concern did not reproduce: the original startup error remained intact.
+- `npm run test:saves` passes Access validation, D1 write/read/retry/conflict/restart, offline synchronization, round restoration, and request-body limits.
+- `npm run test:moonlight-room`: `PASS: all 7 moonlit-room surfaces and all 12 authored placements align with the new artwork.` `npm run test:magic-house-hit-areas`: `{"zones":7,"overlaps":0,"bilingualLabels":true}`.
+- Translation, Magic House layouts/variation/audio, and TypeScript checks pass. `npm run build`: `✓ built in 1.63s` / `Copied educational game prototypes into dist.` `node scripts/test-fast-start-build.mjs`: `{"indexBytes":580349,"builtAudioCount":243}`.
+- Browser screenshots inspected: `/tmp/moonlight-fixed-tablet.png`, `/tmp/moonlight-fixed-hint.png`. The five-choice row now fits on the ledge; enabled Hebrew tooltip opacity is `1`. Real ball drag into the chest produced `{"hint":"false","placed":1,"progress":"2 / 3"}`.
+- Final clean-context high-reasoning Sol review: `NO ACTIONABLE FINDINGS`. All local/Ponytail findings fixed; the two medium Sol findings were duplicates and fixed by the owned test wrapper. Port-conflict negative check exits 1 before browser assertions, preventing stale-server passes. No unresolved actionable findings; no automatic merge.
+
 ## September 9 Moonlight Storybook implementation (supersedes sun/treehouse)
 
 The daughter selected the night concept with the crescent moon and arched window. Implemented a clean generated moonlit environment plus a separate alpha sprite atlas, live DOM instructions and inventory on the painted golden ledge. No save IDs, save schema, request content, scoring, or language-policy changes. Recalibrated all furniture coordinates; preserved the artwork's aspect ratio at 1440×900 and 1024×768. Version 7.16.1.

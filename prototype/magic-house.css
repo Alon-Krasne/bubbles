@@ -401,7 +401,6 @@ body {
 }
 
 .profile-button,
-.room-title,
 .progress-cluster,
 .sound-button,
 .help-button {
@@ -530,10 +529,6 @@ body {
   display: grid;
   place-content: center;
   justify-items: center;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
   padding: 6px 22px;
   direction: rtl;
 }
@@ -888,6 +883,8 @@ body {
 
 .object-button {
   position: relative;
+  /* Square sprite cells must fit the button's height as well as its width. */
+  container-type: size;
   min-width: 0;
   height: 90%;
   display: grid;
@@ -1000,7 +997,7 @@ body {
 }
 
 .object-art {
-  width: 100%;
+  width: min(100cqw, 100cqh);
   aspect-ratio: 1;
   background-image: url('./assets/magic-house/storybook-objects.webp');
   background-position: var(--sprite-x) var(--sprite-y);

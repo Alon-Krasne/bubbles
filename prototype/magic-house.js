@@ -22,7 +22,6 @@ const REQUESTS = MAGIC_HOUSE_REQUESTS;
 const PROFILES = {
   lotem: {
     name: 'לוטם',
-    avatar: '🌸',
     primary: 'en',
     gender: 'female',
     languageLabel: 'אנגלית',
@@ -31,7 +30,6 @@ const PROFILES = {
   },
   tom: {
     name: 'תום',
-    avatar: '🫧',
     primary: 'he',
     gender: 'male',
     languageLabel: 'עברית',
@@ -160,7 +158,6 @@ function readHostContext() {
     stageId,
     profile: {
       name: profileName,
-      avatar: profileEmoji,
       primary: profileLanguage,
       gender: HEBREW_GRAMMAR_BY_CHARACTER[profileCharacter],
       languageLabel: LANGUAGE_LABELS[profileLanguage],
