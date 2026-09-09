@@ -1,5 +1,17 @@
 Original prompt: Fix unlocked trail stages so they launch playable games and can be replayed while preserving the highest star score; add distinct highlighted Magic House placement targets when an item is selected or dragged.
 
+## September 9 Magic House storybook benchmark
+
+User approved beginning the app-wide visual direction with Magic House. Keep the existing room artwork, calibrated placement coordinates, learning policies and saves unchanged. Before-state: heavy separate tray cards, competing framed headings, mismatched emoji avatar. Visual judge: screenshot review at 1440x900 and 1024x768, then user approval before extending the direction to other games.
+
+Acceptance: centered wooden object shelf with all eight targets fitting; readable Hebrew choices; discreet 44px-or-larger controls; opt-in translations still reset between requests; correct placements and lamp lighting survive reload; celebration keeps the room visible; reduced-motion preference suppresses animation. Gates: translations, Magic House layouts/hit areas/variation/audio, round saves, TypeScript, production build. Browser testing uses agent-browser per project policy instead of the generic web-game skill's Playwright client.
+
+Receipts: `npm run test:translations` reports coverage for 214 words, 8 objects, 7 destinations and 12 requests, plus PASS for opt-in/reset/Hebrew hiding. `npm run test:magic-house-hit-areas` returns `{"zones":7,"overlaps":0,"bilingualLabels":true}`; layouts, variation and audio tests pass (24 decoded clips). `node scripts/test-round-saves.mjs` reports PASS for restore/advance. `npx tsc --noEmit` and `git diff --check` exit 0. `npm run build` reports `✓ built in 1.74s` and prototype copy complete.
+
+Browser proxy verdict: provisionally accepted at 1440x900 and 1024x768. Eight-object English and Hebrew shelves fit; Hebrew has eight word choices, no visible translation bulb, and the dinosaur avatar. Translation tooltip opacity is 0 before enabling; it is visibly shown after enabling and the bulb resets to false at 2/6. Pointer-dragging the pillow advances to request 5 with five placed objects and zero drag ghosts. Lamp/placed-object state survives reload. Complete practice round reaches its celebration with seven placed objects. Reduced motion returns true with animation duration 0.001s. A fresh English audio replay returns error:null and readyState:4; the rapid-navigation session logged autoplay/source warnings, with no errors after the fresh replay check.
+
+Screenshots inspected: /tmp/house-storybook-desktop.png, /tmp/house-storybook-tablet.png, /tmp/house-storybook-hint.png, /tmp/house-storybook-lamp.png, /tmp/house-storybook-completion.png, /tmp/house-storybook-hebrew.png, /tmp/house-storybook-preview.png. Pending: user visual approval of this Magic House benchmark before extending it to Shop and Garden. No save schema, scoring, target positions, or language policy changes. Version 7.16.0.
+
 ## Acceptance target
 
 - Completed and current trail stages launch their real activity; locked stages remain disabled.

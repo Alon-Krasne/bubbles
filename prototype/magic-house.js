@@ -277,7 +277,7 @@ function renderProfile() {
   const learningPolicy = getLanguagePolicy(profile.primary);
   magicHouse.classList.toggle('is-rtl', profile.primary === 'he');
   magicHouse.classList.toggle('is-hebrew-learning', profile.primary === 'he');
-  requireElement('profile-avatar').textContent = profile.avatar;
+  requireElement('profile-avatar').src = profile.idleCharacter;
   requireElement('profile-name').textContent = profile.name;
   requireElement('profile-language').textContent = profile.languageLabel;
   requireElement('room-level-title').textContent = magicHouseLevel.title;
