@@ -1,5 +1,59 @@
 Original prompt: Fix unlocked trail stages so they launch playable games and can be replayed while preserving the highest star score; add distinct highlighted Magic House placement targets when an item is selected or dragged.
 
+## September 9 Shop written orders
+
+- User clarified that Memory hints work; the Shop must display the spoken English order instead of the generic Hebrew placeholder.
+- Render the existing saved order sentence with English language/LTR direction. Reuse the Hebrew request formatter for an opt-in hover/focus translation; reset the hint and replace its content for each customer. Hebrew mode stays Hebrew. No audio or save schema changes.
+- Red: `node scripts/test-shop-order-hint.mjs` failed with actual `אני רוצה בבקשה...` instead of an English request.
+- Green: `npm run test:shop-order-hint` returned `PASS: English order, opt-in Hebrew hover/focus, responsive layout, next-customer reset, and unchanged Hebrew mode.` The script uses agent-browser against `scripts/serve-save-test.mjs` after building; it covers desktop, tablet and mobile widths.
+- `npm run test:translations`, `npm run test:shop-session`, `npx tsc --noEmit`, `git diff --check`, and `npm run build` passed. Local visual review is provisional; confirm the customer sentence and Hebrew hover hint in the authenticated preview.
+
+## September 9 Review fixes — version 7.16.2
+
+The user and daughter approved the moonlit visual direction. Addressed the local review's five-choice tablet inventory clipping and both Ponytail comments: removed three unused avatar properties and the title's redundant shared styles/resets. No save/protocol changes. Sprite cells now size to the smaller dimension of their button using native CSS container-relative units; see https://www.w3.org/TR/css-conditional-5/#container-lengths.
+
+Acceptance receipts:
+
+- Before changing CSS, `node scripts/test-magic-house-inventory.mjs` failed with `Error: 5 choices: inventory overflows drawer`. The assertion fixture is unchanged after that red run.
+- After fixing CSS, the same test passed English/Hebrew at 1024×768 and 1440×900, each with `PASS: 5, 6, and 8 choices fit the drawer; sprites/labels fit touch-sized buttons.`
+- Both medium-reasoning Sol reviewers requested a self-contained test command. Accepted as one duplicate finding. Before adding its wrapper, `npm run test:magic-house-inventory` without a preview failed with `net::ERR_CONNECTION_REFUSED`. It now builds, owns the temporary preview server, waits for its startup, runs the unchanged browser fixture, and tears down. The named command passes all four language/viewport groups without a manually started server. The speculative cleanup-error masking concern did not reproduce: the original startup error remained intact.
+- `npm run test:saves` passes Access validation, D1 write/read/retry/conflict/restart, offline synchronization, round restoration, and request-body limits.
+- `npm run test:moonlight-room`: `PASS: all 7 moonlit-room surfaces and all 12 authored placements align with the new artwork.` `npm run test:magic-house-hit-areas`: `{"zones":7,"overlaps":0,"bilingualLabels":true}`.
+- Translation, Magic House layouts/variation/audio, and TypeScript checks pass. `npm run build`: `✓ built in 1.63s` / `Copied educational game prototypes into dist.` `node scripts/test-fast-start-build.mjs`: `{"indexBytes":580349,"builtAudioCount":243}`.
+- Browser screenshots inspected: `/tmp/moonlight-fixed-tablet.png`, `/tmp/moonlight-fixed-hint.png`. The five-choice row now fits on the ledge; enabled Hebrew tooltip opacity is `1`. Real ball drag into the chest produced `{"hint":"false","placed":1,"progress":"2 / 3"}`.
+- Final clean-context high-reasoning Sol review: `NO ACTIONABLE FINDINGS`. All local/Ponytail findings fixed; the two medium Sol findings were duplicates and fixed by the owned test wrapper. Port-conflict negative check exits 1 before browser assertions, preventing stale-server passes. No unresolved actionable findings; no automatic merge.
+
+## September 9 Moonlight Storybook implementation (supersedes sun/treehouse)
+
+The daughter selected the night concept with the crescent moon and arched window. Implemented a clean generated moonlit environment plus a separate alpha sprite atlas, live DOM instructions and inventory on the painted golden ledge. No save IDs, save schema, request content, scoring, or language-policy changes. Recalibrated all furniture coordinates; preserved the artwork's aspect ratio at 1440×900 and 1024×768. Version 7.16.1.
+
+Acceptance receipts:
+
+- Before changing coordinates, `node scripts/test-moonlight-room.mjs` failed: `AssertionError [ERR_ASSERTION]: bed must cover its visible moonlit-room surface`. The independent fixture was kept unchanged.
+- After implementation, `npm run test:moonlight-room`: `PASS: all 7 moonlit-room surfaces and all 12 authored placements align with the new artwork.`
+- `npm run test:magic-house-hit-areas`: `{"zones":7,"overlaps":0,"bilingualLabels":true}`.
+- `npm run test:translations`: `Validated Hebrew translation behavior and catalog coverage for 214 vocabulary words, 8 Magic House objects, 7 destinations, and 12 requests.` / `PASS: translation help requires a hint click, toggles off, resets for each question, and stays hidden in Hebrew mode.`
+- `npm run test:magic-house-layouts`, `npm run test:magic-house-variation`, and `npm run test:magic-house-audio` exit 0; audio receipt: `{"requests":12,"decodedClips":24}`.
+- `node scripts/test-round-saves.mjs`: `PASS: Magic House restores placed objects and advances a completed request before its animation ends.`
+- `npx tsc --noEmit` exits 0. `npm run build`: `✓ built in 1.70s` / `Copied educational game prototypes into dist.`
+- `agent-browser --session moonlight` against `node scripts/serve-save-test.mjs` (isolated, temporary local D1): real pointer drag of book to table advanced to `2 / 6`, placed count `1`, hint `false`; reloading retained `2 / 6` and placed count `1`. Tooltip opacity was `0` before enabling the bulb and `1` after. Completed both six-question layouts through the real object/zone controls, covering all twelve placement keys, including both two-object requests.
+- Browser Hebrew mode: `{"hintHidden":true,"imageChoices":0,"speakerHidden":true,"translationTerms":0,"wordChoices":8}`. Trail stage 3: `{"choices":5,"homeVisible":true}`. Reduced motion: `{"animation":"0.001s","reduced":true}`. Speaker click: ready state `4`, English request WAV loaded, no new browser errors. Earlier initial autoplay / interrupted-play errors occurred during reload and rapid profile changes; no audio code was changed.
+- Screenshots inspected at `/tmp/moonlight-final-desktop.png`, `/tmp/moonlight-tablet.png`, `/tmp/moonlight-placed.png`, `/tmp/moonlight-second-layout.png`, `/tmp/moonlight-complete.png`, and `/tmp/moonlight-hebrew.png`. Adjusted teddy placement off the footboard onto the mattress after visual inspection.
+
+Design-consultant screenshot loop used as a local **provisional** proxy judge: category changed from flat attic to illustrated moonlit room; controls remain readable, all eight inventory items fit, and the furniture targets stay unobstructed. Final human verdict pending: user/daughter try the PR preview and approve the resemblance to their chosen moon concept. Landscape desktop/tablet only; no portrait-phone acceptance claimed. Do not merge automatically.
+
+## September 9 Magic House storybook benchmark
+
+User approved beginning the app-wide visual direction with Magic House. Keep the existing room artwork, calibrated placement coordinates, learning policies and saves unchanged. Before-state: heavy separate tray cards, competing framed headings, mismatched emoji avatar. Visual judge: screenshot review at 1440x900 and 1024x768, then user approval before extending the direction to other games.
+
+Acceptance: centered wooden object shelf with all eight targets fitting; readable Hebrew choices; discreet 44px-or-larger controls; opt-in translations still reset between requests; correct placements and lamp lighting survive reload; celebration keeps the room visible; reduced-motion preference suppresses animation. Gates: translations, Magic House layouts/hit areas/variation/audio, round saves, TypeScript, production build. Browser testing uses agent-browser per project policy instead of the generic web-game skill's Playwright client.
+
+Receipts: `npm run test:translations` reports coverage for 214 words, 8 objects, 7 destinations and 12 requests, plus PASS for opt-in/reset/Hebrew hiding. `npm run test:magic-house-hit-areas` returns `{"zones":7,"overlaps":0,"bilingualLabels":true}`; layouts, variation and audio tests pass (24 decoded clips). `node scripts/test-round-saves.mjs` reports PASS for restore/advance. `npx tsc --noEmit` and `git diff --check` exit 0. `npm run build` reports `✓ built in 1.74s` and prototype copy complete.
+
+Browser proxy verdict: provisionally accepted at 1440x900 and 1024x768. Eight-object English and Hebrew shelves fit; Hebrew has eight word choices, no visible translation bulb, and the dinosaur avatar. Translation tooltip opacity is 0 before enabling; it is visibly shown after enabling and the bulb resets to false at 2/6. Pointer-dragging the pillow advances to request 5 with five placed objects and zero drag ghosts. Lamp/placed-object state survives reload. Complete practice round reaches its celebration with seven placed objects. Reduced motion returns true with animation duration 0.001s. A fresh English audio replay returns error:null and readyState:4; the rapid-navigation session logged autoplay/source warnings, with no errors after the fresh replay check.
+
+Screenshots inspected: /tmp/house-storybook-desktop.png, /tmp/house-storybook-tablet.png, /tmp/house-storybook-hint.png, /tmp/house-storybook-lamp.png, /tmp/house-storybook-completion.png, /tmp/house-storybook-hebrew.png, /tmp/house-storybook-preview.png. Pending: user visual approval of this Magic House benchmark before extending it to Shop and Garden. No save schema, scoring, target positions, or language policy changes. Version 7.16.0.
+
 ## Acceptance target
 
 - Completed and current trail stages launch their real activity; locked stages remain disabled.

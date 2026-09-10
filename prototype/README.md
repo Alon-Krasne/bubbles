@@ -18,9 +18,9 @@ Memory Garden and Listening Shop run inside the trail's hosted activity shell. T
 
 Open `http://127.0.0.1:5173/prototype/magic-house.html` to test the bedroom directly.
 
-The room contains six cumulative English/Hebrew placement requests, profile-aware Google TTS, tap and pointer-drag placement, graduated help, non-punitive feedback, success toasts, and completion stars. Its full-room environment is generated with Nano Banana Pro (`gemini-3-pro-image`) from the original bedroom reference; it keeps the calibrated furniture layout while extending the scene to the frame edges.
+The room contains six cumulative English/Hebrew placement requests, profile-aware Google TTS, tap and pointer-drag placement, graduated help, non-punitive feedback, success toasts, and completion stars. Its approved moonlit environment and transparent object atlas are generated artwork; instructions, inventory, and furniture targets remain live DOM elements. The background keeps its aspect ratio, and placement coordinates match the moonlit furniture. Asset provenance is recorded in `design/mockups/README.md`.
 
-Pointer dragging uses one gesture path across mouse and touch. Failed drops always remove the drag ghost and return the tray object to rest. Drop zones and final object positions share the calibrated room map in `shared/magic-house-room.mjs`. Hovering or focusing English instruction terms, drawer objects, and room destinations shows their Hebrew translation. Selecting or dragging an object gives every destination the same projected glow and learning-language label; English labels include a small Hebrew location gloss, while the second help step highlights the exact requested destination.
+Pointer dragging uses one gesture path across mouse and touch. Failed drops always remove the drag ghost and return the tray object to rest. Drop zones and final object positions share the calibrated room map in `shared/magic-house-room.mjs`. After enabling the bulb, hovering or focusing English instruction terms, drawer objects, and room destinations shows their Hebrew translation; the bulb resets for each question. Selecting or dragging an object gives every destination the same projected glow and learning-language label; Hebrew glosses remain gated by the bulb, while the second help step highlights the requested destination.
 
 When opened from the trail, Magic House receives the active profile and stage context through its URL, locks profile switching, and posts either a verified completion result or an explicit exit back to the same-origin trail. Direct access keeps the existing replay flow.
 
@@ -42,3 +42,5 @@ The generator requires `ffmpeg`. It reads `GEMINI_API_KEY` when set, or the Goog
 
 - 1440 x 900
 - 1024 x 768
+
+Run `npm run test:magic-house-inventory` with `agent-browser` available on PATH. The command builds the current checkout, starts its own temporary D1 preview on port 8788, checks five/six/eight-choice inventory layouts in both languages at both viewports, and closes its browser and server. Leave port 8788 free before running it. This layout fixture complements the gameplay/save tests; it does not change real player progress.

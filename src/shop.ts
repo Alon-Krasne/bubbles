@@ -5,7 +5,7 @@ import type { HostedActivitySession } from './hostedActivity';
 import { calculateMasteryStars, formatStarRating } from '../prototype/shared/activity-scoring.mjs';
 import { GAME_LEVELS, getLanguagePolicy } from '../prototype/shared/trail-catalog.mjs';
 import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
-import { applyEnglishLearningTranslationHint } from '../prototype/shared/translation-hint.mjs';
+import { applyEnglishLearningTranslationHint, removeHebrewTranslationHint } from '../prototype/shared/translation-hint.mjs';
 import {
   clearShopSession,
   loadShopSession,
@@ -328,13 +328,19 @@ export function initShopGame(deps: ShopDeps) {
   }
 
   function renderCustomer() {
-    configureTranslationHintButton(requireElement<HTMLButtonElement>('shop-translation-hint'), getLearningLanguage());
-    const isEnglishLearning = getLanguagePolicy(getLearningLanguage()).prompt === 'spoken-english';
+    const language = getLearningLanguage();
+    const order = requireCurrentOrder();
+    configureTranslationHintButton(requireElement<HTMLButtonElement>('shop-translation-hint'), language);
+    const isEnglishLearning = language === 'en';
     const orderPrompt = requireElement<HTMLElement>('shop-order-prompt');
     requireElement<HTMLElement>('shop-customer-avatar').textContent = state.customerEmoji;
     requireElement<HTMLElement>('shop-customer-name').textContent = state.customerName;
-    orderPrompt.textContent = isEnglishLearning ? 'אני רוצה בבקשה...' : requireCurrentOrder().sentence;
-    orderPrompt.dir = 'rtl';
+    removeHebrewTranslationHint(orderPrompt);
+    orderPrompt.textContent = order.sentence;
+    orderPrompt.lang = language;
+    orderPrompt.dir = isEnglishLearning ? 'ltr' : 'rtl';
+    orderPrompt.tabIndex = isEnglishLearning ? 0 : -1;
+    applyEnglishLearningTranslationHint(orderPrompt, language, createHebrewRequestSentence(order.targets));
     requireElement<HTMLButtonElement>('shop-replay-btn').hidden = !isEnglishLearning;
     requireElement<HTMLButtonElement>('shop-order-replay-btn').hidden = !isEnglishLearning;
     requireElement<HTMLElement>('shop-customer-card').classList.remove('is-happy', 'is-leaving');
