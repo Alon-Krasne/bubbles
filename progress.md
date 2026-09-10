@@ -304,5 +304,6 @@ Green receipts:
 
 - Rebuilt the Shop game as an edge-to-edge moonlit woodland stall, following the approved mockup while keeping requests, choices, hint/replay controls, and progress as live UI.
 - Added eight illustrated customers and complete illustrated product coverage for all five Shop levels. The sprite atlases have real transparency; colored shapes and books remain exact CSS colors.
+- English-learning choices show their English vocabulary word directly beneath each illustration; Hebrew-mode choices remain Hebrew-only.
 - Removed the duplicate replay control and kept one compact speaker plus the opt-in translation bulb inside the request bubble.
 - The acceptance target covers every Shop level at desktop, tablet, portrait phone, and short landscape sizes; products and controls must remain at least 44px, contained, and backed by decodable artwork.

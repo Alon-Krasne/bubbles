@@ -135,6 +135,8 @@
   transition: border-color .16s ease, background .16s ease;
 }
 .shop-item-tile:hover, .shop-item-tile:focus-visible { outline: 3px solid #fff0bd; outline-offset: 2px; background: #ffdfa2; z-index: 2; }
+.shop-item-tile.has-english-label { grid-template-rows: minmax(0, 1fr) auto; }
+.shop-item-illustration { width: 100%; height: 100%; min-width: 0; min-height: 0; display: grid; place-items: center; container-type: size; }
 .shop-item-art {
   display: block;
   width: min(96cqw, 96cqh);
@@ -143,6 +145,7 @@
   background-repeat: no-repeat;
   pointer-events: none;
 }
+.shop-item-english-label { max-width: 100%; color: #49351f; font: 700 clamp(11px, 7cqw, 17px)/1.05 'Rubik', sans-serif; text-align: center; overflow-wrap: anywhere; }
 .shop-colored-item { width: min(75cqw, 75cqh); background: var(--item-color); border-radius: 10%; box-shadow: inset 3px 4px 6px #ffffff66, inset -3px -4px 6px #00000024, 0 4px 4px #76472233; }
 .shop-colored-heart { background: none; box-shadow: none; color: var(--item-color); font: 900 min(82cqw, 82cqh)/1 'Rubik', sans-serif; text-align: center; filter: drop-shadow(0 4px 2px #55391d44); }
 .shop-colored-circle { border-radius: 50%; }
@@ -179,7 +182,7 @@
   .shop-basket-icon .shop-item-art { width: 25cqw; }
   #shop-round-coins { right: 2%; font-size: 15px; padding: 8px; }
   #shop-basket-progress { left: 2%; font-size: 13px; }
-  .shop-shelves { left: 3%; right: 3%; top: 72%; bottom: 7%; padding: 7px; gap: 6px; border-width: 3px; border-radius: 18px; }
+  .shop-shelves { left: 3%; right: 3%; top: 69%; bottom: 5%; padding: 7px; gap: 6px; border-width: 3px; border-radius: 18px; }
   .shop-item-tile { border-radius: 10px; }
   .shop-item-word { font-size: 18px; padding: 1px; }
   .shop-feedback { font-size: 13px; padding: 6px 10px; }
@@ -188,8 +191,8 @@
 @media (max-height: 500px) and (min-width: 701px) {
   .shop-game-toolbar, .shop-hud { top: 10px; }
   .shop-speech-bubble { top: 18%; min-height: 60px; padding-block: 6px; }
-  .shop-customer-art { width: min(34cqh, 28cqw); bottom: 28%; }
-  .shop-shelves { top: 62%; bottom: 5%; padding: 6px; gap: 6px; }
+  .shop-customer-art { width: min(30cqh, 25cqw); bottom: 34%; }
+  .shop-shelves { top: 58%; bottom: 10%; padding: 6px; gap: 6px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

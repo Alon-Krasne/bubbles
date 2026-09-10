@@ -364,15 +364,25 @@ export function initShopGame(deps: ShopDeps) {
       tile.dataset.itemId = item.id;
       tile.setAttribute('aria-label', learningLanguage === 'he' ? item.hebrew : item.english);
 
-      const choice = learningPolicy.choices === 'written-hebrew'
-        ? document.createElement('span') : createShopItemArt(item.id);
       if (learningPolicy.choices === 'written-hebrew') {
+        const choice = document.createElement('span');
         choice.className = 'shop-item-word';
         choice.dir = 'rtl';
         choice.textContent = item.hebrew;
-      }
+        tile.append(choice);
+      } else {
+        tile.classList.add('has-english-label');
+        const illustration = document.createElement('span');
+        illustration.className = 'shop-item-illustration';
+        illustration.append(createShopItemArt(item.id));
 
-      tile.append(choice);
+        const label = document.createElement('span');
+        label.className = 'shop-item-english-label';
+        label.lang = 'en';
+        label.dir = 'ltr';
+        label.textContent = item.english;
+        tile.append(illustration, label);
+      }
       applyEnglishLearningTranslationHint(tile, learningLanguage, item.hebrew);
       tile.addEventListener('click', () => selectItem(item, tile));
       shelves.append(tile);

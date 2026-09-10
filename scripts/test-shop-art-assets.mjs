@@ -40,6 +40,22 @@ try {
     return {
       dimensions: images.map(image => [image.naturalWidth, image.naturalHeight]),
       transparentCorners: images.slice(1).map(alphaAtCorner),
+      englishLabels: tiles.map(tile => ({
+        visibleText: tile.querySelector('.shop-item-english-label')?.textContent?.trim() ?? '',
+        accessibleText: tile.getAttribute('aria-label'),
+        contained: (() => {
+          const label = tile.querySelector('.shop-item-english-label');
+          const illustration = tile.querySelector('.shop-item-illustration');
+          if (!label || !illustration) return false;
+          const tileRect = tile.getBoundingClientRect();
+          const labelRect = label.getBoundingClientRect();
+          const illustrationRect = illustration.getBoundingClientRect();
+          return labelRect.width > 0 && labelRect.height > 0
+            && labelRect.left >= tileRect.left - 1 && labelRect.right <= tileRect.right + 1
+            && labelRect.top >= illustrationRect.bottom - 1 && labelRect.bottom <= tileRect.bottom + 1
+            && label.scrollWidth <= label.clientWidth + 1;
+        })(),
+      })),
       tileSizes: tiles.map(tile => {
         const rect = tile.getBoundingClientRect();
         return [rect.width, rect.height];
@@ -50,6 +66,8 @@ try {
   assert.deepEqual(result.dimensions[1], [1774, 887], 'Customer atlas must decode at its authored size');
   assert.ok(result.dimensions.slice(2).every(([width, height]) => width === 1254 && height === 1254), 'Every product atlas must decode at its authored size');
   assert.ok(result.transparentCorners.every(alpha => alpha === 0), 'Customer and product atlases need genuine transparent backgrounds');
+  assert.ok(result.englishLabels.every(({ visibleText, accessibleText }) => visibleText === accessibleText), 'Every English product needs its matching visible word');
+  assert.ok(result.englishLabels.every(({ contained }) => contained), 'English product labels must sit below the artwork without clipping or overflow');
   assert.ok(result.tileSizes.every(([width, height]) => width >= 44 && height >= 44), 'Short-landscape product choices must remain 44px touch targets');
   console.log('PASS: Shop art decodes with transparent sprite backgrounds and 44px short-landscape choices.');
 } finally {
