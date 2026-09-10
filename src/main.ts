@@ -1,4 +1,5 @@
 import './styles.css';
+import './shop-scene.css';
 import { configureTranslationHintButton } from '../prototype/shared/translation-hint-control.mjs';
 import { saveStorage, recordStageCompletion, initializeSaves, showSaveLoadError } from '../prototype/shared/saves.mjs';
 import { GameApp } from './game/GameApp';

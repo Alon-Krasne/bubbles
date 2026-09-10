@@ -10,20 +10,25 @@ export async function initializeSaves() {
     return;
   }
   const panel = document.createElement('div');
+  panel.className = 'save-status-panel';
   panel.dir = 'rtl';
   panel.setAttribute('role', 'status');
   panel.style.cssText = 'position:fixed;bottom:8px;left:8px;z-index:10000;background:#fff8e9;color:#68415f;border:2px solid white;border-radius:14px;padding:8px 12px;font:600 14px Rubik,sans-serif;max-width:90vw';
   document.body.append(panel);
+  let hideTimer;
   const block = () => {
     for (const child of document.body.children) if (child !== panel) child.inert = true;
   };
   const showStatus = state => {
+    clearTimeout(hideTimer);
+    panel.hidden = false;
     const messages = {
       saving: 'שומר…', saved: 'נשמר בענן ✓', offline: 'נשמר במכשיר · ממתין לחיבור לענן',
       conflict: 'ההתקדמות השתנתה במכשיר אחר. השמירה המקומית נשמרה לשחזור.',
       error: 'לא ניתן לשמור במכשיר. יש לפנות מקום לפני שממשיכים.',
     };
     panel.textContent = messages[state];
+    if (state === 'saved') hideTimer = setTimeout(() => { panel.hidden = true; }, 1600);
     if (state === 'conflict' || state === 'error') block();
     if (state === 'conflict') {
       const button = document.createElement('button');

@@ -1,5 +1,14 @@
 Original prompt: Fix unlocked trail stages so they launch playable games and can be replayed while preserving the highest star score; add distinct highlighted Magic House placement targets when an item is selected or dragged.
 
+## September 10 Moonlit Shop — in progress
+
+- Approved direction: `design/mockups/moonlit-shop.png`, full-screen moonlit woodland shop matching the daughter's approved Magic House. English requests and optional Hebrew hints stay live; no theme selector or save-schema changes.
+- Branch `codex/moonlit-shop` starts at merged main `ee672c4`.
+- Luna scoped to browser geometry tests, old gameplay CSS removal, and read-only correctness review. Root handles artwork and integration. Generic web-game Playwright driver is superseded by the project's agent-browser-only rule.
+- Acceptance: `node scripts/test-moonlit-shop.mjs` against built local `scripts/serve-save-test.mjs`, 4/6/8 products across all five levels. Baseline failed `Missing .shop-scene-art`. New layout passes all five cases; existing `npm run test:shop-order-hint` passes. Finish gates: both browser suites, `npm run test:translations`, `npm run test:shop-session`, `npm run test:saves`, `npx tsc --noEmit`, `npm run build`, `git diff --check`, screenshot review against approved mockup, then PR/preview.
+- Clean scene, eight customer sprites, and five product sheets generated with built-in image generation. Runtime assets currently have opaque backgrounds and are NOT visually approved. Local background-removal permission requested from user; do not ship checkerboard/white rectangles as final art.
+- Manual screenshot caught a build URL error despite the first geometry test reporting art present: CSS URL existence is not an image-load check. Runtime CSS variables now point to copied prototype assets. Need a separate actual asset-load check.
+
 ## September 9 Shop written orders
 
 - User clarified that Memory hints work; the Shop must display the spoken English order instead of the generic Hebrew placeholder.
@@ -290,3 +299,10 @@ Green receipts:
 - Colored key instruction words in teal and berry with subtle dotted underlines. Rounded the instruction/title panels and drawer tiles, softened shadows, and warmed the drawer background.
 - Inspected screenshots at 1280x720 and 1024x768, including a hovered Hebrew word tooltip and Hebrew mode. Browser confirmed bulb width 46, a visible כדור tooltip after enabling, one placed object, and hint reset to false on request 2/6. Hebrew mode hides the bulb.
 - `npm run test:translations` passes; `npx tsc --noEmit` and `git diff --check` exit 0. Browser reported the existing initial audio autoplay restriction before user interaction.
+
+## September 10 moonlit Shop redesign
+
+- Rebuilt the Shop game as an edge-to-edge moonlit woodland stall, following the approved mockup while keeping requests, choices, hint/replay controls, and progress as live UI.
+- Added eight illustrated customers and complete illustrated product coverage for all five Shop levels. The sprite atlases have real transparency; colored shapes and books remain exact CSS colors.
+- Removed the duplicate replay control and kept one compact speaker plus the opt-in translation bulb inside the request bubble.
+- The acceptance target covers every Shop level at desktop, tablet, portrait phone, and short landscape sizes; products and controls must remain at least 44px, contained, and backed by decodable artwork.

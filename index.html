@@ -169,28 +169,28 @@
             </section>
 
             <section id="shop-game-area" class="shop-game-area hidden" aria-label="משחק החנות הקטנה">
+                <img class="shop-scene-art" src="./prototype/assets/shop/moonlit-shop.webp" alt="" aria-hidden="true">
+                <div class="shop-fireflies" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
                 <div class="shop-game-toolbar">
-                    <button type="button" id="shop-level-list-btn" class="shop-map-btn" aria-label="חזרה למפת שלבי החנות">שלבים</button>
+                    <button type="button" id="shop-level-list-btn" class="shop-map-btn" aria-label="חזרה למפת שלבי החנות">⌂</button>
                     <div id="shop-game-level-title" class="shop-game-level-title">שלב 1</div>
-                    <button type="button" id="shop-replay-btn" class="shop-replay-btn" aria-label="השמעת ההזמנה שוב">🔊</button>
-                    <button type="button" id="shop-translation-hint" class="translation-hint-button" hidden>💡 רמז</button>
                 </div>
 
                 <div class="shop-hud" aria-live="polite">
                     <div id="shop-served-progress" class="shop-hud-pill">🧺 0/5</div>
-                    <div id="shop-round-coins" class="shop-hud-pill">🪙 0</div>
+                    <div id="shop-round-coins" class="shop-hud-pill">0</div>
                     <div id="shop-basket-progress" class="shop-hud-pill">סל ריק</div>
                 </div>
 
                 <div class="shop-stage">
                     <div id="shop-customer-card" class="shop-customer-card">
-                        <div id="shop-customer-avatar" class="shop-customer-avatar" aria-hidden="true">🐰</div>
+                        <div id="shop-customer-avatar" class="shop-customer-art" aria-hidden="true"></div>
                         <div>
                             <div id="shop-customer-name" class="shop-customer-name">נוני</div>
                             <div class="shop-speech-bubble">
                                 <span id="shop-order-prompt" class="shop-order-prompt">אני רוצה בבקשה...</span>
                                 <button type="button" id="shop-order-replay-btn" class="shop-order-replay-btn" aria-label="השמעת ההזמנה שוב">🔊</button>
-                                <span class="shop-order-question" aria-hidden="true">?</span>
+                                <button type="button" id="shop-translation-hint" class="translation-hint-button" hidden>💡</button>
                             </div>
                         </div>
                     </div>

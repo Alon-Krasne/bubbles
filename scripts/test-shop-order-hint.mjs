@@ -7,9 +7,10 @@ const browser = (...args) => execFileSync('agent-browser', ['--session', 'shop-o
   encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'],
 });
 const evaluate = expression => JSON.parse(browser('eval', expression));
+const runId = `${process.pid}-${Date.now()}`;
 const route = language => `http://127.0.0.1:8788/index.html?${new URLSearchParams({
   host: 'world-map', activity: 'listening-shop', level: 'shop-level-1', stage: '2',
-  profile: `order-test-${language}`, profileName: 'Test', profileEmoji: '🌸',
+  profile: `order-test-${language}-${runId}`, profileName: 'Test', profileEmoji: '🌸',
   profileCharacter: 'princess', profileLanguage: language,
 })}`;
 const promptText = () => evaluate('document.querySelector("#shop-order-prompt").firstChild.textContent');

@@ -1,5 +1,29 @@
 # Magic House visual concepts
 
+## Moonlit Shop (September 10, 2026)
+
+`moonlit-shop.png` is the user-approved edge-to-edge Shop mockup, derived from the Moonlight Storybook room using built-in image generation. The gameplay sentence, hint/replay controls, customers, products, and progress are implemented separately from the environment; no day/night theme system is introduced.
+
+Runtime artwork in `prototype/assets/shop/` is complete. The environment stays opaque; customer and product atlases have genuine alpha so the live objects sit naturally inside the scene.
+
+Environment edit prompt: preserve the approved shop camera, curved honey wood frame, blue/lavender awning, moon sign, lanterns, village, moon and lighting. Remove all UI, fox, text, foreground items, four fixed compartment walls, paper bag and coin dish. Reconstruct the forest behind the customer and a clear continuous wooden counter in the lower 32%. Source: `exec-764da7bd-8e3a-4b13-9a2f-f847695e3f48.png`.
+
+Customer prompt: 4×2 equal square atlas, front-facing upper torso and paws, reference-quality warm storybook animals with padding; row one rabbit/bear/cat/fox, row two frog/panda/monkey/koala. The original transparent-background request returned a painted checkerboard (`exec-b5531380-fb86-43ee-89de-d3e4b6feea77.png`; unsuccessful extraction `exec-222fcde3-fe4b-47f9-9cf8-e27a2fba33a8.png`). A precise edit replaced only the checkerboard with uniform `#00FFFF`, preserving the grid and animals (`exec-f5f420b5-36b6-4416-8d31-35129bfeb102.png`); that chroma background was removed locally before the runtime WebP was encoded.
+
+Product prompt shared across five 4×4 square atlases: one identifiable isolated object per equal cell, 15% padding, consistent three-quarter view, warm soft lighting and refined tactile storybook rendering matching the mockup. Pure white background, no checkerboard, scenery, counter, text or gridlines. Items in this exact order:
+
+Sheet 1, row-major: banana, red apple, milk bottle, bread loaf, egg, cheese wedge, clear water bottle with blue water, orange fruit, strawberry, carrot, cookie, ceramic cup, red toy ball, closed blue book, sun hat, single shoe.
+
+Sheet 2, row-major: plate, spoon, fork, toothbrush, bar of soap, scissors, spiral notebook, wooden ruler, shirt, dress, backpack, sheet of paper, laptop computer, calculator, paintbrush, camera.
+
+Sheet 3, row-major: slice of cake, tomato, potato, mushroom, pear, peach, doughnut, ice cream cone, corn cob, pizza slice, sandwich, marker pen, basketball, baseball, volleyball, gold medal.
+
+Sheet 4, row-major: gold trophy, hamburger, fries in carton, bowl of white rice, plate of spaghetti, bowl of soup, wrapped candy, chocolate bar, bed, wooden chair, couch, table lamp, key, round clock, telephone, umbrella.
+
+Sheet 5, row-major: radio, pants, single sock, coat, scarf, single glove, pencil, crayon, balloon, kite, teddy bear, empty paper shopping bag with crescent moon seal, small shallow wooden coin dish, small gold star coin, closed paper shopping bag with crescent moon seal, wooden crate.
+
+Sources in order: `exec-2d816622-5b13-4b7b-8c40-326abab82edd.png`, `exec-ce366d32-2ca2-435f-bbe5-68657489c09c.png`, `exec-6284a897-9df0-439f-b43b-1fa3da558790.png`, `exec-217cf1d3-a6d4-4bbc-b3c9-b9bb35bee1d5.png`, `exec-e73e1720-089f-4012-9c8f-2314c8eb6d07.png`. The connected white canvas was removed locally with a conservative two-percent tolerance before quality-90 WebP encoding, preserving pale learning objects such as paper, soap, rice, and milk. The 16 colored learning shapes/books use CSS shapes with explicit vocabulary colors to keep colors exact.
+
 Generated with the built-in image-generation tool, September 9, 2026. The daughter selected **Moonlight Storybook**, superseding the initial treehouse choice. The concept images are visual references, not baked gameplay screens. The current game screenshot was supplied as a functional reference, explicitly not a style/geometry reference.
 
 - `magic-house-enchanted-treehouse.png`: warm carved timber, leafy canopy, amber sunlight and tactile fabrics.

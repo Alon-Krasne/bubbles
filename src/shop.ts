@@ -1,6 +1,7 @@
 import { saveStorage, recordStageCompletion } from '../prototype/shared/saves.mjs';
 import { configureTranslationHintButton } from '../prototype/shared/translation-hint-control.mjs';
 import { VOCAB_WORDS, type VocabWord } from './words';
+import { createShopItemArt } from './shop-art';
 import type { HostedActivitySession } from './hostedActivity';
 import { calculateMasteryStars, formatStarRating } from '../prototype/shared/activity-scoring.mjs';
 import { GAME_LEVELS, getLanguagePolicy } from '../prototype/shared/trail-catalog.mjs';
@@ -131,6 +132,9 @@ export function initShopGame(deps: ShopDeps) {
 
   const levelMap = requireElement<HTMLElement>('shop-level-map');
   const gameArea = requireElement<HTMLElement>('shop-game-area');
+  const shopScreen = requireElement<HTMLElement>('shop-screen');
+  shopScreen.style.setProperty('--shop-scene-art', 'url("/prototype/assets/shop/moonlit-shop.webp")');
+  shopScreen.style.setProperty('--shop-customer-art', 'url("/prototype/assets/shop/customers.webp")');
   const trail = requireElement<HTMLDivElement>('shop-level-trail');
   const shelves = requireElement<HTMLDivElement>('shop-shelves');
   const celebration = requireElement<HTMLDivElement>('shop-celebration');
@@ -144,7 +148,6 @@ export function initShopGame(deps: ShopDeps) {
     deps.returnToGameSelect();
   });
   requireElement<HTMLButtonElement>('shop-level-list-btn').addEventListener('click', returnFromShopGame);
-  requireElement<HTMLButtonElement>('shop-replay-btn').addEventListener('click', replayOrder);
   requireElement<HTMLButtonElement>('shop-order-replay-btn').addEventListener('click', replayOrder);
   requireElement<HTMLButtonElement>('shop-celebration-next-btn').addEventListener('click', finishShopCelebration);
 
@@ -157,7 +160,7 @@ export function initShopGame(deps: ShopDeps) {
   function openLevel(levelId: ShopLevelId) {
     deps.showScreen('shop-screen');
     if (deps.hostedSession) {
-      requireElement<HTMLButtonElement>('shop-level-list-btn').hidden = true;
+      requireElement<HTMLButtonElement>('shop-level-list-btn').setAttribute('aria-label', 'חזרה למסלול');
       const celebrationButton = requireElement<HTMLButtonElement>('shop-celebration-next-btn');
       celebrationButton.textContent = 'חזרה למסלול';
       celebrationButton.setAttribute('aria-label', 'חזרה למסלול');
@@ -330,10 +333,12 @@ export function initShopGame(deps: ShopDeps) {
   function renderCustomer() {
     const language = getLearningLanguage();
     const order = requireCurrentOrder();
-    configureTranslationHintButton(requireElement<HTMLButtonElement>('shop-translation-hint'), language);
+    configureTranslationHintButton(requireElement<HTMLButtonElement>('shop-translation-hint'), language, true);
     const isEnglishLearning = language === 'en';
     const orderPrompt = requireElement<HTMLElement>('shop-order-prompt');
-    requireElement<HTMLElement>('shop-customer-avatar').textContent = state.customerEmoji;
+    const customerIndex = SHOP_CUSTOMER_EMOJIS.indexOf(state.customerEmoji);
+    const customer = requireElement<HTMLElement>('shop-customer-avatar');
+    customer.style.backgroundPosition = `${customerIndex % 4 / 3 * 100}% ${Math.floor(customerIndex / 4) * 100}%`;
     requireElement<HTMLElement>('shop-customer-name').textContent = state.customerName;
     removeHebrewTranslationHint(orderPrompt);
     orderPrompt.textContent = order.sentence;
@@ -341,7 +346,6 @@ export function initShopGame(deps: ShopDeps) {
     orderPrompt.dir = isEnglishLearning ? 'ltr' : 'rtl';
     orderPrompt.tabIndex = isEnglishLearning ? 0 : -1;
     applyEnglishLearningTranslationHint(orderPrompt, language, createHebrewRequestSentence(order.targets));
-    requireElement<HTMLButtonElement>('shop-replay-btn').hidden = !isEnglishLearning;
     requireElement<HTMLButtonElement>('shop-order-replay-btn').hidden = !isEnglishLearning;
     requireElement<HTMLElement>('shop-customer-card').classList.remove('is-happy', 'is-leaving');
   }
@@ -360,15 +364,12 @@ export function initShopGame(deps: ShopDeps) {
       tile.dataset.itemId = item.id;
       tile.setAttribute('aria-label', learningLanguage === 'he' ? item.hebrew : item.english);
 
-      const choice = document.createElement('span');
+      const choice = learningPolicy.choices === 'written-hebrew'
+        ? document.createElement('span') : createShopItemArt(item.id);
       if (learningPolicy.choices === 'written-hebrew') {
         choice.className = 'shop-item-word';
         choice.dir = 'rtl';
         choice.textContent = item.hebrew;
-      } else {
-        choice.className = 'shop-item-drawing';
-        choice.setAttribute('aria-hidden', 'true');
-        choice.textContent = item.drawing;
       }
 
       tile.append(choice);
@@ -452,6 +453,7 @@ export function initShopGame(deps: ShopDeps) {
   }
 
   function animateCorrectTile(tile: HTMLButtonElement, item: ShopItem) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     tile.classList.remove('is-correct');
     void tile.offsetWidth;
     tile.classList.add('is-correct');
@@ -462,7 +464,8 @@ export function initShopGame(deps: ShopDeps) {
     const fly = document.createElement('span');
     fly.className = 'shop-fly-item';
     fly.classList.toggle('is-word', getLearningLanguage() === 'he');
-    fly.textContent = getLearningLanguage() === 'he' ? item.hebrew : item.drawing;
+    if (getLearningLanguage() === 'he') fly.textContent = item.hebrew;
+    else fly.append(createShopItemArt(item.id));
     fly.style.setProperty('--shop-fly-x', `${basketRect.left + basketRect.width / 2 - tileRect.left - tileRect.width / 2}px`);
     fly.style.setProperty('--shop-fly-y', `${basketRect.top + basketRect.height / 2 - tileRect.top - tileRect.height / 2}px`);
     tile.append(fly);
@@ -480,25 +483,14 @@ export function initShopGame(deps: ShopDeps) {
     basket.innerHTML = '';
     const basketIcon = document.createElement('span');
     basketIcon.className = 'shop-basket-icon';
-    basketIcon.textContent = '🧺';
+    basketIcon.append(createShopItemArt('shopping-bag'));
     basket.append(basketIcon);
-
-    order.targets.forEach((target) => {
-      const itemProgress = document.createElement('span');
-      itemProgress.className = 'shop-basket-item';
-      // Keep the requested item hidden until it has been served,
-      // so the basket never reveals the answer before listening or reading.
-      const servedItem = getLearningLanguage() === 'he' ? target.item.hebrew : target.item.drawing;
-      itemProgress.textContent = `${target.served > 0 ? servedItem : '❓'} ${target.served}/${target.required}`;
-      basket.append(itemProgress);
-    });
   }
 
   function updateHud() {
     const level = state.activeLevel;
     requireElement<HTMLElement>('shop-served-progress').textContent = `🧺 ${state.servedCustomers}/${level.customerCount}`;
-    requireElement<HTMLElement>('shop-round-coins').textContent = `🪙 ${getDisplayedCoins()}`;
-    requireElement<HTMLButtonElement>('shop-replay-btn').disabled = state.locked;
+    requireElement<HTMLElement>('shop-round-coins').textContent = String(getDisplayedCoins());
     requireElement<HTMLButtonElement>('shop-order-replay-btn').disabled = state.locked;
 
     const order = state.currentOrder;
