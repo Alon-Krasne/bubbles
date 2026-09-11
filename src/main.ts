@@ -3,7 +3,7 @@ import './shop-scene.css';
 import './memory-scene.css';
 import moonlitGardenUrl from './assets/memory/moonlit-garden.webp';
 import { configureTranslationHintButton } from '../prototype/shared/translation-hint-control.mjs';
-import { saveStorage, recordStageCompletion, initializeSaves, showSaveLoadError } from '../prototype/shared/saves.mjs';
+import { recordStageCompletion, initializeSaves, showSaveLoadError } from '../prototype/shared/saves.mjs';
 import { GameApp } from './game/GameApp';
 import { FigureType } from './entities/Character';
 import { FallingItemMode } from './entities/Bubble';
@@ -328,7 +328,6 @@ function setupUI() {
   requireElement<HTMLButtonElement>('memory-map-btn').addEventListener('click', returnFromMemoryRound);
   requireElement<HTMLButtonElement>('memory-new-garden-btn').addEventListener('click', () => {
     clearMemoryMismatchState();
-    saveStorage.removeItem(memoryRoundKey());
     startMemoryLevel(activeMemoryLevel.id);
   });
   requireElement<HTMLButtonElement>('memory-celebration-next-btn').addEventListener('click', finishMemoryCelebration);
@@ -757,40 +756,6 @@ function startMemoryRound(level: MemoryLevel) {
   memoryMistakes = 0;
   memoryRoundStars = 3;
 
-  const saved = saveStorage.getItem(memoryRoundKey());
-  if (saved) {
-    const snapshot = JSON.parse(saved);
-    const alreadyCredited = isHostedMemoryActivity()
-      && JSON.parse(saveStorage.getItem(`route-${getActiveProfile().id}`)).progress[hostedActivityContext.stageId];
-    if (snapshot.matched.length < level.pairs || !alreadyCredited) {
-      memoryCards = snapshot.cards;
-      memoryMatchedPairs = new Set(snapshot.matched);
-      memoryMistakes = snapshot.mistakes;
-      memoryNeedsMismatchDismiss = snapshot.needsMismatchDismiss;
-      memoryLocked = memoryNeedsMismatchDismiss;
-      renderMemoryBoard();
-      const board = requireElement<HTMLDivElement>('memory-board');
-      board.querySelectorAll<HTMLDivElement>('.memory-card').forEach(button => {
-        if (memoryMatchedPairs.has(button.dataset.wordId) || snapshot.first === button.dataset.cardId || snapshot.second === button.dataset.cardId) {
-          revealMemoryCard(button);
-        }
-        if (memoryMatchedPairs.has(button.dataset.wordId)) {
-          button.classList.add('is-matched');
-          keepHebrewTranslationFocusable(button);
-        }
-        if (snapshot.first === button.dataset.cardId) memoryFirstCard = button;
-        if (snapshot.second === button.dataset.cardId) memorySecondCard = button;
-      });
-      updateMemoryStatus('ממשיכים מהמקום שבו עצרתם');
-      if (memoryMatchedPairs.size === level.pairs) {
-        memoryRoundStars = calculateMasteryStars({ mistakes: memoryMistakes, challengeSize: level.pairs });
-        if (isHostedMemoryActivity()) recordStageCompletion(hostedActivityContext, memoryRoundStars);
-        finishMemoryRound();
-      }
-      return;
-    }
-  }
-
   const pairCount = level.pairs;
   const selectedWords = selectMemoryWords(level);
   const cards = selectedWords.flatMap((word): MemoryCard[] => [
@@ -813,20 +778,9 @@ function startMemoryRound(level: MemoryLevel) {
   ]);
 
   memoryCards = shuffleMemoryCards(cards);
-  saveMemoryRound();
   renderMemoryBoard();
   updateMemoryStatus(`${getMemoryStageTitle(level)}: הפכו שני קלפים שמתחברים`);
   hideMemoryToast();
-}
-
-function memoryRoundKey() { return `memory-round-${getActiveProfile().id}-${activeMemoryLevel.id}`; }
-
-function saveMemoryRound() {
-  saveStorage.setItem(memoryRoundKey(), JSON.stringify({
-    cards: memoryCards, matched: [...memoryMatchedPairs], mistakes: memoryMistakes,
-    first: memoryFirstCard?.dataset.cardId ?? null, second: memorySecondCard?.dataset.cardId ?? null,
-    needsMismatchDismiss: memoryNeedsMismatchDismiss,
-  }));
 }
 
 function shuffleMemoryCards(cards: MemoryCard[]): MemoryCard[] {
@@ -953,7 +907,6 @@ function handleMemoryCardClick(cardButton: HTMLDivElement) {
 
   if (!memoryFirstCard) {
     memoryFirstCard = cardButton;
-    saveMemoryRound();
     updateMemoryStatus('בחרו את הזוג שלו');
     return;
   }
@@ -970,7 +923,6 @@ function handleMemoryCardClick(cardButton: HTMLDivElement) {
   } else {
     memoryMistakes += 1;
     memoryNeedsMismatchDismiss = true;
-    saveMemoryRound();
     updateMemoryStatus('לא זוג. לחצו כדי לסגור ולנסות שוב');
   }
 }
@@ -1029,7 +981,6 @@ function matchMemoryCards() {
         finishMemoryRound();
       });
   }
-  saveMemoryRound();
   updateMemoryStatus(message);
   showMemoryToast(matchedWord);
 }
@@ -1047,7 +998,7 @@ function finishMemoryRound() {
   }, MEMORY_WIN_RETURN_DELAY_MS);
 }
 
-function closeUnmatchedMemoryCards(persist = true) {
+function closeUnmatchedMemoryCards() {
   memoryNeedsMismatchDismiss = false;
 
   if (!memoryFirstCard || !memorySecondCard || !memoryFirstCard.isConnected || !memorySecondCard.isConnected) {
@@ -1073,12 +1024,11 @@ function closeUnmatchedMemoryCards(persist = true) {
   memorySecondCard = null;
   memoryLocked = false;
   updateMemoryStatus('הפכו שני קלפים שמתחברים');
-  if (persist) saveMemoryRound();
 }
 
 function clearMemoryMismatchState() {
   if (memoryNeedsMismatchDismiss) {
-    closeUnmatchedMemoryCards(false);
+    closeUnmatchedMemoryCards();
   }
 }
 

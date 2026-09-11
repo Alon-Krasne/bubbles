@@ -1,5 +1,15 @@
 Original prompt: Fix unlocked trail stages so they launch playable games and can be replayed while preserving the highest star score; add distinct highlighted Magic House placement targets when an item is selected or dragged.
 
+## September 11 Memory save boundary
+
+- User accepts a fresh closed/shuffled board on refresh; preserve completed stars, route progress, and configuration, not individual card state.
+- Removed Memory round snapshot writes and restoration. Existing snapshot rows are unused, not migrated or deleted. No save-client or database schema changes.
+- Red: `node scripts/test-memory-saves.mjs` failed `Opening one card must not write to the database`, actual 1 versus expected 0.
+- Green, same test: `PASS: flips, mismatches, pairs and reshuffles produce 0 database writes; completion produces 1; reload closes cards and retains stars.` Uses agent-browser and isolated local D1; run build and `node scripts/serve-save-test.mjs` first.
+- `npm run test:saves`: `PASS: D1 save/read, lost-ack retry, stale-write rejection, simultaneous writes, service restart, and origin/key validation.` Client, round, and body-limit tests also passed. Memory completion, translations, TypeScript, build, and whitespace checks passed.
+- Save-path review: shared client already skips equal values. Shop still snapshots item selections/mistakes/customer state; Magic House still snapshots placements/mistakes/help state. These other activities were reviewed but not changed in this Memory-focused fix. Vocabulary deck rotation and profile configuration remain unchanged.
+- Reviewed locally against the user's save boundary and AGENTS.md; no subagents per user preference.
+
 ## September 10 Moonlit Shop — in progress
 
 - Approved direction: `design/mockups/moonlit-shop.png`, full-screen moonlit woodland shop matching the daughter's approved Magic House. English requests and optional Hebrew hints stay live; no theme selector or save-schema changes.

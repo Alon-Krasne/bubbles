@@ -1,6 +1,6 @@
 {
   "name": "bubbles-game",
-  "version": "7.18.0",
+  "version": "7.18.1",
   "description": "בועות! - A cooperative bubble-catching game for two players",
   "main": "index.html",
   "scripts": {
@@ -26,6 +26,7 @@
     "pretest:fast-start": "npm run build",
     "test:fast-start": "node scripts/test-fast-start-build.mjs",
     "test:memory-completion": "node --experimental-strip-types scripts/test-memory-completion.mjs",
+    "test:memory-saves": "node scripts/test-memory-saves.mjs",
     "test:magic-house-variation": "node scripts/test-magic-house-variation.mjs",
     "test:magic-house-layouts": "node scripts/test-magic-house-layouts.mjs",
     "test:magic-house-hit-areas": "node scripts/test-magic-house-hit-areas.mjs",
