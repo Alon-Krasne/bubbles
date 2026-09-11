@@ -1,6 +1,6 @@
 {
   "name": "bubbles-game",
-  "version": "7.20.9",
+  "version": "7.20.10",
   "description": "בועות! - A cooperative bubble-catching game for two players",
   "main": "index.html",
   "scripts": {

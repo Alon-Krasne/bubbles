@@ -273,7 +273,7 @@ function renderRoute() {
 
     if (unlocked) {
       button.addEventListener('click', () => selectStage(stage));
-    } else if (stage.id === progress.currentStage + 1) {
+    } else {
       const lock = document.createElement('span');
       lock.className = 'stage-lock';
       lock.setAttribute('aria-hidden', 'true');
