@@ -7,9 +7,10 @@ const browser = (...args) => execFileSync('agent-browser', ['--session', 'shop-o
   encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'],
 });
 const evaluate = expression => JSON.parse(browser('eval', expression));
+const runId = `${process.pid}-${Date.now()}`;
 const route = language => `http://127.0.0.1:8788/index.html?${new URLSearchParams({
   host: 'world-map', activity: 'listening-shop', level: 'shop-level-1', stage: '2',
-  profile: `order-test-${language}`, profileName: 'Test', profileEmoji: '🌸',
+  profile: `order-test-${language}-${runId}`, profileName: 'Test', profileEmoji: '🌸',
   profileCharacter: 'princess', profileLanguage: language,
 })}`;
 const promptText = () => evaluate('document.querySelector("#shop-order-prompt").firstChild.textContent');
@@ -66,6 +67,7 @@ try {
   assert.equal(evaluate('document.querySelector("#shop-order-prompt").lang'), 'he');
   assert.equal(evaluate('document.querySelector("#shop-translation-hint").hidden'), true);
   assert.equal(evaluate('document.querySelectorAll("#shop-order-prompt .hebrew-translation-hint").length'), 0);
+  assert.equal(evaluate('document.querySelectorAll(".shop-item-english-label").length'), 0);
   console.log('PASS: English order, opt-in Hebrew hover/focus, responsive layout, next-customer reset, and unchanged Hebrew mode.');
 } finally {
   browser('close');

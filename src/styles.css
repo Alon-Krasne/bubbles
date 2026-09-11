@@ -2157,24 +2157,11 @@ canvas {
 }
 
 /* ==================== LISTENING SHOP ==================== */
-#shop-screen {
-    justify-content: flex-start;
-    gap: clamp(12px, 2.2vh, 20px);
-    padding: clamp(18px, 3vw, 34px);
-    background:
-        radial-gradient(circle at 16% 18%, rgba(255, 230, 109, 0.28), transparent 18%),
-        radial-gradient(circle at 82% 16%, rgba(255, 158, 181, 0.22), transparent 19%),
-        linear-gradient(180deg, #BDEEFF 0%, #F8FCFF 48%, #DDF8C5 100%);
-    overflow-y: auto;
-}
-
-.shop-level-map.hidden,
-.shop-game-area.hidden {
+.shop-level-map.hidden {
     display: none;
 }
 
-.shop-level-map,
-.shop-game-area {
+.shop-level-map {
     position: relative;
     z-index: 2;
     width: min(94vw, 960px);
@@ -2398,375 +2385,10 @@ canvas {
     text-shadow: 0 0 10px rgba(255, 230, 109, 0.68);
 }
 
-.shop-game-area {
-    display: grid;
-    justify-items: center;
-    gap: clamp(10px, 1.9vh, 18px);
-    transition: opacity 0.28s ease, transform 0.28s ease;
-}
-
-.shop-game-area.is-completing {
-    opacity: 0.18;
-    pointer-events: none;
-    transform: translateY(16px) scale(0.975);
-}
-
-.shop-game-toolbar {
-    width: min(94vw, 820px);
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto auto;
-    align-items: center;
-    gap: 12px;
-}
-
-.shop-map-btn,
-.shop-game-level-title,
-.shop-replay-btn,
-.shop-order-replay-btn {
-    border-radius: 999px;
-    font-family: 'Rubik', sans-serif;
-    font-weight: 900;
-}
-
-.shop-map-btn,
-.shop-replay-btn,
-.shop-order-replay-btn,
 .shop-celebration-next-btn {
     border: none;
     cursor: pointer;
     transition: transform 0.18s ease, box-shadow 0.18s ease;
-}
-
-.shop-map-btn {
-    min-width: 112px;
-    min-height: 52px;
-    padding: 12px 18px;
-    background: linear-gradient(180deg, #98D9C2 0%, #4FBE8D 100%);
-    color: white;
-    font-size: 18px;
-    box-shadow: 0 5px 0 #3C9970;
-}
-
-.shop-game-level-title {
-    min-height: 52px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 18px;
-    background: rgba(255,255,255,0.84);
-    color: #A64B68;
-    font-size: clamp(18px, 3vw, 24px);
-    box-shadow: 0 5px 0 rgba(57, 118, 142, 0.15);
-}
-
-.shop-replay-btn,
-.shop-order-replay-btn {
-    width: 58px;
-    height: 58px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(180deg, #FFE66D 0%, #FFB84D 100%);
-    color: #39768E;
-    font-size: 26px;
-    box-shadow:
-        0 5px 0 rgba(196, 126, 25, 0.34),
-        inset 0 2px 0 rgba(255,255,255,0.74);
-}
-
-.shop-map-btn:hover,
-.shop-map-btn:focus-visible,
-.shop-replay-btn:hover,
-.shop-replay-btn:focus-visible,
-.shop-order-replay-btn:hover,
-.shop-order-replay-btn:focus-visible {
-    transform: translateY(-2px);
-    outline: none;
-}
-
-.shop-hud {
-    width: min(94vw, 820px);
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
-}
-
-.shop-hud-pill {
-    min-height: 50px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 999px;
-    padding: 8px 14px;
-    background: rgba(255,255,255,0.82);
-    border: 2px solid rgba(255,255,255,0.86);
-    color: #39768E;
-    font-size: clamp(17px, 2.5vw, 21px);
-    font-weight: 900;
-    box-shadow:
-        0 7px 20px rgba(57, 118, 142, 0.12),
-        inset 0 2px 0 rgba(255,255,255,0.9);
-}
-
-.shop-stage {
-    width: min(94vw, 820px);
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 150px;
-    align-items: end;
-    gap: clamp(12px, 2vw, 20px);
-}
-
-.shop-customer-card {
-    min-height: 150px;
-    display: grid;
-    grid-template-columns: 108px 1fr;
-    align-items: center;
-    gap: 16px;
-    padding: 16px;
-    border-radius: 32px;
-    background:
-        radial-gradient(circle at 12% 18%, rgba(255, 230, 109, 0.3), transparent 27%),
-        rgba(255,255,255,0.82);
-    border: 3px solid rgba(255,255,255,0.88);
-    box-shadow:
-        0 12px 0 rgba(57, 118, 142, 0.1),
-        0 24px 44px rgba(57, 118, 142, 0.16),
-        inset 0 2px 0 rgba(255,255,255,0.92);
-    transform-origin: center bottom;
-}
-
-.shop-customer-card.is-happy {
-    animation: shopCustomerHappy 0.55s ease both;
-}
-
-.shop-customer-card.is-leaving {
-    animation: shopCustomerLeave 0.45s ease both;
-}
-
-.shop-customer-avatar {
-    width: 96px;
-    height: 96px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 34px;
-    background: linear-gradient(180deg, #FFF5B8 0%, #FFDDE8 100%);
-    font-size: 62px;
-    box-shadow:
-        0 6px 0 rgba(229, 122, 149, 0.18),
-        inset 0 2px 0 rgba(255,255,255,0.82);
-}
-
-.shop-customer-name {
-    margin-bottom: 8px;
-    color: #A64B68;
-    font-family: 'Secular One', sans-serif;
-    font-size: clamp(26px, 4vw, 34px);
-    line-height: 1;
-    text-align: right;
-}
-
-.shop-speech-bubble {
-    position: relative;
-    min-height: 78px;
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-    align-items: center;
-    gap: 10px;
-    padding: 13px 18px;
-    border-radius: 28px;
-    background: linear-gradient(180deg, #FFFFFF 0%, #FFF8EC 100%);
-    color: #39768E;
-    font-weight: 900;
-    box-shadow:
-        0 6px 0 rgba(171, 126, 72, 0.14),
-        inset 0 2px 0 rgba(255,255,255,0.96);
-}
-
-.shop-speech-bubble::after {
-    content: '';
-    position: absolute;
-    right: 26px;
-    bottom: -14px;
-    border-width: 14px 14px 0 0;
-    border-style: solid;
-    border-color: #FFF8EC transparent transparent transparent;
-}
-
-.shop-order-prompt {
-    position: relative;
-    min-width: 0;
-    font-size: clamp(18px, 3vw, 24px);
-    text-align: start;
-}
-
-.shop-order-prompt > .hebrew-translation-hint {
-    min-width: 0;
-    width: max-content;
-    max-width: 100%;
-}
-
-.shop-order-question {
-    width: 44px;
-    height: 44px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: rgba(255, 230, 109, 0.38);
-    color: #E57A95;
-    font-family: 'Secular One', sans-serif;
-    font-size: 34px;
-}
-
-.shop-counter {
-    min-height: 140px;
-    display: flex;
-    align-items: end;
-    justify-content: center;
-}
-
-.shop-basket {
-    width: 136px;
-    min-height: 118px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    border-radius: 30px;
-    background:
-        radial-gradient(circle at 24% 20%, rgba(255,255,255,0.88), transparent 18%),
-        linear-gradient(180deg, #FFE66D 0%, #FFCF77 100%);
-    border: 3px solid rgba(255,255,255,0.84);
-    box-shadow:
-        0 8px 0 rgba(196, 126, 25, 0.24),
-        0 18px 32px rgba(57, 118, 142, 0.15),
-        inset 0 2px 0 rgba(255,255,255,0.72);
-    color: #7A4C1F;
-    font-weight: 900;
-}
-
-.shop-basket-icon {
-    font-size: 42px;
-    line-height: 1;
-}
-
-.shop-basket-item {
-    min-width: 78px;
-    padding: 3px 8px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.72);
-    font-size: 15px;
-}
-
-.shop-shelves {
-    width: min(94vw, 820px);
-    display: grid;
-    grid-template-columns: repeat(var(--shop-shelf-columns, 4), minmax(84px, 1fr));
-    gap: clamp(10px, 1.8vw, 16px);
-    padding: clamp(12px, 2.2vw, 20px);
-    border-radius: 34px;
-    background:
-        linear-gradient(180deg, rgba(171, 126, 72, 0.22) 0 18px, transparent 18px),
-        radial-gradient(circle at 18% 20%, rgba(255, 230, 109, 0.25), transparent 28%),
-        linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255, 236, 200, 0.54));
-    border: 3px solid rgba(255,255,255,0.76);
-    box-shadow:
-        0 18px 46px rgba(57, 118, 142, 0.16),
-        inset 0 2px 0 rgba(255,255,255,0.82);
-}
-
-.shop-item-tile {
-    position: relative;
-    min-height: 96px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    border-radius: 24px;
-    background:
-        radial-gradient(circle at 28% 20%, rgba(255,255,255,0.94) 0 13%, transparent 14%),
-        linear-gradient(180deg, #FFFFFF 0%, #FFF2D5 100%);
-    cursor: pointer;
-    box-shadow:
-        0 7px 0 rgba(171, 126, 72, 0.2),
-        0 14px 24px rgba(57, 118, 142, 0.13),
-        inset 0 2px 0 rgba(255,255,255,0.94);
-    transition: transform 0.16s ease, box-shadow 0.16s ease;
-}
-
-.shop-item-tile:hover,
-.shop-item-tile:focus-visible {
-    transform: translateY(-4px);
-    box-shadow:
-        0 11px 0 rgba(171, 126, 72, 0.18),
-        0 20px 30px rgba(57, 118, 142, 0.18),
-        0 0 0 5px rgba(255, 230, 109, 0.3),
-        inset 0 2px 0 rgba(255,255,255,0.96);
-    outline: none;
-}
-
-.shop-item-drawing {
-    font-size: clamp(44px, 7vw, 64px);
-    line-height: 1;
-    filter: drop-shadow(0 4px 0 rgba(57, 118, 142, 0.1));
-}
-
-.shop-item-word {
-    max-width: 100%;
-    padding: 8px 12px;
-    color: #243E4B;
-    font-family: 'Rubik', sans-serif;
-    font-size: clamp(24px, 3.2vw, 38px);
-    font-weight: 900;
-    line-height: 1.15;
-    text-align: center;
-    overflow-wrap: anywhere;
-}
-
-.shop-item-tile.is-correct {
-    animation: shopCorrectPop 0.42s ease both;
-}
-
-.shop-item-tile.is-wrong {
-    animation: shopGentleShake 0.42s ease both;
-}
-
-.shop-fly-item {
-    position: absolute;
-    inset: 50% auto auto 50%;
-    z-index: 10;
-    font-size: 42px;
-    line-height: 1;
-    pointer-events: none;
-    transform: translate(-50%, -50%);
-    animation: shopFlyToBasket 0.58s ease-in forwards;
-}
-
-.shop-fly-item.is-word {
-    color: #243E4B;
-    font-family: 'Rubik', sans-serif;
-    font-size: 24px;
-    font-weight: 900;
-    white-space: nowrap;
-}
-
-.shop-feedback {
-    min-height: 48px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    max-width: min(92vw, 640px);
-    padding: 8px 18px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.78);
-    color: #39768E;
-    font-size: clamp(17px, 2.8vw, 23px);
-    font-weight: 900;
-    box-shadow:
-        0 7px 20px rgba(57, 118, 142, 0.12),
-        inset 0 2px 0 rgba(255,255,255,0.9);
 }
 
 .shop-celebration {
@@ -4297,10 +3919,6 @@ td {
         height: 34px;
     }
 
-    #shop-screen {
-        padding: 16px 10px 20px;
-    }
-
     .shop-title {
         min-width: min(88vw, 420px);
         padding-inline: 22px;
@@ -4339,80 +3957,6 @@ td {
         justify-self: center;
         font-size: 24px;
     }
-
-    .shop-game-toolbar {
-        grid-template-columns: auto minmax(0, 1fr) auto auto;
-        width: min(94vw, 440px);
-        gap: 8px;
-    }
-
-    .shop-map-btn {
-        min-width: 84px;
-        padding-inline: 12px;
-    }
-
-    .shop-hud {
-        width: min(94vw, 440px);
-        grid-template-columns: 1fr;
-        gap: 7px;
-    }
-
-    .shop-hud-pill {
-        min-height: 44px;
-    }
-
-    .shop-stage {
-        width: min(94vw, 440px);
-        grid-template-columns: 1fr;
-    }
-
-    .shop-customer-card {
-        grid-template-columns: 76px 1fr;
-        min-height: 128px;
-        padding: 12px;
-        gap: 12px;
-    }
-
-    .shop-customer-avatar {
-        width: 72px;
-        height: 72px;
-        border-radius: 24px;
-        font-size: 46px;
-    }
-
-    .shop-speech-bubble {
-        grid-template-columns: 1fr auto;
-        min-height: 68px;
-        padding: 10px 12px;
-    }
-
-    .shop-order-question {
-        display: none;
-    }
-
-    .shop-counter {
-        min-height: 92px;
-    }
-
-    .shop-basket {
-        width: min(90vw, 260px);
-        min-height: 84px;
-        flex-direction: row;
-        flex-wrap: wrap;
-        padding: 8px;
-    }
-
-    .shop-shelves {
-        width: min(94vw, 440px);
-        grid-template-columns: repeat(2, minmax(112px, 1fr)) !important;
-    }
-
-    .shop-item-tile {
-        min-height: 92px;
-    }
-
-
-
 
     .game-select-decoration-sun {
         right: -36px;
@@ -4628,12 +4172,6 @@ td {
         min-height: 82px;
     }
 
-    #shop-screen {
-        gap: 9px;
-        padding-top: 12px;
-        padding-bottom: 12px;
-    }
-
     .shop-header {
         gap: 6px;
         margin-bottom: 8px;
@@ -4647,28 +4185,6 @@ td {
     .shop-level-node {
         min-height: 84px;
     }
-
-    .shop-game-area {
-        gap: 8px;
-    }
-
-    .shop-hud-pill {
-        min-height: 42px;
-    }
-
-    .shop-customer-card {
-        min-height: 122px;
-    }
-
-    .shop-shelves {
-        padding: 12px;
-        gap: 10px;
-    }
-
-    .shop-item-tile {
-        min-height: 82px;
-    }
-
 
     #start-screen {
         gap: 10px;
@@ -4865,12 +4381,6 @@ td {
 
     #memory-screen {
         gap: 9px;
-        padding-top: 10px;
-        padding-bottom: 14px;
-    }
-
-    #shop-screen {
-        gap: 8px;
         padding-top: 10px;
         padding-bottom: 14px;
     }
