@@ -252,35 +252,58 @@ export function createMagicHouseLevelRecipe({ levelId, rank, title, magicRequest
   });
 }
 
-// Distributes stages evenly by arc length along the anchor path so no chapter
-// crowds its stops, then nudges alternate stops sideways to keep them legible.
+// Rounds the anchor path into a smooth curve, then walks it by arc length so no
+// two stops crowd a corner, and finally adds an organic side-to-side wander.
 function buildRoutePoints(totalStages) {
-  const segments = [];
-  let totalLength = 0;
-  for (let index = 0; index < CHAPTER_ANCHORS.length - 1; index += 1) {
-    const from = CHAPTER_ANCHORS[index];
-    const to = CHAPTER_ANCHORS[index + 1];
-    const length = Math.hypot(to.x - from.x, to.y - from.y);
-    segments.push({ from, to, start: totalLength, length });
-    totalLength += length;
+  const anchors = CHAPTER_ANCHORS;
+  const stepsPerSegment = 60;
+  const path = [];
+  for (let index = 0; index < anchors.length - 1; index += 1) {
+    const p0 = anchors[Math.max(0, index - 1)];
+    const p1 = anchors[index];
+    const p2 = anchors[index + 1];
+    const p3 = anchors[Math.min(anchors.length - 1, index + 2)];
+    for (let step = 0; step < stepsPerSegment; step += 1) {
+      const t = step / stepsPerSegment;
+      const t2 = t * t;
+      const t3 = t2 * t;
+      path.push({
+        x: 0.5 * ((2 * p1.x) + (-p0.x + p2.x) * t + (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t2 + (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t3),
+        y: 0.5 * ((2 * p1.y) + (-p0.y + p2.y) * t + (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t2 + (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3),
+      });
+    }
+  }
+  path.push(anchors.at(-1));
+
+  const lengths = [0];
+  for (let index = 1; index < path.length; index += 1) {
+    lengths.push(lengths[index - 1] + Math.hypot(
+      path[index].x - path[index - 1].x,
+      path[index].y - path[index - 1].y,
+    ));
   }
 
   function pointAt(distance) {
-    const clamped = Math.min(Math.max(distance, 0), totalLength);
-    const segment = segments.find((candidate) => clamped <= candidate.start + candidate.length) ?? segments.at(-1);
-    const t = segment.length === 0 ? 0 : (clamped - segment.start) / segment.length;
+    let low = 0;
+    let high = path.length - 1;
+    while (low < high) {
+      const mid = (low + high) >> 1;
+      if (lengths[mid] < distance) low = mid + 1;
+      else high = mid;
+    }
+    const index = Math.max(1, low);
+    const segmentLength = lengths[index] - lengths[index - 1] || 1;
+    const t = (distance - lengths[index - 1]) / segmentLength;
     return {
-      x: segment.from.x + (segment.to.x - segment.from.x) * t,
-      y: segment.from.y + (segment.to.y - segment.from.y) * t,
-      angle: Math.atan2(segment.to.y - segment.from.y, segment.to.x - segment.from.x),
+      x: path[index - 1].x + (path[index].x - path[index - 1].x) * t,
+      y: path[index - 1].y + (path[index].y - path[index - 1].y) * t,
+      angle: Math.atan2(path[index].y - path[index - 1].y, path[index].x - path[index - 1].x),
     };
   }
 
-  const spacing = totalLength / totalStages;
-  return Array.from({ length: totalStages }, (_, index) => {
+  const spacing = lengths.at(-1) / totalStages;
+  const points = Array.from({ length: totalStages }, (_, index) => {
     const point = pointAt((index + 0.5) * spacing);
-    // A sum of gentle sine waves gives the route an organic, hand-drawn wander
-    // instead of an alternating machine zig-zag, while still separating stops.
     const wander = Math.sin(index * 0.82) * 2.3
       + Math.sin(index * 0.27 + 2.1) * 1.1
       + Math.sin(index * 1.53 + 0.6) * 0.5;
@@ -289,6 +312,38 @@ function buildRoutePoints(totalStages) {
       y: point.y + Math.sin(point.angle + Math.PI / 2) * wander,
     };
   });
+
+  // The wander can briefly cancel the along-path step at tight turns, so relax
+  // neighbours apart until every pair keeps a legible minimum distance. Y is
+  // weighted because the map is wider than it is tall.
+  const yWeight = 0.72;
+  const minDistance = 3.6;
+  for (let pass = 0; pass < 40; pass += 1) {
+    let moved = false;
+    for (let index = 0; index < points.length - 1; index += 1) {
+      const current = points[index];
+      const next = points[index + 1];
+      const dx = next.x - current.x;
+      const dy = (next.y - current.y) * yWeight;
+      const distance = Math.hypot(dx, dy);
+      if (distance >= minDistance || distance === 0) {
+        continue;
+      }
+      const push = (minDistance - distance) / 2;
+      const ux = dx / distance;
+      const uy = dy / distance;
+      current.x -= ux * push;
+      current.y -= (uy * push) / yWeight;
+      next.x += ux * push;
+      next.y += (uy * push) / yWeight;
+      moved = true;
+    }
+    if (!moved) {
+      break;
+    }
+  }
+
+  return points;
 }
 
 export function generateTrail({ vocabulary = VOCABULARY, magicRequests = MAGIC_HOUSE_REQUESTS } = {}) {

@@ -125,4 +125,20 @@ for (const game of ['memory', 'shop', 'house']) {
   assert.equal(GENERATED_GAME_LEVELS[game].length, 12, `${game} must generate 12 levels`);
 }
 
+// Stage markers are laid out in percentage space on a map that is wider than it
+// is tall, so weight Y before checking that no two stops can visually overlap.
+const STAGE_Y_WEIGHT = 0.72;
+let closestStages = Infinity;
+for (let i = 0; i < GENERATED_TRAIL_STAGES.length; i += 1) {
+  for (let j = i + 1; j < GENERATED_TRAIL_STAGES.length; j += 1) {
+    const a = GENERATED_TRAIL_STAGES[i];
+    const b = GENERATED_TRAIL_STAGES[j];
+    closestStages = Math.min(closestStages, Math.hypot(a.x - b.x, (a.y - b.y) * STAGE_Y_WEIGHT));
+  }
+}
+assert.ok(
+  closestStages >= 3.4,
+  `generated stage markers must stay separated (closest pair is ${closestStages.toFixed(2)})`,
+);
+
 console.log(JSON.stringify({ legacy: legacyReport, generated: generatedReport }));

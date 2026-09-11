@@ -282,31 +282,67 @@ function renderRoute() {
   });
 }
 
+function rectanglesOverlap(a, b) {
+  return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+}
+
+// Finds a spot for each chapter banner that clears every stage marker and the
+// banners already placed, trying above, left, right and below the cluster.
+function placeChapterLabel(label, rects, bounds, placed) {
+  const width = (label.offsetWidth / bounds.width) * 100;
+  const height = (label.offsetHeight / bounds.height) * 100;
+  const gap = 2;
+  const candidates = [
+    { x: rects.centerX, y: rects.topY - height / 2 - gap },
+    { x: rects.leftX - width / 2 - gap, y: rects.centerY },
+    { x: rects.rightX + width / 2 + gap, y: rects.centerY },
+    { x: rects.centerX, y: rects.bottomY + height / 2 + gap },
+  ];
+  for (const candidate of candidates) {
+    label.style.left = `${candidate.x}%`;
+    label.style.top = `${candidate.y}%`;
+    const rect = label.getBoundingClientRect();
+    const inside = rect.left >= 6 && rect.right <= bounds.width - 6
+      && rect.top >= 6 && rect.bottom <= bounds.height - 6;
+    const clear = !rects.nodes.some((node) => rectanglesOverlap(rect, node))
+      && !placed.some((other) => rectanglesOverlap(rect, other));
+    if (inside && clear) {
+      placed.push(rect);
+      return;
+    }
+  }
+  placed.push(label.getBoundingClientRect());
+}
+
 function renderChapterLabels() {
   if (!chapterLabels) {
     return;
   }
   chapterLabels.replaceChildren();
+  const bounds = chapterLabels.getBoundingClientRect();
+  if (bounds.width === 0 || bounds.height === 0) {
+    return;
+  }
+  const nodes = [...route.querySelectorAll('.world-stage')].map((node) => node.getBoundingClientRect());
+  const placed = [];
   TRAIL_CHAPTERS.forEach((chapter, index) => {
     const chapterStages = stages.filter((stage) => stage.chapterIndex === index);
     if (chapterStages.length === 0) {
       return;
     }
-    const centerX = chapterStages.reduce((total, stage) => total + stage.x, 0) / chapterStages.length;
-    const centerY = chapterStages.reduce((total, stage) => total + stage.y, 0) / chapterStages.length;
-    const topY = Math.min(...chapterStages.map((stage) => stage.y));
-    const leftX = Math.min(...chapterStages.map((stage) => stage.x));
+    const rects = {
+      centerX: chapterStages.reduce((total, stage) => total + stage.x, 0) / chapterStages.length,
+      centerY: chapterStages.reduce((total, stage) => total + stage.y, 0) / chapterStages.length,
+      topY: Math.min(...chapterStages.map((stage) => stage.y)),
+      bottomY: Math.max(...chapterStages.map((stage) => stage.y)),
+      leftX: Math.min(...chapterStages.map((stage) => stage.x)),
+      rightX: Math.max(...chapterStages.map((stage) => stage.x)),
+      nodes,
+    };
 
     const label = document.createElement('div');
     label.className = `chapter-label chapter-label-${index + 1}`;
-    if (index >= 4) {
-      label.classList.add('is-left');
-      label.style.left = `${Math.max(30, leftX - 3)}%`;
-      label.style.top = `${centerY}%`;
-    } else {
-      label.style.left = `${centerX}%`;
-      label.style.top = `${Math.max(8, topY - 9)}%`;
-    }
+    label.style.visibility = 'hidden';
 
     const symbol = document.createElement('span');
     symbol.className = 'chapter-symbol';
@@ -323,6 +359,8 @@ function renderChapterLabels() {
 
     label.append(symbol, copy);
     chapterLabels.append(label);
+    label.style.visibility = '';
+    placeChapterLabel(label, rects, bounds, placed);
   });
 }
 
@@ -412,6 +450,7 @@ function setProfile(profileId) {
   selectStage(stage);
   renderProfileMenu();
   closeProfileMenu();
+  renderChapterLabels();
 }
 
 function positionTraveller(stage) {
@@ -985,6 +1024,10 @@ document.addEventListener('keydown', (event) => {
 });
 
 window.addEventListener('message', handleActivityMessage);
-renderChapterLabels();
+let labelLayoutFrame = 0;
+window.addEventListener('resize', () => {
+  cancelAnimationFrame(labelLayoutFrame);
+  labelLayoutFrame = requestAnimationFrame(renderChapterLabels);
+});
 setProfile(activeProfileId);
 openGate();
