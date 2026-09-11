@@ -1,5 +1,5 @@
 import { TRAIL_CHAPTERS, TRAIL_STAGES } from './shared/trail-catalog.mjs';
-import { createTrackProgress } from './shared/track-progress.mjs';
+import { createTrackProgress, isStageUnlocked } from './shared/track-progress.mjs';
 import { getTravellerPosition } from './shared/traveller-position.mjs';
 import { formatStarRating } from './shared/activity-scoring.mjs';
 import { saveStorage } from './shared/saves.mjs';
@@ -232,7 +232,10 @@ function renderRoute() {
 
   stages.forEach((stage) => {
     const stars = progress.progress[stage.id] || 0;
-    const state = !stage.available
+    // A stage opens once the player has cleared every stage before it, so the
+    // frontier is the current stage and everything past it stays locked.
+    const unlocked = isStageUnlocked(stage, progress.currentStage);
+    const state = !unlocked
       ? 'locked'
       : stars > 0
         ? 'complete'
@@ -250,7 +253,7 @@ function renderRoute() {
     button.dataset.difficulty = String(stage.difficultyRank);
     button.style.left = `${stage.x}%`;
     button.style.top = `${stage.y}%`;
-    button.disabled = !stage.available;
+    button.disabled = !unlocked;
     button.setAttribute('aria-label', state === 'locked'
       ? `שלב ${stage.id}, ${stage.title}, נעול`
       : `שלב ${stage.id}, ${stage.title}, ${stars} כוכבים`);
@@ -268,9 +271,9 @@ function renderRoute() {
       button.append(starLabel);
     }
 
-    if (stage.available) {
+    if (unlocked) {
       button.addEventListener('click', () => selectStage(stage));
-    } else {
+    } else if (stage.id === progress.currentStage + 1) {
       const lock = document.createElement('span');
       lock.className = 'stage-lock';
       lock.setAttribute('aria-hidden', 'true');

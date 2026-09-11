@@ -1,5 +1,4 @@
-export function createTrackProgress(currentStage, stageCount) {
-  if (!Number.isInteger(stageCount) || stageCount < 1) {
+export function createTrackProgress(currentStage, stageCount) {  if (!Number.isInteger(stageCount) || stageCount < 1) {
     throw new Error(`Invalid track stage count ${stageCount}`);
   }
   if (!Number.isInteger(currentStage) || currentStage < 1 || currentStage > stageCount) {
@@ -40,4 +39,13 @@ export function migrateTrackProgress(progress, changedStage, stageCount) {
     currentStage: progress.currentStage,
     progress: { ...progress.progress },
   };
+}
+
+// A stage opens only once the player has cleared every stage before it, so the
+// current stage is the frontier and anything past it stays locked.
+export function isStageUnlocked(stage, currentStage) {
+  return Boolean(stage)
+    && stage.available === true
+    && Number.isInteger(stage.id)
+    && stage.id <= currentStage;
 }

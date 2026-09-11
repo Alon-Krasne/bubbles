@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-import { createTrackProgress, migrateTrackProgress } from '../prototype/shared/track-progress.mjs';
+import { createTrackProgress, isStageUnlocked, migrateTrackProgress } from '../prototype/shared/track-progress.mjs';
 
 assert.deepEqual(createTrackProgress(1, 15), {
   currentStage: 1,
@@ -55,5 +55,11 @@ assert.match(worldMapJs, /איפוס להתחלה/, 'stage 1 must be identified 
 assert.match(worldMapJs, /נשמרה מיד\. אין צורך ללחוץ על שמירה/, 'an immediate progress update must explain its save state');
 assert.match(worldMapJs, /trackResetButton\.disabled = true;/, 'the update action must be disabled while confirmation is pending');
 assert.match(worldMapJs, /const hasSameStars = stages\.every/, 'a redundant reset must be detected from the complete saved progression');
+
+assert.equal(isStageUnlocked({ id: 3, available: true }, 3), true, 'the frontier stage must be open');
+assert.equal(isStageUnlocked({ id: 2, available: true }, 3), true, 'cleared stages must stay replayable');
+assert.equal(isStageUnlocked({ id: 4, available: true }, 3), false, 'stages past the frontier must stay locked');
+assert.equal(isStageUnlocked({ id: 3, available: false }, 3), false, 'an unavailable stage must stay locked');
+assert.match(worldMapJs, /isStageUnlocked\(stage, progress\.currentStage\)/, 'the map must lock stages using the shared frontier rule');
 
 console.log(JSON.stringify({ resetStages: [1, 6, 15], stageCount: 15 }));
