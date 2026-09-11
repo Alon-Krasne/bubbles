@@ -252,12 +252,49 @@ export function createMagicHouseLevelRecipe({ levelId, rank, title, magicRequest
   });
 }
 
+// Distributes stages evenly by arc length along the anchor path so no chapter
+// crowds its stops, then nudges alternate stops sideways to keep them legible.
+function buildRoutePoints(totalStages) {
+  const segments = [];
+  let totalLength = 0;
+  for (let index = 0; index < CHAPTER_ANCHORS.length - 1; index += 1) {
+    const from = CHAPTER_ANCHORS[index];
+    const to = CHAPTER_ANCHORS[index + 1];
+    const length = Math.hypot(to.x - from.x, to.y - from.y);
+    segments.push({ from, to, start: totalLength, length });
+    totalLength += length;
+  }
+
+  function pointAt(distance) {
+    const clamped = Math.min(Math.max(distance, 0), totalLength);
+    const segment = segments.find((candidate) => clamped <= candidate.start + candidate.length) ?? segments.at(-1);
+    const t = segment.length === 0 ? 0 : (clamped - segment.start) / segment.length;
+    return {
+      x: segment.from.x + (segment.to.x - segment.from.x) * t,
+      y: segment.from.y + (segment.to.y - segment.from.y) * t,
+      angle: Math.atan2(segment.to.y - segment.from.y, segment.to.x - segment.from.x),
+    };
+  }
+
+  const spacing = totalLength / totalStages;
+  return Array.from({ length: totalStages }, (_, index) => {
+    const point = pointAt((index + 0.5) * spacing);
+    const side = index % 2 === 0 ? -1 : 1;
+    const wobble = side * 2.1;
+    return {
+      x: point.x + Math.cos(point.angle + Math.PI / 2) * wobble,
+      y: point.y + Math.sin(point.angle + Math.PI / 2) * wobble,
+    };
+  });
+}
+
 export function generateTrail({ vocabulary = VOCABULARY, magicRequests = MAGIC_HOUSE_REQUESTS } = {}) {
   const index = buildVocabularyIndex(vocabulary);
   const levels = { memory: [], shop: [], house: [] };
   const stages = [];
   const appearanceCount = { memory: 0, shop: 0, house: 0 };
   const totalStages = TRAIL_CHAPTERS.length * STAGES_PER_CHAPTER;
+  const routePoints = buildRoutePoints(totalStages);
 
   TRAIL_CHAPTERS.forEach((chapter, chapterIndex) => {
     for (let slot = 0; slot < STAGES_PER_CHAPTER; slot += 1) {
@@ -279,12 +316,7 @@ export function generateTrail({ vocabulary = VOCABULARY, magicRequests = MAGIC_H
       }
       levels[game].push(level);
 
-      const from = CHAPTER_ANCHORS[chapterIndex];
-      const to = CHAPTER_ANCHORS[chapterIndex + 1];
-      const t = (slot + 1) / (STAGES_PER_CHAPTER + 1);
-      const wobble = (slot % 2 === 0 ? -1 : 1) * 2.2;
-      const x = from.x + (to.x - from.x) * t;
-      const y = from.y + (to.y - from.y) * t + wobble;
+      const { x, y } = routePoints[stageIndex];
       stages.push(Object.freeze({
         id: stageId,
         chapter: chapter.id,
