@@ -10,6 +10,12 @@ The current collection of children's profiles and saves shared by everyone admit
 **Round save**:
 A child's unfinished Shop or Magic House activity, including the selected challenges and actions already completed, which can be resumed later. Memory Garden does not persist round state: opening or refreshing it creates a shuffled, closed board. Only completed Memory stage progress and settings persist.
 
+**Chapter**:
+A themed group of six consecutive trail stages that share vocabulary categories and a difficulty band. Generated chapters let the route extend without hand-placing every stage.
+
+**Generated trail**:
+The full learning route produced by `generateTrail()` from chapters, vocabulary categories, and game parameter recipes. It is deterministic and validated; the six-chapter, 36-stage route is ready to replace the legacy hand-placed 15-stage route once the map displays chapters.
+
 **Learning item**:
 An English word, pictured choice, movable object, or named destination that carries vocabulary needed to play an activity.
 _Avoid_: UI label, decoration

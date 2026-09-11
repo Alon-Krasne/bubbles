@@ -1,4 +1,25 @@
 import { MAGIC_HOUSE_REQUESTS } from './magic-house-content.mjs';
+import {
+  DIFFICULTY_LABELS,
+  GENERATED_TRAIL,
+  MAGIC_REQUEST_TARGET_IDS,
+  TRAIL_CHAPTERS,
+  createMagicHouseLevel,
+  createMemoryLevel,
+  createShopLevel,
+  generateTrail,
+} from './trail-recipes.mjs';
+
+export {
+  DIFFICULTY_LABELS,
+  GENERATED_TRAIL,
+  MAGIC_REQUEST_TARGET_IDS,
+  TRAIL_CHAPTERS,
+  createMagicHouseLevel,
+  createMemoryLevel,
+  createShopLevel,
+  generateTrail,
+};
 
 export const LANGUAGE_POLICIES = Object.freeze({
   english: Object.freeze({
@@ -13,23 +34,11 @@ export const LANGUAGE_POLICIES = Object.freeze({
   }),
 });
 
-export const DIFFICULTY_LABELS = Object.freeze({
-  1: 'התחלה',
-  2: 'קל',
-  3: 'מתקדם',
-  4: 'מאתגר',
-  5: 'אליפות',
-});
-
 const GAME_DEFINITIONS = Object.freeze({
   memory: Object.freeze({ activity: 'memory-garden', entry: '../index.html', label: 'גן מילים' }),
   shop: Object.freeze({ activity: 'listening-shop', entry: '../index.html', label: 'החנות הקטנה' }),
   house: Object.freeze({ activity: 'magic-house', entry: './magic-house.html', label: 'הבית הקסום' }),
 });
-
-export const MAGIC_REQUEST_TARGET_IDS = Object.freeze(Object.fromEntries(
-  MAGIC_HOUSE_REQUESTS.map((request) => [request.id, Object.freeze(request.targets.map((target) => target.objectId))]),
-));
 
 export function getLanguagePolicy(language) {
   if (language === 'en') {
@@ -39,98 +48,6 @@ export function getLanguagePolicy(language) {
     return LANGUAGE_POLICIES.hebrew;
   }
   throw new Error(`Unknown learning language ${language}`);
-}
-
-function requireDifficultyRank(difficultyRank) {
-  if (!Number.isInteger(difficultyRank) || !Object.prototype.hasOwnProperty.call(DIFFICULTY_LABELS, difficultyRank)) {
-    throw new Error(`Invalid difficulty rank ${difficultyRank}`);
-  }
-}
-
-function freezeLevel(level) {
-  requireDifficultyRank(level.difficultyRank);
-  return Object.freeze(level);
-}
-
-export function createMemoryLevel({ id, difficulty, difficultyRank, title, subtitle, pairs, icon, wordPool, locked, reward }) {
-  if (!id || !['easy', 'medium', 'hard'].includes(difficulty) || !Number.isInteger(pairs) || pairs < 2) {
-    throw new Error(`Invalid Memory Garden level ${id}`);
-  }
-  if (!Array.isArray(wordPool) || wordPool.length < pairs || new Set(wordPool).size !== wordPool.length) {
-    throw new Error(`Invalid word pool for ${id}`);
-  }
-  return freezeLevel({
-    id,
-    difficulty,
-    difficultyRank,
-    title,
-    subtitle,
-    pairs,
-    icon,
-    wordPool: Object.freeze([...wordPool]),
-    locked,
-    ...(reward ? { reward } : {}),
-  });
-}
-
-export function createShopLevel({ id, difficultyRank, title, subtitle, icon, customerCount, shelfSize, mode, itemPool }) {
-  if (!id
-    || !Number.isInteger(customerCount)
-    || customerCount < 1
-    || !Number.isInteger(shelfSize)
-    || shelfSize < 2
-    || !Array.isArray(itemPool)
-    || itemPool.length < shelfSize
-    || new Set(itemPool).size !== itemPool.length
-    || !['single', 'quantity', 'color', 'double'].includes(mode)) {
-    throw new Error(`Invalid Store level ${id}`);
-  }
-  return freezeLevel({ id, difficultyRank, title, subtitle, icon, customerCount, shelfSize, mode, itemPool: Object.freeze([...itemPool]) });
-}
-
-function getLargestMagicHouseTargetCount(requestIds, requestCount) {
-  let largestTargetCount = 0;
-
-  function visit(startIndex, selectedRequestIds) {
-    if (selectedRequestIds.length === requestCount) {
-      const targetIds = new Set(selectedRequestIds.flatMap((requestId) => MAGIC_REQUEST_TARGET_IDS[requestId]));
-      largestTargetCount = Math.max(largestTargetCount, targetIds.size);
-      return;
-    }
-
-    for (let index = startIndex; index <= requestIds.length - (requestCount - selectedRequestIds.length); index += 1) {
-      visit(index + 1, [...selectedRequestIds, requestIds[index]]);
-    }
-  }
-
-  visit(0, []);
-  return largestTargetCount;
-}
-
-export function createMagicHouseLevel({ id, difficultyRank, title, requestIds, requestCount, drawerSize, maxHelpLevel }) {
-  if (!id
-    || !Array.isArray(requestIds)
-    || new Set(requestIds).size !== requestIds.length
-    || requestIds.some((requestId) => !Object.prototype.hasOwnProperty.call(MAGIC_REQUEST_TARGET_IDS, requestId))
-    || !Number.isInteger(requestCount)
-    || requestCount < 1
-    || requestCount > requestIds.length
-    || !Number.isInteger(drawerSize)
-    || drawerSize < getLargestMagicHouseTargetCount(requestIds, requestCount)
-    || !Number.isInteger(maxHelpLevel)
-    || maxHelpLevel < 1
-    || maxHelpLevel > 3) {
-    throw new Error(`Invalid Magic House level ${id}`);
-  }
-  return freezeLevel({
-    id,
-    difficultyRank,
-    title,
-    requestIds: Object.freeze([...requestIds]),
-    requestCount,
-    drawerSize,
-    maxHelpLevel,
-  });
 }
 
 const MEMORY_LEVELS = Object.freeze([
@@ -232,7 +149,7 @@ export function getGameLevel(game, levelId) {
   return level;
 }
 
-export function createTrailStage({ id, x, y, game, level, title, description, symbol }) {
+export function createTrailStage({ id, x, y, game, level, title, description, symbol, chapter, chapterIndex }, resolveLevel = getGameLevel) {
   if (!Number.isInteger(id) || id < 1 || !Number.isFinite(x) || !Number.isFinite(y) || !title || !description) {
     throw new Error(`Invalid trail stage ${id}`);
   }
@@ -240,7 +157,7 @@ export function createTrailStage({ id, x, y, game, level, title, description, sy
   if (!definition) {
     throw new Error(`Unknown trail game ${game}`);
   }
-  const gameLevel = getGameLevel(game, level);
+  const gameLevel = resolveLevel(game, level);
   return Object.freeze({
     id,
     x,
@@ -256,6 +173,8 @@ export function createTrailStage({ id, x, y, game, level, title, description, sy
     difficultyLabel: DIFFICULTY_LABELS[gameLevel.difficultyRank],
     available: true,
     ...(symbol ? { symbol } : {}),
+    ...(chapter ? { chapter } : {}),
+    ...(Number.isInteger(chapterIndex) ? { chapterIndex } : {}),
   });
 }
 
@@ -284,6 +203,33 @@ export function getTrailStage(stageId) {
   }
   return stage;
 }
+
+export const GENERATED_GAME_LEVELS = GENERATED_TRAIL.levels;
+
+const GENERATED_LEVEL_MAPS = Object.freeze(Object.fromEntries(
+  Object.entries(GENERATED_GAME_LEVELS).map(([game, levels]) => [game, new Map(levels.map((level) => [level.id, level]))]),
+));
+
+export function getGeneratedGameLevel(game, levelId) {
+  const level = GENERATED_LEVEL_MAPS[game]?.get(levelId);
+  if (!level) {
+    throw new Error(`Unknown generated ${game} level ${levelId}`);
+  }
+  return level;
+}
+
+export const GENERATED_TRAIL_STAGES = Object.freeze(GENERATED_TRAIL.stages.map((stage) => createTrailStage({
+  id: stage.id,
+  x: stage.x,
+  y: stage.y,
+  game: stage.game,
+  level: stage.level,
+  title: stage.title,
+  description: stage.description,
+  symbol: TRAIL_CHAPTERS.find((chapter) => chapter.id === stage.chapter)?.symbol,
+  chapter: stage.chapter,
+  chapterIndex: stage.chapterIndex,
+}, getGeneratedGameLevel)));
 
 export function validateTrailCatalog({ vocabularyIds, magicRequestIds }) {
   const expectedIds = Array.from({ length: TRAIL_STAGES.length }, (_, index) => index + 1);
@@ -333,5 +279,65 @@ export function validateTrailCatalog({ vocabularyIds, magicRequestIds }) {
     playableStageCount: TRAIL_STAGES.filter((stage) => stage.available).length,
     gameCount: new Set(TRAIL_STAGES.map((stage) => stage.game)).size,
     maxStars: TRAIL_STAGES.length * 3,
+  };
+}
+
+export function validateGeneratedTrail({ vocabularyIds, magicRequestIds }) {
+  const expectedIds = Array.from({ length: GENERATED_TRAIL_STAGES.length }, (_, index) => index + 1);
+  const actualIds = GENERATED_TRAIL_STAGES.map((stage) => stage.id);
+  if (actualIds.some((id, index) => id !== expectedIds[index])) {
+    throw new Error('Generated trail stage ids must be sequential');
+  }
+
+  const positions = new Set();
+  for (const stage of GENERATED_TRAIL_STAGES) {
+    const level = getGeneratedGameLevel(stage.game, stage.level);
+    if (!stage.available || !stage.activity || !stage.entry) {
+      throw new Error(`Generated trail stage ${stage.id} is not playable`);
+    }
+    if (!TRAIL_CHAPTERS.some((chapter) => chapter.id === stage.chapter)) {
+      throw new Error(`Generated trail stage ${stage.id} has an unknown chapter`);
+    }
+    const position = `${stage.x},${stage.y}`;
+    if (positions.has(position)) {
+      throw new Error(`Generated trail stage ${stage.id} duplicates position ${position}`);
+    }
+    positions.add(position);
+    if (level.difficultyRank !== GENERATED_TRAIL.stages[stage.id - 1].rank) {
+      throw new Error(`Generated trail stage ${stage.id} rank does not match its level`);
+    }
+  }
+
+  for (const level of GENERATED_GAME_LEVELS.memory) {
+    for (const wordId of level.wordPool) {
+      if (!vocabularyIds.has(wordId)) {
+        throw new Error(`Generated Memory level ${level.id} references unknown word ${wordId}`);
+      }
+    }
+  }
+
+  for (const level of GENERATED_GAME_LEVELS.house) {
+    for (const requestId of level.requestIds) {
+      if (!magicRequestIds.has(requestId)) {
+        throw new Error(`Generated Magic House level ${level.id} references unknown request ${requestId}`);
+      }
+    }
+  }
+
+  for (const game of Object.keys(GENERATED_GAME_LEVELS)) {
+    const ranks = GENERATED_TRAIL_STAGES
+      .filter((stage) => stage.game === game)
+      .map((stage) => getGeneratedGameLevel(stage.game, stage.level).difficultyRank);
+    if (ranks.some((rank, index) => index > 0 && rank < ranks[index - 1])) {
+      throw new Error(`${game} generated difficulty must never decrease`);
+    }
+  }
+
+  return {
+    chapterCount: TRAIL_CHAPTERS.length,
+    stageCount: GENERATED_TRAIL_STAGES.length,
+    playableStageCount: GENERATED_TRAIL_STAGES.filter((stage) => stage.available).length,
+    gameCount: new Set(GENERATED_TRAIL_STAGES.map((stage) => stage.game)).size,
+    maxStars: GENERATED_TRAIL_STAGES.length * 3,
   };
 }

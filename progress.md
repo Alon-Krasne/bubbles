@@ -1,5 +1,13 @@
 Original prompt: Fix unlocked trail stages so they launch playable games and can be replayed while preserving the highest star score; add distinct highlighted Magic House placement targets when an item is selected or dragged.
 
+## September 11 generated trail foundation
+
+- Goal: make the learning trail content-driven so it can extend to 30-40 stages with rising difficulty instead of a hand-placed list.
+- Added `scripts/generate-vocabulary-catalog.mjs`, which derives a compact runtime mirror `prototype/shared/vocabulary-catalog.mjs` (214 words with category and shoppable) from the app's `src/words.ts`. A trail test asserts the mirror stays in sync.
+- Added `prototype/shared/trail-recipes.mjs`: level factories, six Hebrew-named chapters, and `generateTrail()`, a deterministic vocabulary-driven generator. Memory difficulty comes from pair count and the chapter's word categories; Shop scales customers/shelf and moves single → quantity → color → double; Magic House scales requests and help while introducing compound requests only in later chapters. Shop pools are restricted to `SHOP_ART_IDS` so every generated product already has committed artwork.
+- `prototype/shared/trail-catalog.mjs` now re-exports the factories and exposes `TRAIL_CHAPTERS`, `GENERATED_GAME_LEVELS`, and `GENERATED_TRAIL_STAGES` (36 stages across 6 chapters, unique auto-positioned map nodes, non-decreasing per-game difficulty). The live 15-stage route and its levels are unchanged, so existing progress, saves, and every browser test keep working; wiring the chaptered map to the generated route is the next step.
+- Validation: `npm run test:trail` reports legacy 15 stages and generated `chapterCount:6, stageCount:36, maxStars:108`. `npx tsc --noEmit`, `npm run build`, `test:vocabulary-audio`, `test:vocabulary`, `test:shop-session`, `test:store-audio`, `test:route-vocabulary`, `test:activity-scoring`, `test:memory-completion`, `test:track`, `test:traveller-position`, `test:audio-integrity`, and `test:translations` all pass.
+
 ## September 11 Memory save boundary
 
 - User accepts a fresh closed/shuffled board on refresh; preserve completed stars, route progress, and configuration, not individual card state.

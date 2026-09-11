@@ -2,14 +2,21 @@ import assert from 'node:assert/strict';
 
 import { VOCAB_WORDS } from '../src/words.ts';
 import { MAGIC_HOUSE_REQUESTS } from '../prototype/shared/magic-house-content.mjs';
+import { SHOP_ART_IDS } from '../prototype/shared/shop-art-ids.mjs';
+import { VOCABULARY } from '../prototype/shared/vocabulary-catalog.mjs';
+import { buildCatalogEntries } from './generate-vocabulary-catalog.mjs';
 import {
   GAME_LEVELS,
+  GENERATED_GAME_LEVELS,
+  GENERATED_TRAIL_STAGES,
   LANGUAGE_POLICIES,
+  TRAIL_CHAPTERS,
   TRAIL_STAGES,
   createMagicHouseLevel,
   createTrailStage,
   getGameLevel,
   getLanguagePolicy,
+  validateGeneratedTrail,
   validateTrailCatalog,
 } from '../prototype/shared/trail-catalog.mjs';
 
@@ -89,4 +96,37 @@ assert.equal(generatedStage.activity, 'memory-garden');
 assert.equal(generatedStage.entry, '../index.html');
 assert.equal(generatedStage.available, true);
 
-console.log(JSON.stringify(report));
+assert.deepEqual(VOCABULARY, buildCatalogEntries(), 'the vocabulary catalog must stay in sync with src/words.ts');
+
+const generatedReport = validateGeneratedTrail({ vocabularyIds, magicRequestIds });
+assert.deepEqual(generatedReport, {
+  chapterCount: 6,
+  stageCount: 36,
+  playableStageCount: 36,
+  gameCount: 3,
+  maxStars: 108,
+});
+assert.equal(TRAIL_CHAPTERS.length, 6);
+assert.deepEqual(GENERATED_TRAIL_STAGES.map((stage) => stage.id), Array.from({ length: 36 }, (_, index) => index + 1));
+assert.deepEqual(
+  GENERATED_TRAIL_STAGES.slice(0, 6).map((stage) => stage.game),
+  ['memory', 'shop', 'house', 'memory', 'shop', 'house'],
+);
+assert.ok(
+  GENERATED_TRAIL_STAGES.every((stage) => stage.chapter === TRAIL_CHAPTERS[stage.chapterIndex].id),
+  'every generated stage must belong to its chapter',
+);
+
+const shopArtIds = new Set(SHOP_ART_IDS);
+for (const level of GENERATED_GAME_LEVELS.shop) {
+  if (level.mode === 'color') continue;
+  assert.ok(
+    level.itemPool.every((itemId) => shopArtIds.has(itemId)),
+    `generated Shop level ${level.id} must only stock items with committed artwork`,
+  );
+}
+for (const game of ['memory', 'shop', 'house']) {
+  assert.equal(GENERATED_GAME_LEVELS[game].length, 12, `${game} must generate 12 levels`);
+}
+
+console.log(JSON.stringify({ legacy: report, generated: generatedReport }));
