@@ -87,6 +87,21 @@ body {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+}
+
+.map-scroll {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  overflow: auto;
+  direction: ltr;
+  -webkit-overflow-scrolling: touch;
+}
+
+.map-stage {
+  position: relative;
+  width: max(100vw, 1500px);
+  height: max(100vh, 1125px);
   background-image: url('../src/assets/memory/moonlit-trail-map.webp');
   background-position: center;
   background-repeat: no-repeat;
@@ -470,7 +485,7 @@ body {
 }
 
 .world-stage {
-  --node-size: clamp(30px, 2.35vw, 40px);
+  --node-size: clamp(44px, 2.35vw, 48px);
   position: absolute;
   width: var(--node-size);
   height: var(--node-size);
@@ -535,8 +550,6 @@ body {
 }
 
 .world-stage.is-current {
-  width: calc(var(--node-size) + 10px);
-  height: calc(var(--node-size) + 10px);
   background: radial-gradient(circle at 50% 30%, #ffd8e6, #ef7ba8 72%);
   color: #fff;
   border-color: #fff1c4;
@@ -780,8 +793,8 @@ body {
   z-index: 12;
   left: 18.5%;
   top: 49%;
-  width: clamp(40px, 3.4vw, 52px);
-  height: clamp(40px, 3.4vw, 52px);
+  width: clamp(44px, 3.4vw, 52px);
+  height: clamp(44px, 3.4vw, 52px);
   transform: translate(-50%, -58%);
   pointer-events: none;
   transition: left 700ms cubic-bezier(0.22, 0.8, 0.26, 1), top 700ms cubic-bezier(0.22, 0.8, 0.26, 1);

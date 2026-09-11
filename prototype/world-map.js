@@ -1,5 +1,10 @@
-import { TRAIL_CHAPTERS, TRAIL_STAGES } from './shared/trail-catalog.mjs';
-import { createTrackProgress, isStageUnlocked } from './shared/track-progress.mjs';
+import { LEGACY_TRAIL_STAGES, TRAIL_CHAPTERS, TRAIL_STAGES } from './shared/trail-catalog.mjs';
+import {
+  TRAIL_CONTENT_VERSION,
+  createTrackProgress,
+  isStageUnlocked,
+  normalizeTrackProgress,
+} from './shared/track-progress.mjs';
 import { getTravellerPosition } from './shared/traveller-position.mjs';
 import { formatStarRating } from './shared/activity-scoring.mjs';
 import { saveStorage } from './shared/saves.mjs';
@@ -33,6 +38,7 @@ const PROFILE_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i;
 
 const world = document.getElementById('world');
 const route = document.getElementById('route');
+const mapScroll = document.querySelector('.map-scroll');
 const chapterLabels = document.getElementById('chapter-labels');
 const stagePanel = document.getElementById('stage-panel');
 const panelClose = document.getElementById('panel-close');
@@ -179,15 +185,27 @@ function loadWorldProgress() {
   return Object.fromEntries(profiles.map(profile => {
     const key = `route-${profile.id}`;
     const saved = saveStorage.getItem(key);
-    const progress = saved ? JSON.parse(saved) : createTrackProgress(1, stages.length);
-    if (!saved) saveStorage.setItem(key, JSON.stringify(progress));
+    if (!saved) {
+      const progress = createTrackProgress(1, stages.length);
+      saveStorage.setItem(key, JSON.stringify({ ...progress, contentVersion: TRAIL_CONTENT_VERSION }));
+      return [profile.id, progress];
+    }
+    const parsed = JSON.parse(saved);
+    const progress = normalizeTrackProgress(parsed, {
+      stageCount: stages.length,
+      legacyStageCount: LEGACY_TRAIL_STAGES.length,
+    });
+    if (progress !== parsed) saveStorage.setItem(key, JSON.stringify(progress));
     return [profile.id, progress];
   }));
 }
 
 function saveWorldProgress() {
   for (const profile of profiles) {
-    saveStorage.setItem(`route-${profile.id}`, JSON.stringify(routeProgress[profile.id]));
+    saveStorage.setItem(`route-${profile.id}`, JSON.stringify({
+      ...routeProgress[profile.id],
+      contentVersion: TRAIL_CONTENT_VERSION,
+    }));
   }
 }
 
@@ -461,6 +479,22 @@ function positionTraveller(stage) {
   traveller.dataset.stage = String(stage.id);
   traveller.style.left = `${position.x}%`;
   traveller.style.top = `${position.y}%`;
+  centerStageInMap(stage);
+}
+
+// On small screens the map is wider than the viewport, so keep the discovered
+// frontier on screen instead of stranding the player at the origin.
+function centerStageInMap(stage) {
+  if (!mapScroll || mapScroll.scrollWidth <= mapScroll.clientWidth + 1) {
+    return;
+  }
+  const left = (stage.x / 100) * mapScroll.scrollWidth - mapScroll.clientWidth / 2;
+  const top = (stage.y / 100) * mapScroll.scrollHeight - mapScroll.clientHeight / 2;
+  mapScroll.scrollTo({
+    left: Math.max(0, left),
+    top: Math.max(0, top),
+    behavior: 'auto',
+  });
 }
 
 function renderProfileMenu() {

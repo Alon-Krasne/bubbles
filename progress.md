@@ -342,3 +342,12 @@ Green receipts:
 - English-learning choices show their English vocabulary word directly beneath each illustration; Hebrew-mode choices remain Hebrew-only.
 - Removed the duplicate replay control and kept one compact speaker plus the opt-in translation bulb inside the request bubble.
 - The acceptance target covers every Shop level at desktop, tablet, portrait phone, and short landscape sizes; products and controls must remain at least 44px, contained, and backed by decodable artwork.
+
+## September 11 trail map mobile layout and review fixes
+
+- Stage markers are a 44px touch target at every viewport; the map renders on a scrollable canvas (min 1500×1125) so closely spaced stages never overlap, and `centerStageInMap` keeps the current stage on screen.
+- `npm run test:world-map-layout` loads the real map in a browser and asserts every rendered `.world-stage` is ≥44px and that no two bounding boxes intersect at 390×844, 820×1180, 1024×768, and 1440×900.
+- Route relaxation spacing rose from 3.6 to 4.5 weighted units so the wider markers keep clear separation without touching the approved artwork.
+- Magic House ranks 4 and 5 are no longer identical: rank 5 removes the help control (`maxHelpLevel` 0); `test:trail` now asserts difficulty from real parameters rather than rank labels.
+- Legacy 15-stage route progress (stars and current stage) is reset once through a `contentVersion` stamp; progress already past the legacy trail and Memory/Shop/Magic House saves are preserved.
+- Gates: `npx tsc --noEmit`, `test:trail`, `test:track`, `test:saves`, `test:memory-completion`, `test:world-map-layout`, `test:memory-saves`, `test:magic-house-*`, and the production build all pass.

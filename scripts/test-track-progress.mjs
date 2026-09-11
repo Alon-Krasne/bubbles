@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-import { createTrackProgress, isStageUnlocked, migrateTrackProgress } from '../prototype/shared/track-progress.mjs';
+import {
+  TRAIL_CONTENT_VERSION,
+  createTrackProgress,
+  isStageUnlocked,
+  migrateTrackProgress,
+  normalizeTrackProgress,
+} from '../prototype/shared/track-progress.mjs';
 
 assert.deepEqual(createTrackProgress(1, 15), {
   currentStage: 1,
@@ -36,9 +42,33 @@ assert.deepEqual(
   'progress before the remapped stage must remain unchanged',
 );
 
+assert.deepEqual(
+  normalizeTrackProgress(
+    { currentStage: 6, progress: { 1: 3, 2: 3, 3: 3, 4: 3, 5: 3 } },
+    { stageCount: 36, legacyStageCount: 15 },
+  ),
+  { currentStage: 1, progress: {}, contentVersion: TRAIL_CONTENT_VERSION },
+  'legacy route progress must reset once instead of landing on reused stage ids',
+);
+assert.deepEqual(
+  normalizeTrackProgress(
+    { currentStage: 20, progress: { 1: 3 } },
+    { stageCount: 36, legacyStageCount: 15 },
+  ),
+  { currentStage: 20, progress: { 1: 3 }, contentVersion: TRAIL_CONTENT_VERSION },
+  'progress already past the legacy trail must be kept',
+);
+const currentProgress = { currentStage: 4, progress: { 1: 3 }, contentVersion: TRAIL_CONTENT_VERSION };
+assert.equal(
+  normalizeTrackProgress(currentProgress, { stageCount: 36, legacyStageCount: 15 }),
+  currentProgress,
+  'current-version progress must be returned untouched so it is never rewritten',
+);
+
 const worldMapHtml = readFileSync(new URL('../prototype/world-map.html', import.meta.url), 'utf8');
 const worldMapCss = readFileSync(new URL('../prototype/world-map.css', import.meta.url), 'utf8');
 const worldMapJs = readFileSync(new URL('../prototype/world-map.js', import.meta.url), 'utf8');
+const savesJs = readFileSync(new URL('../prototype/shared/saves.mjs', import.meta.url), 'utf8');
 
 assert.match(worldMapHtml, /השלב הבא למשחק/, 'progress selector must describe the selected stage');
 assert.match(worldMapHtml, /מחיקת פרופיל/, 'the destructive action must name the object being deleted');
@@ -61,5 +91,8 @@ assert.equal(isStageUnlocked({ id: 2, available: true }, 3), true, 'cleared stag
 assert.equal(isStageUnlocked({ id: 4, available: true }, 3), false, 'stages past the frontier must stay locked');
 assert.equal(isStageUnlocked({ id: 3, available: false }, 3), false, 'an unavailable stage must stay locked');
 assert.match(worldMapJs, /isStageUnlocked\(stage, progress\.currentStage\)/, 'the map must lock stages using the shared frontier rule');
+assert.match(worldMapJs, /normalizeTrackProgress\(parsed, \{/, 'the map must run saved progress through the shared one-time reset');
+assert.match(worldMapJs, /contentVersion: TRAIL_CONTENT_VERSION/, 'saved route progress must be stamped with the content version');
+assert.match(savesJs, /contentVersion: TRAIL_CONTENT_VERSION/, 'activity completions must stamp the content version too');
 
 console.log(JSON.stringify({ resetStages: [1, 6, 15], stageCount: 15 }));

@@ -614,6 +614,7 @@ function updateHelpDots() {
   const level = getState().helpLevel;
   requireElement('help-level').textContent = `${'●'.repeat(level)}${'○'.repeat(magicHouseLevel.maxHelpLevel - level)}`;
   helpButton.disabled = level >= magicHouseLevel.maxHelpLevel;
+  helpButton.hidden = magicHouseLevel.maxHelpLevel === 0;
 }
 
 function updateStars() {

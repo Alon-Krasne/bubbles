@@ -125,6 +125,26 @@ for (const game of ['memory', 'shop', 'house']) {
   assert.equal(GENERATED_GAME_LEVELS[game].length, 12, `${game} must generate 12 levels`);
 }
 
+// Magic House difficulty must live in its parameters, not only in the rank
+// label: every step up must add requests, add objects, or take help away.
+const houseByRank = new Map();
+for (const level of GENERATED_GAME_LEVELS.house) {
+  houseByRank.set(level.difficultyRank, level);
+}
+const houseRanks = [...houseByRank.keys()].sort((a, b) => a - b);
+for (let index = 1; index < houseRanks.length; index += 1) {
+  const previous = houseByRank.get(houseRanks[index - 1]);
+  const current = houseByRank.get(houseRanks[index]);
+  const harder = current.requestCount > previous.requestCount
+    || current.drawerSize > previous.drawerSize
+    || current.maxHelpLevel < previous.maxHelpLevel;
+  assert.ok(harder, `Magic House rank ${houseRanks[index]} must be harder than rank ${houseRanks[index - 1]}`);
+}
+assert.ok(
+  houseByRank.get(5).maxHelpLevel < houseByRank.get(4).maxHelpLevel,
+  'the championship Magic House round must remove help that rank 4 still offers',
+);
+
 // Stage markers are laid out in percentage space on a map that is wider than it
 // is tall, so weight Y before checking that no two stops can visually overlap.
 const STAGE_Y_WEIGHT = 0.72;

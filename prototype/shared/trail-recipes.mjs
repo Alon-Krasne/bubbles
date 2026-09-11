@@ -129,7 +129,7 @@ export function createMagicHouseLevel({ id, difficultyRank, title, requestIds, r
     || !Number.isInteger(drawerSize)
     || drawerSize < getLargestMagicHouseTargetCount(requestIds, requestCount)
     || !Number.isInteger(maxHelpLevel)
-    || maxHelpLevel < 1
+    || maxHelpLevel < 0
     || maxHelpLevel > 3) {
     throw new Error(`Invalid Magic House level ${id}`);
   }
@@ -248,7 +248,7 @@ export function createMagicHouseLevelRecipe({ levelId, rank, title, magicRequest
     requestIds,
     requestCount,
     drawerSize,
-    maxHelpLevel: rank >= 4 ? 1 : rank >= 3 ? 2 : 3,
+    maxHelpLevel: rank >= 5 ? 0 : rank >= 4 ? 1 : rank >= 3 ? 2 : 3,
   });
 }
 
@@ -317,7 +317,7 @@ function buildRoutePoints(totalStages) {
   // neighbours apart until every pair keeps a legible minimum distance. Y is
   // weighted because the map is wider than it is tall.
   const yWeight = 0.72;
-  const minDistance = 3.6;
+  const minDistance = 4.5;
   for (let pass = 0; pass < 40; pass += 1) {
     let moved = false;
     for (let index = 0; index < points.length - 1; index += 1) {

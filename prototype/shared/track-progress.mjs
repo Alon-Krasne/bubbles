@@ -49,3 +49,29 @@ export function isStageUnlocked(stage, currentStage) {
     && Number.isInteger(stage.id)
     && stage.id <= currentStage;
 }
+
+export const TRAIL_CONTENT_VERSION = 2;
+
+// The generated route reuses stage ids 1..N for different challenges, so stars
+// saved by the legacy 15-stage trail would silently attach to replacement
+// content. Reset that legacy progress once, but leave alone anything that has
+// already advanced past the legacy trail (generated-era players).
+export function normalizeTrackProgress(saved, { stageCount, legacyStageCount }) {
+  if (saved && saved.contentVersion === TRAIL_CONTENT_VERSION) {
+    return saved;
+  }
+  if (saved
+    && Number.isInteger(saved.currentStage)
+    && saved.currentStage > legacyStageCount
+    && saved.currentStage <= stageCount) {
+    return {
+      currentStage: saved.currentStage,
+      progress: { ...(saved.progress || {}) },
+      contentVersion: TRAIL_CONTENT_VERSION,
+    };
+  }
+  return {
+    ...createTrackProgress(1, stageCount),
+    contentVersion: TRAIL_CONTENT_VERSION,
+  };
+}
