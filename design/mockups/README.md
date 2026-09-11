@@ -1,5 +1,15 @@
 # Magic House visual concepts
 
+## Moonlit World Map — concepts, approval pending (September 11, 2026)
+
+Three moonlit storybook concepts for redesigning the trail map (`prototype/world-map.html`), which still uses the bright pastel `memory-garden-map-bg-v2.png`. Each keeps the central lawn quiet so the 36 live stage nodes and 6 chapter banners sit on top of the art; no nodes, text, or UI are baked in. Generated with Google Nano Banana Pro (`gemini-3-pro-image`) at 16:9, 2K.
+
+- `world-map-moonlit-a.png` — single snaking golden path through six themed stations (meadow → lantern market → treehouse forest → railway/waterwheel → village + schoolhouse → hilltop celebration arch). Closest match to the generator's six horizontal bands.
+- `world-map-moonlit-b.png` — six floating garden islands joined by glowing stepping stones and rope bridges, numbered design not yet applied; most dramatic world-map feel, needs bespoke node positions.
+- `world-map-moonlit-c.png` — close garden camera with an oval stone path ringing a central lawn and six zones around it, closest to the approved Moonlit Memory Garden vista.
+
+Prompt style block shared across all three: painterly 2.5D premium hand-painted children's storybook, indigo/periwinkle night sky, teal and moss-green foliage, honey-gold lantern light, ivory and lavender flowers, willow branches and lanterns framing the edges, large crescent moon, soft moonlit rim light. Runtime art and the live 36-stage wiring follow once a concept is approved.
+
 ## Moonlit Memory Garden (September 11, 2026)
 
 Runtime background: `src/assets/memory/moonlit-garden.webp`, 1586×992, WebP quality 86 (355 KB). Generated once with the built-in image tool; cards and their decorative borders are live CSS, not baked artwork. Source: `exec-18199e93-af2e-4dd2-a778-89de9da5aa83.png`.
