@@ -1,5 +1,7 @@
 import './styles.css';
 import './shop-scene.css';
+import './memory-scene.css';
+import moonlitGardenUrl from './assets/memory/moonlit-garden.webp';
 import { configureTranslationHintButton } from '../prototype/shared/translation-hint-control.mjs';
 import { saveStorage, recordStageCompletion, initializeSaves, showSaveLoadError } from '../prototype/shared/saves.mjs';
 import { GameApp } from './game/GameApp';
@@ -532,6 +534,7 @@ function openBubblesSetup() {
 }
 
 function openMemoryGarden() {
+  requireElement<HTMLElement>('memory-screen').style.setProperty('--garden-art', `url("${moonlitGardenUrl}")`);
   shopGame?.leaveShop();
   if (!hostedActivityContext) {
     gameApp.returnToStart();
@@ -742,7 +745,7 @@ function getMemoryStageTitle(level: MemoryLevel) {
 }
 
 function startMemoryRound(level: MemoryLevel) {
-  configureTranslationHintButton(requireElement<HTMLButtonElement>('memory-translation-hint'), hostedActivityContext?.profileLanguage ?? 'en');
+  configureTranslationHintButton(requireElement<HTMLButtonElement>('memory-translation-hint'), hostedActivityContext?.profileLanguage ?? 'en', true);
   stopRecordedSpeech();
   clearMemoryMismatchState();
   memoryDifficulty = level.difficulty;

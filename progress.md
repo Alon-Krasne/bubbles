@@ -300,6 +300,14 @@ Green receipts:
 - Inspected screenshots at 1280x720 and 1024x768, including a hovered Hebrew word tooltip and Hebrew mode. Browser confirmed bulb width 46, a visible כדור tooltip after enabling, one placed object, and hint reset to false on request 2/6. Hebrew mode hides the bulb.
 - `npm run test:translations` passes; `npx tsc --noEmit` and `git diff --check` exit 0. Browser reported the existing initial audio autoplay restriction before user interaction.
 
+## September 11 Memory Garden visual refresh
+
+- One new compressed moonlit garden environment with lanterns, foliage, and a crescent moon; CSS card decoration avoids additional generated sprites.
+- Compact gameplay header and opt-in bulb, teal/gold card backs, ivory fronts, and sage matched-pair treatment. Flip behavior, vocabulary, and saves use existing code.
+- Visual judge: before/after desktop and phone captures; check dense boards and real pair matching. Final aesthetic approval remains with the user on the PR preview.
+- Gates: `npm run test:memory-completion`, `npm run test:translations`, `npx tsc --noEmit`, production build, and `git diff --check`.
+- All gates passed. Browser checks passed 4/6/8/9/10-pair boards at desktop, portrait phone, and short landscape widths, plus a real matching pair. Dense phone boards scroll to preserve readable cards and 44px speaker controls.
+
 ## September 10 moonlit Shop redesign
 
 - Rebuilt the Shop game as an edge-to-edge moonlit woodland stall, following the approved mockup while keeping requests, choices, hint/replay controls, and progress as live UI.
