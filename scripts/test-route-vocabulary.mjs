@@ -11,6 +11,6 @@ const activeWordIds = new Set([
 ]);
 const missingWordIds = VOCAB_WORDS.map((word) => word.id).filter((wordId) => !activeWordIds.has(wordId));
 
-assert.deepEqual(missingWordIds, [], 'every vocabulary word must be reachable through the 15-stage route');
+assert.deepEqual(missingWordIds, [], 'every vocabulary word must be reachable through the trail');
 
 console.log(JSON.stringify({ routedVocabulary: activeWordIds.size, catalogVocabulary: VOCAB_WORDS.length }));

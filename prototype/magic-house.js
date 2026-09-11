@@ -9,7 +9,7 @@ import {
   MAGIC_HOUSE_ZONES,
 } from './shared/magic-house-room.mjs';
 import { selectVariedRequestIds } from './shared/magic-house-variation.mjs';
-import { TRAIL_STAGES, getGameLevel, getLanguagePolicy } from './shared/trail-catalog.mjs';
+import { MAGIC_HOUSE_PRACTICE_LEVEL, TRAIL_STAGES, getGameLevel, getLanguagePolicy } from './shared/trail-catalog.mjs';
 import { applyEnglishLearningTranslationHint } from './shared/translation-hint.mjs';
 import { saveStorage, recordStageCompletion } from './shared/saves.mjs';
 import { snapshotHouseRound, restoreHouseRound } from './shared/magic-house-save.mjs';
@@ -80,7 +80,7 @@ const ACTIVITY_MESSAGE_VERSION = 1;
 const PREVIOUS_REQUESTS_STORAGE_PREFIX = 'magic-house-previous-requests-v1';
 const PROFILE_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i;
 const hostContext = readHostContext();
-const magicHouseLevel = getGameLevel('house', hostContext ? hostContext.levelId : 'bedroom-practice');
+const magicHouseLevel = hostContext ? getGameLevel('house', hostContext.levelId) : MAGIC_HOUSE_PRACTICE_LEVEL;
 const activeProfiles = hostContext
   ? { [hostContext.profileId]: hostContext.profile }
   : PROFILES;

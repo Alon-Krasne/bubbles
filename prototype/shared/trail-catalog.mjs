@@ -50,7 +50,7 @@ export function getLanguagePolicy(language) {
   throw new Error(`Unknown learning language ${language}`);
 }
 
-const MEMORY_LEVELS = Object.freeze([
+const LEGACY_MEMORY_LEVELS = Object.freeze([
   createMemoryLevel({
     id: 'level-1', difficulty: 'easy', difficultyRank: 1, title: 'שלב 1', subtitle: 'חיות קלות', pairs: 4, icon: '🐶',
     wordPool: ['dog', 'cat', 'bird', 'rabbit', 'fish', 'bear', 'fox', 'frog', 'cow', 'pig', 'sheep', 'duck', 'panda', 'monkey', 'lion', 'tiger', 'horse', 'chicken', 'bee', 'snail', 'koala', 'penguin', 'elephant', 'giraffe', 'zebra', 'turtle', 'whale', 'dolphin', 'butterfly', 'unicorn'], locked: false,
@@ -113,7 +113,7 @@ const MEMORY_LEVELS = Object.freeze([
   }),
 ]);
 
-const SHOP_LEVELS = Object.freeze([
+const LEGACY_SHOP_LEVELS = Object.freeze([
   createShopLevel({ id: 'shop-level-1', difficultyRank: 1, title: 'קונים ראשונים', subtitle: '5 קונים, 4 פריטים', icon: '🍌', customerCount: 5, shelfSize: 4, mode: 'single', itemPool: ['banana', 'apple', 'milk', 'bread', 'egg', 'cheese', 'water', 'orange', 'strawberry', 'carrot', 'cookie', 'cup'] }),
   createShopLevel({ id: 'shop-level-2', difficultyRank: 2, title: 'החנות מתמלאת', subtitle: '6 קונים, 6 פריטים', icon: '🥛', customerCount: 6, shelfSize: 6, mode: 'single', itemPool: ['ball', 'book', 'hat', 'shoe', 'plate', 'spoon', 'fork', 'toothbrush', 'soap', 'scissors', 'notebook', 'ruler', 'shirt', 'dress', 'backpack', 'paper', 'computer', 'calculator', 'paintbrush', 'camera'] }),
   createShopLevel({ id: 'shop-level-3', difficultyRank: 3, title: 'אחת, שתיים, שלוש', subtitle: 'כמויות של 1-3', icon: '🍎', customerCount: 6, shelfSize: 6, mode: 'quantity', itemPool: ['banana', 'apple', 'egg', 'cake', 'cookie', 'orange', 'strawberry', 'carrot', 'tomato', 'potato', 'mushroom', 'pear', 'peach', 'doughnut', 'ball', 'notebook'] }),
@@ -122,7 +122,7 @@ const SHOP_LEVELS = Object.freeze([
 ]);
 
 const MAGIC_REQUEST_IDS = Object.freeze(MAGIC_HOUSE_REQUESTS.map((request) => request.id));
-const MAGIC_HOUSE_LEVELS = Object.freeze([
+const LEGACY_MAGIC_HOUSE_LEVELS = Object.freeze([
   createMagicHouseLevel({ id: 'bedroom-practice', difficultyRank: 1, title: 'חדר אימון', requestIds: MAGIC_REQUEST_IDS, requestCount: 6, drawerSize: 8, maxHelpLevel: 3 }),
   createMagicHouseLevel({ id: 'bedroom-1', difficultyRank: 1, title: 'החדר הראשון', requestIds: MAGIC_REQUEST_IDS, requestCount: 3, drawerSize: 5, maxHelpLevel: 3 }),
   createMagicHouseLevel({ id: 'bedroom-2', difficultyRank: 2, title: 'עוד סדר בחדר', requestIds: MAGIC_REQUEST_IDS, requestCount: 4, drawerSize: 6, maxHelpLevel: 3 }),
@@ -131,14 +131,17 @@ const MAGIC_HOUSE_LEVELS = Object.freeze([
   createMagicHouseLevel({ id: 'bedroom-5', difficultyRank: 5, title: 'אלופי הבית הקסום', requestIds: MAGIC_REQUEST_IDS, requestCount: 6, drawerSize: 8, maxHelpLevel: 1 }),
 ]);
 
-export const GAME_LEVELS = Object.freeze({
-  memory: MEMORY_LEVELS,
-  shop: SHOP_LEVELS,
-  house: MAGIC_HOUSE_LEVELS,
+export const LEGACY_GAME_LEVELS = Object.freeze({
+  memory: LEGACY_MEMORY_LEVELS,
+  shop: LEGACY_SHOP_LEVELS,
+  house: LEGACY_MAGIC_HOUSE_LEVELS,
 });
 
-export function getGameLevel(game, levelId) {
-  const levels = GAME_LEVELS[game];
+// Standalone Magic House (opened without a world-map host) keeps the full practice room.
+export const MAGIC_HOUSE_PRACTICE_LEVEL = LEGACY_MAGIC_HOUSE_LEVELS[0];
+
+export function getLegacyGameLevel(game, levelId) {
+  const levels = LEGACY_GAME_LEVELS[game];
   if (!levels) {
     throw new Error(`Unknown trail game ${game}`);
   }
@@ -178,22 +181,24 @@ export function createTrailStage({ id, x, y, game, level, title, description, sy
   });
 }
 
-export const TRAIL_STAGES = Object.freeze([
-  createTrailStage({ id: 1, x: 8, y: 90, game: 'memory', level: 'level-1', title: 'חיות ראשונות', description: 'מוצאים זוגות של מילים וחיות' }),
-  createTrailStage({ id: 2, x: 15, y: 82, game: 'shop', level: 'shop-level-1', title: 'הקנייה הראשונה', description: 'מקשיבים ומגישים פריט לקונה' }),
-  createTrailStage({ id: 3, x: 22, y: 70, game: 'house', level: 'bedroom-1', title: 'החדר הראשון', description: 'מסדרים שלושה חפצים לפי משפטים' }),
-  createTrailStage({ id: 4, x: 18, y: 57, game: 'memory', level: 'level-2', title: 'אוכל צבעוני', description: 'מוצאים שישה זוגות מתוך מאגר אוכל ופירות משתנה' }),
-  createTrailStage({ id: 5, x: 29, y: 47, game: 'shop', level: 'shop-level-2', title: 'החנות מתמלאת', description: 'בוחרים מתוך מדף גדול ומגוון יותר' }),
-  createTrailStage({ id: 6, x: 40, y: 45, game: 'house', level: 'bedroom-2', title: 'עוד סדר בחדר', description: 'מסדרים ארבעה חפצים מתוך מגירה גדולה יותר' }),
-  createTrailStage({ id: 7, x: 50, y: 51, game: 'memory', level: 'level-3', title: 'טבע ושמיים', description: 'מוצאים שמונה זוגות של מילים מהטבע' }),
-  createTrailStage({ id: 8, x: 59, y: 60, game: 'shop', level: 'shop-level-3', title: 'אחת, שתיים, שלוש', description: 'קוראים או שומעים כמויות וממלאים את הסל' }),
-  createTrailStage({ id: 9, x: 68, y: 67, game: 'house', level: 'bedroom-3', title: 'משפטים ארוכים', description: 'מסדרים חמישה חפצים עם פחות עזרה' }),
-  createTrailStage({ id: 10, x: 77, y: 72, game: 'memory', level: 'level-10', title: 'בית ספר והעיר', description: 'מחברים מילים של מקומות וציוד לימודי' }),
-  createTrailStage({ id: 11, x: 86, y: 66, game: 'shop', level: 'shop-level-4', title: 'צבעים בחנות', description: 'מבדילים בין צבעים וחפצים על מדף מלא' }),
-  createTrailStage({ id: 12, x: 89, y: 54, game: 'house', level: 'bedroom-4', title: 'אלופי החדר', description: 'משלימים את כל משימות החדר עם פחות עזרה' }),
-  createTrailStage({ id: 13, x: 84, y: 43, game: 'memory', level: 'level-15', title: 'זזים ומשחקים', description: 'מחברים מילים של פעולות וספורט' }),
-  createTrailStage({ id: 14, x: 78, y: 35, game: 'shop', level: 'shop-level-5', title: 'הזמנה כפולה', description: 'זוכרים שני פריטים בכל הזמנה' }),
-  createTrailStage({ id: 15, x: 87, y: 28, game: 'house', level: 'bedroom-5', title: 'אלופי הבית הקסום', description: 'אתגר הסיום בלי רמז שמגלה את התשובה', symbol: '★' }),
+const createLegacyTrailStage = (spec) => createTrailStage(spec, getLegacyGameLevel);
+
+export const LEGACY_TRAIL_STAGES = Object.freeze([
+  createLegacyTrailStage({ id: 1, x: 8, y: 90, game: 'memory', level: 'level-1', title: 'חיות ראשונות', description: 'מוצאים זוגות של מילים וחיות' }),
+  createLegacyTrailStage({ id: 2, x: 15, y: 82, game: 'shop', level: 'shop-level-1', title: 'הקנייה הראשונה', description: 'מקשיבים ומגישים פריט לקונה' }),
+  createLegacyTrailStage({ id: 3, x: 22, y: 70, game: 'house', level: 'bedroom-1', title: 'החדר הראשון', description: 'מסדרים שלושה חפצים לפי משפטים' }),
+  createLegacyTrailStage({ id: 4, x: 18, y: 57, game: 'memory', level: 'level-2', title: 'אוכל צבעוני', description: 'מוצאים שישה זוגות מתוך מאגר אוכל ופירות משתנה' }),
+  createLegacyTrailStage({ id: 5, x: 29, y: 47, game: 'shop', level: 'shop-level-2', title: 'החנות מתמלאת', description: 'בוחרים מתוך מדף גדול ומגוון יותר' }),
+  createLegacyTrailStage({ id: 6, x: 40, y: 45, game: 'house', level: 'bedroom-2', title: 'עוד סדר בחדר', description: 'מסדרים ארבעה חפצים מתוך מגירה גדולה יותר' }),
+  createLegacyTrailStage({ id: 7, x: 50, y: 51, game: 'memory', level: 'level-3', title: 'טבע ושמיים', description: 'מוצאים שמונה זוגות של מילים מהטבע' }),
+  createLegacyTrailStage({ id: 8, x: 59, y: 60, game: 'shop', level: 'shop-level-3', title: 'אחת, שתיים, שלוש', description: 'קוראים או שומעים כמויות וממלאים את הסל' }),
+  createLegacyTrailStage({ id: 9, x: 68, y: 67, game: 'house', level: 'bedroom-3', title: 'משפטים ארוכים', description: 'מסדרים חמישה חפצים עם פחות עזרה' }),
+  createLegacyTrailStage({ id: 10, x: 77, y: 72, game: 'memory', level: 'level-10', title: 'בית ספר והעיר', description: 'מחברים מילים של מקומות וציוד לימודי' }),
+  createLegacyTrailStage({ id: 11, x: 86, y: 66, game: 'shop', level: 'shop-level-4', title: 'צבעים בחנות', description: 'מבדילים בין צבעים וחפצים על מדף מלא' }),
+  createLegacyTrailStage({ id: 12, x: 89, y: 54, game: 'house', level: 'bedroom-4', title: 'אלופי החדר', description: 'משלימים את כל משימות החדר עם פחות עזרה' }),
+  createLegacyTrailStage({ id: 13, x: 84, y: 43, game: 'memory', level: 'level-15', title: 'זזים ומשחקים', description: 'מחברים מילים של פעולות וספורט' }),
+  createLegacyTrailStage({ id: 14, x: 78, y: 35, game: 'shop', level: 'shop-level-5', title: 'הזמנה כפולה', description: 'זוכרים שני פריטים בכל הזמנה' }),
+  createLegacyTrailStage({ id: 15, x: 87, y: 28, game: 'house', level: 'bedroom-5', title: 'אלופי הבית הקסום', description: 'אתגר הסיום בלי רמז שמגלה את התשובה', symbol: '★' }),
 ]);
 
 export function getTrailStage(stageId) {
@@ -231,9 +236,17 @@ export const GENERATED_TRAIL_STAGES = Object.freeze(GENERATED_TRAIL.stages.map((
   chapterIndex: stage.chapterIndex,
 }, getGeneratedGameLevel)));
 
+// The generated trail is canonical: the world map route and every game read these.
+export const GAME_LEVELS = GENERATED_GAME_LEVELS;
+export const TRAIL_STAGES = GENERATED_TRAIL_STAGES;
+
+export function getGameLevel(game, levelId) {
+  return getGeneratedGameLevel(game, levelId);
+}
+
 export function validateTrailCatalog({ vocabularyIds, magicRequestIds }) {
-  const expectedIds = Array.from({ length: TRAIL_STAGES.length }, (_, index) => index + 1);
-  const actualIds = TRAIL_STAGES.map((stage) => stage.id);
+  const expectedIds = Array.from({ length: LEGACY_TRAIL_STAGES.length }, (_, index) => index + 1);
+  const actualIds = LEGACY_TRAIL_STAGES.map((stage) => stage.id);
   if (actualIds.some((id, index) => id !== expectedIds[index])) {
     throw new Error('Trail stage ids must be sequential');
   }
@@ -241,14 +254,14 @@ export function validateTrailCatalog({ vocabularyIds, magicRequestIds }) {
     throw new Error('Trail stage ids must be unique');
   }
 
-  for (const stage of TRAIL_STAGES) {
-    getGameLevel(stage.game, stage.level);
+  for (const stage of LEGACY_TRAIL_STAGES) {
+    getLegacyGameLevel(stage.game, stage.level);
     if (!stage.available || !stage.activity || !stage.entry) {
       throw new Error(`Trail stage ${stage.id} is not playable`);
     }
   }
 
-  for (const level of MEMORY_LEVELS) {
+  for (const level of LEGACY_MEMORY_LEVELS) {
     for (const wordId of level.wordPool) {
       if (!vocabularyIds.has(wordId)) {
         throw new Error(`Memory level ${level.id} references unknown word ${wordId}`);
@@ -256,7 +269,7 @@ export function validateTrailCatalog({ vocabularyIds, magicRequestIds }) {
     }
   }
 
-  for (const level of MAGIC_HOUSE_LEVELS) {
+  for (const level of LEGACY_MAGIC_HOUSE_LEVELS) {
     for (const requestId of level.requestIds) {
       if (!magicRequestIds.has(requestId)) {
         throw new Error(`Magic House level ${level.id} references unknown request ${requestId}`);
@@ -264,10 +277,10 @@ export function validateTrailCatalog({ vocabularyIds, magicRequestIds }) {
     }
   }
 
-  for (const game of Object.keys(GAME_LEVELS)) {
-    const routeRanks = TRAIL_STAGES
+  for (const game of Object.keys(LEGACY_GAME_LEVELS)) {
+    const routeRanks = LEGACY_TRAIL_STAGES
       .filter((stage) => stage.game === game)
-      .map((stage) => getGameLevel(game, stage.level).difficultyRank);
+      .map((stage) => getLegacyGameLevel(game, stage.level).difficultyRank);
     if (routeRanks.some((rank, index) => index > 0
       && (rank < routeRanks[index - 1] || (rank === routeRanks[index - 1] && rank !== 5)))) {
       throw new Error(`${game} difficulty must increase until the championship rank`);
@@ -275,10 +288,10 @@ export function validateTrailCatalog({ vocabularyIds, magicRequestIds }) {
   }
 
   return {
-    stageCount: TRAIL_STAGES.length,
-    playableStageCount: TRAIL_STAGES.filter((stage) => stage.available).length,
-    gameCount: new Set(TRAIL_STAGES.map((stage) => stage.game)).size,
-    maxStars: TRAIL_STAGES.length * 3,
+    stageCount: LEGACY_TRAIL_STAGES.length,
+    playableStageCount: LEGACY_TRAIL_STAGES.filter((stage) => stage.available).length,
+    gameCount: new Set(LEGACY_TRAIL_STAGES.map((stage) => stage.game)).size,
+    maxStars: LEGACY_TRAIL_STAGES.length * 3,
   };
 }
 

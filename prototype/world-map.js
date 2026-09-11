@@ -1,4 +1,4 @@
-import { TRAIL_STAGES } from './shared/trail-catalog.mjs';
+import { TRAIL_CHAPTERS, TRAIL_STAGES } from './shared/trail-catalog.mjs';
 import { createTrackProgress } from './shared/track-progress.mjs';
 import { getTravellerPosition } from './shared/traveller-position.mjs';
 import { formatStarRating } from './shared/activity-scoring.mjs';
@@ -33,6 +33,7 @@ const PROFILE_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i;
 
 const world = document.getElementById('world');
 const route = document.getElementById('route');
+const chapterLabels = document.getElementById('chapter-labels');
 const stagePanel = document.getElementById('stage-panel');
 const panelClose = document.getElementById('panel-close');
 const panelIcon = document.getElementById('panel-icon');
@@ -232,7 +233,7 @@ function renderRoute() {
         ? 'complete'
         : stage.id === progress.currentStage
           ? 'current'
-          : 'locked';
+          : 'future';
     const button = document.createElement('button');
     button.type = 'button';
     button.className = `world-stage is-${state}`;
@@ -244,7 +245,7 @@ function renderRoute() {
     button.dataset.difficulty = String(stage.difficultyRank);
     button.style.left = `${stage.x}%`;
     button.style.top = `${stage.y}%`;
-    button.disabled = state === 'locked';
+    button.disabled = !stage.available;
     button.setAttribute('aria-label', state === 'locked'
       ? `שלב ${stage.id}, ${stage.title}, נעול`
       : `שלב ${stage.id}, ${stage.title}, ${stars} כוכבים`);
@@ -267,17 +268,61 @@ function renderRoute() {
       button.append(starLabel);
     }
 
-    if (state === 'locked') {
+    if (stage.available) {
+      button.addEventListener('click', () => selectStage(stage));
+    } else {
       const lock = document.createElement('span');
       lock.className = 'stage-lock';
       lock.setAttribute('aria-hidden', 'true');
       lock.textContent = '🔒';
       button.append(lock);
-    } else {
-      button.addEventListener('click', () => selectStage(stage));
     }
 
     route.append(button);
+  });
+}
+
+function renderChapterLabels() {
+  if (!chapterLabels) {
+    return;
+  }
+  chapterLabels.replaceChildren();
+  TRAIL_CHAPTERS.forEach((chapter, index) => {
+    const chapterStages = stages.filter((stage) => stage.chapterIndex === index);
+    if (chapterStages.length === 0) {
+      return;
+    }
+    const centerX = chapterStages.reduce((total, stage) => total + stage.x, 0) / chapterStages.length;
+    const centerY = chapterStages.reduce((total, stage) => total + stage.y, 0) / chapterStages.length;
+    const topY = Math.min(...chapterStages.map((stage) => stage.y));
+    const leftX = Math.min(...chapterStages.map((stage) => stage.x));
+
+    const label = document.createElement('div');
+    label.className = `chapter-label chapter-label-${index + 1}`;
+    if (index >= 4) {
+      label.classList.add('is-left');
+      label.style.left = `${Math.max(30, leftX - 3)}%`;
+      label.style.top = `${centerY}%`;
+    } else {
+      label.style.left = `${centerX}%`;
+      label.style.top = `${Math.max(8, topY - 9)}%`;
+    }
+
+    const symbol = document.createElement('span');
+    symbol.className = 'chapter-symbol';
+    symbol.setAttribute('aria-hidden', 'true');
+    symbol.textContent = chapter.symbol;
+
+    const copy = document.createElement('span');
+    copy.className = 'chapter-copy';
+    const title = document.createElement('strong');
+    title.textContent = chapter.title;
+    const subtitle = document.createElement('small');
+    subtitle.textContent = chapter.subtitle;
+    copy.append(title, subtitle);
+
+    label.append(symbol, copy);
+    chapterLabels.append(label);
   });
 }
 
@@ -923,5 +968,6 @@ document.addEventListener('keydown', (event) => {
 });
 
 window.addEventListener('message', handleActivityMessage);
+renderChapterLabels();
 setProfile(activeProfileId);
 openGate();

@@ -7,7 +7,7 @@ const browser = (...args) => execFileSync('agent-browser', ['--session', 'shop-a
 });
 const evaluate = expression => JSON.parse(browser('eval', expression));
 const route = `http://127.0.0.1:8788/index.html?${new URLSearchParams({
-  host: 'world-map', activity: 'listening-shop', level: 'shop-level-5', stage: '14',
+  host: 'world-map', activity: 'listening-shop', level: 'trail-shop-12', stage: '35',
   profile: 'shop-art-test', profileName: 'Art', profileEmoji: '🌸',
   profileCharacter: 'princess', profileLanguage: 'en',
 })}`;

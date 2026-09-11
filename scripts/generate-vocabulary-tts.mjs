@@ -228,7 +228,9 @@ async function main() {
     .flatMap((stage) => getGameLevel(stage.game, stage.level).wordPool);
   const shopWordIds = GAME_LEVELS.shop.flatMap((level) => level.itemPool);
   const activeWordIds = [...new Set([...memoryWordIds, ...shopWordIds])];
-  const quantityWordIds = getGameLevel('shop', 'shop-level-3').itemPool;
+  const quantityWordIds = [...new Set(
+    GAME_LEVELS.shop.filter((level) => level.mode === 'quantity').flatMap((level) => level.itemPool),
+  )];
   const clips = [
     ...activeWordIds.map((wordId) => ({ relativePath: `words/${wordId}.mp3`, transcript: wordById.get(wordId).english })),
     ...quantityWordIds.map((wordId) => ({ relativePath: `plurals/${wordId}.mp3`, transcript: pluralize(wordById.get(wordId).english) })),

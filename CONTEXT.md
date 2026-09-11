@@ -14,7 +14,7 @@ A child's unfinished Shop or Magic House activity, including the selected challe
 A themed group of six consecutive trail stages that share vocabulary categories and a difficulty band. Generated chapters let the route extend without hand-placing every stage.
 
 **Generated trail**:
-The full learning route produced by `generateTrail()` from chapters, vocabulary categories, and game parameter recipes. It is deterministic and validated; the six-chapter, 36-stage route is ready to replace the legacy hand-placed 15-stage route once the map displays chapters.
+The live learning route produced by `generateTrail()` from chapters, vocabulary categories, and game parameter recipes. It is deterministic and validated: six chapters × six stages = 36 stages whose Memory, Shop and Magic House levels scale in difficulty. The legacy hand-placed 15-stage route remains exported as `LEGACY_TRAIL_STAGES` for reference only.
 
 **Learning item**:
 An English word, pictured choice, movable object, or named destination that carries vocabulary needed to play an activity.

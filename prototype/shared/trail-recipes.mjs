@@ -23,6 +23,26 @@ const LEVEL_ID_PREFIX = Object.freeze({ memory: 'trail-memory', shop: 'trail-sho
 const LEVEL_DIFFICULTY_BY_RANK = Object.freeze({ 1: 'easy', 2: 'medium', 3: 'medium', 4: 'hard', 5: 'hard' });
 const SHOP_MODE_BY_RANK = Object.freeze({ 1: 'single', 2: 'single', 3: 'quantity', 4: 'color', 5: 'double' });
 
+// Quantity orders speak recorded plural words, so quantity-mode Shop levels may
+// only stock items that already have a committed plural clip.
+export const SHOP_PLURAL_ITEM_IDS = Object.freeze([
+  'apple', 'ball', 'banana', 'cake', 'carrot', 'cookie', 'doughnut', 'egg',
+  'mushroom', 'notebook', 'orange', 'peach', 'pear', 'potato', 'strawberry', 'tomato',
+]);
+
+// Percent anchors tracing the winding path of the approved moonlit map art,
+// from the lower-left meadow through the market, wood, railway and village up
+// to the hilltop finale. Each chapter's six stops interpolate toward the next.
+const CHAPTER_ANCHORS = Object.freeze([
+  Object.freeze({ x: 15, y: 80 }),
+  Object.freeze({ x: 24, y: 44 }),
+  Object.freeze({ x: 45, y: 72 }),
+  Object.freeze({ x: 60, y: 50 }),
+  Object.freeze({ x: 77, y: 62 }),
+  Object.freeze({ x: 72, y: 38 }),
+  Object.freeze({ x: 84, y: 12 }),
+]);
+
 export const TRAIL_CHAPTERS = Object.freeze([
   Object.freeze({ id: 'chapter-1', title: 'עמק החיות', subtitle: 'חיות, קולות ומילים ראשונות', categories: Object.freeze(['animals', 'food']), symbol: '🐾' }),
   Object.freeze({ id: 'chapter-2', title: 'השוק הצבעוני', subtitle: 'אוכל, צבעים וקניות', categories: Object.freeze(['food', 'colors']), symbol: '🍎' }),
@@ -175,7 +195,7 @@ export function createMemoryLevelRecipe({ levelId, rank, title, categories, inde
     subtitle: `${pairs} זוגות`,
     pairs,
     icon: '🧩',
-    wordPool: pool.slice(0, pairs + 6),
+    wordPool: pool,
     locked: false,
   });
 }
@@ -186,14 +206,19 @@ export function createShopLevelRecipe({ levelId, rank, title, categories, index,
   const customerCount = Math.min(7, 3 + rank);
   const shoppableSet = new Set(index.shopArt);
   const colorIds = vocabulary.filter((word) => word.category === 'colors').map((word) => word.id);
-  const preferred = mode === 'color'
-    ? colorIds
-    : poolForCategories(index, categories, shelfSize, offset).filter((id) => shoppableSet.has(id));
-  const source = preferred.length >= shelfSize ? preferred : index.shopArt;
+  let source;
+  if (mode === 'color') {
+    source = colorIds;
+  } else if (mode === 'quantity') {
+    source = SHOP_PLURAL_ITEM_IDS.filter((id) => shoppableSet.has(id));
+  } else {
+    const preferred = poolForCategories(index, categories, shelfSize, offset).filter((id) => shoppableSet.has(id));
+    source = preferred.length >= shelfSize ? preferred : index.shopArt;
+  }
   if (source.length < shelfSize) {
     throw new Error(`Shop level ${levelId} has only ${source.length} items for a shelf of ${shelfSize}`);
   }
-  const itemPool = rotate(source, offset).slice(0, Math.min(source.length, shelfSize + 6));
+  const itemPool = rotate(source, offset);
   if (itemPool.length < shelfSize) {
     throw new Error(`Shop level ${levelId} cannot fill a shelf of ${shelfSize}`);
   }
@@ -210,18 +235,17 @@ export function createShopLevelRecipe({ levelId, rank, title, categories, index,
   });
 }
 
-export function createMagicHouseLevelRecipe({ levelId, rank, title, offset, magicRequests = MAGIC_HOUSE_REQUESTS }) {
-  const doubles = magicRequests.filter((request) => request.targets.length > 1).map((request) => request.id);
-  const singles = magicRequests.filter((request) => request.targets.length === 1).map((request) => request.id);
-  const requestIds = rank <= 2 ? singles : unique([...singles, ...doubles]);
+export function createMagicHouseLevelRecipe({ levelId, rank, title, magicRequests = MAGIC_HOUSE_REQUESTS }) {
+  // Every level draws from the whole authored request pool so the two six-request
+  // room layouts stay compatible; difficulty comes from requestCount and help.
+  const requestIds = unique(magicRequests.map((request) => request.id));
   const requestCount = Math.min(6, 2 + rank, requestIds.length);
-  const chosen = rotate(requestIds, offset).slice(0, requestCount);
-  const drawerSize = Math.min(8, Math.max(getLargestMagicHouseTargetCount(chosen, requestCount), requestCount + 2));
+  const drawerSize = Math.min(8, Math.max(getLargestMagicHouseTargetCount(requestIds, requestCount), requestCount + 2));
   return createMagicHouseLevel({
     id: levelId,
     difficultyRank: rank,
     title,
-    requestIds: chosen,
+    requestIds,
     requestCount,
     drawerSize,
     maxHelpLevel: rank >= 4 ? 1 : rank >= 3 ? 2 : 3,
@@ -255,11 +279,12 @@ export function generateTrail({ vocabulary = VOCABULARY, magicRequests = MAGIC_H
       }
       levels[game].push(level);
 
-      const serpentine = chapterIndex % 2 === 0;
-      const across = serpentine ? slot : STAGES_PER_CHAPTER - 1 - slot;
-      const x = (14 + (across * (72 / (STAGES_PER_CHAPTER - 1)))) ;
-      const bandTop = 14 + chapterIndex * 14.4;
-      const y = bandTop + (slot % 2 === 0 ? -3 : 3);
+      const from = CHAPTER_ANCHORS[chapterIndex];
+      const to = CHAPTER_ANCHORS[chapterIndex + 1];
+      const t = (slot + 1) / (STAGES_PER_CHAPTER + 1);
+      const wobble = (slot % 2 === 0 ? -1 : 1) * 2.2;
+      const x = from.x + (to.x - from.x) * t;
+      const y = from.y + (to.y - from.y) * t + wobble;
       stages.push(Object.freeze({
         id: stageId,
         chapter: chapter.id,
