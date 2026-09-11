@@ -8,7 +8,7 @@ Bubbles Learning World is a child-focused route of short language-learning activ
 The current collection of children's profiles and saves shared by everyone admitted to the game. It does not belong to an individual adult sign-in.
 
 **Round save**:
-A child's unfinished activity, including the selected challenges and actions already completed, which can be resumed later.
+A child's unfinished Shop or Magic House activity, including the selected challenges and actions already completed, which can be resumed later. Memory Garden does not persist round state: opening or refreshing it creates a shuffled, closed board. Only completed Memory stage progress and settings persist.
 
 **Learning item**:
 An English word, pictured choice, movable object, or named destination that carries vocabulary needed to play an activity.

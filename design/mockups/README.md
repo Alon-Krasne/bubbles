@@ -1,5 +1,13 @@
 # Magic House visual concepts
 
+## Moonlit Memory Garden (September 11, 2026)
+
+Runtime background: `src/assets/memory/moonlit-garden.webp`, 1586×992, WebP quality 86 (355 KB). Generated once with the built-in image tool; cards and their decorative borders are live CSS, not baked artwork. Source: `exec-18199e93-af2e-4dd2-a778-89de9da5aa83.png`.
+
+Prompt: a landscape 16:10 premium children's memory-game garden, painterly 2.5D storybook; willow branches framing the edges, warm lanterns at upper corners, crescent moon above indigo sky and distant cloud hills, teal leaves and ivory/lavender flowers at bottom corners, distant fireflies. Keep the central 75% a quiet open blue-green clearing for live cards. Cozy and welcoming, tactile brushwork, honey-gold light and periwinkle. No cards, board, people, animals, text, signs, UI, or watermark.
+
+The playing view uses ivory revealed cards, teal/gold backs, soft green matched cards, and a compact hint/status toolbar. The existing level map and matching/save rules remain intact. Dense phone boards scroll vertically to retain readable words and 44px speaker buttons.
+
 ## Moonlit Shop (September 10, 2026)
 
 `moonlit-shop.png` is the user-approved edge-to-edge Shop mockup, derived from the Moonlight Storybook room using built-in image generation. The gameplay sentence, hint/replay controls, customers, products, and progress are implemented separately from the environment; no day/night theme system is introduced.

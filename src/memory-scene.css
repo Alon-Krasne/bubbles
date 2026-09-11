@@ -1,0 +1,145 @@
+/* The garden surrounds live cards; face state and reveal timing stay in the game. */
+#memory-screen:has(.memory-game-area:not(.hidden)) {
+    --garden-cream: #fff6df;
+    --garden-gold: #ebcc89;
+    position: absolute;
+    inset: 0;
+    min-height: 100%;
+    padding: clamp(80px, 13vh, 120px) 24px 48px;
+    overflow-y: auto;
+    background: #142d39 var(--garden-art) center / cover fixed;
+}
+#memory-screen:has(.memory-game-area:not(.hidden)) > .memory-header { display: none; }
+#memory-screen:has(.memory-game-area:not(.hidden)) > .back-to-games-btn {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    right: auto;
+    min-height: 44px;
+    z-index: 10;
+    background: #fff6df;
+    color: #31515c;
+    border: 1px solid #ebcc89;
+    box-shadow: 0 4px 14px #081c3540;
+}
+#memory-game-area {
+    width: min(100%, 1080px);
+    margin: 0 auto;
+    gap: 18px;
+}
+#memory-game-area .memory-level-toolbar {
+    width: 100%;
+    min-height: 52px;
+    padding-inline: 160px;
+    gap: 12px;
+}
+#memory-game-area .memory-level-title {
+    color: var(--garden-cream);
+    background: none;
+    box-shadow: none;
+    font-size: clamp(16px, 2vw, 23px);
+    text-shadow: 0 2px 8px #081c35;
+    padding: 6px;
+}
+#memory-game-area .memory-map-btn,
+#memory-game-area #memory-translation-hint,
+#memory-game-area .memory-new-garden-btn {
+    color: #31515c;
+    background: var(--garden-cream);
+    border: 1px solid var(--garden-gold);
+    min-height: 44px;
+    min-width: 44px;
+    box-shadow: 0 3px 10px #081c3533;
+    font-size: 16px;
+}
+#memory-game-area #memory-translation-hint { width: 46px; height: 46px; padding: 0; border-radius: 50%; flex-shrink: 0; }
+#memory-game-area #memory-translation-hint[aria-pressed='true'] { background: #ffe29a; }
+#memory-game-area .memory-status-panel {
+    width: 100%;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding: 10px 16px;
+    border: 1px solid #e5d29b80;
+    border-radius: 24px;
+    background: #132e3bd9;
+    box-shadow: 0 6px 20px #07192733;
+}
+#memory-game-area .memory-progress { color: #ffe0a0; font-size: 16px; }
+#memory-game-area .memory-message { color: #fff6df; background: none; font-weight: 500; font-size: 17px; line-height: 1.4; }
+#memory-game-area .memory-new-garden-btn { padding: 8px 16px; }
+#memory-board {
+    width: 100%;
+    padding: 22px;
+    gap: 16px;
+    border-radius: 30px;
+    border: 1px solid #d9c69480;
+    background: linear-gradient(135deg, #153d43e8, #152d3de8);
+    box-shadow: 0 24px 60px #06152266, inset 0 0 0 5px #ffffff06;
+    grid-template-columns: repeat(var(--memory-columns), minmax(0, 1fr));
+}
+#memory-board .memory-card { min-height: clamp(132px, 20vh, 185px); border-radius: 18px; }
+#memory-board[data-pairs='8'] .memory-card,
+#memory-board[data-pairs='9'] .memory-card,
+#memory-board[data-pairs='10'] .memory-card { min-height: clamp(108px, 14vh, 136px); }
+#memory-board .memory-card-back,
+#memory-board .memory-card-front { border-radius: 18px; }
+#memory-board .memory-card-back {
+    border: 1px solid #d6b77b;
+    background: radial-gradient(ellipse at 50% 20%, #517b85, transparent 75%), linear-gradient(145deg, #31555f, #233d53);
+    color: #f8dc9b;
+    text-shadow: 0 0 20px #ffd36a66;
+    box-shadow: 0 5px 0 #0c2635, 0 8px 16px #06172566, inset 0 1px 0 #fff5c950;
+    font-size: 38px;
+}
+#memory-board .memory-card-back::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border: 1px solid #edcf8c55;
+    border-radius: 12px;
+    background: radial-gradient(circle at 18% 20%, #edd49b 0 1px, transparent 2px), radial-gradient(circle at 82% 80%, #edd49b 0 1px, transparent 2px);
+}
+#memory-board .memory-card-back::after {
+    content: '';
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    border: 1px solid #edd49b66;
+    border-radius: 50%;
+    box-shadow: 0 0 0 5px #edd49b0a;
+}
+#memory-board .memory-card-front {
+    background: linear-gradient(145deg, #fffdf4, #f1e5ca);
+    border: 2px solid #efd9a5;
+    box-shadow: 0 5px 0 #a78953, 0 10px 20px #071c3a40;
+}
+#memory-board .memory-card-word { color: #304c54; }
+#memory-board .memory-card-english .memory-card-word { color: #795432; }
+#memory-board .memory-card-sound { width: 44px; height: 44px; background: #e0eeea; border-color: #b8d7ce; box-shadow: 0 3px 0 #a0bfb5; }
+#memory-board .memory-card.is-matched .memory-card-front {
+    border-color: #b3d8b8;
+    background: linear-gradient(145deg, #f5ffed, #d8edd6);
+    box-shadow: 0 5px 0 #759b80, 0 0 20px #b6e4b633;
+}
+#memory-board .memory-card:focus-visible { outline: 3px solid #ffe2a1; outline-offset: 4px; }
+@media (max-width: 700px) {
+    #memory-screen:has(.memory-game-area:not(.hidden)) { padding: 80px 12px 36px; }
+    #memory-screen:has(.memory-game-area:not(.hidden)) > .back-to-games-btn { top: 16px; left: 12px; }
+    #memory-game-area { gap: 12px; }
+    #memory-game-area .memory-level-toolbar { padding: 0; min-height: 44px; }
+    #memory-game-area .memory-status-panel { padding: 10px; gap: 6px; grid-template-columns: 1fr auto; }
+    #memory-game-area .memory-message { grid-row: 2; grid-column: 1 / -1; padding: 0; font-size: 14px; }
+    #memory-game-area .memory-progress { font-size: 14px; }
+    #memory-board { padding: 12px; gap: 10px; border-radius: 22px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    #memory-board .memory-card,
+    #memory-board[data-pairs] .memory-card { min-height: 112px; }
+    #memory-board .memory-card-front,
+    #memory-board .memory-card-back { border-radius: 12px; }
+    #memory-board .memory-card-word { font-size: 19px; }
+    #memory-board .memory-card-front.has-sound .memory-card-word { white-space: normal; overflow-wrap: anywhere; font-size: 15px; padding: 0; }
+    #memory-board .memory-card-front.has-sound { gap: 5px; padding: 4px; }
+    #memory-board .memory-card-drawing { font-size: 30px; }
+    #memory-board .memory-card-back::after { width: 38px; height: 38px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    #memory-game-area, #memory-board .memory-card-back, #memory-board .memory-card-front { transition: none; }
+}
