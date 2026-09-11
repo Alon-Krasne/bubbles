@@ -56,9 +56,13 @@ const traveller = document.getElementById('traveller');
 const travellerImage = document.getElementById('traveller-image');
 const activityOverlay = document.getElementById('activity-overlay');
 const activityFrame = document.getElementById('activity-frame');
+const trailRouteShadow = document.getElementById('trail-route-shadow');
 const trailRouteBase = document.getElementById('trail-route-base');
+const trailRouteBaseCore = document.getElementById('trail-route-base-core');
+const trailRouteDust = document.getElementById('trail-route-dust');
 const trailRouteGlow = document.getElementById('trail-route-glow');
 const trailRouteProgress = document.getElementById('trail-route-progress');
+const trailRouteSparkle = document.getElementById('trail-route-sparkle');
 const profileGate = document.getElementById('profile-gate');
 const gateProfileList = document.getElementById('gate-profile-list');
 const addProfileButton = document.getElementById('add-profile-button');
@@ -348,7 +352,11 @@ function renderTrail() {
     return;
   }
   const allPoints = stages.map((stage) => ({ x: stage.x, y: stage.y }));
-  trailRouteBase.setAttribute('d', smoothTrailPath(allPoints));
+  const fullPath = smoothTrailPath(allPoints);
+  trailRouteShadow.setAttribute('d', fullPath);
+  trailRouteBase.setAttribute('d', fullPath);
+  trailRouteBaseCore.setAttribute('d', fullPath);
+  trailRouteDust.setAttribute('d', fullPath);
 
   const progress = getRouteProgress();
   const travelledPoints = stages
@@ -357,6 +365,7 @@ function renderTrail() {
   const travelledPath = smoothTrailPath(travelledPoints);
   trailRouteGlow.setAttribute('d', travelledPath);
   trailRouteProgress.setAttribute('d', travelledPath);
+  trailRouteSparkle.setAttribute('d', travelledPath);
 }
 
 function selectStage(stage) {
