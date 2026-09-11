@@ -322,22 +322,24 @@ function renderChapterLabels() {
   });
 }
 
+// Rounded polyline: each stop becomes the control point of a quadratic that
+// ends at the midpoint toward the next stop. Consecutive quadratics share those
+// midpoints, so the joins stay smooth and every bend reads as a soft arc.
 function smoothTrailPath(points) {
   if (points.length < 2) {
     return '';
   }
-  let path = `M ${points[0].x} ${points[0].y}`;
-  for (let index = 0; index < points.length - 1; index += 1) {
-    const previous = points[index - 1] ?? points[index];
-    const current = points[index];
-    const next = points[index + 1];
-    const after = points[index + 2] ?? next;
-    const controlOneX = current.x + (next.x - previous.x) / 6;
-    const controlOneY = current.y + (next.y - previous.y) / 6;
-    const controlTwoX = next.x - (after.x - current.x) / 6;
-    const controlTwoY = next.y - (after.y - current.y) / 6;
-    path += ` C ${controlOneX} ${controlOneY} ${controlTwoX} ${controlTwoY} ${next.x} ${next.y}`;
+  if (points.length === 2) {
+    return `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y}`;
   }
+  let path = `M ${points[0].x} ${points[0].y}`;
+  for (let index = 1; index < points.length - 1; index += 1) {
+    const midX = (points[index].x + points[index + 1].x) / 2;
+    const midY = (points[index].y + points[index + 1].y) / 2;
+    path += ` Q ${points[index].x} ${points[index].y} ${midX} ${midY}`;
+  }
+  const last = points[points.length - 1];
+  path += ` L ${last.x} ${last.y}`;
   return path;
 }
 

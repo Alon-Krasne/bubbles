@@ -279,11 +279,14 @@ function buildRoutePoints(totalStages) {
   const spacing = totalLength / totalStages;
   return Array.from({ length: totalStages }, (_, index) => {
     const point = pointAt((index + 0.5) * spacing);
-    const side = index % 2 === 0 ? -1 : 1;
-    const wobble = side * 3.2;
+    // A sum of gentle sine waves gives the route an organic, hand-drawn wander
+    // instead of an alternating machine zig-zag, while still separating stops.
+    const wander = Math.sin(index * 0.82) * 2.3
+      + Math.sin(index * 0.27 + 2.1) * 1.1
+      + Math.sin(index * 1.53 + 0.6) * 0.5;
     return {
-      x: point.x + Math.cos(point.angle + Math.PI / 2) * wobble,
-      y: point.y + Math.sin(point.angle + Math.PI / 2) * wobble,
+      x: point.x + Math.cos(point.angle + Math.PI / 2) * wander,
+      y: point.y + Math.sin(point.angle + Math.PI / 2) * wander,
     };
   });
 }
