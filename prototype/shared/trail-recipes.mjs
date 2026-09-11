@@ -280,7 +280,7 @@ function buildRoutePoints(totalStages) {
   return Array.from({ length: totalStages }, (_, index) => {
     const point = pointAt((index + 0.5) * spacing);
     const side = index % 2 === 0 ? -1 : 1;
-    const wobble = side * 2.1;
+    const wobble = side * 3.2;
     return {
       x: point.x + Math.cos(point.angle + Math.PI / 2) * wobble,
       y: point.y + Math.sin(point.angle + Math.PI / 2) * wobble,

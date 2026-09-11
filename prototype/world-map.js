@@ -250,15 +250,10 @@ function renderRoute() {
       ? `שלב ${stage.id}, ${stage.title}, נעול`
       : `שלב ${stage.id}, ${stage.title}, ${stars} כוכבים`);
 
-    const icon = document.createElement('span');
-    icon.className = 'stage-icon';
-    icon.setAttribute('aria-hidden', 'true');
-    renderActivityIcon(icon, stage);
-
     const number = document.createElement('span');
     number.className = 'stage-number';
     number.textContent = String(stage.id);
-    button.append(icon, number);
+    button.append(number);
 
     if (stars > 0) {
       const starLabel = document.createElement('span');

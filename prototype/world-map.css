@@ -413,7 +413,7 @@ body {
 }
 
 .world-stage {
-  --node-size: clamp(34px, 2.7vw, 46px);
+  --node-size: clamp(30px, 2.35vw, 40px);
   position: absolute;
   width: var(--node-size);
   height: var(--node-size);
@@ -658,23 +658,18 @@ body {
 }
 
 .stage-number {
-  position: absolute;
-  top: auto;
-  bottom: -5px;
-  right: -5px;
-  min-width: 18px;
-  height: 18px;
-  display: grid;
-  place-items: center;
-  padding: 0 3px;
-  border: 2px solid rgba(255, 240, 200, 0.95);
-  border-radius: 999px;
-  background: linear-gradient(160deg, #2b4470, #17294d);
-  color: #ffe9b0;
+  position: static;
+  min-width: 0;
+  height: auto;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
   font-family: 'Secular One', sans-serif;
-  font-size: 10px;
+  font-size: clamp(12px, 1.05vw, 15px);
   line-height: 1;
-  box-shadow: 0 3px 8px rgba(5, 12, 32, 0.6);
+  box-shadow: none;
 }
 
 .stage-stars {
@@ -2070,4 +2065,19 @@ body {
 
 .language-options span {
   color: #eef3ff;
+}
+
+.world-stage[data-game="memory"]:not(.is-current):not(.is-complete) {
+  border-color: rgba(255, 196, 224, 0.9);
+  background: radial-gradient(circle at 50% 32%, #6a3f68, #2c2350 74%);
+}
+
+.world-stage[data-game="shop"]:not(.is-current):not(.is-complete) {
+  border-color: rgba(255, 216, 140, 0.9);
+  background: radial-gradient(circle at 50% 32%, #6b5340, #33304f 74%);
+}
+
+.world-stage[data-game="house"]:not(.is-current):not(.is-complete) {
+  border-color: rgba(168, 232, 222, 0.9);
+  background: radial-gradient(circle at 50% 32%, #2f5f6c, #1f2c50 74%);
 }
