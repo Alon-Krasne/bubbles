@@ -1,5 +1,22 @@
 Original prompt: Fix unlocked trail stages so they launch playable games and can be replayed while preserving the highest star score; add distinct highlighted Magic House placement targets when an item is selected or dragged.
 
+## September 11 generated trail foundation
+
+- Goal: make the learning trail content-driven so it can extend to 30-40 stages with rising difficulty instead of a hand-placed list.
+- Added `scripts/generate-vocabulary-catalog.mjs`, which derives a compact runtime mirror `prototype/shared/vocabulary-catalog.mjs` (214 words with category and shoppable) from the app's `src/words.ts`. A trail test asserts the mirror stays in sync.
+- Added `prototype/shared/trail-recipes.mjs`: level factories, six Hebrew-named chapters, and `generateTrail()`, a deterministic vocabulary-driven generator. Memory difficulty comes from pair count and the chapter's word categories; Shop scales customers/shelf and moves single → quantity → color → double; Magic House scales requests and help while introducing compound requests only in later chapters. Shop pools are restricted to `SHOP_ART_IDS` so every generated product already has committed artwork.
+- `prototype/shared/trail-catalog.mjs` now re-exports the factories and exposes `TRAIL_CHAPTERS`, `GENERATED_GAME_LEVELS`, and `GENERATED_TRAIL_STAGES` (36 stages across 6 chapters, unique auto-positioned map nodes, non-decreasing per-game difficulty). The live 15-stage route and its levels are unchanged, so existing progress, saves, and every browser test keep working; wiring the chaptered map to the generated route is the next step.
+## September 11 moonlit generated trail — live on the branch
+
+- Wired the generated 36-stage / 6-chapter trail in as the live route: `TRAIL_STAGES` and `GAME_LEVELS` now point at the generated data, so the world map, hosted Memory/Shop/Magic House activities, saves and the track-reset editor all consume it. The legacy 15-stage route stays exported as `LEGACY_TRAIL_STAGES`/`LEGACY_GAME_LEVELS` and `validateTrailCatalog` still guards it.
+- Widen `MemoryLevelId`/`ShopLevelId` to `string`; Magic House opened without a host keeps the full practice room via `MAGIC_HOUSE_PRACTICE_LEVEL`.
+- Route positions were re-anchored to trace the approved moonlit map art (seven path anchors from the lower-left meadow to the hilltop finale), and the map now renders six chapter banners from `TRAIL_CHAPTERS`.
+- New runtime art `src/assets/memory/moonlit-trail-map.webp` (from approved concept A, 1774px, 223 KB) replaces the pastel map background; the trail gate reuses it behind a night veil. Added a moonlit CSS skin for chrome, stage panel, play button, profile menu, gate and editor, and restyled stage nodes (honey/indigo medallions, no per-node lock spam) plus chapter banners.
+- Generator fixes for the live route: Shop quantity levels stock only the 16 items with committed plural audio; Memory/Shop pools were widened so all 214 vocabulary words stay reachable; Magic House levels keep the full authored request pool so both six-request room layouts stay compatible and sessions still vary.
+- Verified: `npx tsc --noEmit`, `npm run build`, `test:fast-start`, `test:trail`, `test:vocabulary`, `test:vocabulary-audio`, `test:route-vocabulary`, `test:track`, `test:traveller-position`, `test:magic-house-variation`, `test:magic-house-layouts`, `test:magic-house-hit-areas`, `test:magic-house-audio`, `test:magic-house-inventory`, `test:moonlight-room`, `test:shop-art`, `test:shop-order-hint`, `test:memory-saves`, `test:saves`, `node scripts/test-moonlit-shop.mjs`, and live launches of Memory/Shop/Magic House from the map.
+- Cloudflare Pages Git integration already covers the workflow: `main` → production `https://bubbles-by5.pages.dev`; any `codex/*` branch → its own preview at `https://<branch>.bubbles-by5.pages.dev` (stable branch alias) plus a per-commit URL. `codex/generated-trail` preview is `https://codex-generated-trail.bubbles-by5.pages.dev`, uses the preview D1 binding, and redeploys on every push. Both sit behind Cloudflare Access, so automated browser checks against the preview need an Access service token.
+- Validation: `npm run test:trail` reports legacy 15 stages and generated `chapterCount:6, stageCount:36, maxStars:108`. `npx tsc --noEmit`, `npm run build`, `test:vocabulary-audio`, `test:vocabulary`, `test:shop-session`, `test:store-audio`, `test:route-vocabulary`, `test:activity-scoring`, `test:memory-completion`, `test:track`, `test:traveller-position`, `test:audio-integrity`, and `test:translations` all pass.
+
 ## September 11 Memory save boundary
 
 - User accepts a fresh closed/shuffled board on refresh; preserve completed stars, route progress, and configuration, not individual card state.
@@ -325,3 +342,14 @@ Green receipts:
 - English-learning choices show their English vocabulary word directly beneath each illustration; Hebrew-mode choices remain Hebrew-only.
 - Removed the duplicate replay control and kept one compact speaker plus the opt-in translation bulb inside the request bubble.
 - The acceptance target covers every Shop level at desktop, tablet, portrait phone, and short landscape sizes; products and controls must remain at least 44px, contained, and backed by decodable artwork.
+
+## September 11 trail map mobile layout and review fixes
+
+- Stage markers are a 44px touch target at every viewport; the map renders on a scrollable canvas (min 1500×1125) so closely spaced stages never overlap, and `centerStageInMap` keeps the current stage on screen.
+- `npm run test:world-map-layout` loads the real map in a browser and asserts every rendered `.world-stage` is ≥44px and that no two bounding boxes intersect at 390×844, 820×1180, 1024×768, and 1440×900.
+- Route relaxation spacing rose from 3.6 to 4.5 weighted units so the wider markers keep clear separation without touching the approved artwork.
+- Magic House ranks 4 and 5 are no longer identical: rank 5 removes the help control (`maxHelpLevel` 0); `test:trail` now asserts difficulty from real parameters rather than rank labels.
+- Legacy 15-stage route progress (stars and current stage) is reset once through a `contentVersion` stamp; the owner approved this destructive reset knowing it also clears unversioned progress earned on the generated preview at stages 1–15, since stage ids cannot tell the routes apart. Progress already past the legacy trail and Memory/Shop/Magic House saves are preserved.
+- Magic House rounds saved with more help than their level now allows are clamped on restore, so rank 5's zero-help championship never calls `repeat()` with a negative count.
+- `centerStageInMap` scrolls each axis independently, keeping the frontier visible when the map overflows only vertically (for example 1920×900).
+- Gates: `npx tsc --noEmit`, `test:trail`, `test:track`, `test:saves`, `test:memory-completion`, `test:world-map-layout`, `test:memory-saves`, `test:magic-house-*`, and the production build all pass.

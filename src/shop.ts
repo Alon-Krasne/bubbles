@@ -38,7 +38,7 @@ export interface ShopDeps {
 
 export type ShopItem = VocabWord;
 
-export type ShopLevelId = 'shop-level-1' | 'shop-level-2' | 'shop-level-3' | 'shop-level-4' | 'shop-level-5';
+export type ShopLevelId = string;
 type ShopLevelMode = 'single' | 'quantity' | 'color' | 'double';
 
 interface ShopLevel {

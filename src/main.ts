@@ -46,22 +46,7 @@ const hostedActivitySession = hostedActivityContext
 type ScreenId = 'game-select-screen' | 'memory-screen' | 'shop-screen' | 'start-screen' | 'game-hud' | 'end-screen';
 type MemoryDifficulty = 'easy' | 'medium' | 'hard';
 type MemoryCardKind = 'hebrew' | 'english';
-type MemoryLevelId =
-  | 'level-1'
-  | 'level-2'
-  | 'level-3'
-  | 'level-4'
-  | 'level-5'
-  | 'level-6'
-  | 'level-7'
-  | 'level-8'
-  | 'level-9'
-  | 'level-10'
-  | 'level-11'
-  | 'level-12'
-  | 'level-13'
-  | 'level-14'
-  | 'level-15';
+type MemoryLevelId = string;
 
 interface KidProfile {
   id: string;

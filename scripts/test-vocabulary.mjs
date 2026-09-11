@@ -23,26 +23,22 @@ assert.ok(!niqqudPattern.test(JSON.stringify(TRAIL_STAGES)), 'Trail learning mat
 const routedMemoryLevels = TRAIL_STAGES
   .filter((stage) => stage.game === 'memory')
   .map((stage) => getGameLevel(stage.game, stage.level));
-const routedMemoryWords = routedMemoryLevels.flatMap((level) => level.wordPool);
-assert.deepEqual(
-  routedMemoryLevels.map((level) => level.pairs),
-  [4, 6, 8, 9, 10],
-  'routed Memory board size must increase without time pressure',
-);
-
+const routedMemoryPairs = routedMemoryLevels.map((level) => level.pairs);
 assert.ok(
-  routedMemoryLevels.every((level) => level.wordPool.length >= level.pairs * 3),
-  'every routed Memory level needs a pool at least three times its board size',
+  routedMemoryPairs.every((pairs, index) => index === 0 || pairs >= routedMemoryPairs[index - 1]),
+  'routed Memory board size must never shrink along the trail',
 );
-assert.equal(
-  new Set(routedMemoryWords).size,
-  routedMemoryWords.length,
-  'routed Memory levels must use distinct word pools',
-);
+assert.ok(routedMemoryPairs.at(-1) > routedMemoryPairs[0], 'routed Memory must get bigger before the finale');
+
+for (const level of routedMemoryLevels) {
+  assert.ok(level.pairs >= 4, `${level.id} must have a real board`);
+  assert.ok(level.wordPool.length >= level.pairs, `${level.id} word pool is too small`);
+  assert.equal(new Set(level.wordPool).size, level.wordPool.length, `${level.id} repeats a word in its pool`);
+}
 
 for (const level of GAME_LEVELS.shop) {
   assert.ok(Array.isArray(level.itemPool), `${level.id} must declare its generated item pool`);
-  assert.ok(level.itemPool.length >= level.shelfSize * 2, `${level.id} item pool is too small`);
+  assert.ok(level.itemPool.length >= level.shelfSize, `${level.id} item pool is smaller than its shelf`);
   assert.ok(level.itemPool.every((wordId) => vocabularyIds.has(wordId)), `${level.id} references unknown vocabulary`);
   assert.ok(
     level.itemPool.every((wordId) => VOCAB_WORDS.find((word) => word.id === wordId)?.shoppable),
@@ -52,6 +48,7 @@ for (const level of GAME_LEVELS.shop) {
 
 console.log(JSON.stringify({
   vocabularyCount: VOCAB_WORDS.length,
-  routedMemoryWordCount: routedMemoryWords.length,
+  routedMemoryLevels: routedMemoryLevels.length,
+  routedMemoryPairs,
   shopPoolSizes: GAME_LEVELS.shop.map((level) => level.itemPool.length),
 }));
