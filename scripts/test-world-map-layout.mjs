@@ -10,6 +10,8 @@ const browser = (...args) => execFileSync('agent-browser', ['--session', 'world-
 
 const checkLayout = async () => {
   await document.fonts.ready;
+  await new Promise(requestAnimationFrame);
+  await new Promise(requestAnimationFrame);
   const nodes = [...document.querySelectorAll('.world-stage')];
   const check = (condition, message) => { if (!condition) throw new Error(message); };
   check(nodes.length > 0, 'No stages rendered');
@@ -24,14 +26,21 @@ const checkLayout = async () => {
       check(!overlaps(rects[i].rect, rects[j].rect), `Stages ${rects[i].id} and ${rects[j].id} overlap`);
     }
   }
-  return `PASS: ${rects.length} stages are ≥44px and never overlap.`;
+  const current = document.querySelector('.world-stage.is-current');
+  if (current) {
+    const rect = current.getBoundingClientRect();
+    const onScreen = rect.left >= -1 && rect.right <= innerWidth + 1
+      && rect.top >= -1 && rect.bottom <= innerHeight + 1;
+    check(onScreen, `Current stage is off screen (${Math.round(rect.left)},${Math.round(rect.top)} in ${innerWidth}×${innerHeight})`);
+  }
+  return `PASS: ${rects.length} stages are ≥44px, never overlap, and the frontier is on screen.`;
 };
 
 try {
   browser('open', 'http://127.0.0.1:8788/prototype/world-map.html');
   browser('eval', "(() => { const card = document.querySelector('.gate-profile-choice'); if (card) card.click(); return true; })()");
   browser('wait', '.world-stage');
-  for (const [width, height] of [[390, 844], [820, 1180], [1024, 768], [1440, 900]]) {
+  for (const [width, height] of [[390, 844], [820, 1180], [1024, 768], [1440, 900], [1920, 900]]) {
     browser('set', 'viewport', String(width), String(height));
     const result = browser('eval', `(${checkLayout.toString()})()`);
     console.log(`${width}×${height}: ${result.trim()}`);

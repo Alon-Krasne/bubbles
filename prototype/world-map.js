@@ -482,17 +482,22 @@ function positionTraveller(stage) {
   centerStageInMap(stage);
 }
 
-// On small screens the map is wider than the viewport, so keep the discovered
-// frontier on screen instead of stranding the player at the origin.
+// On small screens the map can be larger than the viewport, so keep the
+// discovered frontier on screen instead of stranding the player at the origin.
 function centerStageInMap(stage) {
-  if (!mapScroll || mapScroll.scrollWidth <= mapScroll.clientWidth + 1) {
+  if (!mapScroll) {
+    return;
+  }
+  const canScrollX = mapScroll.scrollWidth > mapScroll.clientWidth + 1;
+  const canScrollY = mapScroll.scrollHeight > mapScroll.clientHeight + 1;
+  if (!canScrollX && !canScrollY) {
     return;
   }
   const left = (stage.x / 100) * mapScroll.scrollWidth - mapScroll.clientWidth / 2;
   const top = (stage.y / 100) * mapScroll.scrollHeight - mapScroll.clientHeight / 2;
   mapScroll.scrollTo({
-    left: Math.max(0, left),
-    top: Math.max(0, top),
+    left: canScrollX ? Math.max(0, left) : mapScroll.scrollLeft,
+    top: canScrollY ? Math.max(0, top) : mapScroll.scrollTop,
     behavior: 'auto',
   });
 }
@@ -1064,7 +1069,11 @@ window.addEventListener('message', handleActivityMessage);
 let labelLayoutFrame = 0;
 window.addEventListener('resize', () => {
   cancelAnimationFrame(labelLayoutFrame);
-  labelLayoutFrame = requestAnimationFrame(renderChapterLabels);
+  labelLayoutFrame = requestAnimationFrame(() => {
+    renderChapterLabels();
+    const currentStage = stages.find((stage) => stage.id === routeProgress[activeProfileId].currentStage);
+    if (currentStage) centerStageInMap(currentStage);
+  });
 });
 setProfile(activeProfileId);
 openGate();

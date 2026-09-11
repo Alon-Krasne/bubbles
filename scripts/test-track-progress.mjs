@@ -58,6 +58,14 @@ assert.deepEqual(
   { currentStage: 20, progress: { 1: 3 }, contentVersion: TRAIL_CONTENT_VERSION },
   'progress already past the legacy trail must be kept',
 );
+assert.deepEqual(
+  normalizeTrackProgress(
+    { currentStage: 10, progress: { 1: 3, 2: 3, 3: 3, 4: 3, 5: 3, 6: 3, 7: 3, 8: 3, 9: 3 } },
+    { stageCount: 36, legacyStageCount: 15 },
+  ),
+  { currentStage: 1, progress: {}, contentVersion: TRAIL_CONTENT_VERSION },
+  'unversioned stage-10 progress resets: an owner-approved tradeoff, since stage ids cannot tell which route was played',
+);
 const currentProgress = { currentStage: 4, progress: { 1: 3 }, contentVersion: TRAIL_CONTENT_VERSION };
 assert.equal(
   normalizeTrackProgress(currentProgress, { stageCount: 36, legacyStageCount: 15 }),

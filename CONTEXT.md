@@ -17,7 +17,7 @@ A themed group of six consecutive trail stages that share vocabulary categories 
 The live learning route produced by `generateTrail()` from chapters, vocabulary categories, and game parameter recipes. It is deterministic and validated: six chapters × six stages = 36 stages whose Memory, Shop and Magic House levels scale in difficulty. The legacy hand-placed 15-stage route remains exported as `LEGACY_TRAIL_STAGES` for reference only.
 
 **Trail content version**:
-A stamp written into each profile's saved route progress. When it is missing, saved stars belong to the legacy route and are reset once so they cannot attach to replacement content on the reused stage ids. Progress already past the legacy trail, plus Memory/Shop/Magic House round and settings saves, is preserved.
+A stamp written into each profile's saved route progress. When it is missing, the saved stars are treated as legacy and reset once, because stage ids cannot say which route produced them. The reset is destructive by owner approval (it also clears unversioned progress earned on the generated preview at stages 1–15). Progress already past the legacy trail, plus Memory/Shop/Magic House round and settings saves, is preserved.
 
 **Learning item**:
 An English word, pictured choice, movable object, or named destination that carries vocabulary needed to play an activity.

@@ -349,5 +349,7 @@ Green receipts:
 - `npm run test:world-map-layout` loads the real map in a browser and asserts every rendered `.world-stage` is ≥44px and that no two bounding boxes intersect at 390×844, 820×1180, 1024×768, and 1440×900.
 - Route relaxation spacing rose from 3.6 to 4.5 weighted units so the wider markers keep clear separation without touching the approved artwork.
 - Magic House ranks 4 and 5 are no longer identical: rank 5 removes the help control (`maxHelpLevel` 0); `test:trail` now asserts difficulty from real parameters rather than rank labels.
-- Legacy 15-stage route progress (stars and current stage) is reset once through a `contentVersion` stamp; progress already past the legacy trail and Memory/Shop/Magic House saves are preserved.
+- Legacy 15-stage route progress (stars and current stage) is reset once through a `contentVersion` stamp; the owner approved this destructive reset knowing it also clears unversioned progress earned on the generated preview at stages 1–15, since stage ids cannot tell the routes apart. Progress already past the legacy trail and Memory/Shop/Magic House saves are preserved.
+- Magic House rounds saved with more help than their level now allows are clamped on restore, so rank 5's zero-help championship never calls `repeat()` with a negative count.
+- `centerStageInMap` scrolls each axis independently, keeping the frontier visible when the map overflows only vertically (for example 1920×900).
 - Gates: `npx tsc --noEmit`, `test:trail`, `test:track`, `test:saves`, `test:memory-completion`, `test:world-map-layout`, `test:memory-saves`, `test:magic-house-*`, and the production build all pass.

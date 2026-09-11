@@ -171,10 +171,10 @@ function createProfileState(profileId) {
   const saved = saveStorage.getItem(key);
   if (saved) {
     const snapshot = JSON.parse(saved);
-    if (snapshot.completedRequests < snapshot.requestIds.length) return restoreHouseRound(snapshot, REQUESTS, OBJECTS);
+    if (snapshot.completedRequests < snapshot.requestIds.length) return clampHelpLevel(restoreHouseRound(snapshot, REQUESTS, OBJECTS));
     if (hostContext && !JSON.parse(saveStorage.getItem(`route-${profileId}`)).progress[hostContext.stageId]) {
       recordStageCompletion(hostContext, calculateMasteryStars({ mistakes: snapshot.mistakes, challengeSize: snapshot.requestIds.length }));
-      return restoreHouseRound(snapshot, REQUESTS, OBJECTS);
+      return clampHelpLevel(restoreHouseRound(snapshot, REQUESTS, OBJECTS));
     }
   }
   const requests = selectLevelRequests(magicHouseLevel, profileId);
@@ -195,6 +195,13 @@ function createProfileState(profileId) {
 
 function saveRound() {
   saveStorage.setItem(`house-round-${activeProfileId}-${magicHouseLevel.id}`, JSON.stringify(snapshotHouseRound(getState())));
+}
+
+// A saved round may have been created when the level allowed more help; keep it
+// playable instead of rendering a negative number of empty dots.
+function clampHelpLevel(state) {
+  state.helpLevel = Math.min(Math.max(state.helpLevel || 0, 0), magicHouseLevel.maxHelpLevel);
+  return state;
 }
 
 function selectLevelRequests(level, profileId) {
@@ -611,8 +618,8 @@ function applyHelpState() {
 }
 
 function updateHelpDots() {
-  const level = getState().helpLevel;
-  requireElement('help-level').textContent = `${'●'.repeat(level)}${'○'.repeat(magicHouseLevel.maxHelpLevel - level)}`;
+  const level = Math.min(getState().helpLevel, magicHouseLevel.maxHelpLevel);
+  requireElement('help-level').textContent = `${'●'.repeat(level)}${'○'.repeat(Math.max(0, magicHouseLevel.maxHelpLevel - level))}`;
   helpButton.disabled = level >= magicHouseLevel.maxHelpLevel;
   helpButton.hidden = magicHouseLevel.maxHelpLevel === 0;
 }
