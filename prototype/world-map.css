@@ -378,7 +378,7 @@ body {
   text-overflow: ellipsis;
 }
 
-.locked-route-overlay {
+.trail-route-overlay {
   position: absolute;
   z-index: 6;
   inset: 0;
@@ -388,21 +388,33 @@ body {
   pointer-events: none;
 }
 
-.locked-route-overlay path {
+.trail-route-overlay path {
   fill: none;
   stroke-linecap: round;
   stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
 }
 
-.locked-route-mist {
-  stroke: rgba(225, 239, 238, 0.78);
-  stroke-width: 5.2;
+.trail-route-base {
+  stroke: rgba(222, 234, 255, 0.52);
+  stroke-width: 3.2px;
+  stroke-dasharray: 2 8;
+  animation: trailFlow 3s linear infinite;
 }
 
-.locked-route-dashes {
-  stroke: rgba(119, 149, 154, 0.46);
-  stroke-width: 0.72;
-  stroke-dasharray: 1.2 1.8;
+.trail-route-glow {
+  stroke: rgba(255, 184, 80, 0.42);
+  stroke-width: 12px;
+}
+
+.trail-route-progress {
+  stroke: #ffe6a4;
+  stroke-width: 3.6px;
+  filter: drop-shadow(0 0 5px rgba(255, 196, 96, 0.95));
+}
+
+@keyframes trailFlow {
+  to { stroke-dashoffset: -11; }
 }
 
 .route {

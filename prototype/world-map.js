@@ -56,8 +56,9 @@ const traveller = document.getElementById('traveller');
 const travellerImage = document.getElementById('traveller-image');
 const activityOverlay = document.getElementById('activity-overlay');
 const activityFrame = document.getElementById('activity-frame');
-const lockedRouteMist = document.getElementById('locked-route-mist');
-const lockedRouteDashes = document.getElementById('locked-route-dashes');
+const trailRouteBase = document.getElementById('trail-route-base');
+const trailRouteGlow = document.getElementById('trail-route-glow');
+const trailRouteProgress = document.getElementById('trail-route-progress');
 const profileGate = document.getElementById('profile-gate');
 const gateProfileList = document.getElementById('gate-profile-list');
 const addProfileButton = document.getElementById('add-profile-button');
@@ -222,7 +223,7 @@ function getCharacterAsset(character, pose) {
 
 function renderRoute() {
   route.innerHTML = '';
-  renderLockedRoute();
+  renderTrail();
   const progress = getRouteProgress();
 
   stages.forEach((stage) => {
@@ -321,29 +322,39 @@ function renderChapterLabels() {
   });
 }
 
-function renderLockedRoute() {
-  const firstLockedStage = stages.find((stage) => !stage.available);
-  if (!firstLockedStage) {
-    lockedRouteMist.removeAttribute('d');
-    lockedRouteDashes.removeAttribute('d');
+function smoothTrailPath(points) {
+  if (points.length < 2) {
+    return '';
+  }
+  let path = `M ${points[0].x} ${points[0].y}`;
+  for (let index = 0; index < points.length - 1; index += 1) {
+    const previous = points[index - 1] ?? points[index];
+    const current = points[index];
+    const next = points[index + 1];
+    const after = points[index + 2] ?? next;
+    const controlOneX = current.x + (next.x - previous.x) / 6;
+    const controlOneY = current.y + (next.y - previous.y) / 6;
+    const controlTwoX = next.x - (after.x - current.x) / 6;
+    const controlTwoY = next.y - (after.y - current.y) / 6;
+    path += ` C ${controlOneX} ${controlOneY} ${controlTwoX} ${controlTwoY} ${next.x} ${next.y}`;
+  }
+  return path;
+}
+
+function renderTrail() {
+  if (!trailRouteBase) {
     return;
   }
-  const previousStage = stages.find((stage) => stage.id === firstLockedStage.id - 1);
-  const lockedPoints = [previousStage, ...stages.filter((stage) => !stage.available)];
-  const path = lockedPoints.reduce((result, point, index) => {
-    if (index === 0) {
-      return `M ${point.x} ${point.y}`;
-    }
-    if (index === lockedPoints.length - 1) {
-      return `${result} L ${point.x} ${point.y}`;
-    }
-    const next = lockedPoints[index + 1];
-    const midpointX = (point.x + next.x) / 2;
-    const midpointY = (point.y + next.y) / 2;
-    return `${result} Q ${point.x} ${point.y} ${midpointX} ${midpointY}`;
-  }, '');
-  lockedRouteMist.setAttribute('d', path);
-  lockedRouteDashes.setAttribute('d', path);
+  const allPoints = stages.map((stage) => ({ x: stage.x, y: stage.y }));
+  trailRouteBase.setAttribute('d', smoothTrailPath(allPoints));
+
+  const progress = getRouteProgress();
+  const travelledPoints = stages
+    .filter((stage) => stage.id <= progress.currentStage)
+    .map((stage) => ({ x: stage.x, y: stage.y }));
+  const travelledPath = smoothTrailPath(travelledPoints);
+  trailRouteGlow.setAttribute('d', travelledPath);
+  trailRouteProgress.setAttribute('d', travelledPath);
 }
 
 function selectStage(stage) {
