@@ -72,7 +72,11 @@ export function showSaveLoadError(error) {
 
 export function recordStageCompletion(context, stars) {
   const key = `route-${context.profileId}`;
-  const route = JSON.parse(saveStorage.getItem(key));
+  // An activity can be opened without a pre-created route (for example a direct
+  // deep link). Starting a fresh route keeps completion from crashing the game
+  // and stranding the child on the final customer.
+  const stored = saveStorage.getItem(key);
+  const route = stored ? JSON.parse(stored) : { progress: {}, currentStage: 1 };
   route.progress[context.stageId] = Math.max(route.progress[context.stageId] || 0, stars);
   while (route.progress[route.currentStage] && route.currentStage < TRAIL_STAGES.length) route.currentStage += 1;
   saveStorage.setItem(key, JSON.stringify({ ...route, contentVersion: TRAIL_CONTENT_VERSION }));

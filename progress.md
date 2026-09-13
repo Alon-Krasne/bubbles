@@ -8,6 +8,15 @@ Original prompt: Fix unlocked trail stages so they launch playable games and can
 - Renamed the Shop shelf label class to the language-neutral `shop-item-label`; updated `test-trail-catalog`, `test-vocabulary-audio`, `test-audio-integrity`, `test-fast-start-build`, `test-magic-house-audio`, and `test-shop-order-hint` for the spoken Hebrew policy and new assets.
 - Receipts: `npx tsc --noEmit`, `npm run build` (632 KB entry, 465 emitted clips), `test:trail`, `test:vocabulary-audio`, `test:audio-integrity`, `test:magic-house-audio`, `test:saves`, `test:translations`, `test:shop-session`, `test:shop-order-hint`, `test:shop-art`, `test:magic-house-inventory`, `test:moonlight-room`, `test:world-map-layout`, and `test:memory-saves` all pass. Browser checks launched Hebrew stage 1/8/3 from the trail and confirmed Hebrew word speech, the composed Shop order plus pictured shelf, and the Hebrew Magic House request + pictured drawer; the female Hebrew request WAV decodes.
 
+### September 13 rapid-answer Shop lock (review blocker)
+
+- Review found that answering both pictures of a two-item Hebrew order within the delayed 600 ms request prompt left the Shop locked at `1/7` with `replayDisabled: true`. The prompt's `playRecordedSequenceWithCompletion`-less request replaced the still-pending confirmation sequence, discarding the callback that advances the customer.
+- Fix: `selectItem` now cancels the pending order prompt on any answer, and the prompt callback also checks `state.locked`. `scheduleTimer` returns its id and a `cancelTimer` helper was added.
+- Hardened `recordStageCompletion` to start a fresh route when none exists, so a direct deep link cannot freeze on the final customer.
+- Added `test:shop-rapid-answers` (`scripts/run-shop-rapid-answers.mjs`), which owns build + isolated D1. It answers a two-item order within 150 ms and then completes the whole Hebrew level, asserting real playback (`playing` events, zero audio errors) and the celebration — the earlier browser check only asserted labels and pictures.
+- Red receipt on the pre-fix code: `a rapid correct answer must not lock the round: {"correctCount":2,"replayDisabled":true,"served":"🧺 1/7"}`. Green after: `PASS: ... {"rapid":{"correctCount":2,"replayDisabled":false,"served":"🧺 1/7"},"summary":{"audioErrors":[],"celebrating":true,"served":"🧺 7/7"}}`.
+- Regression gates re-run: `npx tsc --noEmit`, `npm run build`, `test:fast-start`, `test:trail`, `test:track`, `test:saves`, `test:memory-saves`, `test:shop-session`, `test:shop-order-hint`, `test:memory-completion`, and `test:store-audio`.
+
 ## September 11 generated trail foundation
 
 - Goal: make the learning trail content-driven so it can extend to 30-40 stages with rising difficulty instead of a hand-placed list.

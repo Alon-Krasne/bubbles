@@ -136,6 +136,7 @@ export function initShopGame(deps: ShopDeps) {
     customerName: SHOP_CUSTOMER_NAMES[0],
     timers: [] as number[],
   };
+  let orderPromptTimer: number | null = null;
 
   const levelMap = requireElement<HTMLElement>('shop-level-map');
   const gameArea = requireElement<HTMLElement>('shop-game-area');
@@ -306,7 +307,7 @@ export function initShopGame(deps: ShopDeps) {
       renderBasket();
       setFeedback('הקשיבו להזמנה ובחרו מהמדף');
       updateHud();
-      scheduleTimer(() => speakOrder(), 600);
+      scheduleOrderPrompt();
       return;
     }
     nextCustomer();
@@ -328,7 +329,26 @@ export function initShopGame(deps: ShopDeps) {
     setFeedback('הקשיבו להזמנה ובחרו מהמדף');
     updateHud();
     saveActiveShopSession();
-    scheduleTimer(() => speakOrder(), 600);
+    scheduleOrderPrompt();
+  }
+
+  // The spoken request is delayed so the new customer settles first. A child may
+  // answer before it fires, so the prompt must never replace a queued
+  // confirmation or the round would stay locked forever.
+  function scheduleOrderPrompt() {
+    orderPromptTimer = scheduleTimer(() => {
+      orderPromptTimer = null;
+      if (!state.locked) {
+        speakOrder();
+      }
+    }, 600);
+  }
+
+  function cancelOrderPrompt() {
+    if (orderPromptTimer !== null) {
+      cancelTimer(orderPromptTimer);
+      orderPromptTimer = null;
+    }
   }
 
   function renderCustomer() {
@@ -385,6 +405,10 @@ export function initShopGame(deps: ShopDeps) {
     if (state.locked) {
       return;
     }
+
+    // Any answer supersedes the pending request prompt; leaving it queued lets
+    // it cancel the confirmation sequence that advances the customer.
+    cancelOrderPrompt();
 
     const order = requireCurrentOrder();
     const language = getLearningLanguage();
@@ -747,11 +771,18 @@ export function initShopGame(deps: ShopDeps) {
       callback();
     }, delayMs);
     state.timers.push(timerId);
+    return timerId;
+  }
+
+  function cancelTimer(timerId: number) {
+    clearTimeout(timerId);
+    state.timers = state.timers.filter((candidate) => candidate !== timerId);
   }
 
   function clearShopTimers() {
     state.timers.forEach((timerId) => clearTimeout(timerId));
     state.timers = [];
+    orderPromptTimer = null;
   }
 
   return {
