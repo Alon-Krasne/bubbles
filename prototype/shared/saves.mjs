@@ -1,5 +1,6 @@
 import { createSaveClient, SAVE_CACHE_KEY } from './save-client.mjs';
 import { TRAIL_STAGES } from './trail-catalog.mjs';
+import { TRAIL_CONTENT_VERSION } from './track-progress.mjs';
 
 export let saveStorage;
 
@@ -74,5 +75,5 @@ export function recordStageCompletion(context, stars) {
   const route = JSON.parse(saveStorage.getItem(key));
   route.progress[context.stageId] = Math.max(route.progress[context.stageId] || 0, stars);
   while (route.progress[route.currentStage] && route.currentStage < TRAIL_STAGES.length) route.currentStage += 1;
-  saveStorage.setItem(key, JSON.stringify(route));
+  saveStorage.setItem(key, JSON.stringify({ ...route, contentVersion: TRAIL_CONTENT_VERSION }));
 }

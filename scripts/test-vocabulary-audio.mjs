@@ -10,7 +10,9 @@ const memoryWordIds = TRAIL_STAGES
   .flatMap((stage) => getGameLevel(stage.game, stage.level).wordPool);
 const shopWordIds = GAME_LEVELS.shop.flatMap((level) => level.itemPool);
 const activeWordIds = [...new Set([...memoryWordIds, ...shopWordIds])];
-const quantityWordIds = getGameLevel('shop', 'shop-level-3').itemPool;
+const quantityWordIds = [...new Set(
+  GAME_LEVELS.shop.filter((level) => level.mode === 'quantity').flatMap((level) => level.itemPool),
+)];
 const uiClipIds = ['a', 'an', 'and', 'can-i-have', 'one', 'please', 'thank-you', 'the', 'three', 'two'];
 
 const expectedFiles = [

@@ -47,14 +47,25 @@
         </div>
       </header>
 
-      <div class="area-label area-label-words">עמק המילים</div>
-      <div class="area-label area-label-market">שוק הקסם</div>
-      <div class="area-label area-label-house">הבית הקסום</div>
-      <div class="area-label area-label-bubbles">שביל הבועות</div>
+      <div class="map-scroll">
+        <div class="map-stage">
+          <div class="chapter-labels" id="chapter-labels" aria-hidden="true"></div>
 
-      <svg class="locked-route-overlay" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-        <path class="locked-route-mist" id="locked-route-mist"></path>
-        <path class="locked-route-dashes" id="locked-route-dashes"></path>
+      <svg class="trail-route-overlay" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="trail-gold" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#fff3cf"></stop>
+            <stop offset="45%" stop-color="#ffd982"></stop>
+            <stop offset="100%" stop-color="#ffb257"></stop>
+          </linearGradient>
+        </defs>
+        <path class="trail-route-shadow" id="trail-route-shadow"></path>
+        <path class="trail-route-base" id="trail-route-base"></path>
+        <path class="trail-route-base-core" id="trail-route-base-core"></path>
+        <path class="trail-route-dust" id="trail-route-dust"></path>
+        <path class="trail-route-glow" id="trail-route-glow"></path>
+        <path class="trail-route-progress" id="trail-route-progress"></path>
+        <path class="trail-route-sparkle" id="trail-route-sparkle"></path>
       </svg>
 
       <section class="route" id="route" aria-label="שלבי המסע"></section>
@@ -62,6 +73,8 @@
       <div class="traveller" id="traveller" aria-label="לוטם נמצאת בשלב 4">
         <span class="traveller-shadow" aria-hidden="true"></span>
         <img id="traveller-image" src="../src/assets/characters/princess/princess_idle_1.webp" alt="">
+      </div>
+        </div>
       </div>
 
       <section class="stage-panel" id="stage-panel" aria-live="polite">

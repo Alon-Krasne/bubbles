@@ -1,10 +1,19 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 import {
   MAGIC_HOUSE_REQUEST_LAYOUTS,
   MAGIC_HOUSE_REQUESTS,
 } from '../prototype/shared/magic-house-content.mjs';
 import { selectVariedRequestIds } from '../prototype/shared/magic-house-variation.mjs';
+
+const magicHouseSource = readFileSync(new URL('../prototype/magic-house.js', import.meta.url), 'utf8');
+assert.match(
+  magicHouseSource,
+  /Math\.max\(0, magicHouseLevel\.maxHelpLevel - level\)/,
+  'help dots must never call repeat() with a negative count',
+);
+assert.match(magicHouseSource, /function clampHelpLevel/, 'rounds restored with a stale help level must be clamped');
 
 const requestById = new Map(MAGIC_HOUSE_REQUESTS.map((request) => [request.id, request]));
 assert.ok(MAGIC_HOUSE_REQUEST_LAYOUTS.length >= 2, 'Magic House needs multiple authored room layouts');

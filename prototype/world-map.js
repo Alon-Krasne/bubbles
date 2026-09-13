@@ -1,5 +1,10 @@
-import { TRAIL_STAGES } from './shared/trail-catalog.mjs';
-import { createTrackProgress } from './shared/track-progress.mjs';
+import { LEGACY_TRAIL_STAGES, TRAIL_CHAPTERS, TRAIL_STAGES } from './shared/trail-catalog.mjs';
+import {
+  TRAIL_CONTENT_VERSION,
+  createTrackProgress,
+  isStageUnlocked,
+  normalizeTrackProgress,
+} from './shared/track-progress.mjs';
 import { getTravellerPosition } from './shared/traveller-position.mjs';
 import { formatStarRating } from './shared/activity-scoring.mjs';
 import { saveStorage } from './shared/saves.mjs';
@@ -33,6 +38,8 @@ const PROFILE_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i;
 
 const world = document.getElementById('world');
 const route = document.getElementById('route');
+const mapScroll = document.querySelector('.map-scroll');
+const chapterLabels = document.getElementById('chapter-labels');
 const stagePanel = document.getElementById('stage-panel');
 const panelClose = document.getElementById('panel-close');
 const panelIcon = document.getElementById('panel-icon');
@@ -55,8 +62,13 @@ const traveller = document.getElementById('traveller');
 const travellerImage = document.getElementById('traveller-image');
 const activityOverlay = document.getElementById('activity-overlay');
 const activityFrame = document.getElementById('activity-frame');
-const lockedRouteMist = document.getElementById('locked-route-mist');
-const lockedRouteDashes = document.getElementById('locked-route-dashes');
+const trailRouteShadow = document.getElementById('trail-route-shadow');
+const trailRouteBase = document.getElementById('trail-route-base');
+const trailRouteBaseCore = document.getElementById('trail-route-base-core');
+const trailRouteDust = document.getElementById('trail-route-dust');
+const trailRouteGlow = document.getElementById('trail-route-glow');
+const trailRouteProgress = document.getElementById('trail-route-progress');
+const trailRouteSparkle = document.getElementById('trail-route-sparkle');
 const profileGate = document.getElementById('profile-gate');
 const gateProfileList = document.getElementById('gate-profile-list');
 const addProfileButton = document.getElementById('add-profile-button');
@@ -173,15 +185,27 @@ function loadWorldProgress() {
   return Object.fromEntries(profiles.map(profile => {
     const key = `route-${profile.id}`;
     const saved = saveStorage.getItem(key);
-    const progress = saved ? JSON.parse(saved) : createTrackProgress(1, stages.length);
-    if (!saved) saveStorage.setItem(key, JSON.stringify(progress));
+    if (!saved) {
+      const progress = createTrackProgress(1, stages.length);
+      saveStorage.setItem(key, JSON.stringify({ ...progress, contentVersion: TRAIL_CONTENT_VERSION }));
+      return [profile.id, progress];
+    }
+    const parsed = JSON.parse(saved);
+    const progress = normalizeTrackProgress(parsed, {
+      stageCount: stages.length,
+      legacyStageCount: LEGACY_TRAIL_STAGES.length,
+    });
+    if (progress !== parsed) saveStorage.setItem(key, JSON.stringify(progress));
     return [profile.id, progress];
   }));
 }
 
 function saveWorldProgress() {
   for (const profile of profiles) {
-    saveStorage.setItem(`route-${profile.id}`, JSON.stringify(routeProgress[profile.id]));
+    saveStorage.setItem(`route-${profile.id}`, JSON.stringify({
+      ...routeProgress[profile.id],
+      contentVersion: TRAIL_CONTENT_VERSION,
+    }));
   }
 }
 
@@ -221,18 +245,21 @@ function getCharacterAsset(character, pose) {
 
 function renderRoute() {
   route.innerHTML = '';
-  renderLockedRoute();
+  renderTrail();
   const progress = getRouteProgress();
 
   stages.forEach((stage) => {
     const stars = progress.progress[stage.id] || 0;
-    const state = !stage.available
+    // A stage opens once the player has cleared every stage before it, so the
+    // frontier is the current stage and everything past it stays locked.
+    const unlocked = isStageUnlocked(stage, progress.currentStage);
+    const state = !unlocked
       ? 'locked'
       : stars > 0
         ? 'complete'
         : stage.id === progress.currentStage
           ? 'current'
-          : 'locked';
+          : 'future';
     const button = document.createElement('button');
     button.type = 'button';
     button.className = `world-stage is-${state}`;
@@ -244,20 +271,15 @@ function renderRoute() {
     button.dataset.difficulty = String(stage.difficultyRank);
     button.style.left = `${stage.x}%`;
     button.style.top = `${stage.y}%`;
-    button.disabled = state === 'locked';
+    button.disabled = !unlocked;
     button.setAttribute('aria-label', state === 'locked'
       ? `שלב ${stage.id}, ${stage.title}, נעול`
       : `שלב ${stage.id}, ${stage.title}, ${stars} כוכבים`);
 
-    const icon = document.createElement('span');
-    icon.className = 'stage-icon';
-    icon.setAttribute('aria-hidden', 'true');
-    renderActivityIcon(icon, stage);
-
     const number = document.createElement('span');
     number.className = 'stage-number';
     number.textContent = String(stage.id);
-    button.append(icon, number);
+    button.append(number);
 
     if (stars > 0) {
       const starLabel = document.createElement('span');
@@ -267,43 +289,142 @@ function renderRoute() {
       button.append(starLabel);
     }
 
-    if (state === 'locked') {
+    if (unlocked) {
+      button.addEventListener('click', () => selectStage(stage));
+    } else {
       const lock = document.createElement('span');
       lock.className = 'stage-lock';
       lock.setAttribute('aria-hidden', 'true');
       lock.textContent = '🔒';
       button.append(lock);
-    } else {
-      button.addEventListener('click', () => selectStage(stage));
     }
 
     route.append(button);
   });
 }
 
-function renderLockedRoute() {
-  const firstLockedStage = stages.find((stage) => !stage.available);
-  if (!firstLockedStage) {
-    lockedRouteMist.removeAttribute('d');
-    lockedRouteDashes.removeAttribute('d');
+function rectanglesOverlap(a, b) {
+  return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+}
+
+// Finds a spot for each chapter banner that clears every stage marker and the
+// banners already placed, trying above, left, right and below the cluster.
+function placeChapterLabel(label, rects, bounds, placed) {
+  const width = (label.offsetWidth / bounds.width) * 100;
+  const height = (label.offsetHeight / bounds.height) * 100;
+  const gap = 2;
+  const candidates = [
+    { x: rects.centerX, y: rects.topY - height / 2 - gap },
+    { x: rects.leftX - width / 2 - gap, y: rects.centerY },
+    { x: rects.rightX + width / 2 + gap, y: rects.centerY },
+    { x: rects.centerX, y: rects.bottomY + height / 2 + gap },
+  ];
+  for (const candidate of candidates) {
+    label.style.left = `${candidate.x}%`;
+    label.style.top = `${candidate.y}%`;
+    const rect = label.getBoundingClientRect();
+    const inside = rect.left >= 6 && rect.right <= bounds.width - 6
+      && rect.top >= 6 && rect.bottom <= bounds.height - 6;
+    const clear = !rects.nodes.some((node) => rectanglesOverlap(rect, node))
+      && !placed.some((other) => rectanglesOverlap(rect, other));
+    if (inside && clear) {
+      placed.push(rect);
+      return;
+    }
+  }
+  placed.push(label.getBoundingClientRect());
+}
+
+function renderChapterLabels() {
+  if (!chapterLabels) {
     return;
   }
-  const previousStage = stages.find((stage) => stage.id === firstLockedStage.id - 1);
-  const lockedPoints = [previousStage, ...stages.filter((stage) => !stage.available)];
-  const path = lockedPoints.reduce((result, point, index) => {
-    if (index === 0) {
-      return `M ${point.x} ${point.y}`;
+  chapterLabels.replaceChildren();
+  const bounds = chapterLabels.getBoundingClientRect();
+  if (bounds.width === 0 || bounds.height === 0) {
+    return;
+  }
+  const nodes = [...route.querySelectorAll('.world-stage')].map((node) => node.getBoundingClientRect());
+  const placed = [];
+  TRAIL_CHAPTERS.forEach((chapter, index) => {
+    const chapterStages = stages.filter((stage) => stage.chapterIndex === index);
+    if (chapterStages.length === 0) {
+      return;
     }
-    if (index === lockedPoints.length - 1) {
-      return `${result} L ${point.x} ${point.y}`;
-    }
-    const next = lockedPoints[index + 1];
-    const midpointX = (point.x + next.x) / 2;
-    const midpointY = (point.y + next.y) / 2;
-    return `${result} Q ${point.x} ${point.y} ${midpointX} ${midpointY}`;
-  }, '');
-  lockedRouteMist.setAttribute('d', path);
-  lockedRouteDashes.setAttribute('d', path);
+    const rects = {
+      centerX: chapterStages.reduce((total, stage) => total + stage.x, 0) / chapterStages.length,
+      centerY: chapterStages.reduce((total, stage) => total + stage.y, 0) / chapterStages.length,
+      topY: Math.min(...chapterStages.map((stage) => stage.y)),
+      bottomY: Math.max(...chapterStages.map((stage) => stage.y)),
+      leftX: Math.min(...chapterStages.map((stage) => stage.x)),
+      rightX: Math.max(...chapterStages.map((stage) => stage.x)),
+      nodes,
+    };
+
+    const label = document.createElement('div');
+    label.className = `chapter-label chapter-label-${index + 1}`;
+    label.style.visibility = 'hidden';
+
+    const symbol = document.createElement('span');
+    symbol.className = 'chapter-symbol';
+    symbol.setAttribute('aria-hidden', 'true');
+    symbol.textContent = chapter.symbol;
+
+    const copy = document.createElement('span');
+    copy.className = 'chapter-copy';
+    const title = document.createElement('strong');
+    title.textContent = chapter.title;
+    const subtitle = document.createElement('small');
+    subtitle.textContent = chapter.subtitle;
+    copy.append(title, subtitle);
+
+    label.append(symbol, copy);
+    chapterLabels.append(label);
+    label.style.visibility = '';
+    placeChapterLabel(label, rects, bounds, placed);
+  });
+}
+
+// Rounded polyline: each stop becomes the control point of a quadratic that
+// ends at the midpoint toward the next stop. Consecutive quadratics share those
+// midpoints, so the joins stay smooth and every bend reads as a soft arc.
+function smoothTrailPath(points) {
+  if (points.length < 2) {
+    return '';
+  }
+  if (points.length === 2) {
+    return `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y}`;
+  }
+  let path = `M ${points[0].x} ${points[0].y}`;
+  for (let index = 1; index < points.length - 1; index += 1) {
+    const midX = (points[index].x + points[index + 1].x) / 2;
+    const midY = (points[index].y + points[index + 1].y) / 2;
+    path += ` Q ${points[index].x} ${points[index].y} ${midX} ${midY}`;
+  }
+  const last = points[points.length - 1];
+  path += ` L ${last.x} ${last.y}`;
+  return path;
+}
+
+function renderTrail() {
+  if (!trailRouteBase) {
+    return;
+  }
+  const allPoints = stages.map((stage) => ({ x: stage.x, y: stage.y }));
+  const fullPath = smoothTrailPath(allPoints);
+  trailRouteShadow.setAttribute('d', fullPath);
+  trailRouteBase.setAttribute('d', fullPath);
+  trailRouteBaseCore.setAttribute('d', fullPath);
+  trailRouteDust.setAttribute('d', fullPath);
+
+  const progress = getRouteProgress();
+  const travelledPoints = stages
+    .filter((stage) => stage.id <= progress.currentStage)
+    .map((stage) => ({ x: stage.x, y: stage.y }));
+  const travelledPath = smoothTrailPath(travelledPoints);
+  trailRouteGlow.setAttribute('d', travelledPath);
+  trailRouteProgress.setAttribute('d', travelledPath);
+  trailRouteSparkle.setAttribute('d', travelledPath);
 }
 
 function selectStage(stage) {
@@ -350,6 +471,7 @@ function setProfile(profileId) {
   selectStage(stage);
   renderProfileMenu();
   closeProfileMenu();
+  renderChapterLabels();
 }
 
 function positionTraveller(stage) {
@@ -357,6 +479,27 @@ function positionTraveller(stage) {
   traveller.dataset.stage = String(stage.id);
   traveller.style.left = `${position.x}%`;
   traveller.style.top = `${position.y}%`;
+  centerStageInMap(stage);
+}
+
+// On small screens the map can be larger than the viewport, so keep the
+// discovered frontier on screen instead of stranding the player at the origin.
+function centerStageInMap(stage) {
+  if (!mapScroll) {
+    return;
+  }
+  const canScrollX = mapScroll.scrollWidth > mapScroll.clientWidth + 1;
+  const canScrollY = mapScroll.scrollHeight > mapScroll.clientHeight + 1;
+  if (!canScrollX && !canScrollY) {
+    return;
+  }
+  const left = (stage.x / 100) * mapScroll.scrollWidth - mapScroll.clientWidth / 2;
+  const top = (stage.y / 100) * mapScroll.scrollHeight - mapScroll.clientHeight / 2;
+  mapScroll.scrollTo({
+    left: canScrollX ? Math.max(0, left) : mapScroll.scrollLeft,
+    top: canScrollY ? Math.max(0, top) : mapScroll.scrollTop,
+    behavior: 'auto',
+  });
 }
 
 function renderProfileMenu() {
@@ -923,5 +1066,14 @@ document.addEventListener('keydown', (event) => {
 });
 
 window.addEventListener('message', handleActivityMessage);
+let labelLayoutFrame = 0;
+window.addEventListener('resize', () => {
+  cancelAnimationFrame(labelLayoutFrame);
+  labelLayoutFrame = requestAnimationFrame(() => {
+    renderChapterLabels();
+    const currentStage = stages.find((stage) => stage.id === routeProgress[activeProfileId].currentStage);
+    if (currentStage) centerStageInMap(currentStage);
+  });
+});
 setProfile(activeProfileId);
 openGate();

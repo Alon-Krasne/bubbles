@@ -9,7 +9,7 @@ import {
   MAGIC_HOUSE_ZONES,
 } from './shared/magic-house-room.mjs';
 import { selectVariedRequestIds } from './shared/magic-house-variation.mjs';
-import { TRAIL_STAGES, getGameLevel, getLanguagePolicy } from './shared/trail-catalog.mjs';
+import { MAGIC_HOUSE_PRACTICE_LEVEL, TRAIL_STAGES, getGameLevel, getLanguagePolicy } from './shared/trail-catalog.mjs';
 import { applyEnglishLearningTranslationHint } from './shared/translation-hint.mjs';
 import { saveStorage, recordStageCompletion } from './shared/saves.mjs';
 import { snapshotHouseRound, restoreHouseRound } from './shared/magic-house-save.mjs';
@@ -80,7 +80,7 @@ const ACTIVITY_MESSAGE_VERSION = 1;
 const PREVIOUS_REQUESTS_STORAGE_PREFIX = 'magic-house-previous-requests-v1';
 const PROFILE_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i;
 const hostContext = readHostContext();
-const magicHouseLevel = getGameLevel('house', hostContext ? hostContext.levelId : 'bedroom-practice');
+const magicHouseLevel = hostContext ? getGameLevel('house', hostContext.levelId) : MAGIC_HOUSE_PRACTICE_LEVEL;
 const activeProfiles = hostContext
   ? { [hostContext.profileId]: hostContext.profile }
   : PROFILES;
@@ -171,10 +171,10 @@ function createProfileState(profileId) {
   const saved = saveStorage.getItem(key);
   if (saved) {
     const snapshot = JSON.parse(saved);
-    if (snapshot.completedRequests < snapshot.requestIds.length) return restoreHouseRound(snapshot, REQUESTS, OBJECTS);
+    if (snapshot.completedRequests < snapshot.requestIds.length) return clampHelpLevel(restoreHouseRound(snapshot, REQUESTS, OBJECTS));
     if (hostContext && !JSON.parse(saveStorage.getItem(`route-${profileId}`)).progress[hostContext.stageId]) {
       recordStageCompletion(hostContext, calculateMasteryStars({ mistakes: snapshot.mistakes, challengeSize: snapshot.requestIds.length }));
-      return restoreHouseRound(snapshot, REQUESTS, OBJECTS);
+      return clampHelpLevel(restoreHouseRound(snapshot, REQUESTS, OBJECTS));
     }
   }
   const requests = selectLevelRequests(magicHouseLevel, profileId);
@@ -195,6 +195,13 @@ function createProfileState(profileId) {
 
 function saveRound() {
   saveStorage.setItem(`house-round-${activeProfileId}-${magicHouseLevel.id}`, JSON.stringify(snapshotHouseRound(getState())));
+}
+
+// A saved round may have been created when the level allowed more help; keep it
+// playable instead of rendering a negative number of empty dots.
+function clampHelpLevel(state) {
+  state.helpLevel = Math.min(Math.max(state.helpLevel || 0, 0), magicHouseLevel.maxHelpLevel);
+  return state;
 }
 
 function selectLevelRequests(level, profileId) {
@@ -611,9 +618,10 @@ function applyHelpState() {
 }
 
 function updateHelpDots() {
-  const level = getState().helpLevel;
-  requireElement('help-level').textContent = `${'●'.repeat(level)}${'○'.repeat(magicHouseLevel.maxHelpLevel - level)}`;
+  const level = Math.min(getState().helpLevel, magicHouseLevel.maxHelpLevel);
+  requireElement('help-level').textContent = `${'●'.repeat(level)}${'○'.repeat(Math.max(0, magicHouseLevel.maxHelpLevel - level))}`;
   helpButton.disabled = level >= magicHouseLevel.maxHelpLevel;
+  helpButton.hidden = magicHouseLevel.maxHelpLevel === 0;
 }
 
 function updateStars() {

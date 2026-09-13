@@ -87,7 +87,22 @@ body {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background-image: url('../src/assets/memory/memory-garden-map-bg-v2.png');
+}
+
+.map-scroll {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  overflow: auto;
+  direction: ltr;
+  -webkit-overflow-scrolling: touch;
+}
+
+.map-stage {
+  position: relative;
+  width: max(100vw, 1500px);
+  height: max(100vh, 1125px);
+  background-image: url('../src/assets/memory/moonlit-trail-map.webp');
   background-position: center;
   background-repeat: no-repeat;
   background-size: 100% 100%;
@@ -314,44 +329,71 @@ body {
   font-weight: 900;
 }
 
-.area-label {
+.chapter-labels {
   position: absolute;
-  z-index: 4;
-  padding: 4px 12px;
-  border: 2px solid rgba(255, 255, 255, 0.72);
-  border-radius: 999px;
-  background: rgba(71, 125, 117, 0.74);
-  color: white;
-  font-family: 'Secular One', sans-serif;
-  font-size: clamp(13px, 1.2vw, 18px);
-  line-height: 1.1;
-  text-shadow: 0 2px 0 rgba(29, 82, 78, 0.28);
-  box-shadow: 0 4px 12px rgba(43, 93, 88, 0.14);
+  z-index: 9;
+  inset: 0;
   pointer-events: none;
+  direction: rtl;
 }
 
-.area-label-words {
-  left: 25%;
-  top: 76%;
+.chapter-label {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 20ch;
+  padding: 4px 10px 5px 9px;
+  transform: translate(-50%, -50%);
+  text-align: right;
+  border: 2px solid rgba(255, 226, 156, 0.72);
+  border-radius: 14px;
+  background: linear-gradient(160deg, rgba(31, 45, 92, 0.9), rgba(20, 27, 60, 0.92));
+  color: #fdf3d6;
+  box-shadow: 0 6px 16px rgba(5, 10, 30, 0.5), inset 0 0 0 1px rgba(255, 214, 120, 0.16);
+  text-shadow: 0 2px 4px rgba(4, 8, 24, 0.7);
+  backdrop-filter: blur(2px);
 }
 
-.area-label-market {
-  left: 54%;
-  top: 24%;
+.chapter-label.is-left {
+  transform: translate(-100%, -50%);
 }
 
-.area-label-house {
-  left: 15%;
-  top: 64%;
-  background: rgba(169, 79, 112, 0.78);
+.chapter-symbol {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, #ffe6a6, #e9ad48 78%);
+  box-shadow: 0 3px 8px rgba(5, 10, 30, 0.45), inset 0 -2px 0 rgba(150, 96, 22, 0.4);
+  font-size: 12px;
+  line-height: 1;
 }
 
-.area-label-bubbles {
-  right: 12%;
-  top: 46%;
+.chapter-copy {
+  display: grid;
+  min-width: 0;
 }
 
-.locked-route-overlay {
+.chapter-copy strong {
+  font-family: 'Secular One', sans-serif;
+  font-size: clamp(10.5px, 0.92vw, 13px);
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.chapter-copy small {
+  font-size: clamp(8px, 0.72vw, 10px);
+  line-height: 1.2;
+  color: #cfe0f4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trail-route-overlay {
   position: absolute;
   z-index: 6;
   inset: 0;
@@ -361,21 +403,78 @@ body {
   pointer-events: none;
 }
 
-.locked-route-overlay path {
+.trail-route-overlay path {
   fill: none;
   stroke-linecap: round;
   stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
 }
 
-.locked-route-mist {
-  stroke: rgba(225, 239, 238, 0.78);
-  stroke-width: 5.2;
+/* Soft shadow keeps the road sitting above the illustrated ground */
+.trail-route-shadow {
+  stroke: rgba(6, 12, 30, 0.4);
+  stroke-width: 12px;
+  filter: blur(5px);
 }
 
-.locked-route-dashes {
-  stroke: rgba(119, 149, 154, 0.46);
-  stroke-width: 0.72;
-  stroke-dasharray: 1.2 1.8;
+/* Unwalked road: a wide cream haze */
+.trail-route-base {
+  stroke: rgba(255, 244, 214, 0.16);
+  stroke-width: 11px;
+  filter: blur(2px);
+}
+
+/* Stepping-stone dots along the road ahead */
+.trail-route-base-core {
+  stroke: rgba(232, 242, 255, 0.72);
+  stroke-width: 2.4px;
+  stroke-dasharray: 2.6 6.5;
+  filter: drop-shadow(0 0 3px rgba(206, 228, 255, 0.6));
+  animation: trailFlow 3.4s linear infinite;
+}
+
+/* Faint star dust sprinkled the whole length of the road */
+.trail-route-dust {
+  stroke: rgba(255, 247, 224, 0.9);
+  stroke-width: 2.6px;
+  stroke-dasharray: 0.1 6;
+  filter: drop-shadow(0 0 4px rgba(255, 236, 180, 0.9));
+  animation: trailDust 5.5s ease-in-out infinite;
+}
+
+/* Warm halo for the part already walked */
+.trail-route-glow {
+  stroke: rgba(255, 183, 82, 0.45);
+  stroke-width: 20px;
+  filter: blur(7px);
+}
+
+.trail-route-progress {
+  stroke: url(#trail-gold);
+  stroke-width: 3.4px;
+  filter: drop-shadow(0 0 6px rgba(255, 196, 96, 0.95));
+}
+
+/* Slow comet of light drifting along the walked road */
+.trail-route-sparkle {
+  stroke: rgba(255, 255, 255, 0.95);
+  stroke-width: 2.6px;
+  stroke-dasharray: 3 120;
+  animation: trailSparkle 6s linear infinite;
+  filter: drop-shadow(0 0 5px rgba(255, 240, 200, 1));
+}
+
+@keyframes trailFlow {
+  to { stroke-dashoffset: -9.1; }
+}
+
+@keyframes trailDust {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+
+@keyframes trailSparkle {
+  to { stroke-dashoffset: -123; }
 }
 
 .route {
@@ -386,69 +485,97 @@ body {
 }
 
 .world-stage {
-  --node-size: clamp(64px, 5vw, 72px);
+  --node-size: clamp(44px, 2.35vw, 48px);
   position: absolute;
   width: var(--node-size);
   height: var(--node-size);
   display: grid;
   place-items: center;
   transform: translate(-50%, -50%);
-  border: 4px solid rgba(255, 255, 255, 0.94);
+  border: 3px solid rgba(255, 228, 158, 0.92);
   border-radius: 50%;
-  background: #fffaf0;
-  color: #64697d;
+  background: radial-gradient(circle at 50% 32%, #3f7590, #1e3a63 72%);
+  color: #fdf2cf;
   box-shadow:
-    0 7px 0 rgba(86, 118, 128, 0.2),
-    0 13px 22px rgba(60, 86, 100, 0.2),
-    inset 0 0 0 4px rgba(255, 220, 125, 0.3);
+    0 5px 0 rgba(9, 19, 43, 0.6),
+    0 12px 22px rgba(5, 12, 32, 0.55),
+    inset 0 0 0 3px rgba(255, 214, 120, 0.22),
+    0 0 20px rgba(255, 214, 140, 0.28);
   cursor: pointer;
   transition: transform 170ms ease, filter 170ms ease, box-shadow 170ms ease;
 }
 
+.world-stage::after {
+  content: '';
+  position: absolute;
+  inset: 3px 3px 52% 3px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0));
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.world-stage.is-future::after,
+.world-stage.is-locked::after {
+  opacity: 0.22;
+}
+
+.world-stage.is-complete::after {
+  opacity: 0.75;
+}
+
 .world-stage:hover,
 .world-stage:focus-visible {
-  transform: translate(-50%, calc(-50% - 4px)) scale(1.08);
-  filter: brightness(1.05);
-  outline: 4px solid rgba(255, 255, 255, 0.86);
+  transform: translate(-50%, calc(-50% - 4px)) scale(1.09);
+  filter: brightness(1.12);
+  outline: 3px solid rgba(255, 236, 189, 0.9);
   outline-offset: 3px;
 }
 
 .world-stage.is-selected {
-  outline: 5px solid #55bdb7;
+  outline: 4px solid #ffd472;
   outline-offset: 4px;
-  filter: brightness(1.06) drop-shadow(0 0 9px rgba(255, 255, 255, 0.94));
+  filter: brightness(1.12) drop-shadow(0 0 12px rgba(255, 214, 120, 0.9));
 }
 
 .world-stage.is-complete {
-  background: #fff2b8;
-  color: #9d5c31;
+  background: radial-gradient(circle at 50% 32%, #ffe9ad, #efb24a 74%);
+  color: #7c4a12;
+  border-color: #fff5d6;
   box-shadow:
-    0 7px 0 #d98b40,
-    0 13px 24px rgba(134, 80, 45, 0.22),
-    inset 0 0 0 4px rgba(255, 255, 255, 0.44);
+    0 5px 0 #b87a2a,
+    0 12px 22px rgba(9, 19, 43, 0.5),
+    inset 0 0 0 3px rgba(255, 255, 255, 0.5),
+    0 0 16px rgba(255, 206, 110, 0.55);
 }
 
 .world-stage.is-current {
-  width: calc(var(--node-size) + 8px);
-  height: calc(var(--node-size) + 8px);
-  background: #ff8db2;
-  color: white;
+  background: radial-gradient(circle at 50% 30%, #ffd8e6, #ef7ba8 72%);
+  color: #fff;
+  border-color: #fff1c4;
   box-shadow:
-    0 8px 0 #c85a7b,
-    0 0 0 8px rgba(255, 235, 126, 0.58),
-    0 0 30px rgba(255, 255, 255, 0.94);
+    0 6px 0 #b5496f,
+    0 0 0 7px rgba(255, 226, 150, 0.5),
+    0 0 30px rgba(255, 214, 140, 0.85),
+    inset 0 0 0 3px rgba(255, 255, 255, 0.4);
   animation: currentPulse 1.8s ease-in-out infinite;
+}
+
+.world-stage.is-future {
+  background: radial-gradient(circle at 50% 32%, rgba(48, 66, 104, 0.92), rgba(22, 30, 58, 0.96));
+  color: #a9bce0;
+  border-color: rgba(198, 210, 240, 0.42);
+  filter: saturate(0.75) brightness(0.94);
+  box-shadow: 0 4px 0 rgba(8, 14, 32, 0.5), 0 10px 18px rgba(5, 12, 32, 0.45);
 }
 
 .world-stage.is-locked {
   cursor: not-allowed;
-  background: rgba(226, 241, 247, 0.88);
-  color: #8c96a8;
-  filter: saturate(0.55);
-  box-shadow:
-    0 6px 0 rgba(87, 120, 132, 0.18),
-    0 12px 20px rgba(60, 86, 100, 0.16),
-    inset 0 0 0 4px rgba(255, 255, 255, 0.35);
+  background: rgba(30, 40, 68, 0.7);
+  color: #8494b8;
+  border-color: rgba(150, 164, 200, 0.35);
+  filter: saturate(0.4) brightness(0.82);
+  box-shadow: 0 4px 0 rgba(8, 14, 32, 0.45), 0 10px 18px rgba(5, 12, 32, 0.4);
 }
 
 .world-stage.is-locked:hover {
@@ -472,8 +599,8 @@ body {
 }
 
 .activity-symbol-memory {
-  width: clamp(30px, 2.8vw, 40px);
-  height: clamp(24px, 2.25vw, 32px);
+  width: clamp(17px, 1.5vw, 22px);
+  height: clamp(13px, 1.2vw, 17px);
 }
 
 .activity-symbol-memory::before,
@@ -488,7 +615,7 @@ body {
   background: #fff8dd;
   color: #8a4560;
   font-family: 'Secular One', sans-serif;
-  font-size: clamp(9px, 0.9vw, 13px);
+  font-size: clamp(6px, 0.58vw, 8px);
   line-height: 1;
   box-shadow: inset 0 -5px 0 rgba(242, 160, 184, 0.3);
 }
@@ -508,8 +635,8 @@ body {
 }
 
 .activity-symbol-shop {
-  width: clamp(28px, 2.7vw, 39px);
-  height: clamp(23px, 2.2vw, 32px);
+  width: clamp(16px, 1.4vw, 21px);
+  height: clamp(13px, 1.2vw, 17px);
   border: 3px solid currentColor;
   border-top: 0;
   border-radius: 3px;
@@ -549,8 +676,8 @@ body {
 }
 
 .activity-symbol-house {
-  width: clamp(31px, 2.9vw, 42px);
-  height: clamp(25px, 2.35vw, 34px);
+  width: clamp(17px, 1.5vw, 22px);
+  height: clamp(13px, 1.2vw, 17px);
   border: 3px solid currentColor;
   border-radius: 3px;
   background: #fff1c9;
@@ -560,10 +687,10 @@ body {
   content: '';
   position: absolute;
   left: 1px;
-  top: -14px;
-  width: 25px;
-  height: 25px;
-  border-top: 4px solid currentColor;
+  top: -8px;
+  width: 13px;
+  height: 13px;
+  border-top: 3px solid currentColor;
   border-left: 4px solid currentColor;
   background: #f3a2b9;
   transform: rotate(45deg);
@@ -574,9 +701,9 @@ body {
   position: absolute;
   left: 50%;
   bottom: 0;
-  width: 9px;
-  height: 15px;
-  border: 3px solid currentColor;
+  width: 6px;
+  height: 10px;
+  border: 2px solid currentColor;
   border-bottom: 0;
   background: #fffaf0;
   transform: translateX(-50%);
@@ -620,34 +747,29 @@ body {
 }
 
 .stage-number {
-  position: absolute;
-  top: auto;
-  bottom: -8px;
-  right: -8px;
-  min-width: 30px;
-  height: 30px;
-  display: grid;
-  place-items: center;
-  padding: 0 5px;
-  border: 2px solid white;
-  border-radius: 999px;
-  background: #ad5574;
-  color: white;
+  position: static;
+  min-width: 0;
+  height: auto;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
   font-family: 'Secular One', sans-serif;
-  font-size: 16px;
+  font-size: clamp(12px, 1.05vw, 15px);
   line-height: 1;
-  box-shadow: 0 3px 0 rgba(99, 48, 68, 0.18);
+  box-shadow: none;
 }
 
 .stage-stars {
   position: absolute;
-  top: -25px;
+  top: -17px;
   left: 50%;
-  color: #ffc532;
-  font-size: clamp(13px, 1.5vw, 21px);
+  color: #ffce55;
+  font-size: clamp(10px, 1.05vw, 14px);
   letter-spacing: 0;
   white-space: nowrap;
-  text-shadow: 0 2px 0 #a86c2c, 0 0 2px white;
+  text-shadow: 0 2px 4px rgba(4, 8, 24, 0.8), 0 0 6px rgba(255, 190, 80, 0.6);
   transform: translateX(-50%);
 }
 
@@ -656,14 +778,14 @@ body {
   right: auto;
   left: -7px;
   bottom: -5px;
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: #f7fbff;
-  font-size: 14px;
-  box-shadow: 0 2px 5px rgba(60, 86, 100, 0.18);
+  background: rgba(20, 28, 52, 0.92);
+  font-size: 10px;
+  box-shadow: 0 2px 6px rgba(5, 12, 32, 0.6);
 }
 
 .traveller {
@@ -671,16 +793,16 @@ body {
   z-index: 12;
   left: 18.5%;
   top: 49%;
-  width: clamp(62px, 7vw, 100px);
-  height: clamp(62px, 7vw, 100px);
-  transform: translate(-50%, -50%);
+  width: clamp(44px, 3.4vw, 52px);
+  height: clamp(44px, 3.4vw, 52px);
+  transform: translate(-50%, -58%);
   pointer-events: none;
   transition: left 700ms cubic-bezier(0.22, 0.8, 0.26, 1), top 700ms cubic-bezier(0.22, 0.8, 0.26, 1);
 }
 
 .traveller[data-stage='6'] {
-  width: clamp(86px, 9vw, 120px);
-  height: clamp(86px, 9vw, 120px);
+  width: clamp(56px, 6vw, 78px);
+  height: clamp(56px, 6vw, 78px);
 }
 
 .traveller img {
@@ -1059,8 +1181,8 @@ body {
   overflow: hidden;
   padding: clamp(24px, 5vh, 52px) clamp(24px, 5vw, 72px);
   background:
-    linear-gradient(rgba(232, 255, 248, 0.26), rgba(255, 239, 201, 0.38)),
-    url('../src/assets/memory/memory-garden-map-bg-v2.png') center / cover no-repeat;
+    linear-gradient(rgba(16, 20, 48, 0.62), rgba(24, 22, 60, 0.58)),
+    url('../src/assets/memory/moonlit-trail-map.webp') center / cover no-repeat;
 }
 
 .profile-gate::after {
@@ -1863,4 +1985,188 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;
   }
+}
+
+/* ---------------------------------------------------------------------------
+   Moonlit storybook skin
+   Re-skins the trail chrome, panels, gate and editor to match the Shop,
+   Magic House and Memory Garden night palette without changing layout.
+--------------------------------------------------------------------------- */
+:root {
+  --panel: rgba(22, 30, 60, 0.95);
+  --ink: #eef3ff;
+  --berry: #ffe2a6;
+  --teal: #bcdcff;
+  --reward-backdrop: rgba(10, 16, 40, 0.62);
+  --reward-surface: #f3e4c0;
+  --reward-surface-center: #2b3c6e;
+  --reward-surface-mid: #233260;
+  --reward-surface-edge: #1a274d;
+  --reward-panel-depth: rgba(6, 12, 30, 0.82);
+  --reward-panel-shadow: rgba(4, 8, 24, 0.7);
+  --reward-rays: rgba(255, 205, 110, 0.4);
+  --reward-character-shadow: rgba(6, 12, 30, 0.55);
+  --reward-kicker: #ffd46b;
+  --reward-kicker-depth: rgba(120, 80, 20, 0.4);
+  --reward-copy: #dfe8ff;
+  --reward-coming: #bcd0ff;
+  --reward-stat-border: rgba(255, 214, 120, 0.6);
+  --reward-stat-depth: rgba(6, 12, 30, 0.5);
+  --reward-star: #ffce55;
+  --reward-star-depth: rgba(120, 80, 20, 0.42);
+  --reward-button: #ffcf5d;
+  --reward-button-depth: #a9791f;
+  --reward-button-shadow: rgba(6, 12, 30, 0.5);
+  --reward-focus: #ffe08a;
+  --reward-sparkle-depth: rgba(120, 80, 20, 0.4);
+}
+
+.profile-button,
+.star-total,
+.world-title {
+  border-color: rgba(255, 224, 160, 0.7);
+  background: linear-gradient(160deg, rgba(34, 47, 92, 0.94), rgba(18, 26, 56, 0.95));
+  box-shadow: 0 6px 0 rgba(6, 12, 30, 0.5), 0 14px 30px rgba(4, 10, 28, 0.5);
+  backdrop-filter: blur(3px);
+}
+
+.world-title span,
+.panel-kicker,
+.gate-kicker,
+.editor-kicker {
+  color: #bcdcff;
+}
+
+.star-total,
+.profile-button,
+.profile-copy strong,
+.world-title strong {
+  color: #ffe7b3;
+}
+
+.profile-copy small,
+.profile-chevron,
+.profile-menu small {
+  color: #b8c8e8;
+}
+
+.profile-menu {
+  border-color: rgba(255, 224, 160, 0.6);
+  box-shadow: 0 18px 40px rgba(4, 10, 28, 0.6);
+}
+
+.profile-menu-option,
+.profile-menu-command {
+  color: #eef3ff;
+}
+
+.profile-menu button:hover,
+.profile-menu button:focus-visible {
+  background: rgba(90, 120, 200, 0.28);
+  outline-color: #ffd45d;
+}
+
+.profile-menu-option.is-active {
+  background: rgba(255, 210, 120, 0.18);
+  color: #ffe7b3;
+}
+
+.profile-menu-actions {
+  border-top-color: rgba(180, 200, 240, 0.24);
+}
+
+.stage-panel {
+  border-color: rgba(255, 224, 160, 0.7);
+  box-shadow: 0 8px 0 rgba(6, 12, 30, 0.55), 0 20px 44px rgba(4, 10, 28, 0.6);
+  backdrop-filter: blur(3px);
+}
+
+.panel-copy p {
+  color: #c8d6f2;
+}
+
+.panel-icon {
+  background: radial-gradient(circle at 50% 35%, #ffe6a6, #e9ad48 78%);
+  color: #5a3a12;
+  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.4), 0 4px 10px rgba(6, 12, 30, 0.4);
+}
+
+.panel-close {
+  border-color: rgba(255, 224, 160, 0.8);
+  background: #24365f;
+  color: #ffe7b3;
+}
+
+.play-button {
+  border-color: rgba(255, 245, 214, 0.9);
+}
+
+.launch-overlay {
+  background: rgba(14, 20, 46, 0.72);
+}
+
+.profile-gate::after {
+  background: rgba(10, 16, 38, 0.4);
+}
+
+.gate-heading h1 {
+  color: #ffe7b3;
+  text-shadow: 0 4px 10px rgba(4, 10, 28, 0.7);
+}
+
+.gate-profile-card {
+  border-color: rgba(255, 224, 160, 0.6);
+  background: linear-gradient(170deg, rgba(34, 47, 92, 0.92), rgba(18, 26, 56, 0.94));
+  box-shadow: 0 8px 0 rgba(6, 12, 30, 0.5), 0 20px 40px rgba(4, 10, 28, 0.5);
+}
+
+.gate-profile-choice span {
+  color: #c3d4f2;
+}
+
+.profile-editor {
+  background: rgba(8, 12, 32, 0.62);
+}
+
+.editor-dialog {
+  border-color: rgba(255, 224, 160, 0.65);
+  background: linear-gradient(170deg, rgba(30, 42, 82, 0.97), rgba(16, 23, 50, 0.98));
+  box-shadow: 0 10px 0 rgba(6, 12, 30, 0.55), 0 28px 64px rgba(4, 10, 28, 0.6);
+}
+
+.editor-dialog legend,
+.editor-dialog label > span {
+  color: #cfe0f4;
+}
+
+.editor-dialog input[type="text"],
+.editor-dialog select {
+  background: rgba(12, 18, 40, 0.9);
+  color: #eef3ff;
+  border-color: rgba(180, 200, 240, 0.4);
+}
+
+.character-choice {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.24);
+  color: #eef3ff;
+}
+
+.language-options span {
+  color: #eef3ff;
+}
+
+.world-stage[data-game="memory"]:not(.is-current):not(.is-complete) {
+  border-color: rgba(255, 196, 224, 0.9);
+  background: radial-gradient(circle at 50% 32%, #6a3f68, #2c2350 74%);
+}
+
+.world-stage[data-game="shop"]:not(.is-current):not(.is-complete) {
+  border-color: rgba(255, 216, 140, 0.9);
+  background: radial-gradient(circle at 50% 32%, #6b5340, #33304f 74%);
+}
+
+.world-stage[data-game="house"]:not(.is-current):not(.is-complete) {
+  border-color: rgba(168, 232, 222, 0.9);
+  background: radial-gradient(circle at 50% 32%, #2f5f6c, #1f2c50 74%);
 }
