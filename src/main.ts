@@ -162,6 +162,10 @@ let memoryRoundStars = 3;
 let memoryToastTimer: number | null = null;
 let memoryWinReturnTimer: number | null = null;
 const MEMORY_WIN_RETURN_DELAY_MS = 2400;
+// Hold the finished board on screen before celebrating. Without it, browsers
+// with reduced motion skip the flip transition and the celebration covers the
+// board the instant the last pair is matched.
+const MEMORY_BOARD_HOLD_MS = 650;
 
 // Load saved preferences
 function loadPreferences() {
@@ -969,14 +973,21 @@ function matchMemoryCards() {
     const board = requireElement<HTMLDivElement>('memory-board');
     const renderedCards = Array.from(board.querySelectorAll<HTMLElement>('.memory-card'));
     void waitForMemoryBoardReveal(renderedCards, pairCount)
+      .then(holdMemoryBoard)
       .then(finishMemoryRound)
       .catch((error) => {
         console.error('Memory reveal wait failed', error);
-        finishMemoryRound();
+        void holdMemoryBoard().then(finishMemoryRound);
       });
   }
   updateMemoryStatus(message);
   showMemoryToast(matchedWord);
+}
+
+function holdMemoryBoard() {
+  return new Promise<void>((resolve) => {
+    window.setTimeout(resolve, MEMORY_BOARD_HOLD_MS);
+  });
 }
 
 function finishMemoryRound() {

@@ -49,7 +49,48 @@ try {
   assert.equal(result.anyLatinOnBoard, false, `a Hebrew board must show no English words: ${JSON.stringify(result)}`);
   assert.ok(result.audioSrc && result.audioSrc.endsWith('.mp3'), `revealing a Hebrew card must play a committed clip: ${JSON.stringify(result)}`);
   assert.equal(result.audioError, null, `Hebrew playback must have no error: ${JSON.stringify(result)}`);
-  console.log(`PASS: the Hebrew Memory board shows spoken Hebrew targets and picture-only matches with no English words. ${JSON.stringify(result)}`);
+
+  // Even with reduced motion (no flip transition) the finished board must stay
+  // on screen for a beat before the celebration covers it.
+  browser('set', 'media', 'light', 'reduced-motion');
+  browser('reload');
+  browser('wait', '.memory-card');
+  const win = JSON.parse(browser('eval', `(async () => {
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const cards = () => [...document.querySelectorAll('.memory-card')];
+    const byWord = {};
+    cards().forEach((card) => { (byWord[card.dataset.wordId] ||= []).push(card); });
+    const pairs = Object.values(byWord);
+    for (let index = 0; index < pairs.length - 1; index += 1) {
+      pairs[index].find((card) => card.dataset.kind === 'hebrew').click();
+      await sleep(40);
+      pairs[index].find((card) => card.dataset.kind === 'english').click();
+      await sleep(120);
+    }
+    const lastPair = pairs[pairs.length - 1];
+    lastPair.find((card) => card.dataset.kind === 'hebrew').click();
+    await sleep(40);
+    lastPair.find((card) => card.dataset.kind === 'english').click();
+    const started = performance.now();
+    let celebrationAt = null;
+    while (performance.now() - started < 4000) {
+      if (document.querySelector('#memory-celebration')?.classList.contains('is-visible')) {
+        celebrationAt = Math.round(performance.now() - started);
+        break;
+      }
+      await sleep(3);
+    }
+    return {
+      celebrationAt,
+      total: cards().length,
+      faceUp: cards().filter((card) => card.classList.contains('is-face-up')).length,
+    };
+  })()`));
+
+  assert.ok(win.celebrationAt !== null, `the reduced-motion round must still win: ${JSON.stringify(win)}`);
+  assert.ok(win.celebrationAt >= 500, `the finished board must hold before celebrating: ${JSON.stringify(win)}`);
+  assert.equal(win.faceUp, win.total, `every card must be open before the hold ends: ${JSON.stringify(win)}`);
+  console.log(`PASS: the Hebrew Memory board shows spoken Hebrew targets and picture-only matches with no English words, and holds the finished board before celebrating. ${JSON.stringify({ result, win })}`);
 } finally {
   browser('close');
 }

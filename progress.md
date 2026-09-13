@@ -23,6 +23,13 @@ Original prompt: Fix unlocked trail stages so they launch playable games and can
 - Fix: in the Hebrew path the matching card is now a picture only; the target card keeps the spoken Hebrew word. The match message and toast also stop printing the English word in Hebrew mode (the toast shows the paired picture instead).
 - Added `test:memory-hebrew-board` (`scripts/run-memory-hebrew-board.mjs`): it opens Hebrew stage 1 and asserts every Hebrew card has a speaker and a Hebrew word, every matching card has a picture and no word, no Latin letters appear on the board, and revealing a Hebrew card plays a committed clip without error. Receipt: `PASS ... {"anyLatinOnBoard":false,"audioSrc":"honey-...mp3","englishCount":4,"hebrewWithSpeaker":4}`.
 
+### September 13 Memory win covered the board instantly
+
+- User report: "it exits on a win without all of the cards opening." Root cause: `waitForMemoryBoardReveal` waits for the flip transitions, but with `prefers-reduced-motion: reduce` those transitions are disabled, so the reveal resolved immediately and the full-screen celebration covered the board ~5 ms after the last pair was tapped. The same instant cover-up can happen on any browser that reports no running animation.
+- Fix: after the board is confirmed open, `holdMemoryBoard` keeps it on screen for `MEMORY_BOARD_HOLD_MS` (650 ms) before the celebration, in both the success and the error-fallback paths.
+- Extended `test:memory-hebrew-board` to force reduced motion, win the round, and assert the celebration comes at least 500 ms after the last tap with every card face-up. Receipt: `PASS ... {"win":{"celebrationAt":658,"faceUp":8,"total":8}}` (was 5 ms before the fix).
+- Regression gates re-run: `npx tsc --noEmit`, `npm run build`, `test:fast-start`, `test:trail`, `test:memory-completion`, `test:memory-saves`, `test:shop-order-hint`.
+
 ## September 11 generated trail foundation
 
 - Goal: make the learning trail content-driven so it can extend to 30-40 stages with rising difficulty instead of a hand-placed list.
