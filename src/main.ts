@@ -834,6 +834,7 @@ function renderMemoryBoard() {
     word.style.setProperty('--word-length', String(card.text.length));
 
     const targetCardKind = getMemoryTargetCardKind();
+    const learningLanguage = getMemoryLearningLanguage();
 
     if (card.kind !== targetCardKind) {
       const drawing = document.createElement('span');
@@ -843,7 +844,11 @@ function renderMemoryBoard() {
       front.append(drawing);
     }
 
-    front.append(word);
+    // In the Hebrew path the matching card is a picture only, so a child who
+    // cannot read sees no English words on the Hebrew board.
+    if (card.kind === targetCardKind || learningLanguage === 'en') {
+      front.append(word);
+    }
 
     if (card.kind === targetCardKind) {
       const spokenLabel = card.kind === 'hebrew' ? card.text : card.english;
@@ -942,7 +947,11 @@ function matchMemoryCards() {
   const matchedWord = getMemoryWord(wordId);
   const pairCount = activeMemoryLevel.pairs;
   const isComplete = memoryMatchedPairs.size === pairCount;
-  const message = isComplete ? `${getMemoryStageTitle(activeMemoryLevel)} הושלם!` : `זוג מנצח: ${matchedWord.hebrew} ו-${matchedWord.english}`;
+  const message = isComplete
+    ? `${getMemoryStageTitle(activeMemoryLevel)} הושלם!`
+    : getMemoryLearningLanguage() === 'en'
+    ? `זוג מנצח: ${matchedWord.hebrew} ו-${matchedWord.english}`
+    : `זוג מנצח: ${matchedWord.hebrew}`;
   speakMemoryWord(matchedWord.id, getMemoryTargetCardKind());
 
   memoryFirstCard = null;
@@ -1299,9 +1308,12 @@ function speakMemoryWord(wordId: string, kind: MemoryCardKind = 'english') {
   playRecordedSequence([kind === 'hebrew' ? hebrewWordAudio(wordId) : vocabularyWordAudio(wordId)]);
 }
 
+function getMemoryLearningLanguage(): ProfileLanguage {
+  return hostedActivityContext?.profileLanguage ?? 'en';
+}
+
 function getMemoryTargetCardKind(): MemoryCardKind {
-  const learningLanguage = hostedActivityContext?.profileLanguage ?? 'en';
-  return getLanguagePolicy(learningLanguage).target.startsWith('english') ? 'english' : 'hebrew';
+  return getLanguagePolicy(getMemoryLearningLanguage()).target.startsWith('english') ? 'english' : 'hebrew';
 }
 
 function showMemoryToast(matchedWord: MemoryWord) {
@@ -1324,11 +1336,12 @@ function showMemoryToast(matchedWord: MemoryWord) {
   connector.setAttribute('aria-hidden', 'true');
   connector.textContent = '✨';
 
-  const englishWord = document.createElement('span');
-  englishWord.className = 'memory-toast-word memory-toast-word-english';
-  englishWord.textContent = matchedWord.english;
+  const matchWord = document.createElement('span');
+  matchWord.className = 'memory-toast-word memory-toast-word-english';
+  // Hebrew learners see the paired picture instead of an English word.
+  matchWord.textContent = getMemoryLearningLanguage() === 'en' ? matchedWord.english : matchedWord.drawing;
 
-  pair.append(hebrewWord, connector, englishWord);
+  pair.append(hebrewWord, connector, matchWord);
   toastText.replaceChildren(cheer, pair);
 
   if (memoryToastTimer) {

@@ -17,6 +17,12 @@ Original prompt: Fix unlocked trail stages so they launch playable games and can
 - Red receipt on the pre-fix code: `a rapid correct answer must not lock the round: {"correctCount":2,"replayDisabled":true,"served":"🧺 1/7"}`. Green after: `PASS: ... {"rapid":{"correctCount":2,"replayDisabled":false,"served":"🧺 1/7"},"summary":{"audioErrors":[],"celebrating":true,"served":"🧺 7/7"}}`.
 - Regression gates re-run: `npx tsc --noEmit`, `npm run build`, `test:fast-start`, `test:trail`, `test:track`, `test:saves`, `test:memory-saves`, `test:shop-session`, `test:shop-order-hint`, `test:memory-completion`, and `test:store-audio`.
 
+### September 13 Hebrew Memory showed English words
+
+- User screenshot: the Hebrew Memory Garden revealed two English words (`strawberry`, `giraffe`). In the Hebrew path the matching cards carried the English word under the drawing, so the board read as English.
+- Fix: in the Hebrew path the matching card is now a picture only; the target card keeps the spoken Hebrew word. The match message and toast also stop printing the English word in Hebrew mode (the toast shows the paired picture instead).
+- Added `test:memory-hebrew-board` (`scripts/run-memory-hebrew-board.mjs`): it opens Hebrew stage 1 and asserts every Hebrew card has a speaker and a Hebrew word, every matching card has a picture and no word, no Latin letters appear on the board, and revealing a Hebrew card plays a committed clip without error. Receipt: `PASS ... {"anyLatinOnBoard":false,"audioSrc":"honey-...mp3","englishCount":4,"hebrewWithSpeaker":4}`.
+
 ## September 11 generated trail foundation
 
 - Goal: make the learning trail content-driven so it can extend to 30-40 stages with rising difficulty instead of a hand-placed list.
