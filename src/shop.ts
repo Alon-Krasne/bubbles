@@ -4,7 +4,7 @@ import { VOCAB_WORDS, type VocabWord } from './words';
 import { createShopItemArt } from './shop-art';
 import type { HostedActivitySession } from './hostedActivity';
 import { calculateMasteryStars, formatStarRating } from '../prototype/shared/activity-scoring.mjs';
-import { GAME_LEVELS, getLanguagePolicy } from '../prototype/shared/trail-catalog.mjs';
+import { GAME_LEVELS } from '../prototype/shared/trail-catalog.mjs';
 import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
 import { applyEnglishLearningTranslationHint, removeHebrewTranslationHint } from '../prototype/shared/translation-hint.mjs';
 import {
@@ -14,6 +14,8 @@ import {
   type ShopSessionSnapshot,
 } from './shopSession';
 import {
+  hebrewUiAudio,
+  hebrewWordAudio,
   playRecordedSequence,
   playRecordedSequenceWithCompletion,
   stopRecordedSpeech,
@@ -83,6 +85,11 @@ const SHOP_WIN_RETURN_DELAY_MS = 2400;
 const SHOP_CUSTOMER_EMOJIS = ['🐰', '🐻', '🐱', '🦊', '🐸', '🐼', '🐵', '🐨'];
 const SHOP_CUSTOMER_NAMES = ['נוני', 'מימי', 'קוקו', 'לילי', 'פופי', 'טופי', 'קיקי', 'בוני'];
 const NUMBER_WORDS: Record<number, string> = {
+  1: 'one',
+  2: 'two',
+  3: 'three',
+};
+const HEBREW_NUMBER_UI: Record<number, string> = {
   1: 'one',
   2: 'two',
   3: 'three',
@@ -297,12 +304,9 @@ export function initShopGame(deps: ShopDeps) {
       renderCustomer();
       renderShelves();
       renderBasket();
-      const isEnglishLearning = getLanguagePolicy(getLearningLanguage()).prompt === 'spoken-english';
-      setFeedback(isEnglishLearning ? 'הקשיבו להזמנה ובחרו מהמדף' : 'קראו את ההזמנה ובחרו מהמדף');
+      setFeedback('הקשיבו להזמנה ובחרו מהמדף');
       updateHud();
-      if (isEnglishLearning) {
-        scheduleTimer(() => speakOrder(), 600);
-      }
+      scheduleTimer(() => speakOrder(), 600);
       return;
     }
     nextCustomer();
@@ -321,13 +325,10 @@ export function initShopGame(deps: ShopDeps) {
     renderCustomer();
     renderShelves();
     renderBasket();
-    const isEnglishLearning = getLanguagePolicy(getLearningLanguage()).prompt === 'spoken-english';
-    setFeedback(isEnglishLearning ? 'הקשיבו להזמנה ובחרו מהמדף' : 'קראו את ההזמנה ובחרו מהמדף');
+    setFeedback('הקשיבו להזמנה ובחרו מהמדף');
     updateHud();
     saveActiveShopSession();
-    if (isEnglishLearning) {
-      scheduleTimer(() => speakOrder(), 600);
-    }
+    scheduleTimer(() => speakOrder(), 600);
   }
 
   function renderCustomer() {
@@ -346,43 +347,34 @@ export function initShopGame(deps: ShopDeps) {
     orderPrompt.dir = isEnglishLearning ? 'ltr' : 'rtl';
     orderPrompt.tabIndex = isEnglishLearning ? 0 : -1;
     applyEnglishLearningTranslationHint(orderPrompt, language, createHebrewRequestSentence(order.targets));
-    requireElement<HTMLButtonElement>('shop-order-replay-btn').hidden = !isEnglishLearning;
+    requireElement<HTMLButtonElement>('shop-order-replay-btn').hidden = false;
     requireElement<HTMLElement>('shop-customer-card').classList.remove('is-happy', 'is-leaving');
   }
 
   function renderShelves() {
     const order = requireCurrentOrder();
     const learningLanguage = getLearningLanguage();
-    const learningPolicy = getLanguagePolicy(learningLanguage);
     shelves.innerHTML = '';
     shelves.style.setProperty('--shop-shelf-columns', String(Math.min(4, order.shelfItems.length)));
 
     order.shelfItems.forEach((item) => {
       const tile = document.createElement('button');
       tile.type = 'button';
-      tile.className = 'shop-item-tile';
+      tile.className = 'shop-item-tile has-item-label';
       tile.dataset.itemId = item.id;
       tile.setAttribute('aria-label', learningLanguage === 'he' ? item.hebrew : item.english);
 
-      if (learningPolicy.choices === 'written-hebrew') {
-        const choice = document.createElement('span');
-        choice.className = 'shop-item-word';
-        choice.dir = 'rtl';
-        choice.textContent = item.hebrew;
-        tile.append(choice);
-      } else {
-        tile.classList.add('has-english-label');
-        const illustration = document.createElement('span');
-        illustration.className = 'shop-item-illustration';
-        illustration.append(createShopItemArt(item.id));
+      const illustration = document.createElement('span');
+      illustration.className = 'shop-item-illustration';
+      illustration.append(createShopItemArt(item.id));
 
-        const label = document.createElement('span');
-        label.className = 'shop-item-english-label';
-        label.lang = 'en';
-        label.dir = 'ltr';
-        label.textContent = item.english;
-        tile.append(illustration, label);
-      }
+      const label = document.createElement('span');
+      label.className = 'shop-item-label';
+      label.lang = learningLanguage === 'he' ? 'he' : 'en';
+      label.dir = learningLanguage === 'he' ? 'rtl' : 'ltr';
+      label.textContent = learningLanguage === 'he' ? item.hebrew : item.english;
+      tile.append(illustration, label);
+
       applyEnglishLearningTranslationHint(tile, learningLanguage, item.hebrew);
       tile.addEventListener('click', () => selectItem(item, tile));
       shelves.append(tile);
@@ -395,33 +387,32 @@ export function initShopGame(deps: ShopDeps) {
     }
 
     const order = requireCurrentOrder();
+    const language = getLearningLanguage();
     const target = order.targets.find((candidate) => candidate.item.id === item.id && candidate.served < candidate.required);
     if (!target) {
       state.mistakes += 1;
       tile.classList.remove('is-wrong');
       void tile.offsetWidth;
       tile.classList.add('is-wrong');
-      setFeedback(getLearningLanguage() === 'en' ? 'כמעט. מקשיבים שוב' : 'כמעט. קוראים שוב');
+      setFeedback('כמעט. מקשיבים שוב');
       updateHud();
       saveActiveShopSession();
-      if (getLearningLanguage() === 'en') {
-        scheduleTimer(() => replayOrder(), 180);
-      }
+      scheduleTimer(() => replayOrder(), 180);
       return;
     }
 
     const completesOrder = willCompleteOrderAfterSelection(order, target);
-    if (completesOrder && getLearningLanguage() === 'en') {
+    if (completesOrder) {
       state.locked = true;
       commitCorrectSelection(target, item, tile);
       state.servedCustomers += 1;
       saveActiveShopSession();
       updateHud();
-      setFeedback(createSuccessFeedback(item, getLearningLanguage()));
+      setFeedback(createSuccessFeedback(item, language));
       requireElement<HTMLElement>('shop-customer-card').classList.add('is-happy');
       const advanceToNextCustomer = () => nextCustomer();
       scheduleTimer(() => playRecordedSequenceWithCompletion(
-        [vocabularyWordAudio(item.id), vocabularyUiAudio('thank-you')],
+        [pickAudio(item, language), language === 'en' ? vocabularyUiAudio('thank-you') : hebrewUiAudio('thank-you')],
         advanceToNextCustomer,
         advanceToNextCustomer,
       ), 120);
@@ -429,26 +420,9 @@ export function initShopGame(deps: ShopDeps) {
     }
 
     commitCorrectSelection(target, item, tile);
-
-    if (completesOrder) {
-      state.locked = true;
-      state.servedCustomers += 1;
-      saveActiveShopSession();
-      updateHud();
-      setFeedback(createSuccessFeedback(item, getLearningLanguage()));
-      requireElement<HTMLElement>('shop-customer-card').classList.add('is-happy');
-      scheduleTimer(() => {
-        requireElement<HTMLElement>('shop-customer-card').classList.add('is-leaving');
-      }, 1460);
-      scheduleTimer(() => nextCustomer(), 1860);
-      return;
-    }
-
-    setFeedback(`${createSuccessFeedback(item, getLearningLanguage())} ממשיכים למלא את הסל`);
+    setFeedback(`${createSuccessFeedback(item, language)} ממשיכים למלא את הסל`);
     saveActiveShopSession();
-    if (getLearningLanguage() === 'en') {
-      playRecordedSequence([vocabularyWordAudio(item.id)]);
-    }
+    playRecordedSequence([pickAudio(item, language)]);
   }
 
   function commitCorrectSelection(target: ShopOrderTarget, item: ShopItem, tile: HTMLButtonElement) {
@@ -473,9 +447,7 @@ export function initShopGame(deps: ShopDeps) {
     const basketRect = basket.getBoundingClientRect();
     const fly = document.createElement('span');
     fly.className = 'shop-fly-item';
-    fly.classList.toggle('is-word', getLearningLanguage() === 'he');
-    if (getLearningLanguage() === 'he') fly.textContent = item.hebrew;
-    else fly.append(createShopItemArt(item.id));
+    fly.append(createShopItemArt(item.id));
     fly.style.setProperty('--shop-fly-x', `${basketRect.left + basketRect.width / 2 - tileRect.left - tileRect.width / 2}px`);
     fly.style.setProperty('--shop-fly-y', `${basketRect.top + basketRect.height / 2 - tileRect.top - tileRect.height / 2}px`);
     tile.append(fly);
@@ -531,13 +503,21 @@ export function initShopGame(deps: ShopDeps) {
   }
 
   function replayOrder() {
-    if (!state.locked && state.currentOrder && getLearningLanguage() === 'en') {
+    if (!state.locked && state.currentOrder) {
       speakOrder();
     }
   }
 
   function speakOrder() {
-    playRecordedSequence(requireCurrentOrder().audioSources);
+    // Resolve the spoken request from the current order and learning language
+    // rather than trusting a saved snapshot, so a restored round can never play
+    // the other language's recording.
+    const order = requireCurrentOrder();
+    playRecordedSequence(getOrderAudio(order));
+  }
+
+  function getOrderAudio(order: ShopOrder) {
+    return getLearningLanguage() === 'he' ? createHebrewRequestAudio(order.targets) : order.audioSources;
   }
 
   function getLearningLanguage(): 'en' | 'he' {
@@ -549,10 +529,10 @@ export function initShopGame(deps: ShopDeps) {
     shelfItems: ShopItem[],
     targets: ShopOrderTarget[],
   ): ShopOrder {
-    const sentence = getLearningLanguage() === 'en'
-      ? englishRequest.sentence
-      : createHebrewRequestSentence(targets);
-    return { sentence, audioSources: englishRequest.audioSources, shelfItems, targets };
+    const language = getLearningLanguage();
+    const sentence = language === 'en' ? englishRequest.sentence : createHebrewRequestSentence(targets);
+    const audioSources = language === 'en' ? englishRequest.audioSources : createHebrewRequestAudio(targets);
+    return { sentence, audioSources, shelfItems, targets };
   }
 
   function willCompleteOrderAfterSelection(order: ShopOrder, selectedTarget: ShopOrderTarget) {
@@ -607,15 +587,17 @@ export function initShopGame(deps: ShopDeps) {
     state.roundCoins = snapshot.roundCoins;
     state.customerEmoji = snapshot.customerEmoji;
     state.customerName = snapshot.customerName;
+    const targets = snapshot.currentOrder.targets.map((target) => ({
+      item: getShopItem(target.itemId),
+      required: target.required,
+      served: target.served,
+    }));
+    const language = getLearningLanguage();
     state.currentOrder = {
-      sentence: snapshot.currentOrder.sentence,
-      audioSources: [...snapshot.currentOrder.audioSources],
+      sentence: language === 'he' ? createHebrewRequestSentence(targets) : snapshot.currentOrder.sentence,
+      audioSources: language === 'he' ? createHebrewRequestAudio(targets) : [...snapshot.currentOrder.audioSources],
       shelfItems: snapshot.currentOrder.shelfItemIds.map(getShopItem),
-      targets: snapshot.currentOrder.targets.map((target) => ({
-        item: getShopItem(target.itemId),
-        required: target.required,
-        served: target.served,
-      })),
+      targets,
     };
     state.locked = false;
   }
@@ -823,6 +805,35 @@ function createHebrewRequestSentence(targets: ShopOrderTarget[]) {
   return target.required === 1
     ? `אפשר בבקשה ${target.item.hebrew}?`
     : `אפשר בבקשה ${target.item.hebrew}, בכמות ${target.required}?`;
+}
+
+// Spoken Hebrew orders are assembled from committed word and UI clips so a
+// child who cannot read still hears exactly what the customer asks for.
+function createHebrewRequestAudio(targets: ShopOrderTarget[]): string[] {
+  const opening = [hebrewUiAudio('can-i-have')];
+  if (targets.length === 2) {
+    return [
+      ...opening,
+      hebrewWordAudio(targets[0].item.id),
+      hebrewUiAudio('and'),
+      hebrewWordAudio(targets[1].item.id),
+    ];
+  }
+
+  const target = targets[0];
+  if (target.required === 1) {
+    return [...opening, hebrewWordAudio(target.item.id)];
+  }
+
+  const numberClip = HEBREW_NUMBER_UI[target.required];
+  if (!numberClip) {
+    throw new Error(`Missing Hebrew number audio for quantity ${target.required}`);
+  }
+  return [...opening, hebrewWordAudio(target.item.id), hebrewUiAudio('quantity'), hebrewUiAudio(numberClip)];
+}
+
+function pickAudio(item: ShopItem, language: 'en' | 'he') {
+  return language === 'en' ? vocabularyWordAudio(item.id) : hebrewWordAudio(item.id);
 }
 
 function createSuccessFeedback(item: ShopItem, language: 'en' | 'he') {

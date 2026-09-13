@@ -14,11 +14,14 @@ const quantityWordIds = [...new Set(
   GAME_LEVELS.shop.filter((level) => level.mode === 'quantity').flatMap((level) => level.itemPool),
 )];
 const uiClipIds = ['a', 'an', 'and', 'can-i-have', 'one', 'please', 'thank-you', 'the', 'three', 'two'];
+const hebrewUiClipIds = ['and', 'can-i-have', 'great-job', 'one', 'quantity', 'thank-you', 'three', 'two'];
 
 const expectedFiles = [
   ...activeWordIds.map((wordId) => `src/assets/audio/vocabulary/en/words/${wordId}.mp3`),
   ...quantityWordIds.map((wordId) => `src/assets/audio/vocabulary/en/plurals/${wordId}.mp3`),
   ...uiClipIds.map((clipId) => `src/assets/audio/vocabulary/en/ui/${clipId}.mp3`),
+  ...activeWordIds.map((wordId) => `src/assets/audio/vocabulary/he/words/${wordId}.mp3`),
+  ...hebrewUiClipIds.map((clipId) => `src/assets/audio/vocabulary/he/ui/${clipId}.mp3`),
 ];
 
 for (const relativePath of expectedFiles) {

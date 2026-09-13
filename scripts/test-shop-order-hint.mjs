@@ -67,8 +67,15 @@ try {
   assert.equal(evaluate('document.querySelector("#shop-order-prompt").lang'), 'he');
   assert.equal(evaluate('document.querySelector("#shop-translation-hint").hidden'), true);
   assert.equal(evaluate('document.querySelectorAll("#shop-order-prompt .hebrew-translation-hint").length'), 0);
-  assert.equal(evaluate('document.querySelectorAll(".shop-item-english-label").length'), 0);
-  console.log('PASS: English order, opt-in Hebrew hover/focus, responsive layout, next-customer reset, and unchanged Hebrew mode.');
+  // A child who cannot read still hears the request and picks a picture, so
+  // Hebrew choices stay illustrated with a Hebrew label beside each drawing.
+  assert.equal(
+    evaluate('document.querySelectorAll(".shop-item-label").length'),
+    evaluate('document.querySelectorAll(".shop-item-tile").length'),
+  );
+  assert.equal(evaluate('[...document.querySelectorAll(".shop-item-label")].every(label => label.lang === "he")'), true);
+  assert.equal(evaluate('document.querySelectorAll(".shop-item-illustration").length > 0'), true);
+  console.log('PASS: English order, opt-in Hebrew hover/focus, responsive layout, next-customer reset, and spoken Hebrew pictured choices.');
 } finally {
   browser('close');
 }

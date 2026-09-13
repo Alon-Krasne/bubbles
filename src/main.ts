@@ -18,7 +18,7 @@ import {
 import { calculateMasteryStars, formatStarRating } from '../prototype/shared/activity-scoring.mjs';
 import { GAME_LEVELS, getLanguagePolicy } from '../prototype/shared/trail-catalog.mjs';
 import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
-import { playRecordedSequence, stopRecordedSpeech, vocabularyWordAudio } from './recordedSpeech';
+import { hebrewWordAudio, playRecordedSequence, stopRecordedSpeech, vocabularyWordAudio } from './recordedSpeech';
 import { waitForMemoryBoardReveal } from './memoryCompletion';
 import {
   applyEnglishLearningTranslationHint,
@@ -833,9 +833,7 @@ function renderMemoryBoard() {
     word.textContent = card.text;
     word.style.setProperty('--word-length', String(card.text.length));
 
-    const learningLanguage = hostedActivityContext?.profileLanguage ?? 'en';
-    const learningPolicy = getLanguagePolicy(learningLanguage);
-    const targetCardKind: MemoryCardKind = learningPolicy.target.startsWith('english') ? 'english' : 'hebrew';
+    const targetCardKind = getMemoryTargetCardKind();
 
     if (card.kind !== targetCardKind) {
       const drawing = document.createElement('span');
@@ -847,18 +845,19 @@ function renderMemoryBoard() {
 
     front.append(word);
 
-    if (card.kind === targetCardKind && learningPolicy.prompt === 'spoken-english') {
+    if (card.kind === targetCardKind) {
+      const spokenLabel = card.kind === 'hebrew' ? card.text : card.english;
       front.classList.add('has-sound');
       const soundButton = document.createElement('button');
       soundButton.type = 'button';
       soundButton.className = 'memory-card-sound';
-      soundButton.setAttribute('aria-label', `השמיעו ${card.english}`);
-      soundButton.title = `השמיעו ${card.english}`;
+      soundButton.setAttribute('aria-label', `השמיעו ${spokenLabel}`);
+      soundButton.title = `השמיעו ${spokenLabel}`;
       soundButton.tabIndex = -1;
       soundButton.textContent = '🔊';
       soundButton.addEventListener('click', (event) => {
         event.stopPropagation();
-        speakMemoryWord(card.wordId);
+        speakMemoryWord(card.wordId, card.kind);
       });
       soundButton.addEventListener('keydown', (event) => {
         event.stopPropagation();
@@ -915,10 +914,14 @@ function handleMemoryCardClick(cardButton: HTMLDivElement) {
 function revealMemoryCard(cardButton: HTMLDivElement) {
   cardButton.classList.add('is-face-up');
   cardButton.setAttribute('aria-label', cardButton.textContent?.trim() || 'קלף פתוח');
-  if (cardButton.dataset.kind === 'english') {
-    const learningLanguage = hostedActivityContext?.profileLanguage ?? 'en';
+  const learningLanguage = hostedActivityContext?.profileLanguage ?? 'en';
+  const cardKind = cardButton.dataset.kind as MemoryCardKind;
+  if (cardKind === 'english') {
     const hebrewTranslation = getMemoryWord(cardButton.dataset.wordId as string).hebrew;
     applyEnglishLearningTranslationHint(cardButton, learningLanguage, hebrewTranslation);
+  }
+  if (cardKind === getMemoryTargetCardKind()) {
+    speakMemoryWord(cardButton.dataset.wordId as string, cardKind);
   }
   setMemorySoundButtonFocus(cardButton, true);
 }
@@ -940,10 +943,7 @@ function matchMemoryCards() {
   const pairCount = activeMemoryLevel.pairs;
   const isComplete = memoryMatchedPairs.size === pairCount;
   const message = isComplete ? `${getMemoryStageTitle(activeMemoryLevel)} הושלם!` : `זוג מנצח: ${matchedWord.hebrew} ו-${matchedWord.english}`;
-  const learningLanguage = hostedActivityContext?.profileLanguage ?? 'en';
-  if (learningLanguage === 'en') {
-    speakMemoryWord(matchedWord.id);
-  }
+  speakMemoryWord(matchedWord.id, getMemoryTargetCardKind());
 
   memoryFirstCard = null;
   memorySecondCard = null;
@@ -1295,8 +1295,13 @@ function setMemorySoundButtonFocus(cardButton: HTMLDivElement, isFocusable: bool
   }
 }
 
-function speakMemoryWord(wordId: string) {
-  playRecordedSequence([vocabularyWordAudio(wordId)]);
+function speakMemoryWord(wordId: string, kind: MemoryCardKind = 'english') {
+  playRecordedSequence([kind === 'hebrew' ? hebrewWordAudio(wordId) : vocabularyWordAudio(wordId)]);
+}
+
+function getMemoryTargetCardKind(): MemoryCardKind {
+  const learningLanguage = hostedActivityContext?.profileLanguage ?? 'en';
+  return getLanguagePolicy(learningLanguage).target.startsWith('english') ? 'english' : 'hebrew';
 }
 
 function showMemoryToast(matchedWord: MemoryWord) {

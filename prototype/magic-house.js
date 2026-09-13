@@ -9,7 +9,7 @@ import {
   MAGIC_HOUSE_ZONES,
 } from './shared/magic-house-room.mjs';
 import { selectVariedRequestIds } from './shared/magic-house-variation.mjs';
-import { MAGIC_HOUSE_PRACTICE_LEVEL, TRAIL_STAGES, getGameLevel, getLanguagePolicy } from './shared/trail-catalog.mjs';
+import { MAGIC_HOUSE_PRACTICE_LEVEL, TRAIL_STAGES, getGameLevel } from './shared/trail-catalog.mjs';
 import { applyEnglishLearningTranslationHint } from './shared/translation-hint.mjs';
 import { saveStorage, recordStageCompletion } from './shared/saves.mjs';
 import { snapshotHouseRound, restoreHouseRound } from './shared/magic-house-save.mjs';
@@ -278,7 +278,6 @@ function render() {
 
 function renderProfile() {
   const profile = getProfile();
-  const learningPolicy = getLanguagePolicy(profile.primary);
   magicHouse.classList.toggle('is-rtl', profile.primary === 'he');
   magicHouse.classList.toggle('is-hebrew-learning', profile.primary === 'he');
   requireElement('profile-avatar').src = profile.idleCharacter;
@@ -287,7 +286,9 @@ function renderProfile() {
   requireElement('room-level-title').textContent = magicHouseLevel.title;
   guideCharacter.src = profile.idleCharacter;
   requireElement('celebration-character').src = profile.happyCharacter;
-  requireElement('sound-button').hidden = learningPolicy.prompt !== 'spoken-english';
+  // Both learning paths are spoken: English plays English clips, Hebrew plays
+  // Hebrew clips, so the replay control is always available.
+  requireElement('sound-button').hidden = false;
 }
 
 function renderDropZones() {
@@ -343,35 +344,28 @@ function renderDropZones() {
 function renderObjectDrawer() {
   const state = getState();
   const profile = getProfile();
-  const learningPolicy = getLanguagePolicy(profile.primary);
   removeDragGhosts();
   objectList.innerHTML = '';
 
   state.objects.forEach((object) => {
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = 'object-button';
+    button.className = 'object-button is-image-choice';
     button.dataset.objectId = object.id;
     button.draggable = false;
     button.disabled = state.placedObjectIds.has(object.id);
     button.classList.toggle('is-placed', state.placedObjectIds.has(object.id));
     button.classList.toggle('is-selected', selectedObjectId === object.id);
-    button.classList.add(learningPolicy.choices === 'written-hebrew' ? 'is-word-choice' : 'is-image-choice');
     button.setAttribute('aria-pressed', String(selectedObjectId === object.id));
     button.setAttribute('aria-label', object.labels[profile.primary]);
 
-    if (learningPolicy.choices === 'semantic-images') {
-      const art = document.createElement('span');
-      art.className = 'object-art';
-      setSpritePosition(art, object);
-      button.append(art);
-    } else {
-      const label = document.createElement('span');
-      label.className = 'object-label';
-      label.textContent = object.labels.he;
-      label.dir = 'rtl';
-      button.append(label);
-    }
+    // Spoken requests name the object, so both learning paths offer pictured
+    // choices a child can pick without reading.
+    const art = document.createElement('span');
+    art.className = 'object-art';
+    setSpritePosition(art, object);
+    button.append(art);
+
     applyEnglishLearningTranslationHint(button, profile.primary, object.labels.he);
     button.addEventListener('click', () => selectObject(object.id));
     attachPointerDrag(button, object);
@@ -587,7 +581,7 @@ function useHelp() {
 
   state.helpLevel = Math.min(magicHouseLevel.maxHelpLevel, state.helpLevel + 1);
   saveRound();
-  if (state.helpLevel === 1 && getProfile().primary === 'en') {
+  if (state.helpLevel === 1) {
     speakSentence();
   }
   applyHelpState();
@@ -643,20 +637,23 @@ function getFinalStars() {
 }
 
 function speakSentence() {
-  if (getLanguagePolicy(getProfile().primary).prompt !== 'spoken-english') {
-    return;
+  if (!sentenceAudio.src) {
+    prepareSentenceAudio();
   }
   sentenceAudio.currentTime = 0;
   void sentenceAudio.play();
 }
 
+function getSentenceAudioPath() {
+  const profile = getProfile();
+  const base = `./assets/magic-house/audio/${profile.primary}/${getRequest().id}`;
+  // Hebrew requests are recorded in both grammatical genders; the profile's
+  // character decides which sentence the child hears.
+  return profile.primary === 'he' && profile.gender === 'female' ? `${base}-female.wav` : `${base}.wav`;
+}
+
 function prepareSentenceAudio() {
-  if (getLanguagePolicy(getProfile().primary).prompt !== 'spoken-english') {
-    stopSentenceAudio();
-    sentenceAudio.removeAttribute('src');
-    return;
-  }
-  sentenceAudio.src = `./assets/magic-house/audio/${getProfile().primary}/${getRequest().id}.wav`;
+  sentenceAudio.src = getSentenceAudioPath();
   sentenceAudio.load();
 }
 
@@ -784,13 +781,9 @@ function attachPointerDrag(button, object) {
       removeDragGhosts();
       ghost = document.createElement('span');
       ghost.className = 'drag-ghost';
-      if (getProfile().primary === 'he') {
-        ghost.classList.add('is-word');
-        ghost.textContent = object.labels.he;
-        ghost.dir = 'rtl';
-      } else {
-        setSpritePosition(ghost, object);
-      }
+      // The drawer shows pictures in both learning paths, so the dragged
+      // object stays a picture a child can recognise without reading.
+      setSpritePosition(ghost, object);
       document.body.append(ghost);
     }
 

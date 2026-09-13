@@ -87,9 +87,9 @@ assert.deepEqual(LANGUAGE_POLICIES.english, {
   target: 'english-without-answer-image',
 });
 assert.deepEqual(LANGUAGE_POLICIES.hebrew, {
-  prompt: 'written-hebrew',
-  choices: 'written-hebrew',
-  target: 'hebrew-without-answer-image-or-pre-answer-speech',
+  prompt: 'spoken-hebrew',
+  choices: 'semantic-images',
+  target: 'hebrew-without-answer-image',
 });
 assert.equal(getLanguagePolicy('en'), LANGUAGE_POLICIES.english);
 assert.equal(getLanguagePolicy('he'), LANGUAGE_POLICIES.hebrew);

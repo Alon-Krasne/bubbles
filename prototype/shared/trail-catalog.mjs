@@ -28,9 +28,9 @@ export const LANGUAGE_POLICIES = Object.freeze({
     target: 'english-without-answer-image',
   }),
   hebrew: Object.freeze({
-    prompt: 'written-hebrew',
-    choices: 'written-hebrew',
-    target: 'hebrew-without-answer-image-or-pre-answer-speech',
+    prompt: 'spoken-hebrew',
+    choices: 'semantic-images',
+    target: 'hebrew-without-answer-image',
   }),
 });
 

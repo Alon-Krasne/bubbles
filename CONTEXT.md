@@ -32,7 +32,7 @@ The activity mode in which the learner listens to or reads English and may reque
 _Avoid_: English game
 
 **Hebrew-learning path**:
-The activity mode in which the learner reads Hebrew prompts and choices; English-to-Hebrew translation hints do not appear.
+The activity mode in which the learner hears Hebrew prompts and picks pictured choices. It is designed for a child who speaks Hebrew but cannot read, so every answer is reachable by sound and image; English-to-Hebrew translation hints do not appear.
 _Avoid_: Hebrew game
 
 ## Example dialogue

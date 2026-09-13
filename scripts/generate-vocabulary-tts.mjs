@@ -152,9 +152,10 @@ async function requestAudio(apiKey, clip) {
       const interaction = await response.json();
       const audio = interaction.steps?.[0]?.content?.[0];
       if (audio?.type !== 'audio'
-        || audio.mime_type !== 'audio/l16'
+        || typeof audio.mime_type !== 'string'
+        || !audio.mime_type.startsWith('audio/l16')
         || audio.channels !== 1
-        || audio.sample_rate !== 24000
+        || Number(audio.sample_rate) !== 24000
         || typeof audio.data !== 'string') {
         throw new Error(`Unexpected Google TTS response for ${JSON.stringify(transcript)}`);
       }
