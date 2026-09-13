@@ -161,6 +161,9 @@ let memoryMistakes = 0;
 let memoryRoundStars = 3;
 let memoryToastTimer: number | null = null;
 let memoryWinReturnTimer: number | null = null;
+// Bumped whenever a round is restarted or the Memory scene is left, so a win
+// that is still waiting to celebrate can tell it is stale and stand down.
+let memoryRoundToken = 0;
 const MEMORY_WIN_RETURN_DELAY_MS = 2400;
 // Hold the finished board on screen before celebrating. Without it, browsers
 // with reduced motion skip the flip transition and the celebration covers the
@@ -515,7 +518,7 @@ function openBubblesSetup() {
   shopGame?.leaveShop();
   stopRecordedSpeech();
   clearMemoryMismatchState();
-  clearMemoryWinReturnTimer();
+  cancelMemoryCompletion();
   hideMemoryToast();
   hideMemoryCelebration();
   showScreen('start-screen');
@@ -545,7 +548,7 @@ function requireHostedActivitySession() {
 function exitHostedMemoryActivity() {
   stopRecordedSpeech();
   clearMemoryMismatchState();
-  clearMemoryWinReturnTimer();
+  cancelMemoryCompletion();
   hideMemoryToast();
   hideMemoryCelebration();
   requireHostedActivitySession().exit();
@@ -627,7 +630,7 @@ function returnToGameSelect() {
   shopGame?.leaveShop();
   stopRecordedSpeech();
   clearMemoryMismatchState();
-  clearMemoryWinReturnTimer();
+  cancelMemoryCompletion();
   hideMemoryToast();
   hideMemoryCelebration();
   gameApp.returnToStart();
@@ -638,7 +641,7 @@ function returnToStart() {
   shopGame?.leaveShop();
   stopRecordedSpeech();
   clearMemoryMismatchState();
-  clearMemoryWinReturnTimer();
+  cancelMemoryCompletion();
   hideMemoryToast();
   hideMemoryCelebration();
   gameApp.returnToStart();
@@ -694,7 +697,7 @@ function loadHighScores() {
 function showMemoryLevelMap() {
   stopRecordedSpeech();
   clearMemoryMismatchState();
-  clearMemoryWinReturnTimer();
+  cancelMemoryCompletion();
   hideMemoryToast();
   hideMemoryCelebration();
   const gameArea = requireElement<HTMLElement>('memory-game-area');
@@ -714,7 +717,7 @@ function startMemoryLevel(levelId: MemoryLevelId) {
     throw new Error(`Memory level ${levelId} is locked`);
   }
 
-  clearMemoryWinReturnTimer();
+  cancelMemoryCompletion();
   hideMemoryCelebration();
   activeMemoryLevel = level;
   const levelMap = requireElement<HTMLElement>('memory-level-map');
@@ -733,6 +736,7 @@ function getMemoryStageTitle(level: MemoryLevel) {
 }
 
 function startMemoryRound(level: MemoryLevel) {
+  cancelMemoryCompletion();
   configureTranslationHintButton(requireElement<HTMLButtonElement>('memory-translation-hint'), hostedActivityContext?.profileLanguage ?? 'en', true);
   stopRecordedSpeech();
   clearMemoryMismatchState();
@@ -972,12 +976,17 @@ function matchMemoryCards() {
     }
     const board = requireElement<HTMLDivElement>('memory-board');
     const renderedCards = Array.from(board.querySelectorAll<HTMLElement>('.memory-card'));
+    const completionToken = memoryRoundToken;
+    const celebrateIfStillCurrent = () => {
+      if (completionToken !== memoryRoundToken) return;
+      finishMemoryRound();
+    };
     void waitForMemoryBoardReveal(renderedCards, pairCount)
       .then(holdMemoryBoard)
-      .then(finishMemoryRound)
+      .then(celebrateIfStillCurrent)
       .catch((error) => {
         console.error('Memory reveal wait failed', error);
-        void holdMemoryBoard().then(finishMemoryRound);
+        void holdMemoryBoard().then(celebrateIfStillCurrent);
       });
   }
   updateMemoryStatus(message);
@@ -1042,6 +1051,11 @@ function clearMemoryWinReturnTimer() {
     clearTimeout(memoryWinReturnTimer);
     memoryWinReturnTimer = null;
   }
+}
+
+function cancelMemoryCompletion() {
+  memoryRoundToken += 1;
+  clearMemoryWinReturnTimer();
 }
 
 function updateMemoryStatus(message: string) {
@@ -1302,7 +1316,7 @@ function playMemoryMapReturnCue() {
 }
 
 function returnToMemoryMapAfterWin() {
-  clearMemoryWinReturnTimer();
+  cancelMemoryCompletion();
   hideMemoryCelebration();
   showMemoryLevelMap();
   playMemoryMapReturnCue();

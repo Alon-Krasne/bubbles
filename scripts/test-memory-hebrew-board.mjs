@@ -90,7 +90,43 @@ try {
   assert.ok(win.celebrationAt !== null, `the reduced-motion round must still win: ${JSON.stringify(win)}`);
   assert.ok(win.celebrationAt >= 500, `the finished board must hold before celebrating: ${JSON.stringify(win)}`);
   assert.equal(win.faceUp, win.total, `every card must be open before the hold ends: ${JSON.stringify(win)}`);
-  console.log(`PASS: the Hebrew Memory board shows spoken Hebrew targets and picture-only matches with no English words, and holds the finished board before celebrating. ${JSON.stringify({ result, win })}`);
+
+  // Shuffling during the completion hold must cancel the pending win: it must
+  // not celebrate (or return to the map for) the fresh, unfinished board.
+  browser('reload');
+  browser('wait', '.memory-card');
+  const shuffle = JSON.parse(browser('eval', `(async () => {
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const cards = () => [...document.querySelectorAll('.memory-card')];
+    const byWord = {};
+    cards().forEach((card) => { (byWord[card.dataset.wordId] ||= []).push(card); });
+    const pairs = Object.values(byWord);
+    for (let index = 0; index < pairs.length - 1; index += 1) {
+      pairs[index].find((card) => card.dataset.kind === 'hebrew').click();
+      await sleep(40);
+      pairs[index].find((card) => card.dataset.kind === 'english').click();
+      await sleep(120);
+    }
+    const lastPair = pairs[pairs.length - 1];
+    lastPair.find((card) => card.dataset.kind === 'hebrew').click();
+    await sleep(40);
+    lastPair.find((card) => card.dataset.kind === 'english').click();
+    await sleep(100);
+    document.getElementById('memory-new-garden-btn').click();
+    await sleep(1500);
+    return {
+      celebrationVisible: !!document.querySelector('#memory-celebration')?.classList.contains('is-visible'),
+      faceUp: cards().filter((card) => card.classList.contains('is-face-up')).length,
+      progress: document.getElementById('memory-progress')?.textContent ?? null,
+      cardCount: cards().length,
+    };
+  })()`));
+
+  assert.equal(shuffle.celebrationVisible, false, `shuffling during the hold must cancel the pending celebration: ${JSON.stringify(shuffle)}`);
+  assert.equal(shuffle.faceUp, 0, `the fresh board must start face-down: ${JSON.stringify(shuffle)}`);
+  assert.equal(shuffle.cardCount, win.total, `the fresh board must be rendered: ${JSON.stringify(shuffle)}`);
+  assert.match(shuffle.progress, /^0 מתוך /, `the fresh board must report no matched pairs: ${JSON.stringify(shuffle)}`);
+  console.log(`PASS: the Hebrew Memory board shows spoken Hebrew targets and picture-only matches with no English words, holds the finished board before celebrating, and cancels a pending win when reshuffled. ${JSON.stringify({ result, win, shuffle })}`);
 } finally {
   browser('close');
 }

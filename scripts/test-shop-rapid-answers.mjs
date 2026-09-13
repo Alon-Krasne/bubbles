@@ -17,6 +17,12 @@ const route = `http://127.0.0.1:8788/index.html?${new URLSearchParams({
   profile: profileId, profileName: 'Test', profileEmoji: '🫧',
   profileCharacter: 'dinosaur', profileLanguage: 'he',
 })}`;
+const requestProfileId = `request-${runId}`;
+const requestRoute = `http://127.0.0.1:8788/index.html?${new URLSearchParams({
+  host: 'world-map', activity: 'listening-shop', level: 'trail-shop-11', stage: '32',
+  profile: requestProfileId, profileName: 'Test', profileEmoji: '🫧',
+  profileCharacter: 'dinosaur', profileLanguage: 'he',
+})}`;
 
 const helpers = `
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -26,15 +32,36 @@ const helpers = `
   const replay = () => document.querySelector('#shop-order-replay-btn');
   const celebrating = () => document.querySelector('#shop-celebration')?.classList.contains('is-visible') ?? false;
   if (!window.__speechLog) {
-    window.__speechLog = { srcs: [], errors: [] };
+    window.__speechLog = { srcs: [], meta: [], errors: [] };
     document.addEventListener('playing', (event) => {
-      if (event.target?.id === 'recorded-speech' && event.target.src) window.__speechLog.srcs.push(event.target.src);
+      if (event.target?.id === 'recorded-speech' && event.target.src) {
+        window.__speechLog.srcs.push(event.target.src);
+        window.__speechLog.meta.push({
+          name: event.target.src.split('/').pop(),
+          index: Number(event.target.dataset.sequenceIndex),
+          length: Number(event.target.dataset.sequenceLength),
+        });
+      }
     }, true);
     document.addEventListener('error', (event) => {
       if (event.target?.id === 'recorded-speech') window.__speechLog.errors.push(event.target.error?.code ?? -1);
     }, true);
   }
 `;
+
+const requestScript = `(async () => {
+  ${helpers}
+  const started = Date.now();
+  // Wait until the spoken request reaches its last clip. Clips are spaced by
+  // >1s, so we track the sequence index rather than guessing at quiet gaps.
+  while (Date.now() - started < 12000) {
+    const last = window.__speechLog.meta.at(-1);
+    if (last && last.length >= 3 && last.index === last.length - 1) break;
+    await sleep(20);
+  }
+  const names = window.__speechLog.srcs.map((url) => url.split('/').pop());
+  return { names, promptText: prompt() };
+})()`;
 
 const rapidScript = `(async () => {
   ${helpers}
@@ -87,10 +114,9 @@ const summaryScript = `(() => ({
 }))()`;
 
 try {
+  // No seeded route: a deep-linked activity must still record completion by
+  // starting a fresh route instead of stranding the child on the last customer.
   browser('open', route);
-  // The world map creates the profile's route before launching an activity;
-  // seed it here so the final customer's completion can record its stage.
-  browser('eval', `window.bubblesSaveClient.setItem(${JSON.stringify(`route-${profileId}`)}, JSON.stringify({ progress: {}, currentStage: 1, contentVersion: 1 }))`);
   const rapid = JSON.parse(browser('eval', rapidScript));
   assert.equal(rapid.correctCount, 2, `rapid fixture must resolve two requested pictures: ${JSON.stringify(rapid)}`);
   assert.equal(rapid.replayDisabled, false, `a rapid correct answer must not lock the round: ${JSON.stringify(rapid)}`);
@@ -109,7 +135,21 @@ try {
   assert.ok(summary.audioSrcs.length > 0, `Hebrew speech must actually play: ${JSON.stringify(summary)}`);
   assert.ok(summary.audioSrcs.every((name) => name.endsWith('.mp3')), `played audio must be committed clips: ${JSON.stringify(summary.audioSrcs)}`);
   assert.deepEqual(summary.audioErrors, [], `Hebrew speech must play without errors: ${JSON.stringify(summary.audioErrors)}`);
-  console.log(`PASS: a two-item Hebrew order answered within 150ms advances, and the full level completes with real Hebrew playback. ${JSON.stringify({ rapid, summary })}`);
+
+  const savedRoute = JSON.parse(browser('eval', `JSON.parse(window.bubblesSaveClient.getItem(${JSON.stringify(`route-${profileId}`)}) || 'null')`));
+  assert.ok(savedRoute, `completing without a seeded route must create one: ${JSON.stringify(savedRoute)}`);
+  assert.ok(savedRoute.progress?.['32'] > 0, `the completed stage must be recorded in the fresh route: ${JSON.stringify(savedRoute)}`);
+
+  // The spoken request itself must be the composed Hebrew sequence, not just
+  // "some committed clip": can-i-have + item + and + item for a double order.
+  browser('open', requestRoute);
+  const request = JSON.parse(browser('eval', requestScript));
+  assert.ok(request.names.length >= 3, `a Hebrew double order must speak multiple clips: ${JSON.stringify(request)}`);
+  assert.ok(request.names[0].startsWith('can-i-have'), `the request must open with can-i-have: ${JSON.stringify(request)}`);
+  assert.ok(request.names.some((name) => name.startsWith('and-')), `a double request must include and: ${JSON.stringify(request)}`);
+  assert.ok(request.names.every((name) => name.endsWith('.mp3')), `the request clips must be committed audio: ${JSON.stringify(request)}`);
+
+  console.log(`PASS: a two-item Hebrew order answered within 150ms advances, the full level completes with real Hebrew playback and creates a fresh route, and the spoken request is the composed Hebrew sequence. ${JSON.stringify({ rapid, summary, request })}`);
 } finally {
   browser('close');
 }
