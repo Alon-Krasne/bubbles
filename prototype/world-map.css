@@ -1992,7 +1992,7 @@ body {
    Re-skins the trail chrome, panels, gate and editor to match the Shop,
    Magic House and Memory Garden night palette without changing layout.
 --------------------------------------------------------------------------- */
-:root {
+:root[data-time-of-day="night"] {
   --panel: rgba(22, 30, 60, 0.95);
   --ink: #eef3ff;
   --berry: #ffe2a6;
@@ -2021,152 +2021,210 @@ body {
   --reward-sparkle-depth: rgba(120, 80, 20, 0.4);
 }
 
-.profile-button,
-.star-total,
-.world-title {
+:root[data-time-of-day="night"] .profile-button,
+:root[data-time-of-day="night"] .star-total,
+:root[data-time-of-day="night"] .world-title {
   border-color: rgba(255, 224, 160, 0.7);
   background: linear-gradient(160deg, rgba(34, 47, 92, 0.94), rgba(18, 26, 56, 0.95));
   box-shadow: 0 6px 0 rgba(6, 12, 30, 0.5), 0 14px 30px rgba(4, 10, 28, 0.5);
   backdrop-filter: blur(3px);
 }
 
-.world-title span,
-.panel-kicker,
-.gate-kicker,
-.editor-kicker {
+:root[data-time-of-day="night"] .world-title span,
+:root[data-time-of-day="night"] .panel-kicker,
+:root[data-time-of-day="night"] .gate-kicker,
+:root[data-time-of-day="night"] .editor-kicker {
   color: #bcdcff;
 }
 
-.star-total,
-.profile-button,
-.profile-copy strong,
-.world-title strong {
+:root[data-time-of-day="night"] .star-total,
+:root[data-time-of-day="night"] .profile-button,
+:root[data-time-of-day="night"] .profile-copy strong,
+:root[data-time-of-day="night"] .world-title strong {
   color: #ffe7b3;
 }
 
-.profile-copy small,
-.profile-chevron,
-.profile-menu small {
+:root[data-time-of-day="night"] .profile-copy small,
+:root[data-time-of-day="night"] .profile-chevron,
+:root[data-time-of-day="night"] .profile-menu small {
   color: #b8c8e8;
 }
 
-.profile-menu {
+:root[data-time-of-day="night"] .profile-menu {
   border-color: rgba(255, 224, 160, 0.6);
   box-shadow: 0 18px 40px rgba(4, 10, 28, 0.6);
 }
 
-.profile-menu-option,
-.profile-menu-command {
+:root[data-time-of-day="night"] .profile-menu-option,
+:root[data-time-of-day="night"] .profile-menu-command {
   color: #eef3ff;
 }
 
-.profile-menu button:hover,
-.profile-menu button:focus-visible {
+:root[data-time-of-day="night"] .profile-menu button:hover,
+:root[data-time-of-day="night"] .profile-menu button:focus-visible {
   background: rgba(90, 120, 200, 0.28);
   outline-color: #ffd45d;
 }
 
-.profile-menu-option.is-active {
+:root[data-time-of-day="night"] .profile-menu-option.is-active {
   background: rgba(255, 210, 120, 0.18);
   color: #ffe7b3;
 }
 
-.profile-menu-actions {
+:root[data-time-of-day="night"] .profile-menu-actions {
   border-top-color: rgba(180, 200, 240, 0.24);
 }
 
-.stage-panel {
+:root[data-time-of-day="night"] .stage-panel {
   border-color: rgba(255, 224, 160, 0.7);
   box-shadow: 0 8px 0 rgba(6, 12, 30, 0.55), 0 20px 44px rgba(4, 10, 28, 0.6);
   backdrop-filter: blur(3px);
 }
 
-.panel-copy p {
+:root[data-time-of-day="night"] .panel-copy p {
   color: #c8d6f2;
 }
 
-.panel-icon {
+:root[data-time-of-day="night"] .panel-icon {
   background: radial-gradient(circle at 50% 35%, #ffe6a6, #e9ad48 78%);
   color: #5a3a12;
   box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.4), 0 4px 10px rgba(6, 12, 30, 0.4);
 }
 
-.panel-close {
+:root[data-time-of-day="night"] .panel-close {
   border-color: rgba(255, 224, 160, 0.8);
   background: #24365f;
   color: #ffe7b3;
 }
 
-.play-button {
+:root[data-time-of-day="night"] .play-button {
   border-color: rgba(255, 245, 214, 0.9);
 }
 
-.launch-overlay {
+:root[data-time-of-day="night"] .launch-overlay {
   background: rgba(14, 20, 46, 0.72);
 }
 
-.profile-gate::after {
+:root[data-time-of-day="night"] .profile-gate::after {
   background: rgba(10, 16, 38, 0.4);
 }
 
-.gate-heading h1 {
+:root[data-time-of-day="night"] .gate-heading h1 {
   color: #ffe7b3;
   text-shadow: 0 4px 10px rgba(4, 10, 28, 0.7);
 }
 
-.gate-profile-card {
+:root[data-time-of-day="night"] .gate-profile-card {
   border-color: rgba(255, 224, 160, 0.6);
   background: linear-gradient(170deg, rgba(34, 47, 92, 0.92), rgba(18, 26, 56, 0.94));
   box-shadow: 0 8px 0 rgba(6, 12, 30, 0.5), 0 20px 40px rgba(4, 10, 28, 0.5);
 }
 
-.gate-profile-choice span {
+:root[data-time-of-day="night"] .gate-profile-choice span {
   color: #c3d4f2;
 }
 
-.profile-editor {
+:root[data-time-of-day="night"] .profile-editor {
   background: rgba(8, 12, 32, 0.62);
 }
 
-.editor-dialog {
+:root[data-time-of-day="night"] .editor-dialog {
   border-color: rgba(255, 224, 160, 0.65);
   background: linear-gradient(170deg, rgba(30, 42, 82, 0.97), rgba(16, 23, 50, 0.98));
   box-shadow: 0 10px 0 rgba(6, 12, 30, 0.55), 0 28px 64px rgba(4, 10, 28, 0.6);
 }
 
-.editor-dialog legend,
-.editor-dialog label > span {
+:root[data-time-of-day="night"] .editor-dialog legend,
+:root[data-time-of-day="night"] .editor-dialog label > span {
   color: #cfe0f4;
 }
 
-.editor-dialog input[type="text"],
-.editor-dialog select {
+:root[data-time-of-day="night"] .editor-dialog input[type="text"],
+:root[data-time-of-day="night"] .editor-dialog select {
   background: rgba(12, 18, 40, 0.9);
   color: #eef3ff;
   border-color: rgba(180, 200, 240, 0.4);
 }
 
-.character-choice {
+:root[data-time-of-day="night"] .character-choice {
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.24);
   color: #eef3ff;
 }
 
-.language-options span {
+:root[data-time-of-day="night"] .language-options span {
   color: #eef3ff;
 }
 
-.world-stage[data-game="memory"]:not(.is-current):not(.is-complete) {
+:root[data-time-of-day="night"] .world-stage[data-game="memory"]:not(.is-current):not(.is-complete) {
   border-color: rgba(255, 196, 224, 0.9);
   background: radial-gradient(circle at 50% 32%, #6a3f68, #2c2350 74%);
 }
 
-.world-stage[data-game="shop"]:not(.is-current):not(.is-complete) {
+:root[data-time-of-day="night"] .world-stage[data-game="shop"]:not(.is-current):not(.is-complete) {
   border-color: rgba(255, 216, 140, 0.9);
   background: radial-gradient(circle at 50% 32%, #6b5340, #33304f 74%);
 }
 
-.world-stage[data-game="house"]:not(.is-current):not(.is-complete) {
+:root[data-time-of-day="night"] .world-stage[data-game="house"]:not(.is-current):not(.is-complete) {
   border-color: rgba(168, 232, 222, 0.9);
   background: radial-gradient(circle at 50% 32%, #2f5f6c, #1f2c50 74%);
+}
+
+
+/* Daytime uses the original light chrome and a matching map illustration. */
+:root {
+  --time-surface: #fff9ed;
+  --time-ink: #48546f;
+  --time-border: #eed8a5;
+  --time-selected: #ffe19a;
+  --time-selected-ink: #49371c;
+  --time-focus: #287d82;
+}
+:root[data-time-of-day="night"] { --time-surface: #182340; --time-ink: #eef3ff; }
+:root[data-time-of-day="day"] .map-stage {
+  background-image: url('./assets/sunlit-trail-map.webp');
+}
+:root[data-time-of-day="day"] .profile-gate {
+  background: linear-gradient(#fff8e933, #e8f8df55), url('./assets/sunlit-trail-map.webp') center / cover no-repeat;
+}
+:root[data-time-of-day="day"] .profile-gate::after { background: #fff8e91a; }
+:root[data-time-of-day="day"] .gate-star { display: none; }
+.time-of-day-control {
+  display: inline-flex;
+  direction: rtl;
+  flex-shrink: 0;
+  padding: 4px;
+  gap: 2px;
+  border: 2px solid var(--time-border);
+  border-radius: 999px;
+  background: var(--time-surface);
+  box-shadow: 0 4px 12px #23304f26;
+}
+.time-of-day-control button {
+  min-width: 64px;
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--time-ink);
+  background: transparent;
+  font: 700 15px 'Rubik', sans-serif;
+  cursor: pointer;
+}
+.time-of-day-control button[aria-pressed="true"] { background: var(--time-selected); color: var(--time-selected-ink); }
+.time-of-day-control button:focus-visible { outline: 3px solid var(--time-focus); outline-offset: 2px; }
+.gate-content > .time-of-day-control { justify-self: center; }
+@media (max-width: 1100px) {
+  .world-actions { flex-direction: column; align-items: flex-end; }
+}
+@media (max-width: 720px) {
+  .world-chrome { inset: 12px 12px auto; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+  .world-title { display: none; }
+  .profile-button { min-width: 0; width: 100%; max-width: 210px; }
+  .world-actions { grid-column: 2; }
+  .stage-panel { top: 154px; width: calc(100% - 48px); grid-template-columns: 44px minmax(0, 1fr) 76px; gap: 8px; }
+  .panel-icon { width: 44px; height: 44px; }
+  .panel-copy h1 { font-size: 21px; }
+  .play-button { width: 76px; min-width: 0; font-size: 20px; }
 }
