@@ -18,7 +18,7 @@ import {
 import { calculateMasteryStars, formatStarRating } from '../prototype/shared/activity-scoring.mjs';
 import { GAME_LEVELS, getLanguagePolicy } from '../prototype/shared/trail-catalog.mjs';
 import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
-import { playRecordedSequence, stopRecordedSpeech, vocabularyWordAudio } from './recordedSpeech';
+import { hebrewWordAudio, playRecordedSequence, stopRecordedSpeech, vocabularyWordAudio } from './recordedSpeech';
 import { waitForMemoryBoardReveal } from './memoryCompletion';
 import {
   applyEnglishLearningTranslationHint,
@@ -161,7 +161,14 @@ let memoryMistakes = 0;
 let memoryRoundStars = 3;
 let memoryToastTimer: number | null = null;
 let memoryWinReturnTimer: number | null = null;
+// Bumped whenever a round is restarted or the Memory scene is left, so a win
+// that is still waiting to celebrate can tell it is stale and stand down.
+let memoryRoundToken = 0;
 const MEMORY_WIN_RETURN_DELAY_MS = 2400;
+// Hold the finished board on screen before celebrating. Without it, browsers
+// with reduced motion skip the flip transition and the celebration covers the
+// board the instant the last pair is matched.
+const MEMORY_BOARD_HOLD_MS = 650;
 
 // Load saved preferences
 function loadPreferences() {
@@ -511,7 +518,7 @@ function openBubblesSetup() {
   shopGame?.leaveShop();
   stopRecordedSpeech();
   clearMemoryMismatchState();
-  clearMemoryWinReturnTimer();
+  cancelMemoryCompletion();
   hideMemoryToast();
   hideMemoryCelebration();
   showScreen('start-screen');
@@ -541,7 +548,7 @@ function requireHostedActivitySession() {
 function exitHostedMemoryActivity() {
   stopRecordedSpeech();
   clearMemoryMismatchState();
-  clearMemoryWinReturnTimer();
+  cancelMemoryCompletion();
   hideMemoryToast();
   hideMemoryCelebration();
   requireHostedActivitySession().exit();
@@ -623,7 +630,7 @@ function returnToGameSelect() {
   shopGame?.leaveShop();
   stopRecordedSpeech();
   clearMemoryMismatchState();
-  clearMemoryWinReturnTimer();
+  cancelMemoryCompletion();
   hideMemoryToast();
   hideMemoryCelebration();
   gameApp.returnToStart();
@@ -634,7 +641,7 @@ function returnToStart() {
   shopGame?.leaveShop();
   stopRecordedSpeech();
   clearMemoryMismatchState();
-  clearMemoryWinReturnTimer();
+  cancelMemoryCompletion();
   hideMemoryToast();
   hideMemoryCelebration();
   gameApp.returnToStart();
@@ -690,7 +697,7 @@ function loadHighScores() {
 function showMemoryLevelMap() {
   stopRecordedSpeech();
   clearMemoryMismatchState();
-  clearMemoryWinReturnTimer();
+  cancelMemoryCompletion();
   hideMemoryToast();
   hideMemoryCelebration();
   const gameArea = requireElement<HTMLElement>('memory-game-area');
@@ -710,7 +717,7 @@ function startMemoryLevel(levelId: MemoryLevelId) {
     throw new Error(`Memory level ${levelId} is locked`);
   }
 
-  clearMemoryWinReturnTimer();
+  cancelMemoryCompletion();
   hideMemoryCelebration();
   activeMemoryLevel = level;
   const levelMap = requireElement<HTMLElement>('memory-level-map');
@@ -729,6 +736,7 @@ function getMemoryStageTitle(level: MemoryLevel) {
 }
 
 function startMemoryRound(level: MemoryLevel) {
+  cancelMemoryCompletion();
   configureTranslationHintButton(requireElement<HTMLButtonElement>('memory-translation-hint'), hostedActivityContext?.profileLanguage ?? 'en', true);
   stopRecordedSpeech();
   clearMemoryMismatchState();
@@ -833,9 +841,8 @@ function renderMemoryBoard() {
     word.textContent = card.text;
     word.style.setProperty('--word-length', String(card.text.length));
 
-    const learningLanguage = hostedActivityContext?.profileLanguage ?? 'en';
-    const learningPolicy = getLanguagePolicy(learningLanguage);
-    const targetCardKind: MemoryCardKind = learningPolicy.target.startsWith('english') ? 'english' : 'hebrew';
+    const targetCardKind = getMemoryTargetCardKind();
+    const learningLanguage = getMemoryLearningLanguage();
 
     if (card.kind !== targetCardKind) {
       const drawing = document.createElement('span');
@@ -845,20 +852,25 @@ function renderMemoryBoard() {
       front.append(drawing);
     }
 
-    front.append(word);
+    // In the Hebrew path the matching card is a picture only, so a child who
+    // cannot read sees no English words on the Hebrew board.
+    if (card.kind === targetCardKind || learningLanguage === 'en') {
+      front.append(word);
+    }
 
-    if (card.kind === targetCardKind && learningPolicy.prompt === 'spoken-english') {
+    if (card.kind === targetCardKind) {
+      const spokenLabel = card.kind === 'hebrew' ? card.text : card.english;
       front.classList.add('has-sound');
       const soundButton = document.createElement('button');
       soundButton.type = 'button';
       soundButton.className = 'memory-card-sound';
-      soundButton.setAttribute('aria-label', `השמיעו ${card.english}`);
-      soundButton.title = `השמיעו ${card.english}`;
+      soundButton.setAttribute('aria-label', `השמיעו ${spokenLabel}`);
+      soundButton.title = `השמיעו ${spokenLabel}`;
       soundButton.tabIndex = -1;
       soundButton.textContent = '🔊';
       soundButton.addEventListener('click', (event) => {
         event.stopPropagation();
-        speakMemoryWord(card.wordId);
+        speakMemoryWord(card.wordId, card.kind);
       });
       soundButton.addEventListener('keydown', (event) => {
         event.stopPropagation();
@@ -915,10 +927,14 @@ function handleMemoryCardClick(cardButton: HTMLDivElement) {
 function revealMemoryCard(cardButton: HTMLDivElement) {
   cardButton.classList.add('is-face-up');
   cardButton.setAttribute('aria-label', cardButton.textContent?.trim() || 'קלף פתוח');
-  if (cardButton.dataset.kind === 'english') {
-    const learningLanguage = hostedActivityContext?.profileLanguage ?? 'en';
+  const learningLanguage = hostedActivityContext?.profileLanguage ?? 'en';
+  const cardKind = cardButton.dataset.kind as MemoryCardKind;
+  if (cardKind === 'english') {
     const hebrewTranslation = getMemoryWord(cardButton.dataset.wordId as string).hebrew;
     applyEnglishLearningTranslationHint(cardButton, learningLanguage, hebrewTranslation);
+  }
+  if (cardKind === getMemoryTargetCardKind()) {
+    speakMemoryWord(cardButton.dataset.wordId as string, cardKind);
   }
   setMemorySoundButtonFocus(cardButton, true);
 }
@@ -939,11 +955,12 @@ function matchMemoryCards() {
   const matchedWord = getMemoryWord(wordId);
   const pairCount = activeMemoryLevel.pairs;
   const isComplete = memoryMatchedPairs.size === pairCount;
-  const message = isComplete ? `${getMemoryStageTitle(activeMemoryLevel)} הושלם!` : `זוג מנצח: ${matchedWord.hebrew} ו-${matchedWord.english}`;
-  const learningLanguage = hostedActivityContext?.profileLanguage ?? 'en';
-  if (learningLanguage === 'en') {
-    speakMemoryWord(matchedWord.id);
-  }
+  const message = isComplete
+    ? `${getMemoryStageTitle(activeMemoryLevel)} הושלם!`
+    : getMemoryLearningLanguage() === 'en'
+    ? `זוג מנצח: ${matchedWord.hebrew} ו-${matchedWord.english}`
+    : `זוג מנצח: ${matchedWord.hebrew}`;
+  speakMemoryWord(matchedWord.id, getMemoryTargetCardKind());
 
   memoryFirstCard = null;
   memorySecondCard = null;
@@ -959,15 +976,27 @@ function matchMemoryCards() {
     }
     const board = requireElement<HTMLDivElement>('memory-board');
     const renderedCards = Array.from(board.querySelectorAll<HTMLElement>('.memory-card'));
+    const completionToken = memoryRoundToken;
+    const celebrateIfStillCurrent = () => {
+      if (completionToken !== memoryRoundToken) return;
+      finishMemoryRound();
+    };
     void waitForMemoryBoardReveal(renderedCards, pairCount)
-      .then(finishMemoryRound)
+      .then(holdMemoryBoard)
+      .then(celebrateIfStillCurrent)
       .catch((error) => {
         console.error('Memory reveal wait failed', error);
-        finishMemoryRound();
+        void holdMemoryBoard().then(celebrateIfStillCurrent);
       });
   }
   updateMemoryStatus(message);
   showMemoryToast(matchedWord);
+}
+
+function holdMemoryBoard() {
+  return new Promise<void>((resolve) => {
+    window.setTimeout(resolve, MEMORY_BOARD_HOLD_MS);
+  });
 }
 
 function finishMemoryRound() {
@@ -1022,6 +1051,11 @@ function clearMemoryWinReturnTimer() {
     clearTimeout(memoryWinReturnTimer);
     memoryWinReturnTimer = null;
   }
+}
+
+function cancelMemoryCompletion() {
+  memoryRoundToken += 1;
+  clearMemoryWinReturnTimer();
 }
 
 function updateMemoryStatus(message: string) {
@@ -1282,7 +1316,7 @@ function playMemoryMapReturnCue() {
 }
 
 function returnToMemoryMapAfterWin() {
-  clearMemoryWinReturnTimer();
+  cancelMemoryCompletion();
   hideMemoryCelebration();
   showMemoryLevelMap();
   playMemoryMapReturnCue();
@@ -1295,8 +1329,16 @@ function setMemorySoundButtonFocus(cardButton: HTMLDivElement, isFocusable: bool
   }
 }
 
-function speakMemoryWord(wordId: string) {
-  playRecordedSequence([vocabularyWordAudio(wordId)]);
+function speakMemoryWord(wordId: string, kind: MemoryCardKind = 'english') {
+  playRecordedSequence([kind === 'hebrew' ? hebrewWordAudio(wordId) : vocabularyWordAudio(wordId)]);
+}
+
+function getMemoryLearningLanguage(): ProfileLanguage {
+  return hostedActivityContext?.profileLanguage ?? 'en';
+}
+
+function getMemoryTargetCardKind(): MemoryCardKind {
+  return getLanguagePolicy(getMemoryLearningLanguage()).target.startsWith('english') ? 'english' : 'hebrew';
 }
 
 function showMemoryToast(matchedWord: MemoryWord) {
@@ -1319,11 +1361,12 @@ function showMemoryToast(matchedWord: MemoryWord) {
   connector.setAttribute('aria-hidden', 'true');
   connector.textContent = '✨';
 
-  const englishWord = document.createElement('span');
-  englishWord.className = 'memory-toast-word memory-toast-word-english';
-  englishWord.textContent = matchedWord.english;
+  const matchWord = document.createElement('span');
+  matchWord.className = 'memory-toast-word memory-toast-word-english';
+  // Hebrew learners see the paired picture instead of an English word.
+  matchWord.textContent = getMemoryLearningLanguage() === 'en' ? matchedWord.english : matchedWord.drawing;
 
-  pair.append(hebrewWord, connector, englishWord);
+  pair.append(hebrewWord, connector, matchWord);
   toastText.replaceChildren(cheer, pair);
 
   if (memoryToastTimer) {

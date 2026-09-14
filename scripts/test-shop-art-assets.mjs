@@ -41,10 +41,10 @@ try {
       dimensions: images.map(image => [image.naturalWidth, image.naturalHeight]),
       transparentCorners: images.slice(1).map(alphaAtCorner),
       englishLabels: tiles.map(tile => ({
-        visibleText: tile.querySelector('.shop-item-english-label')?.textContent?.trim() ?? '',
+        visibleText: tile.querySelector('.shop-item-label')?.textContent?.trim() ?? '',
         accessibleText: tile.getAttribute('aria-label'),
         contained: (() => {
-          const label = tile.querySelector('.shop-item-english-label');
+          const label = tile.querySelector('.shop-item-label');
           const illustration = tile.querySelector('.shop-item-illustration');
           if (!label || !illustration) return false;
           const tileRect = tile.getBoundingClientRect();

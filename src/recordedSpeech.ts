@@ -8,6 +8,12 @@ const VOCABULARY_AUDIO = import.meta.glob('./assets/audio/vocabulary/en/**/*.mp3
   import: 'default',
 }) as Record<string, string>;
 
+const HEBREW_VOCABULARY_AUDIO = import.meta.glob('./assets/audio/vocabulary/he/**/*.mp3', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+}) as Record<string, string>;
+
 function getAudioElement() {
   const existing = document.getElementById(AUDIO_ELEMENT_ID);
   if (existing) {
@@ -34,10 +40,26 @@ export function vocabularyUiAudio(clipId: string) {
   return requireVocabularyAudio(`./assets/audio/vocabulary/en/ui/${clipId}.mp3`);
 }
 
+export function hebrewWordAudio(wordId: string) {
+  return requireHebrewAudio(`./assets/audio/vocabulary/he/words/${wordId}.mp3`);
+}
+
+export function hebrewUiAudio(clipId: string) {
+  return requireHebrewAudio(`./assets/audio/vocabulary/he/ui/${clipId}.mp3`);
+}
+
 function requireVocabularyAudio(path: string) {
   const source = VOCABULARY_AUDIO[path];
   if (!source) {
     throw new Error(`Missing committed vocabulary audio ${path}`);
+  }
+  return source;
+}
+
+function requireHebrewAudio(path: string) {
+  const source = HEBREW_VOCABULARY_AUDIO[path];
+  if (!source) {
+    throw new Error(`Missing committed Hebrew vocabulary audio ${path}`);
   }
   return source;
 }

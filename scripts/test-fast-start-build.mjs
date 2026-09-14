@@ -5,12 +5,12 @@ import { basename, resolve } from 'node:path';
 const root = resolve(import.meta.dirname, '..');
 const distIndex = resolve(root, 'dist/index.html');
 const distAssets = resolve(root, 'dist/assets');
-const sourceAudio = resolve(root, 'src/assets/audio/vocabulary/en');
+const sourceAudioRoot = resolve(root, 'src/assets/audio/vocabulary');
 const worldMapSource = readFileSync(resolve(root, 'prototype/world-map.js'), 'utf8');
 
 const indexBytes = statSync(distIndex).size;
 const indexHtml = readFileSync(distIndex, 'utf8');
-const sourceAudioCount = readdirSync(sourceAudio, { recursive: true }).filter((path) => path.endsWith('.mp3')).length;
+const sourceAudioCount = readdirSync(sourceAudioRoot, { recursive: true }).filter((path) => path.endsWith('.mp3')).length;
 const builtAudioPaths = readdirSync(distAssets, { recursive: true }).filter((path) => path.endsWith('.mp3'));
 const builtAudioCount = builtAudioPaths.length;
 

@@ -17,9 +17,10 @@ if (!Number.isInteger(endRequest) || endRequest < startRequest) {
 const voices = {
   en: 'Leda',
   he: 'Puck',
+  'he-female': 'Kore',
 };
 
-async function generateLine(language, transcript, index) {
+async function generateLine(language, transcript, index, suffix = '') {
   const languageDirection = language === 'en'
     ? 'Use clear American English pronunciation.'
     : 'Use natural Israeli Hebrew pronunciation.';
@@ -51,16 +52,20 @@ async function generateLine(language, transcript, index) {
 
   const interaction = await response.json();
   const audio = interaction.steps[0].content[0];
-  if (audio.type !== 'audio' || audio.mime_type !== 'audio/l16' || audio.channels !== 1 || audio.sample_rate !== 24000) {
+  if (audio.type !== 'audio'
+    || typeof audio.mime_type !== 'string'
+    || !audio.mime_type.startsWith('audio/l16')
+    || audio.channels !== 1
+    || Number(audio.sample_rate) !== 24000) {
     throw new Error(`Unexpected Google TTS response for ${language} request ${index + 1}`);
   }
 
-  const directory = resolve(__dirname, `../prototype/assets/magic-house/audio/${language}`);
+  const directory = resolve(__dirname, `../prototype/assets/magic-house/audio/${language === 'en' ? 'en' : 'he'}`);
   mkdirSync(directory, { recursive: true });
-  const output = resolve(directory, `request-${index + 1}.wav`);
+  const output = resolve(directory, `request-${index + 1}${suffix}.wav`);
   const pcm = Buffer.from(audio.data, 'base64');
   writeFileSync(output, createWaveFile(pcm, audio.sample_rate, audio.channels));
-  console.log(`Generated ${language}/request-${index + 1}.wav`);
+  console.log(`Generated ${language}/request-${index + 1}${suffix}.wav`);
 }
 
 function createWaveFile(pcm, sampleRate, channels) {
@@ -84,16 +89,17 @@ function createWaveFile(pcm, sampleRate, channels) {
 
 async function main() {
   const { MAGIC_HOUSE_REQUESTS } = await import('../prototype/shared/magic-house-content.mjs');
-  const lines = {
-    en: MAGIC_HOUSE_REQUESTS.map((request) => request.en.sentence),
-    he: MAGIC_HOUSE_REQUESTS.map((request) => request.he.male),
+  const clips = {
+    en: MAGIC_HOUSE_REQUESTS.map((request) => ({ transcript: request.en.sentence, suffix: '' })),
+    he: MAGIC_HOUSE_REQUESTS.map((request) => ({ transcript: request.he.male, suffix: '' })),
+    'he-female': MAGIC_HOUSE_REQUESTS.map((request) => ({ transcript: request.he.female, suffix: '-female' })),
   };
-  for (const [language, transcripts] of Object.entries(lines)) {
-    for (const [index, transcript] of transcripts.entries()) {
+  for (const [language, entries] of Object.entries(clips)) {
+    for (const [index, { transcript, suffix }] of entries.entries()) {
       if (index + 1 < startRequest || index + 1 > endRequest) {
         continue;
       }
-      await generateLine(language, transcript, index);
+      await generateLine(language, transcript, index, suffix);
     }
   }
 }
