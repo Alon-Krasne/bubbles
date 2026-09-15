@@ -11,6 +11,8 @@ export default defineConfig({
   base: './',
   experimental: {
     renderBuiltUrl(filename, { hostType }) {
+      // CSS is inlined into index.html, so its asset URLs resolve from there.
+      if (!inlineAssets && hostType === 'css') return `./${filename}`;
       if (!inlineAssets && hostType === 'js') {
         return {
           runtime: `new URL(${JSON.stringify(`./${filename}`)}, document.baseURI).href`,

@@ -27,7 +27,7 @@ Catch as many bubbles as you can before time runs out! Both players share a sing
 
 - **Player names** - Editable, saved between sessions
 - **Player colors** - Pick from 8 pastel colors each
-- **Game mode** - Day or Night
+- **Day / Night** - Choose ☀️ יום or 🌙 לילה on profile selection or the world map. The browser remembers the choice for the map, Memory Garden, Shop, and Magic House.
 - **Timer** - 30, 45, or 60 seconds
 
 ## Running the Game
@@ -94,3 +94,7 @@ Hosted on [Cloudflare Pages](https://pages.cloudflare.com/) at **https://bubbles
 ## License
 
 MIT
+
+### Day/night acceptance
+
+Run `npm run build`, then keep `node scripts/serve-save-test.mjs` running in another terminal. Run `node scripts/test-time-of-day.mjs` for switching, persistence, and touch controls, and `node scripts/test-day-scenes.mjs` to verify each daytime activity image loads in the built app.
