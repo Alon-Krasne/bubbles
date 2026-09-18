@@ -623,6 +623,7 @@ function chooseDestination(destId) {
   if (destId === 'forest') {
     const profile = getProfile(activeProfileId);
     if (!forestProgress[profile.id].character) {
+      openDestinationGate();
       openForestCharacterPicker();
       return;
     }
@@ -815,7 +816,10 @@ function renderProfileMenu() {
     language.textContent = languageOptions[profile.learningLanguage].label;
     copy.append(name, language);
     button.append(image, copy);
-    button.addEventListener('click', () => setProfile(profile.id));
+    button.addEventListener('click', () => {
+      setProfile(profile.id);
+      chooseDestination(activeDestination);
+    });
     profileMenuList.append(button);
   });
 }
@@ -869,9 +873,7 @@ function enterTrail(profileId) {
     openDestinationGate();
     return;
   }
-  world.inert = false;
-  world.removeAttribute('aria-hidden');
-  profileButton.focus();
+  chooseDestination(activeDestination);
 }
 
 function toggleProfileMenu() {
@@ -917,7 +919,7 @@ function openProfileEditor(profileId) {
   profileNameInput.focus();
 }
 
-function closeProfileEditor() {
+function closeProfileEditor(resumeJourney = true) {
   deleteConfirm.hidden = true;
   trackResetConfirm.hidden = true;
   profileForm.classList.remove('is-confirming-track-reset');
@@ -928,10 +930,8 @@ function closeProfileEditor() {
     profileGate.inert = false;
     profileGate.removeAttribute('aria-hidden');
     addProfileButton.focus();
-  } else {
-    world.inert = false;
-    world.removeAttribute('aria-hidden');
-    profileButton.focus();
+  } else if (resumeJourney) {
+    chooseDestination(activeDestination);
   }
 }
 
@@ -990,8 +990,20 @@ function resetEditedProfileTrack() {
     throw new Error('Cannot reset a profile before it is created');
   }
   const stageId = Number(trackStageSelect.value);
-  clearProfileRounds(editingProfileId);
-  routeProgress[editingProfileId] = createTrackProgress(stageId, stages.length);
+  const profile = getProfile(editingProfileId);
+  clearProfileRounds(editingProfileId, activeDestination, profile.learningLanguage);
+  if (activeDestination === 'forest') {
+    const previous = forestProgress[editingProfileId];
+    const unlockedVideos = FOREST_MILESTONES.filter(m => m.triggerStage < stageId).map(m => m.videoId);
+    forestProgress[editingProfileId] = {
+      ...createForestProgress(previous.character),
+      ...createTrackProgress(stageId, stages.length),
+      unlockedVideos,
+      seenVideos: stageId === 1 ? [] : previous.seenVideos.filter(id => unlockedVideos.includes(id)),
+    };
+  } else {
+    routeProgress[editingProfileId] = createTrackProgress(stageId, stages.length);
+  }
   saveWorldProgress();
   if (editingProfileId === activeProfileId) {
     setProfile(editingProfileId);
@@ -1006,8 +1018,15 @@ function resetEditedProfileTrack() {
   trackResetButton.focus();
 }
 
-function clearProfileRounds(profileId) {
+function clearProfileRounds(profileId, destination = null, language = null) {
   for (const key of saveStorage.keys()) {
+    const isForest = key.startsWith(`house-round-forest-${profileId}-`)
+      || key.startsWith(`memory-round-forest-${profileId}-`)
+      || key.startsWith(`forest-${profileId}-`);
+    if (destination === 'wonder' && isForest) continue;
+    if (destination === 'forest' && !(key.startsWith(`house-round-forest-${profileId}-${language}-`)
+      || key.startsWith(`memory-round-forest-${profileId}-${language}-`)
+      || key.startsWith(`forest-${profileId}-${language}-`))) continue;
     if (key.startsWith(`house-round-${profileId}-`)
       || key.startsWith(`house-round-forest-${profileId}-`)
       || key.startsWith(`memory-round-${profileId}-`)
@@ -1060,7 +1079,7 @@ function saveProfileFromEditor(event) {
     localStorage.setItem(WORLD_ACTIVE_PROFILE_STORAGE_KEY, activeProfileId);
   } else {
     const profile = getProfile(editingProfileId);
-    if (profile.learningLanguage !== learningLanguage) clearProfileRounds(profile.id);
+    if (profile.learningLanguage !== learningLanguage) clearProfileRounds(profile.id, 'wonder');
     profile.name = name;
     profile.character = character;
     profile.learningLanguage = learningLanguage;
@@ -1109,7 +1128,7 @@ function confirmProfileDeletion() {
   saveWorldProgress('wonder');
   saveWorldProgress('forest');
   setProfile(activeProfileId);
-  closeProfileEditor();
+  closeProfileEditor(false);
   openGate();
 }
 
@@ -1439,7 +1458,7 @@ document.addEventListener('keydown', (event) => {
       return;
     }
     if (!destinationGate.hidden) {
-      closeDestinationGate();
+      chooseDestination(activeDestination);
       return;
     }
     if (worldCompleteOverlay.classList.contains('is-visible')) {
@@ -1465,7 +1484,7 @@ window.addEventListener('resize', () => {
   cancelAnimationFrame(labelLayoutFrame);
   labelLayoutFrame = requestAnimationFrame(() => {
     renderChapterLabels();
-    const currentStage = stages.find((stage) => stage.id === routeProgress[activeProfileId].currentStage);
+    const currentStage = stages.find((stage) => stage.id === getRouteProgress().currentStage);
     if (currentStage) centerStageInMap(currentStage);
   });
 });

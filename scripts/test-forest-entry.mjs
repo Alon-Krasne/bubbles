@@ -1,0 +1,46 @@
+// Run against scripts/serve-save-test.mjs after npm run build.
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+const browser=(...args)=>execFileSync('agent-browser',['--session','forest-entry',...args],{encoding:'utf8'});
+const evaluate=code=>JSON.parse(browser('eval',code));
+try {
+  browser('open','http://127.0.0.1:8788/prototype/world-map.html');
+  browser('wait','#destination-card-forest');
+  evaluate(`(async()=>{const s=window.bubblesSaveClient;s.removeItem('forest-route-tom-en');s.setItem('bubble_world_map_profiles_v1',JSON.stringify([{id:'lotem',name:'לוטם',character:'princess',learningLanguage:'en'},{id:'tom',name:'תום',character:'dinosaur',learningLanguage:'he'}]));s.setItem('route-tom',JSON.stringify({currentStage:1,progress:{},contentVersion:2}));const fresh={currentStage:1,progress:{},character:null,unlockedVideos:['forest-video-01'],seenVideos:[],contentVersion:2};s.setItem('forest-route-lotem-en',JSON.stringify({...fresh,character:'nevet',seenVideos:['forest-video-01']}));s.setItem('forest-route-tom-he',JSON.stringify(fresh));await s.flush();return true;})()`);
+  browser('eval',`localStorage.setItem('bubble_world_map_profile_v1','lotem')`);
+  browser('reload');browser('wait','#destination-card-forest');browser('click','#destination-card-forest');
+  browser('click','#profile-button');browser('click','.profile-menu-option[data-profile="tom"]');
+  assert.equal(evaluate(`!document.querySelector('#forest-character-picker').hidden`),true,'switching to a fresh sibling must show companion selection');
+  assert.equal(evaluate(`document.querySelector('#world').inert`),true,'map stays blocked during forest onboarding');
+  browser('click','[data-character="adva"]');
+  assert.equal(evaluate(`!document.querySelector('#forest-milestone-dialog').hidden`),true,'new profile must see opening');
+  assert.equal(evaluate(`document.querySelector('#forest-caption-language').value`),'he');
+  browser('click','#forest-milestone-play-btn');
+  browser('click','#profile-button');browser('click','#edit-profile-button');
+  browser('select','#track-stage-select','6');browser('click','#track-reset-button');browser('click','#confirm-track-reset-button');
+  const reset=evaluate(`({forest:JSON.parse(window.bubblesSaveClient.getItem('forest-route-tom-he')),wonder:JSON.parse(window.bubblesSaveClient.getItem('route-tom'))})`);
+  assert.equal(reset.forest.currentStage,6,'reset/jump targets the forest route');
+  assert.deepEqual(reset.wonder.progress,{},'forest jump leaves wonder unchanged');
+  assert.deepEqual(reset.forest.unlockedVideos,['forest-video-01','forest-video-02']);
+  assert.equal(reset.forest.character,'adva');
+  browser('click','#editor-close');
+  browser('click','#forest-milestone-play-btn');
+  browser('click','#profile-button');browser('click','#edit-profile-button');
+  evaluate(`(()=>{window.bubblesSaveClient.setItem('house-round-forest-tom-he-trail-house-1','{}');return true;})()`);
+  browser('eval',`document.querySelector('[name="learningLanguage"][value="en"]').click()`);
+  browser('eval',`document.querySelector('#profile-form').requestSubmit()`);
+  assert.equal(evaluate(`!document.querySelector('#forest-character-picker').hidden`),true,'new learning language must onboard separately');
+  browser('click','[data-character="zohar"]');
+  assert.equal(evaluate(`document.querySelector('#forest-caption-language').value`),'en');
+  assert.equal(evaluate(`window.bubblesSaveClient.getItem('house-round-forest-tom-he-trail-house-1')`),'{}','changing language retains the other forest language round');
+  const saved=evaluate(`JSON.parse(window.bubblesSaveClient.getItem('forest-route-tom-he'))`);
+  assert.equal(saved.character,'adva');assert.equal(saved.currentStage,6);
+  browser('click','#forest-milestone-play-btn');
+  evaluate(`(async()=>{const s=window.bubblesSaveClient;s.setItem('forest-route-lotem-en',JSON.stringify({currentStage:1,progress:{},character:null,unlockedVideos:['forest-video-01'],seenVideos:[],contentVersion:2}));await s.flush();return true;})()`);
+  browser('reload');browser('wait','#destination-card-forest');browser('click','#destination-card-forest');
+  browser('click','#profile-button');browser('click','#edit-profile-button');browser('click','#delete-profile-button');browser('click','#confirm-delete-button');
+  assert.equal(evaluate(`!document.querySelector('#profile-gate').hidden && document.querySelector('#forest-character-picker').hidden && document.querySelector('#forest-milestone-dialog').hidden`),true,'deletion shows only the profile gate');
+  browser('click','.gate-profile-choice');
+  assert.equal(evaluate(`!document.querySelector('#forest-character-picker').hidden`),true,'choosing the remaining fresh profile starts onboarding');
+  console.log('PASS: sibling/language onboarding, active-destination jump, milestone reconciliation, deletion and save isolation.');
+} finally { browser('close'); }
