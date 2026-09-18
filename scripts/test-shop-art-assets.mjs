@@ -60,8 +60,13 @@ try {
         const rect = tile.getBoundingClientRect();
         return [rect.width, rect.height];
       }),
+      colorSwatchIds: tiles
+        .filter(tile => tile.querySelector('.shop-colored-item'))
+        .map(tile => tile.dataset.itemId),
     };
   })()`);
+  const colorSwatchProducts = result.colorSwatchIds.filter(id => !id.includes('-'));
+  assert.deepEqual(colorSwatchProducts, [], `Bare product ids must draw product art, not a colour swatch: ${colorSwatchProducts.join(', ')}`);
   assert.deepEqual(result.dimensions[0], [1586, 992], 'Moonlit scene must decode at its authored size');
   assert.deepEqual(result.dimensions[1], [1774, 887], 'Customer atlas must decode at its authored size');
   assert.ok(result.dimensions.slice(2).every(([width, height]) => width === 1254 && height === 1254), 'Every product atlas must decode at its authored size');

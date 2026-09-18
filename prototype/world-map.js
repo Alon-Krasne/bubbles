@@ -136,6 +136,8 @@ let activeDestination = getActiveDestination();
 let destinationGateWasOpen = false;
 let activeMilestoneVideoId = null;
 let isPendingMilestonePresentation = false;
+// The video that opened the dialog as a fresh unlock; switching stories and back keeps it pending.
+let pendingMilestoneVideoId = null;
 
 let profiles = loadProfiles();
 let routeProgress = loadWorldProgress();
@@ -665,11 +667,17 @@ function chooseForestCompanion(characterId) {
 
 function showForestMilestone(milestone, isPending = false) {
   isPendingMilestonePresentation = isPending;
+  if (isPending) pendingMilestoneVideoId = milestone.videoId;
   activeMilestoneVideoId = milestone.videoId;
+  forestMilestoneDialog.setAttribute('aria-label', isPending ? 'סרטון מסע חדש נפתח' : 'סיפורי היער');
   forestMilestoneTitle.textContent = milestone.title;
-  forestMilestoneDesc.textContent = milestone.triggerStage > 0
-    ? `רגע מיוחד נפתח בעלילת היער הלוחש לאחר סיום שלב ${milestone.triggerStage}!`
-    : 'רגע מיוחד נפתח בעלילת היער הלוחש. מוכנים לגלות מה קרה?';
+  if (isPending) {
+    forestMilestoneDesc.textContent = milestone.triggerStage > 0
+      ? `רגע מיוחד נפתח בעלילת היער הלוחש לאחר סיום שלב ${milestone.triggerStage}!`
+      : 'רגע מיוחד נפתח בעלילת היער הלוחש. מוכנים לגלות מה קרה?';
+  } else {
+    forestMilestoneDesc.textContent = 'צפייה חוזרת בסיפור מהמסע. אפשר לבחור סיפור אחר למעלה.';
+  }
   const media = getForestVideoMedia(milestone.videoId);
   forestMilestoneVideo.hidden = false;
   forestMilestoneVideo.poster = media.poster;
@@ -688,14 +696,16 @@ function showForestMilestone(milestone, isPending = false) {
   }
   forestCaptionLanguage.value = getProfile().learningLanguage;
   updateForestCaptions();
-  forestStorySelect.replaceChildren(...FOREST_MILESTONES.filter(m => getRouteProgress().unlockedVideos.includes(m.videoId)).map(m => {
-    const option = document.createElement('option'); option.value = m.videoId; option.textContent = m.title; return option;
+  const unlockedVideos = getRouteProgress().unlockedVideos;
+  forestStorySelect.replaceChildren(...FOREST_MILESTONES.filter(m => unlockedVideos.includes(m.videoId)).map((m, index) => {
+    const option = document.createElement('option'); option.value = m.videoId; option.textContent = `${index + 1}. ${m.title}`; return option;
   }));
   forestStorySelect.value = milestone.videoId;
-  forestMilestonePlayBtn.textContent = 'דלגו והמשיכו למסע ←';
+  forestMilestonePlayBtn.textContent = isPending ? 'דלגו והמשיכו למסע ←' : 'חזרה למפה ←';
   world.inert = true;
   forestMilestoneDialog.hidden = false;
-  forestMilestonePlayBtn.focus();
+  forestMilestoneDialog.querySelector('.forest-milestone-content').scrollTop = 0;
+  forestMilestonePlayBtn.focus({ preventScroll: true });
 }
 
 function closeForestMilestone() {
@@ -706,6 +716,7 @@ function closeForestMilestone() {
   const wasPending = isPendingMilestonePresentation;
   activeMilestoneVideoId = null;
   isPendingMilestonePresentation = false;
+  pendingMilestoneVideoId = null;
 
   if (finishedVideoId && wasPending) {
     const profile = getProfile();
@@ -1380,7 +1391,9 @@ forestMilestonePlayBtn.addEventListener('click', () => {
 });
 
 forestCaptionLanguage.addEventListener('change', updateForestCaptions);
-forestMilestoneVideo.addEventListener('ended', () => { forestMilestonePlayBtn.textContent = 'ממשיכים במסע ←'; });
+forestMilestoneVideo.addEventListener('ended', () => {
+  forestMilestonePlayBtn.textContent = isPendingMilestonePresentation ? 'ממשיכים במסע ←' : 'חזרה למפה ←';
+});
 forestMilestoneVideo.addEventListener('error', () => {
   forestMilestoneVideo.hidden = true;
   if (forestMilestonePoster) {
@@ -1400,7 +1413,7 @@ if (forestMilestoneRetryBtn) {
 }
 forestStorySelect.addEventListener('change', () => {
   const milestone = FOREST_MILESTONES.find(m => m.videoId === forestStorySelect.value);
-  if (milestone) showForestMilestone(milestone, false);
+  if (milestone) showForestMilestone(milestone, milestone.videoId === pendingMilestoneVideoId);
 });
 forestStoriesButton.addEventListener('click', () => {
   const unlocked = getRouteProgress().unlockedVideos;

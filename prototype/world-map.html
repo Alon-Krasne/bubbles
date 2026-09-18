@@ -320,7 +320,11 @@
   <section class="forest-milestone-dialog" id="forest-milestone-dialog" role="dialog" aria-modal="true" aria-label="סרטון מסע חדש נפתח" hidden>
     <div class="forest-milestone-backdrop" aria-hidden="true"></div>
     <div class="forest-milestone-content">
-      <span class="forest-milestone-badge">סיפורי היער</span>
+      <div class="forest-milestone-header">
+        <span class="forest-milestone-badge" id="forest-milestone-badge">סיפורי היער</span>
+        <select id="forest-story-select" class="forest-story-select" aria-labelledby="forest-milestone-badge"></select>
+        <label class="forest-caption-picker">כתוביות <select id="forest-caption-language"><option value="he">עברית</option><option value="en">English</option><option value="off">ללא</option></select></label>
+      </div>
       <h2 id="forest-milestone-title">מה החבר מבקש?</h2>
       <p id="forest-milestone-desc">רגע מיוחד נפתח בעלילת היער הלוחש. מוכנים לגלות מה קרה?</p>
       <div class="forest-milestone-media">
@@ -331,7 +335,6 @@
           <button id="forest-milestone-retry-btn" class="forest-milestone-retry-btn" type="button">נסו שוב ↻</button>
         </div>
       </div>
-      <div class="forest-milestone-settings"><label>סיפור <select id="forest-story-select"></select></label><label>כתוביות <select id="forest-caption-language"><option value="he">עברית</option><option value="en">English</option><option value="off">ללא</option></select></label></div>
       <div class="forest-milestone-actions">
         <button class="forest-milestone-play-btn" id="forest-milestone-play-btn" type="button">דלגו והמשיכו למסע ←</button>
       </div>
