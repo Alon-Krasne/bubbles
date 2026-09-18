@@ -14,6 +14,7 @@ import {
   getForestVideoMedia,
   getPendingForestMilestone,
   getActivitySavePrefix,
+  unlockForestMilestone,
 } from '../prototype/shared/destinations.mjs';
 
 // 1. Destination definitions & kid-friendly Hebrew names
@@ -29,9 +30,9 @@ for (const dest of Object.values(DESTINATIONS)) {
   assert.ok(!dest.title.toLowerCase().includes('legacy'), 'no legacy in title');
 }
 
-// 2. Forest Characters (Nabat, Adva, Zohar)
-assert.deepEqual(Object.keys(FOREST_CHARACTERS), ['nabat', 'adva', 'zohar']);
-assert.equal(FOREST_CHARACTERS.nabat.name, 'נבט');
+// 2. Forest Characters (Nevet, Adva, Zohar)
+assert.deepEqual(Object.keys(FOREST_CHARACTERS), ['nevet', 'adva', 'zohar']);
+assert.equal(FOREST_CHARACTERS.nevet.name, 'נבט');
 assert.equal(FOREST_CHARACTERS.adva.name, 'אדוה');
 assert.equal(FOREST_CHARACTERS.zohar.name, 'זוהר');
 
@@ -147,9 +148,48 @@ FOREST_MILESTONES.forEach((item, index) => {
 });
 assert.throws(() => getForestVideoMedia('forest-video-99'), /Unknown forest video/);
 
-console.log('PASS: Destination definitions, save isolation, milestone triggers, and active destination switching.');
-
 assert.equal(getPendingForestMilestone(forestAfterSeen).videoId, 'forest-video-02', 'a completed milestone remains pending after reload until viewed or skipped');
 assert.equal(getActivitySavePrefix('lotem','forest','he'),'forest-lotem-he');
 assert.equal(getActivitySavePrefix('lotem','wonder','he'),'lotem');
 for(const media of Object.values(FOREST_VIDEO_MEDIA)) assert.ok(existsSync(new URL('../prototype'+media.src.slice(1),import.meta.url)), 'real video ships');
+
+// 10. Newly-completed only gate (replaying completed stage does not re-unlock)
+const resFirst = recordDestinationStageCompletion({ ...forestContext, stageId: 10 }, 3, storageAdapter);
+assert.equal(resFirst.unlockedMilestone?.videoId, 'forest-video-03', 'milestone returned on first completion');
+const resReplay = recordDestinationStageCompletion({ ...forestContext, stageId: 10 }, 3, storageAdapter);
+assert.equal(resReplay.unlockedMilestone, null, 'no milestone returned on replay');
+
+// 11. Milestone boundary 35 vs 36 (finale)
+for (let s = 6; s <= 34; s++) {
+  recordDestinationStageCompletion({ ...forestContext, stageId: s }, 3, storageAdapter);
+}
+const res34 = JSON.parse(mockStorage.get('forest-route-lotem-en'));
+assert.ok(!res34.unlockedVideos.includes('forest-video-08'));
+assert.ok(!res34.unlockedVideos.includes('forest-video-09'));
+
+// Stage 35 unlocks video-08, not video-09
+const res35 = recordDestinationStageCompletion({ ...forestContext, stageId: 35 }, 3, storageAdapter);
+assert.equal(res35.unlockedMilestone.videoId, 'forest-video-08');
+assert.ok(res35.unlockedVideos.includes('forest-video-08'));
+assert.ok(!res35.unlockedVideos.includes('forest-video-09'));
+
+// Stage 36 unlocks video-09 (finale)
+const res36 = recordDestinationStageCompletion({ ...forestContext, stageId: 36 }, 3, storageAdapter);
+assert.equal(res36.unlockedMilestone.videoId, 'forest-video-09');
+assert.ok(res36.unlockedVideos.includes('forest-video-09'));
+assert.equal(res36.currentStage, 36);
+
+// 12. Interrupted playback: oldest unseen milestone returned first
+assert.equal(getPendingForestMilestone(res36).videoId, 'forest-video-02');
+markVideoSeen('lotem', 'en', 'forest-video-02', storageAdapter);
+const seen02 = JSON.parse(mockStorage.get('forest-route-lotem-en'));
+assert.equal(getPendingForestMilestone(seen02).videoId, 'forest-video-03');
+
+// 13. unlockForestMilestone function contract
+assert.equal(typeof unlockForestMilestone, 'function');
+const freshRoute = createForestProgress('nevet');
+const unlocked5 = unlockForestMilestone(freshRoute, 5);
+assert.equal(unlocked5.videoId, 'forest-video-02');
+assert.equal(unlockForestMilestone(freshRoute, 5), null, 'idempotent: does not re-unlock');
+
+console.log('PASS: Destination definitions, save isolation, milestone triggers, boundary 35/36, and active destination switching.');

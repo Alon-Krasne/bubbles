@@ -573,7 +573,8 @@ export function initShopGame(deps: ShopDeps) {
   }
 
   function getShopStorage() {
-    const prefix = getActivitySavePrefix(deps.getActiveProfile().id, deps.hostedSession?.context.destination, getLearningLanguage());
+    const destination = deps.hostedSession ? deps.hostedSession.context.destination : 'wonder';
+    const prefix = getActivitySavePrefix(deps.getActiveProfile().id, destination, getLearningLanguage());
     return {
       getItem: (key: string) => saveStorage.getItem(`${prefix}-${key}`),
       setItem: (key: string, value: string) => saveStorage.setItem(`${prefix}-${key}`, value),

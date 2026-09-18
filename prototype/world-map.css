@@ -2649,6 +2649,7 @@ body {
 }
 
 .forest-milestone-media {
+  position: relative;
   margin: 0 0 20px;
   border-radius: 24px;
   overflow: hidden;
@@ -2664,6 +2665,39 @@ body {
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+.forest-milestone-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 20, 35, 0.88);
+  color: #fff;
+  border-radius: 24px;
+  gap: 14px;
+  padding: 24px;
+  text-align: center;
+  z-index: 2;
+}
+
+.forest-milestone-error p {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.forest-milestone-retry-btn {
+  background: linear-gradient(135deg, #38a169, #2f855a);
+  color: #fff;
+  border: 0;
+  padding: 10px 24px;
+  border-radius: 14px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .forest-milestone-media [hidden] {

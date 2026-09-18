@@ -19,6 +19,8 @@ import {
   setActiveDestination,
   getForestVideoMedia,
   getPendingForestMilestone,
+  markVideoSeen,
+  unlockForestMilestone,
 } from './shared/destinations.mjs';
 
 const stages = TRAIL_STAGES;
@@ -122,6 +124,9 @@ const forestMilestoneTitle = document.getElementById('forest-milestone-title');
 const forestMilestoneDesc = document.getElementById('forest-milestone-desc');
 const forestMilestonePlayBtn = document.getElementById('forest-milestone-play-btn');
 const forestMilestoneVideo = document.getElementById('forest-milestone-video');
+const forestMilestonePoster = document.getElementById('forest-milestone-poster');
+const forestMilestoneError = document.getElementById('forest-milestone-error');
+const forestMilestoneRetryBtn = document.getElementById('forest-milestone-retry-btn');
 const forestCaptionLanguage = document.getElementById('forest-caption-language');
 const forestStorySelect = document.getElementById('forest-story-select');
 const forestStoriesButton = document.getElementById('forest-stories-button');
@@ -130,6 +135,7 @@ const forestCaptionTracks = Object.fromEntries(['he','en'].map(lang => [lang, fo
 let activeDestination = getActiveDestination();
 let destinationGateWasOpen = false;
 let activeMilestoneVideoId = null;
+let isPendingMilestonePresentation = false;
 
 let profiles = loadProfiles();
 let routeProgress = loadWorldProgress();
@@ -250,19 +256,8 @@ function loadForestProgress() {
       saveStorage.setItem(key, JSON.stringify(progress));
       return [profile.id, progress];
     }
-    try {
-      const parsed = JSON.parse(saved);
-      parsed.progress ??= {};
-      parsed.currentStage ??= 1;
-      parsed.character ??= null;
-      parsed.unlockedVideos ??= ['forest-video-01'];
-      parsed.seenVideos ??= [];
-      return [profile.id, parsed];
-    } catch {
-      const progress = createForestProgress();
-      saveStorage.setItem(key, JSON.stringify(progress));
-      return [profile.id, progress];
-    }
+    const parsed = JSON.parse(saved);
+    return [profile.id, parsed];
   }));
 }
 
@@ -311,12 +306,11 @@ function getProfile(profileId = activeProfileId) {
 
 function getRouteProgress(profileId = activeProfileId, destination = activeDestination) {
   if (destination === 'forest') {
-    if (!forestProgress || !forestProgress[profileId]) {
-      const initial = createForestProgress();
-      if (forestProgress) forestProgress[profileId] = initial;
-      return initial;
+    const progress = forestProgress[profileId];
+    if (!progress) {
+      throw new Error(`Missing forest route progress for ${profileId}`);
     }
-    return forestProgress[profileId];
+    return progress;
   }
   const progress = routeProgress[profileId];
   if (!progress) {
@@ -542,14 +536,14 @@ function renderActivityIcon(container, stage) {
 }
 
 function setCompanionPortrait(container, characterId) {
-  container.style.setProperty('--friend-position', {nabat:'0%',adva:'50%',zohar:'100%'}[characterId]);
+  container.style.setProperty('--friend-position', {nevet:'0%',adva:'50%',zohar:'100%'}[characterId]);
 }
 
 function updateWorldDestinationChrome() {
   const profile = getProfile();
   world.dataset.destination = activeDestination;
   forestStoriesButton.hidden = activeDestination !== 'forest';
-  const dest = DESTINATIONS[activeDestination] || DESTINATIONS.wonder;
+  const dest = DESTINATIONS[activeDestination];
   const titleEl = document.querySelector('.world-title strong');
   const journeyEl = document.getElementById('journey-label');
   if (titleEl) {
@@ -580,7 +574,7 @@ function setJourneyCharacter(image, profile, destination) {
 function updateTravellerAsset(pose = 'idle') {
   const profile = getProfile();
   if (activeDestination === 'forest') {
-    const friendId = forestProgress[profile.id]?.character || 'nabat';
+    const friendId = forestProgress[profile.id].character;
     travellerImage.hidden = true;
     traveller.classList.add('forest-portrait');
     setCompanionPortrait(traveller, friendId);
@@ -604,14 +598,14 @@ function openDestinationGate() {
   destinationAvatar.src = getCharacterAsset(profile.character, 'idle');
 
   // Update Wonder stats
-  const wonderProg = routeProgress[profile.id] || { currentStage: 1, progress: {} };
-  const wonderStars = Object.values(wonderProg.progress || {}).reduce((a, b) => a + b, 0);
+  const wonderProg = getRouteProgress(profile.id, 'wonder');
+  const wonderStars = Object.values(wonderProg.progress).reduce((total, stars) => total + stars, 0);
   wonderStarsCount.textContent = String(wonderStars);
   wonderStageLabel.textContent = `שלב ${wonderProg.currentStage}`;
 
   // Update Forest stats
-  const forestProg = forestProgress[profile.id] || { currentStage: 1, progress: {} };
-  const forestStars = Object.values(forestProg.progress || {}).reduce((a, b) => a + b, 0);
+  const forestProg = getRouteProgress(profile.id, 'forest');
+  const forestStars = Object.values(forestProg.progress).reduce((total, stars) => total + stars, 0);
   forestStarsCount.textContent = String(forestStars);
   forestStageLabel.textContent = forestProg.character ? `שלב ${forestProg.currentStage}` : 'מסע חדש';
 }
@@ -626,7 +620,7 @@ function closeDestinationGate() {
 function chooseDestination(destId) {
   if (destId === 'forest') {
     const profile = getProfile(activeProfileId);
-    if (!forestProgress[profile.id]?.character) {
+    if (!forestProgress[profile.id].character) {
       openForestCharacterPicker();
       return;
     }
@@ -645,7 +639,7 @@ function chooseDestination(destId) {
   selectStage(selectedStage);
   if (destId === 'forest') {
     const pending = getPendingForestMilestone(progress);
-    if (pending) showForestMilestone(pending);
+    if (pending) showForestMilestone(pending, true);
   }
 }
 
@@ -663,14 +657,14 @@ function closeForestCharacterPicker() {
 
 function chooseForestCompanion(characterId) {
   const profile = getProfile(activeProfileId);
-  forestProgress[profile.id] ??= createForestProgress();
   forestProgress[profile.id].character = characterId;
   saveForestProgress();
   closeForestCharacterPicker();
   chooseDestination('forest');
 }
 
-function showForestMilestone(milestone) {
+function showForestMilestone(milestone, isPending = false) {
+  isPendingMilestonePresentation = isPending;
   activeMilestoneVideoId = milestone.videoId;
   forestMilestoneTitle.textContent = milestone.title;
   forestMilestoneDesc.textContent = milestone.triggerStage > 0
@@ -681,6 +675,13 @@ function showForestMilestone(milestone) {
   forestMilestoneVideo.poster = media.poster;
   forestMilestoneVideo.src = media.src;
   forestMilestoneVideo.load();
+  if (forestMilestonePoster) {
+    forestMilestonePoster.src = media.poster;
+    forestMilestonePoster.hidden = true;
+  }
+  if (forestMilestoneError) {
+    forestMilestoneError.hidden = true;
+  }
   for (const [lang, track] of Object.entries(forestCaptionTracks)) {
     while (track.cues.length) track.removeCue(track.cues[0]);
     for (const cue of FOREST_CAPTIONS[milestone.videoId]) track.addCue(new VTTCue(cue.start, cue.end, cue[lang]));
@@ -701,18 +702,29 @@ function closeForestMilestone() {
   forestMilestoneVideo.pause();
   forestMilestoneVideo.removeAttribute('src');
   forestMilestoneVideo.load();
-  if (activeMilestoneVideoId) {
+  const finishedVideoId = activeMilestoneVideoId;
+  const wasPending = isPendingMilestonePresentation;
+  activeMilestoneVideoId = null;
+  isPendingMilestonePresentation = false;
+
+  if (finishedVideoId && wasPending) {
     const profile = getProfile();
+    markVideoSeen(profile.id, profile.learningLanguage, finishedVideoId, saveStorage);
     const progress = getRouteProgress(profile.id, 'forest');
-    progress.seenVideos ??= [];
-    if (!progress.seenVideos.includes(activeMilestoneVideoId)) {
-      progress.seenVideos.push(activeMilestoneVideoId);
-      saveForestProgress();
+    if (!progress.seenVideos.includes(finishedVideoId)) {
+      progress.seenVideos.push(finishedVideoId);
     }
-    activeMilestoneVideoId = null;
   }
+
   forestMilestoneDialog.hidden = true;
   world.inert = false;
+
+  if (finishedVideoId === 'forest-video-09' && wasPending) {
+    const profile = getProfile();
+    showWorldComplete(profile, getRouteProgress(profile.id, 'forest'));
+    return;
+  }
+
   playButton.focus();
 }
 
@@ -985,8 +997,14 @@ function resetEditedProfileTrack() {
 
 function clearProfileRounds(profileId) {
   for (const key of saveStorage.keys()) {
-    if (key.startsWith(`house-round-${profileId}-`) || key.startsWith(`memory-round-${profileId}-`)
-      || key === `${profileId}-bubble_shop_sessions_v1`) saveStorage.removeItem(key);
+    if (key.startsWith(`house-round-${profileId}-`)
+      || key.startsWith(`house-round-forest-${profileId}-`)
+      || key.startsWith(`memory-round-${profileId}-`)
+      || key.startsWith(`memory-round-forest-${profileId}-`)
+      || key === `${profileId}-bubble_shop_sessions_v1`
+      || key.startsWith(`forest-${profileId}-`)) {
+      saveStorage.removeItem(key);
+    }
   }
 }
 
@@ -1066,8 +1084,9 @@ function confirmProfileDeletion() {
   const deletedId = profiles[deletedIndex].id;
   clearProfileRounds(deletedId);
   saveStorage.removeItem(`route-${deletedId}`);
-  saveStorage.removeItem(getRouteKey(deletedId, 'forest', 'en'));
-  saveStorage.removeItem(getRouteKey(deletedId, 'forest', 'he'));
+  for (const lang of Object.keys(languageOptions)) {
+    saveStorage.removeItem(getRouteKey(deletedId, 'forest', lang));
+  }
   profiles.splice(deletedIndex, 1);
   delete routeProgress[deletedId];
   delete forestProgress[deletedId];
@@ -1129,7 +1148,7 @@ function loadActivity(launch, entry) {
     profileEmoji: launch.profileEmoji,
     profileLanguage: launch.profileLanguage,
     profileCharacter: launch.profileCharacter,
-    destination: launch.destination || 'wonder',
+    destination: launch.destination,
   });
   launchStartedAt = performance.now();
   activityFrame.src = `${entry}?${params}`;
@@ -1177,7 +1196,7 @@ function setWorldInteractionLocked(locked) {
 
 function completeLaunchedStage(launch, stars = 3) {
   const profile = getProfile(launch.profileId);
-  const destination = launch.destination || activeDestination;
+  const destination = launch.destination;
   const progress = getRouteProgress(launch.profileId, destination);
   const completedStage = stages.find((stage) => stage.id === launch.stageId);
   if (!completedStage) {
@@ -1196,14 +1215,7 @@ function completeLaunchedStage(launch, stars = 3) {
 
   let unlockedMilestone = null;
   if (destination === 'forest' && previousStars === 0) {
-    const milestone = FOREST_MILESTONES.find(m => m.triggerStage === completedStage.id);
-    if (milestone) {
-      progress.unlockedVideos ??= ['forest-video-01'];
-      if (!progress.unlockedVideos.includes(milestone.videoId)) {
-        progress.unlockedVideos.push(milestone.videoId);
-        unlockedMilestone = milestone;
-      }
-    }
+    unlockedMilestone = unlockForestMilestone(progress, completedStage.id);
   }
 
   if (!nextStage) {
@@ -1213,7 +1225,7 @@ function completeLaunchedStage(launch, stars = 3) {
       renderRoute();
       selectStage(completedStage);
     }
-    if (unlockedMilestone) showForestMilestone(unlockedMilestone);
+    if (unlockedMilestone) showForestMilestone(unlockedMilestone, true);
     return { worldComplete };
   }
 
@@ -1232,7 +1244,7 @@ function completeLaunchedStage(launch, stars = 3) {
   window.setTimeout(() => {
     updateTravellerAsset('idle');
     selectStage(nextStage);
-    if (unlockedMilestone) showForestMilestone(unlockedMilestone);
+    if (unlockedMilestone) showForestMilestone(unlockedMilestone, true);
   }, 760);
   return { worldComplete: false };
 }
@@ -1289,7 +1301,9 @@ function handleActivityMessage(event) {
   closeActivity();
   const result = completeLaunchedStage(completedLaunch, message.stars);
   if (result.worldComplete) {
-    showWorldComplete(getProfile(completedLaunch.profileId), getRouteProgress(completedLaunch.profileId));
+    if (completedLaunch.destination !== 'forest') {
+      showWorldComplete(getProfile(completedLaunch.profileId), getRouteProgress(completedLaunch.profileId));
+    }
     return;
   }
 
@@ -1367,10 +1381,31 @@ forestMilestonePlayBtn.addEventListener('click', () => {
 
 forestCaptionLanguage.addEventListener('change', updateForestCaptions);
 forestMilestoneVideo.addEventListener('ended', () => { forestMilestonePlayBtn.textContent = 'ממשיכים במסע ←'; });
-forestStorySelect.addEventListener('change', () => showForestMilestone(FOREST_MILESTONES.find(m => m.videoId === forestStorySelect.value)));
+forestMilestoneVideo.addEventListener('error', () => {
+  forestMilestoneVideo.hidden = true;
+  if (forestMilestonePoster) {
+    forestMilestonePoster.hidden = false;
+  }
+  if (forestMilestoneError) {
+    forestMilestoneError.hidden = false;
+  }
+});
+if (forestMilestoneRetryBtn) {
+  forestMilestoneRetryBtn.addEventListener('click', () => {
+    if (forestMilestoneError) forestMilestoneError.hidden = true;
+    if (forestMilestonePoster) forestMilestonePoster.hidden = true;
+    forestMilestoneVideo.hidden = false;
+    forestMilestoneVideo.load();
+  });
+}
+forestStorySelect.addEventListener('change', () => {
+  const milestone = FOREST_MILESTONES.find(m => m.videoId === forestStorySelect.value);
+  if (milestone) showForestMilestone(milestone, false);
+});
 forestStoriesButton.addEventListener('click', () => {
   const unlocked = getRouteProgress().unlockedVideos;
-  showForestMilestone(FOREST_MILESTONES.find(m => m.videoId === unlocked[unlocked.length - 1]));
+  const milestone = FOREST_MILESTONES.find(m => m.videoId === unlocked[unlocked.length - 1]);
+  if (milestone) showForestMilestone(milestone, false);
 });
 
 document.addEventListener('keydown', (event) => {

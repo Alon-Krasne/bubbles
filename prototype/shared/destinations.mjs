@@ -7,24 +7,17 @@ export const DESTINATIONS = {
   wonder: {
     id: 'wonder',
     title: 'עולם הפלאים',
-    kicker: 'המסע הקסום',
-    description: 'הגנים הקסומים, החנות והבית המתוק',
-    art: '../src/assets/memory/moonlit-trail-map.webp',
   },
   forest: {
     id: 'forest',
     title: 'היער הלוחש',
-    kicker: 'הרפתקה ביער',
-    description: 'מגלים את שפת היער ועוזרים לחברים להתחבר מחדש',
-    art: './assets/destinations/forest-preview.jpg',
   },
 };
 
 export const FOREST_CHARACTERS = {
-  nabat: {
-    id: 'nabat',
+  nevet: {
+    id: 'nevet',
     name: 'נבט',
-    role: 'The curious friend',
     description: 'סקרן, מקשיב ומגלה דברים חדשים',
     color: '#7ba647',
     emoji: '🌱',
@@ -32,7 +25,6 @@ export const FOREST_CHARACTERS = {
   adva: {
     id: 'adva',
     name: 'אדוה',
-    role: 'The playful friend',
     description: 'עליזה, אוהבת לצחוק ולשחק יחד',
     color: '#4a82d2',
     emoji: '💧',
@@ -40,7 +32,6 @@ export const FOREST_CHARACTERS = {
   zohar: {
     id: 'zohar',
     name: 'זוהר',
-    role: 'The thoughtful friend',
     description: 'אוהב לעזור ולחשוב על מה שחברים צריכים',
     color: '#d4881f',
     emoji: '✨',
@@ -49,13 +40,13 @@ export const FOREST_CHARACTERS = {
 
 export const FOREST_MILESTONES = [
   { milestone: 0, videoId: 'forest-video-01', title: 'מה החבר מבקש?', triggerStage: 0 },
-  { milestone: 5, videoId: 'forest-video-02', title: 'הנה התפוח והמים!', triggerStage: 5 },
-  { milestone: 10, videoId: 'forest-video-03', title: 'עוברים את הנהר', triggerStage: 10 },
-  { milestone: 15, videoId: 'forest-video-04', title: 'פוגשים את שוכני השורש', triggerStage: 15 },
-  { milestone: 20, videoId: 'forest-video-05', title: 'קולות במערה', triggerStage: 20 },
-  { milestone: 25, videoId: 'forest-video-06', title: 'האולם הגדול בעץ', triggerStage: 25 },
-  { milestone: 30, videoId: 'forest-video-07', title: 'החברים מגיעים', triggerStage: 30 },
-  { milestone: 35, videoId: 'forest-video-08', title: 'עוד עזרה קטנה', triggerStage: 35 },
+  { milestone: 5, videoId: 'forest-video-02', title: 'הכפר שמאחורי המפל', triggerStage: 5 },
+  { milestone: 10, videoId: 'forest-video-03', title: 'הגשר מתעורר', triggerStage: 10 },
+  { milestone: 15, videoId: 'forest-video-04', title: 'המפה שבסדנה', triggerStage: 15 },
+  { milestone: 20, videoId: 'forest-video-05', title: 'אור מעבר למים', triggerStage: 20 },
+  { milestone: 25, videoId: 'forest-video-06', title: 'העץ פותח את הדלתות', triggerStage: 25 },
+  { milestone: 30, videoId: 'forest-video-07', title: 'כל השבילים נפגשים', triggerStage: 30 },
+  { milestone: 35, videoId: 'forest-video-08', title: 'האור האחרון', triggerStage: 35 },
   { milestone: 36, videoId: 'forest-video-09', title: 'היער שוב שר', triggerStage: 36 },
 ];
 
@@ -96,9 +87,18 @@ export function createForestProgress(character = null) {
   };
 }
 
+export function unlockForestMilestone(route, stageId) {
+  const milestone = FOREST_MILESTONES.find(m => m.triggerStage === stageId);
+  if (milestone && !route.unlockedVideos.includes(milestone.videoId)) {
+    route.unlockedVideos.push(milestone.videoId);
+    return milestone;
+  }
+  return null;
+}
+
 export function recordDestinationStageCompletion(context, stars, storage) {
-  const destination = context.destination || 'wonder';
-  const language = context.profileLanguage || 'en';
+  const destination = context.destination;
+  const language = context.profileLanguage;
   const key = getRouteKey(context.profileId, destination, language);
 
   const stored = storage.getItem(key);
@@ -111,29 +111,21 @@ export function recordDestinationStageCompletion(context, stars, storage) {
       : { progress: {}, currentStage: 1 };
   }
 
-  route.progress ??= {};
-  route.progress[context.stageId] = Math.max(route.progress[context.stageId] || 0, stars);
+  const previousStars = route.progress[context.stageId] || 0;
+  route.progress[context.stageId] = Math.max(previousStars, stars);
 
   const totalStages = TRAIL_STAGES.length;
   while (route.progress[route.currentStage] && route.currentStage < totalStages) {
     route.currentStage += 1;
   }
 
-  if (destination === 'forest') {
-    route.unlockedVideos ??= ['forest-video-01'];
-    route.seenVideos ??= [];
-
-    // Check milestones for newly unlocked videos based on completed stages
-    for (const item of FOREST_MILESTONES) {
-      if (item.triggerStage > 0 && route.progress[item.triggerStage] > 0) {
-        if (!route.unlockedVideos.includes(item.videoId)) {
-          route.unlockedVideos.push(item.videoId);
-        }
-      }
-    }
+  let unlockedMilestone = null;
+  if (destination === 'forest' && previousStars === 0) {
+    unlockedMilestone = unlockForestMilestone(route, context.stageId);
   }
 
   storage.setItem(key, JSON.stringify({ ...route, contentVersion: TRAIL_CONTENT_VERSION }));
+  route.unlockedMilestone = unlockedMilestone;
   return route;
 }
 
@@ -143,7 +135,6 @@ export function markVideoSeen(profileId, language, videoId, storage) {
   if (!stored) return;
 
   const route = JSON.parse(stored);
-  route.seenVideos ??= [];
   if (!route.seenVideos.includes(videoId)) {
     route.seenVideos.push(videoId);
     storage.setItem(key, JSON.stringify(route));

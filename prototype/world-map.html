@@ -292,7 +292,7 @@
         <p>בחרו חבר שילווה אתכם לאורך כל ההרפתקה ביער:</p>
       </div>
       <div class="forest-character-grid">
-        <button class="forest-friend-card" type="button" data-character="nabat">
+        <button class="forest-friend-card" type="button" data-character="nevet">
           <span class="forest-portrait" style="--friend-position:0%" aria-hidden="true"></span>
           <strong class="friend-name">נבט</strong>
           <span class="friend-badge">סקרן ומקשיב</span>
@@ -325,7 +325,11 @@
       <p id="forest-milestone-desc">רגע מיוחד נפתח בעלילת היער הלוחש. מוכנים לגלות מה קרה?</p>
       <div class="forest-milestone-media">
         <video id="forest-milestone-video" controls playsinline preload="metadata"></video>
-        
+        <img id="forest-milestone-poster" class="forest-milestone-poster" alt="" hidden>
+        <div id="forest-milestone-error" class="forest-milestone-error" hidden>
+          <p>לא הצלחנו לטעון את הסרטון.</p>
+          <button id="forest-milestone-retry-btn" class="forest-milestone-retry-btn" type="button">נסו שוב ↻</button>
+        </div>
       </div>
       <div class="forest-milestone-settings"><label>סיפור <select id="forest-story-select"></select></label><label>כתוביות <select id="forest-caption-language"><option value="he">עברית</option><option value="en">English</option><option value="off">ללא</option></select></label></div>
       <div class="forest-milestone-actions">

@@ -64,7 +64,7 @@ export function showSaveLoadError(error) {
   panel.style.cssText = 'position:fixed;inset:0;z-index:20000;background:#fff8e9;display:grid;place-content:center;text-align:center;font:20px Rubik,sans-serif';
   panel.textContent = `לא ניתן לטעון את השמירה. ${error.message}`;
   const retry = document.createElement('button');
-  retry.textContent = 'סגרו חלונות משחק אחרים ונסו שוב';
+  retry.textContent = 'נסו שוב';
   retry.onclick = () => location.reload();
   panel.append(retry);
   document.body.append(panel);

@@ -62,7 +62,7 @@ try {
   if (!pickerTitle.includes('מי החבר שמצטרף למסע ביער?')) throw new Error('Expected companion picker');
 
   // 6. Choose Nabat
-  browser('click', '[data-character="nabat"]');
+  browser('click', '[data-character="nevet"]');
   browser('wait', '.world-stage');
 
   const forestWorldTitle = browser('eval', 'document.querySelector(".world-title strong").textContent');
