@@ -39,6 +39,11 @@
         </div>
 
         <div class="world-actions">
+          <button id="forest-stories-button" class="destinations-nav-button" type="button" hidden>סיפורי היער ▶</button>
+          <button class="destinations-nav-button" id="destinations-nav-button" type="button" aria-label="בחירת יעד למסע: איפה נטייל היום?" title="בחירת יעד למסע">
+            <span class="destinations-nav-icon" aria-hidden="true">🗺️</span>
+            <span class="destinations-nav-label">איפה נטייל?</span>
+          </button>
           <div class="star-total" aria-label="8 מתוך 45 כוכבים">
             <span aria-hidden="true">★</span>
             <strong id="star-total">8</strong>
@@ -216,6 +221,117 @@
         <button class="confirm-delete-button" id="confirm-delete-button" type="button">כן, מוחקים</button>
       </div>
     </form>
+  </section>
+
+  <section class="destination-gate" id="destination-gate" aria-label="בחירת יעד למסע: איפה נטייל היום?" hidden>
+    <div class="destination-sky" aria-hidden="true">
+      <span class="gate-cloud gate-cloud-one"></span>
+      <span class="gate-cloud gate-cloud-two"></span>
+      <span class="gate-star gate-star-one">★</span>
+      <span class="gate-star gate-star-two">★</span>
+      <span class="gate-star gate-star-three">★</span>
+    </div>
+    <div class="destination-content">
+      <header class="destination-heading">
+        <button class="destination-profile-pill" id="destination-profile-pill" type="button" aria-label="החלפת פרופיל">
+          <img class="destination-avatar" id="destination-avatar" src="../src/assets/characters/princess/princess_idle_1.webp" alt="">
+          <span class="destination-player-name" id="destination-player-name">לוטם</span>
+          <span class="destination-switch-prompt">החלפת ילד/ה ↔</span>
+        </button>
+        <span class="destination-kicker">יוצאים להרפתקה</span>
+        <h1>איפה נטייל היום?</h1>
+      </header>
+
+      <div class="destination-cards" aria-label="יעדים לבחירה">
+        <!-- Destination Card 1: עולם הפלאים -->
+        <button class="destination-card destination-card-wonder" id="destination-card-wonder" type="button" aria-label="עולם הפלאים: המסע המוכר והאהוב">
+          <div class="destination-card-badge">המסע הקסום</div>
+          <div class="destination-card-art">
+            <img src="./assets/destinations/wonder-preview.webp" alt="" class="destination-art-img">
+            <span class="destination-art-icon" aria-hidden="true">🌸</span>
+          </div>
+          <div class="destination-card-body">
+            <h2>עולם הפלאים</h2>
+            <p>הגנים הקסומים, החנות והבית המתוק</p>
+            <div class="destination-card-stats" id="wonder-stats">
+              <span class="stats-stars">★ <strong id="wonder-stars-count">0</strong></span>
+              <span class="stats-stage" id="wonder-stage-label">שלב 1</span>
+            </div>
+            <span class="destination-card-cta">בואו נטייל! ←</span>
+          </div>
+        </button>
+
+        <!-- Destination Card 2: היער הלוחש -->
+        <button class="destination-card destination-card-forest" id="destination-card-forest" type="button" aria-label="היער הלוחש: הרפתקה חדשה ביער">
+          <div class="destination-card-badge">הרפתקה ביער</div>
+          <div class="destination-card-art">
+            <img src="./assets/destinations/forest-preview.jpg" alt="" class="destination-art-img">
+            <span class="destination-art-icon" aria-hidden="true">🌱</span>
+          </div>
+          <div class="destination-card-body">
+            <h2>היער הלוחש</h2>
+            <p>מגלים את שפת היער ועוזרים לחברים להתחבר מחדש</p>
+            <div class="destination-card-stats" id="forest-stats">
+              <span class="stats-stars">★ <strong id="forest-stars-count">0</strong></span>
+              <span class="stats-stage" id="forest-stage-label">שלב 1</span>
+            </div>
+            <span class="destination-card-cta">בואו נטייל! ←</span>
+          </div>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="forest-character-picker" id="forest-character-picker" aria-label="בחירת חבר למסע ביער" hidden>
+    <div class="forest-picker-backdrop" id="forest-picker-backdrop" aria-hidden="true"></div>
+    <div class="forest-picker-dialog" role="dialog" aria-modal="true" aria-labelledby="forest-picker-title">
+      <button class="forest-picker-close" id="forest-picker-close" type="button" aria-label="סגירה">×</button>
+      <div class="forest-picker-heading">
+        <span class="forest-picker-kicker">היער הלוחש</span>
+        <h2 id="forest-picker-title">מי החבר שמצטרף למסע ביער?</h2>
+        <p>בחרו חבר שילווה אתכם לאורך כל ההרפתקה ביער:</p>
+      </div>
+      <div class="forest-character-grid">
+        <button class="forest-friend-card" type="button" data-character="nabat">
+          <span class="forest-portrait" style="--friend-position:0%" aria-hidden="true"></span>
+          <strong class="friend-name">נבט</strong>
+          <span class="friend-badge">סקרן ומקשיב</span>
+          <p class="friend-desc">אוהב להטות אוזן, להקשיב לקולות ולעזור לחברים בדרך.</p>
+          <span class="friend-select-btn">בחרתי בנבט</span>
+        </button>
+        <button class="forest-friend-card" type="button" data-character="adva">
+          <span class="forest-portrait" style="--friend-position:50%" aria-hidden="true"></span>
+          <strong class="friend-name">אדוה</strong>
+          <span class="friend-badge">עליזה ושובבה</span>
+          <p class="friend-desc">אוהבת לצחוק, לשחק ולקפוץ למים עם חיוך גדול.</p>
+          <span class="friend-select-btn">בחרתי באדוה</span>
+        </button>
+        <button class="forest-friend-card" type="button" data-character="zohar">
+          <span class="forest-portrait" style="--friend-position:100%" aria-hidden="true"></span>
+          <strong class="friend-name">זוהר</strong>
+          <span class="friend-badge">אכפתי ומתחשב</span>
+          <p class="friend-desc">שם לב למה שחברים צריכים ומאיר את הדרך לכולם.</p>
+          <span class="friend-select-btn">בחרתי בזוהר</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="forest-milestone-dialog" id="forest-milestone-dialog" role="dialog" aria-modal="true" aria-label="סרטון מסע חדש נפתח" hidden>
+    <div class="forest-milestone-backdrop" aria-hidden="true"></div>
+    <div class="forest-milestone-content">
+      <span class="forest-milestone-badge">סיפורי היער</span>
+      <h2 id="forest-milestone-title">מה החבר מבקש?</h2>
+      <p id="forest-milestone-desc">רגע מיוחד נפתח בעלילת היער הלוחש. מוכנים לגלות מה קרה?</p>
+      <div class="forest-milestone-media">
+        <video id="forest-milestone-video" controls playsinline preload="metadata"></video>
+        
+      </div>
+      <div class="forest-milestone-settings"><label>סיפור <select id="forest-story-select"></select></label><label>כתוביות <select id="forest-caption-language"><option value="he">עברית</option><option value="en">English</option><option value="off">ללא</option></select></label></div>
+      <div class="forest-milestone-actions">
+        <button class="forest-milestone-play-btn" id="forest-milestone-play-btn" type="button">דלגו והמשיכו למסע ←</button>
+      </div>
+    </div>
   </section>
 
   <script type="module" src="./world-map-bootstrap.js"></script>

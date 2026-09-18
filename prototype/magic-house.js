@@ -1,3 +1,4 @@
+import { getActivitySavePrefix, getRouteKey } from './shared/destinations.mjs';
 import { calculateMasteryStars, formatStarRating } from './shared/activity-scoring.mjs';
 import {
   MAGIC_HOUSE_OBJECTS,
@@ -132,9 +133,11 @@ function readHostContext() {
   const profileLanguage = params.get('profileLanguage');
   const profileCharacter = params.get('profileCharacter');
   const stageId = Number(params.get('stage'));
+  const destination = params.get('destination');
   const stage = TRAIL_STAGES.find((candidate) => candidate.id === stageId);
   const characterAssets = CHARACTER_ASSETS[profileCharacter];
-  if (host !== 'world-map'
+  if ((destination !== 'forest' && destination !== 'wonder')
+    || host !== 'world-map'
     || activityId !== 'magic-house'
     || stage?.activity !== activityId
     || stage?.level !== levelId
@@ -156,6 +159,8 @@ function readHostContext() {
     levelId,
     profileId,
     stageId,
+    destination,
+    profileLanguage,
     profile: {
       name: profileName,
       primary: profileLanguage,
@@ -166,13 +171,17 @@ function readHostContext() {
   };
 }
 
+function houseRoundKey(profileId) {
+  return `house-round-${getActivitySavePrefix(profileId, hostContext?.destination, hostContext?.profileLanguage)}-${magicHouseLevel.id}`;
+}
+
 function createProfileState(profileId) {
-  const key = `house-round-${profileId}-${magicHouseLevel.id}`;
+  const key = houseRoundKey(profileId);
   const saved = saveStorage.getItem(key);
   if (saved) {
     const snapshot = JSON.parse(saved);
     if (snapshot.completedRequests < snapshot.requestIds.length) return clampHelpLevel(restoreHouseRound(snapshot, REQUESTS, OBJECTS));
-    if (hostContext && !JSON.parse(saveStorage.getItem(`route-${profileId}`)).progress[hostContext.stageId]) {
+    if (hostContext && !JSON.parse(saveStorage.getItem(getRouteKey(profileId, hostContext.destination, hostContext.profileLanguage))).progress[hostContext.stageId]) {
       recordStageCompletion(hostContext, calculateMasteryStars({ mistakes: snapshot.mistakes, challengeSize: snapshot.requestIds.length }));
       return clampHelpLevel(restoreHouseRound(snapshot, REQUESTS, OBJECTS));
     }
@@ -194,7 +203,7 @@ function createProfileState(profileId) {
 }
 
 function saveRound() {
-  saveStorage.setItem(`house-round-${activeProfileId}-${magicHouseLevel.id}`, JSON.stringify(snapshotHouseRound(getState())));
+  saveStorage.setItem(houseRoundKey(activeProfileId), JSON.stringify(snapshotHouseRound(getState())));
 }
 
 // A saved round may have been created when the level allowed more help; keep it
@@ -737,7 +746,7 @@ function handleCelebrationAction() {
 function resetActiveProfile() {
   clearTimers();
   stopSentenceAudio();
-  saveStorage.removeItem(`house-round-${activeProfileId}-${magicHouseLevel.id}`);
+  saveStorage.removeItem(houseRoundKey(activeProfileId));
   profileStates.set(activeProfileId, createProfileState(activeProfileId));
   selectedObjectId = null;
   celebration.classList.remove('is-visible');

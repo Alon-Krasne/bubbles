@@ -1,0 +1,48 @@
+{
+  "videoId": "forest-video-04",
+  "status": "generated-review-draft",
+  "model": "veo-3.1-generate-preview",
+  "nativeSecondsPerShot": 6,
+  "resolution": "720p",
+  "aspectRatio": "16:9",
+  "estimatedMaximumUsd": 4.8,
+  "authorization": "User explicitly replied i approve to: uploading the six scene images and derived frames to Google Veo for 13 clips, estimated $31.20 total, no retries.",
+  "negativePrompt": "speech, dialogue, narration, human voices, spoken sound-effect labels, singing, subtitles, captions, duplicated characters, morphing anatomy, extra tables, missing tables",
+  "shots": [
+    {
+      "id": 1,
+      "image": "first-frame.png",
+      "prompt": "Animate the exact supplied first frame for one continuous six-second painterly storybook shot. Preserve character anatomy, identity, cast count and fixed scenery. All communication is gestures and expressions, mouths relaxed without speech articulation. Audio: gentle environment only; music and captions will be added separately. Four characters in the workshop remain distinct: green Nevet, blue Adva, ochre Zohar, dormouse courier with teal satchel. The courier unrolls the remaining curled edge of the picture map toward Adva. Adva steps back half a step with an amused head tilt as the edge reaches the table edge. Camera eases closer to map, keeping all four faces visible. Map stays a flat illustrated object, not a live world. No props disappear.",
+      "status": "downloaded",
+      "submissionHistory": [
+        {
+          "error": {
+            "code": 429,
+            "message": "Your prepayment credits are depleted. Please go to AI Studio at https://ai.studio/projects to manage your project and billing. Learn more at https://ai.google.dev/gemini-api/docs/billing#prepay. ",
+            "status": "RESOURCE_EXHAUSTED"
+          },
+          "operationCreated": false
+        }
+      ],
+      "operation": "models/veo-3.1-generate-preview/operations/h62cfo1iik2d"
+    },
+    {
+      "id": 2,
+      "image": "shot-1-last.png",
+      "prompt": "Animate the exact supplied first frame for one continuous six-second painterly storybook shot. Preserve character anatomy, identity, cast count and fixed scenery. All communication is gestures and expressions, mouths relaxed without speech articulation. Audio: gentle environment only; music and captions will be added separately. Continue the workshop scene. Two illustrated routes on the map glow warm amber, while the route to the cave drawing stays dim. The courier points from that dim route toward the real crystal ridge through the round window, then lifts the small lantern from the windowsill and offers it toward the trio. They look out together. Slow camera pan toward window ends with ridge visible. No walking long distances or new characters.",
+      "status": "downloaded",
+      "operation": "models/veo-3.1-generate-preview/operations/t0up91an586u"
+    }
+  ],
+  "resumeNote": "User topped up Google prepaid credits. Rejected submissions created no operations; the approved batch then completed with one generated candidate per shot.",
+  "review": {
+    "method": "Sampled contact sheets, 12 frames per shot; live browser playback and Hebrew/English/off switching; not a frame-by-frame or listening review.",
+    "notes": [
+      "Workshop map and crystal-route reveal read clearly in sampled frames.",
+      "Adva develops antenna-like stalks. Nevet leaves the framing. Zohar points instead of the courier, and the scripted lantern handoff is not visible."
+    ],
+    "integrationReady": false
+  },
+  "maximumAttemptsPerShot": 1,
+  "maximumGeneratedCandidates": 2
+}

@@ -38,7 +38,7 @@ const checkLayout = async () => {
 
 try {
   browser('open', 'http://127.0.0.1:8788/prototype/world-map.html');
-  browser('eval', "(() => { const card = document.querySelector('.gate-profile-choice'); if (card) card.click(); return true; })()");
+  browser('eval', "(() => { const card = document.querySelector('.gate-profile-choice'); if (card) card.click(); const wonder = document.querySelector('#destination-card-wonder'); if (wonder) wonder.click(); return true; })()");
   browser('wait', '.world-stage');
   for (const [width, height] of [[390, 844], [820, 1180], [1024, 768], [1440, 900], [1920, 900]]) {
     browser('set', 'viewport', String(width), String(height));

@@ -1,0 +1,25 @@
+{
+  "videoId": "forest-video-01",
+  "kind": "Story captions, not a transcription",
+  "defaultLanguage": "he",
+  "cues": [
+    {
+      "start": 0.5,
+      "end": 7.5,
+      "en": "The basket is empty.",
+      "he": "הסל ריק."
+    },
+    {
+      "start": 8.5,
+      "end": 15.5,
+      "en": "Look! A glowing path.",
+      "he": "תראו! שביל זוהר."
+    },
+    {
+      "start": 16.5,
+      "end": 23.5,
+      "en": "Let’s follow the light.",
+      "he": "בואו נלך בעקבות האור."
+    }
+  ]
+}

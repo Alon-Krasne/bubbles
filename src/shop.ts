@@ -1,3 +1,4 @@
+import { getActivitySavePrefix } from '../prototype/shared/destinations.mjs';
 import { saveStorage, recordStageCompletion } from '../prototype/shared/saves.mjs';
 import { configureTranslationHintButton } from '../prototype/shared/translation-hint-control.mjs';
 import { VOCAB_WORDS, type VocabWord } from './words';
@@ -572,7 +573,7 @@ export function initShopGame(deps: ShopDeps) {
   }
 
   function getShopStorage() {
-    const prefix = deps.getActiveProfile().id;
+    const prefix = getActivitySavePrefix(deps.getActiveProfile().id, deps.hostedSession?.context.destination, getLearningLanguage());
     return {
       getItem: (key: string) => saveStorage.getItem(`${prefix}-${key}`),
       setItem: (key: string, value: string) => saveStorage.setItem(`${prefix}-${key}`, value),

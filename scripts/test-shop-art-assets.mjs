@@ -9,7 +9,7 @@ const evaluate = expression => JSON.parse(browser('eval', expression));
 const route = `http://127.0.0.1:8788/index.html?${new URLSearchParams({
   host: 'world-map', activity: 'listening-shop', level: 'trail-shop-12', stage: '35',
   profile: 'shop-art-test', profileName: 'Art', profileEmoji: '🌸',
-  profileCharacter: 'princess', profileLanguage: 'en',
+  destination: 'wonder', profileCharacter: 'princess', profileLanguage: 'en',
 })}`;
 
 try {

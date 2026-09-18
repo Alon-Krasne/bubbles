@@ -1,0 +1,56 @@
+{
+  "videoId": "forest-video-09",
+  "status": "generated-review-draft",
+  "model": "veo-3.1-generate-preview",
+  "nativeSecondsPerShot": 6,
+  "resolution": "720p",
+  "aspectRatio": "16:9",
+  "estimatedMaximumUsd": 7.199999999999999,
+  "authorization": "User explicitly replied i approve to: uploading the six scene images and derived frames to Google Veo for 13 clips, estimated $31.20 total, no retries.",
+  "negativePrompt": "speech, dialogue, narration, human voices, spoken sound-effect labels, singing, subtitles, captions, duplicated characters, morphing anatomy, extra tables, missing tables",
+  "shots": [
+    {
+      "id": 1,
+      "image": "first-frame.png",
+      "prompt": "Animate the exact supplied first frame for one continuous six-second painterly storybook shot. Preserve character anatomy, identity, cast count and fixed scenery. All communication is gestures and expressions, mouths relaxed without speech articulation. Audio: gentle environment only; music and captions will be added separately. Finale begins AFTER gameplay. Exactly SIX established characters, THREE complete tables. LEFT and CENTER blossoms already OPEN; the RIGHT bud now slowly opens, matching the other two, as the frog gives the trio a grateful gesture. All three blossoms end OPEN. No object-placement action, no new supplies appear, no additional creatures. Gentle camera movement and warm glow.",
+      "status": "downloaded",
+      "submissionHistory": [
+        {
+          "error": {
+            "code": 429,
+            "message": "Your prepayment credits are depleted. Please go to AI Studio at https://ai.studio/projects to manage your project and billing. Learn more at https://ai.google.dev/gemini-api/docs/billing#prepay. ",
+            "status": "RESOURCE_EXHAUSTED"
+          },
+          "operationCreated": false
+        }
+      ],
+      "operation": "models/veo-3.1-generate-preview/operations/7dun94g90ddz"
+    },
+    {
+      "id": 2,
+      "image": "shot-1-last.png",
+      "prompt": "Animate the exact supplied first frame for one continuous six-second painterly storybook shot. Preserve character anatomy, identity, cast count and fixed scenery. All communication is gestures and expressions, mouths relaxed without speech articulation. Audio: gentle environment only; music and captions will be added separately. Continue the finale with exactly three OPEN blossoms and six characters. Amber light flows upward from all three flowers into the trunk. The overhead leafy canopy slowly unfolds into a luminous sky garden, branches remaining intact; no exploding wood. Camera tilts upward as the friends look up together, then holds enough of their faces to show shared wonder. Bright but comfortable warm light, no strobe, no speech.",
+      "status": "downloaded",
+      "operation": "models/veo-3.1-generate-preview/operations/1nrmstnlb9lq"
+    },
+    {
+      "id": 3,
+      "image": "shot-2-last.png",
+      "prompt": "Animate the exact supplied first frame for one continuous six-second painterly storybook shot. Preserve character anatomy, identity, cast count and fixed scenery. All communication is gestures and expressions, mouths relaxed without speech articulation. Audio: gentle environment only; music and captions will be added separately. Continue from open-canopy finale. A smooth gentle camera rise toward the right balcony reveals the connected landscape beyond: root village with seed carriers, a lily-leaf river crossing, crystal ridge, warm paths linking all three toward the great tree. This is a scenic camera move, no character flying. In last two seconds ease back toward the balcony edge so the same six friends can be seen together below the three open blossoms, sharing a small happy wave. No owl or other new creature. End on the reunion, not a blank landscape.",
+      "status": "downloaded",
+      "operation": "models/veo-3.1-generate-preview/operations/1254vfi3sbz0"
+    }
+  ],
+  "resumeNote": "User topped up Google prepaid credits. Rejected submissions created no operations; the approved batch then completed with one generated candidate per shot.",
+  "review": {
+    "method": "Sampled contact sheets, 12 frames per shot; live browser playback and Hebrew/English/off switching; not a frame-by-frame or listening review.",
+    "notes": [
+      "The last blossom opening is readable and six characters remain distinct in the first-shot samples.",
+      "The right hanging bud changes into a large upright stemmed flower as it opens; its geometry no longer matches the two hanging flowers.",
+      "The canopy lift and landscape reveal are readable. The final balcony group is redesigned into different-looking colorful characters rather than reliably preserving the established six; this ending needs cast-continuity correction before final integration."
+    ],
+    "integrationReady": false
+  },
+  "maximumAttemptsPerShot": 1,
+  "maximumGeneratedCandidates": 3
+}

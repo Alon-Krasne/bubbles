@@ -11,7 +11,7 @@ const runId = `${process.pid}-${Date.now()}`;
 const route = language => `http://127.0.0.1:8788/index.html?${new URLSearchParams({
   host: 'world-map', activity: 'listening-shop', level: 'trail-shop-1', stage: '2',
   profile: `order-test-${language}-${runId}`, profileName: 'Test', profileEmoji: '🌸',
-  profileCharacter: 'princess', profileLanguage: language,
+  destination: 'wonder', profileCharacter: 'princess', profileLanguage: language,
 })}`;
 const promptText = () => evaluate('document.querySelector("#shop-order-prompt").firstChild.textContent');
 const opacity = value => browser('wait', '--fn',

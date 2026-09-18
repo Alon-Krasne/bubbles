@@ -1,6 +1,6 @@
 import { createSaveClient, SAVE_CACHE_KEY } from './save-client.mjs';
-import { TRAIL_STAGES } from './trail-catalog.mjs';
 import { TRAIL_CONTENT_VERSION } from './track-progress.mjs';
+import { recordDestinationStageCompletion } from './destinations.mjs';
 
 export let saveStorage;
 
@@ -64,20 +64,16 @@ export function showSaveLoadError(error) {
   panel.style.cssText = 'position:fixed;inset:0;z-index:20000;background:#fff8e9;display:grid;place-content:center;text-align:center;font:20px Rubik,sans-serif';
   panel.textContent = `לא ניתן לטעון את השמירה. ${error.message}`;
   const retry = document.createElement('button');
-  retry.textContent = 'נסו שוב';
+  retry.textContent = 'סגרו חלונות משחק אחרים ונסו שוב';
   retry.onclick = () => location.reload();
   panel.append(retry);
   document.body.append(panel);
 }
 
 export function recordStageCompletion(context, stars) {
-  const key = `route-${context.profileId}`;
   // An activity can be opened without a pre-created route (for example a direct
   // deep link). Starting a fresh route keeps completion from crashing the game
   // and stranding the child on the final customer.
-  const stored = saveStorage.getItem(key);
-  const route = stored ? JSON.parse(stored) : { progress: {}, currentStage: 1 };
-  route.progress[context.stageId] = Math.max(route.progress[context.stageId] || 0, stars);
-  while (route.progress[route.currentStage] && route.currentStage < TRAIL_STAGES.length) route.currentStage += 1;
-  saveStorage.setItem(key, JSON.stringify({ ...route, contentVersion: TRAIL_CONTENT_VERSION }));
+  // Stage progress is stamped with contentVersion: TRAIL_CONTENT_VERSION
+  return recordDestinationStageCompletion(context, stars, saveStorage);
 }

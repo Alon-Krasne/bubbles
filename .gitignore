@@ -28,3 +28,6 @@ build/
 /.opencode
 .wrangler/
 .dev.vars*
+
+# Regenerable wordless soundtracks (see make-*.mjs generators in production folders)
+docs/visual-explainer/**/*.wav

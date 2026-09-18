@@ -1,0 +1,53 @@
+{
+  "videoId": "forest-video-02",
+  "status": "Generated and assembled; review preview",
+  "targetSeconds": 18,
+  "source": "../../storybook-v2.json",
+  "shots": [
+    {
+      "seconds": 6,
+      "see": "Keep the gift brief: Zohar offers the filled basket; the river resident recognizes the supplies. Light runs from the basket through the roots toward a curtain of leaves. The resident pulls it aside, revealing the entrance to a new place.",
+      "hear": "Separate sound pass: environmental movement and instrumental music only; no generated creature speech."
+    },
+    {
+      "seconds": 6,
+      "see": "A wide reveal opens onto a village built among enormous roots: little bridges, warm round windows and seed-shaped lifts. Nevet, Adva and Zohar enter along the lower path, small against the inviting architecture. One seed lift glides upward, making the place feel alive.",
+      "hear": "Separate sound pass: environmental movement and instrumental music only; no generated creature speech."
+    },
+    {
+      "seconds": 6,
+      "see": "At a fork beside the village entrance, a small dormouse courier pulls a wooden parcel cart to a stop. It looks down one path, then the other, checks the parcels and makes an exaggerated puzzled face. Adva starts to point one way, pauses, and looks back at the others. They gather around the cart to help; do not reveal the correct route.",
+      "hear": "Separate sound pass: environmental movement and instrumental music only; no generated creature speech."
+    }
+  ],
+  "captions": [
+    {
+      "start": 0.4,
+      "end": 5.7,
+      "en": "Our gift opened a new path.",
+      "he": "המתנה שלנו פתחה שביל חדש."
+    },
+    {
+      "start": 6.4,
+      "end": 11.7,
+      "en": "A whole village was waiting beyond the waterfall.",
+      "he": "כפר שלם חיכה מעבר למפל."
+    },
+    {
+      "start": 12.4,
+      "end": 17.7,
+      "en": "The courier needs help. Let’s go!",
+      "he": "השליח צריך עזרה. בואו נצא לדרך!"
+    }
+  ],
+  "reference": "village-courier-v2.png",
+  "preservedEarlierReference": "garden-first-frame.png",
+  "nextProduction": "Review forest-video-02-wordless.mp4 with player captions. No further generations authorized by the completed three-attempt scope.",
+  "audio": "wordless-soundtrack-adventure.wav, 18-second local synthesis",
+  "acceptance": [
+    "Three beats: gift causes opening, village discovery, courier problem",
+    "Courier remains root-host later, not an added finale guest",
+    "Chosen-language captions are player-rendered",
+    "No delivery/navigation minigame promised; current learning contracts remain"
+  ]
+}

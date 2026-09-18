@@ -1,0 +1,19 @@
+{
+  "videoId": "forest-video-02",
+  "kind": "Story captions, not dialogue transcription",
+  "defaultLanguage": "he",
+  "cues": [
+    {
+      "start": 0.4,
+      "end": 5.7,
+      "en": "We brought apples and water.",
+      "he": "הבאנו תפוחים ומים."
+    },
+    {
+      "start": 6.4,
+      "end": 11.7,
+      "en": "Look! A secret garden.",
+      "he": "תראו! גן סודי."
+    }
+  ]
+}

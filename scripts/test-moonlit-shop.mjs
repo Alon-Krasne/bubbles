@@ -17,7 +17,7 @@ const cases = [
 const route = (level, stage) => `http://127.0.0.1:8788/index.html?${new URLSearchParams({
   host: 'world-map', activity: 'listening-shop', level, stage,
   profile: `moonlit-layout-${level}`, profileName: 'Moonlit', profileEmoji: '🌸',
-  profileCharacter: 'princess', profileLanguage: 'en',
+  destination: 'wonder', profileCharacter: 'princess', profileLanguage: 'en',
 })}`;
 
 const inspect = (expectedChoices) => evaluate(`(() => {

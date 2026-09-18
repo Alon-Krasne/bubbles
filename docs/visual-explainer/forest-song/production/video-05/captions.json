@@ -1,0 +1,17 @@
+{
+  "videoId": "forest-video-05",
+  "cues": [
+    {
+      "start": 0.4,
+      "end": 5.7,
+      "en": "Someone is shining a light back at us!",
+      "he": "מישהו מאיר אלינו בחזרה!"
+    },
+    {
+      "start": 6.4,
+      "end": 11.7,
+      "en": "Together, we can reach the great tree.",
+      "he": "ביחד נוכל להגיע לעץ הגדול."
+    }
+  ]
+}

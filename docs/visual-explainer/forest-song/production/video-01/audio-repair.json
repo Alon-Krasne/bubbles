@@ -1,0 +1,33 @@
+{
+  "method": "Replace entire mixed audio with locally synthesized water/leaf ambience and instrumental notes. Original video streams copied without re-encoding.",
+  "newModelCalls": 0,
+  "newGenerationCharges": 0,
+  "originalsPreserved": true,
+  "listeningReview": "User review pending; no subjective listening claim",
+  "checks": [
+    {
+      "original": "forest-video-01-draft.mp4",
+      "replacement": "forest-video-01-wordless.mp4",
+      "identicalVideoStream": true,
+      "sha256": "SHA256=e916bec7c41f597ab7adb373dcd0955440ec0aaee83b5cd8fb9eede2f9ab7093"
+    },
+    {
+      "original": "shot-1.mp4",
+      "replacement": "shot-1-wordless.mp4",
+      "identicalVideoStream": true,
+      "sha256": "SHA256=6864e97e303aa2af9b741b5d9d2837a2ddb352adf4acf5b16c4b0c3774b4e22f"
+    },
+    {
+      "original": "shot-2.mp4",
+      "replacement": "shot-2-wordless.mp4",
+      "identicalVideoStream": true,
+      "sha256": "SHA256=eb09a5e3ddd638b5daa54ffcc897bac4b0696e87e24aad115fa82124797ba9cf"
+    },
+    {
+      "original": "shot-3.mp4",
+      "replacement": "shot-3-wordless.mp4",
+      "identicalVideoStream": true,
+      "sha256": "SHA256=47b822b0d66ebc4b7cd7e9828d8673504db4b745951d1dfa5853331e60b26578"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "videoId": "forest-video-02",
+  "status": "Timed for generated 18-second assembly",
+  "cues": [
+    {
+      "start": 0.4,
+      "end": 5.7,
+      "en": "Our gift opened a new path.",
+      "he": "המתנה שלנו פתחה שביל חדש."
+    },
+    {
+      "start": 6.4,
+      "end": 11.7,
+      "en": "A whole village was waiting beyond the waterfall.",
+      "he": "כפר שלם חיכה מעבר למפל."
+    },
+    {
+      "start": 12.4,
+      "end": 17.7,
+      "en": "The courier needs help. Let’s go!",
+      "he": "השליח צריך עזרה. בואו נצא לדרך!"
+    }
+  ]
+}

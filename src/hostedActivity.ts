@@ -24,6 +24,7 @@ export interface HostedActivityContext {
   profileLanguage: ProfileLanguage;
   profileCharacter: ProfileCharacter;
   stageId: number;
+  destination: 'wonder' | 'forest';
 }
 
 export interface HostedActivitySession {
@@ -47,12 +48,14 @@ export function readHostedActivityContext(): HostedActivityContext | null {
   const profileLanguage = params.get('profileLanguage');
   const profileCharacter = params.get('profileCharacter');
   const stageId = Number(params.get('stage'));
+  const destination = params.get('destination');
   const supportedActivities = new Set<HostedActivityId>(['memory-garden', 'listening-shop']);
   const supportedLanguages = new Set<ProfileLanguage>(['en', 'he']);
   const supportedCharacters = new Set<ProfileCharacter>(['princess', 'dinosaur', 'puppy', 'unicorn']);
   const expectedStage = TRAIL_STAGES.find((stage) => stage.id === stageId);
 
-  if (host !== 'world-map'
+  if ((destination !== 'wonder' && destination !== 'forest')
+    || host !== 'world-map'
     || !supportedActivities.has(activityId as HostedActivityId)
     || !levelId
     || !profileId
@@ -80,6 +83,7 @@ export function readHostedActivityContext(): HostedActivityContext | null {
     profileLanguage: profileLanguage as ProfileLanguage,
     profileCharacter: profileCharacter as ProfileCharacter,
     stageId,
+    destination,
   };
 }
 

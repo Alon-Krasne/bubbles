@@ -1,0 +1,84 @@
+{
+  "tool": "OpenAI built-in image_gen",
+  "model": "Tool does not expose an exact model identifier",
+  "researched": "2026-09-17",
+  "sources": [
+    "https://openai.com/index/introducing-chatgpt-images-2-5/",
+    "https://blog.google/innovation-and-ai/technology/ai/nano-banana-2/"
+  ],
+  "art": [
+    {
+      "id": "01-opening",
+      "prompt": "Use case: illustration-story. Asset: first of nine cinematic game storyboard keyframes for an original children's adventure called Bubbles, landscape 16:9. Create a premium painterly 2.5D fantasy game concept frame, richly layered hand-painted landscape, beautiful dusk atmosphere, sophisticated natural colors, cinematic lighting, soft friendly character silhouettes. Emotional direction: wonder, exploration, safe mystery for ages 4-7. The image is artwork only, no UI or text, no panels.\nTwo tiny adorable smooth round blob heroes, one rose-pink with a small rose bow, the other powder-blue without accessories, simple dark dot eyes and little feet, stand on a mossy stream bank in bottom-left foreground. A tiny cream-gold glowing tadpole-like water spirit with a rounded body, two leaflike fins and friendly eyes rises from the water just before them. Their touching the stream sends golden concentric ripples. Ancient mossy trees frame the top and sides. In distant center-right across a layered misty valley, an immense sleeping tree with a broad crown has just one faint amber light in its trunk. A waterfall at the right suggests a hidden path. Muted deep forest greens, slate blue dusk, rich moss, delicate warm amber highlights, gentle luminous stream. Keep heroes small, about 9% of frame height: the landscape feels vast and inviting. Some dark foreground framing, but faces, path and water clearly readable. Not saccharine, not neon, no threat, no enemies, no weapons, no scary faces, no copied existing game characters. High craft, atmospheric perspective, composition leads eye from heroes to spirit to distant tree.",
+      "file": "assets/01-opening.png",
+      "references": []
+    },
+    {
+      "id": "02-waterfall",
+      "prompt": "Use case: illustration-story. Generate a NEW landscape 16:9 cinematic game storyboard keyframe. The attached image is a CHARACTER AND ART-DIRECTION REFERENCE, not an edit target. Preserve exactly the same two little smooth round blob heroes: rose pink with small rose bow and powder blue with no accessories, tiny feet, expressive simple dark eyes. Also preserve the tiny floating cream-gold water spirit with leaflike fins. Premium painterly 2.5D adventure concept art, detailed natural environments and atmospheric depth, friendly and inviting for ages 4-7, wonder and gentle mystery, no scary elements. Original world, no existing game characters, no text/UI/borders or panel collage. After stage 5. Behind a curtain of silver waterfall, the heroes discover a secret sunlit grotto. Their tiny glowing companion leads them through a child-sized ancient mossy arch. Dozens of translucent seed lanterns hang overhead and a luminous golden seed rests in an open stone lily at center. Warm reflected daylight, lush emerald moss, beautiful water droplets, bright cream-gold focal point. Composition: heroes lower-left looking toward seed and new winding passage on right. Sense of finding a secret place and first treasure, characters about 12% image height.",
+      "file": "assets/02-waterfall.png",
+      "references": [
+        "assets/01-opening.png"
+      ]
+    },
+    {
+      "id": "03-crossing",
+      "prompt": "Use case: illustration-story. Generate a NEW landscape 16:9 cinematic game storyboard keyframe. The attached image is a CHARACTER AND ART-DIRECTION REFERENCE, not an edit target. Preserve exactly the same two little smooth round blob heroes: rose pink with small rose bow and powder blue with no accessories, tiny feet, expressive simple dark eyes. Also preserve the tiny floating cream-gold water spirit with leaflike fins. Premium painterly 2.5D adventure concept art, detailed natural environments and atmospheric depth, friendly and inviting for ages 4-7, wonder and gentle mystery, no scary elements. Original world, no existing game characters, no text/UI/borders or panel collage. After stage 10. A river crossing has just awakened: gigantic round water-lily leaves open into stepping platforms from left foreground across to right midground. Friendly little round river creatures surface to watch. Pink and blue heroes joyfully hop onto the first broad safe leaf, golden companion ahead. Sweeping river glitters in late afternoon light, amber reeds and deep green forest, distant giant tree on horizon. Dynamic fun readable motion, no danger or precarious leap, low water and wide leaves. Wide landscape composition with clear inviting path.",
+      "file": "assets/03-crossing.png",
+      "references": [
+        "assets/01-opening.png"
+      ]
+    },
+    {
+      "id": "04-lantern-market",
+      "prompt": "Use case: illustration-story. Generate a NEW landscape 16:9 cinematic game storyboard keyframe. The attached image is a CHARACTER AND ART-DIRECTION REFERENCE, not an edit target. Preserve exactly the same two little smooth round blob heroes: rose pink with small rose bow and powder blue with no accessories, tiny feet, expressive simple dark eyes. Also preserve the tiny floating cream-gold water spirit with leaflike fins. Premium painterly 2.5D adventure concept art, detailed natural environments and atmospheric depth, friendly and inviting for ages 4-7, wonder and gentle mystery, no scary elements. Original world, no existing game characters, no text/UI/borders or panel collage. After stage 15. A cozy secret night market inside the hollow roots of a massive tree, full of round friendly woodland creatures. Mushroom canopies, seed-lanterns, woven baskets of apples and berries, warm inviting amber windows. Pink and blue heroes carry one small picnic basket together in foreground; the tiny golden spirit curiously peers into it upside down. A friendly round hedgehog merchant waves them onward. Through a distant arched opening the luminous river points toward the great sleeping tree. Emotional palette warm honey and rust against dusk blue forest, visual richness, child-friendly sense of provisions for a real journey, no text.",
+      "file": "assets/04-lantern-market.png",
+      "references": [
+        "assets/01-opening.png"
+      ]
+    },
+    {
+      "id": "05-echo-cavern",
+      "prompt": "Use case: illustration-story. Generate a NEW landscape 16:9 cinematic game storyboard keyframe. The attached image is a CHARACTER AND ART-DIRECTION REFERENCE, not an edit target. Preserve exactly the same two little smooth round blob heroes: rose pink with small rose bow and powder blue with no accessories, tiny feet, expressive simple dark eyes. Also preserve the tiny floating cream-gold water spirit with leaflike fins. Premium painterly 2.5D adventure concept art, detailed natural environments and atmospheric depth, friendly and inviting for ages 4-7, wonder and gentle mystery, no scary elements. Original world, no existing game characters, no text/UI/borders or panel collage. After stage 20. An awe-filled spacious moonlit crystal cavern, natural slate violet and deep ultramarine stone with soft opal crystals, not neon. Pink and blue heroes in lower-left stand on broad dry mossy rock path beside the cream-gold spirit. Their tiny golden sound ripple travels across an underground mirror lake; a much larger soft golden ripple answers from a distant root-carved doorway. Faint friendly enormous feather silhouette in ancient mural near doorway foreshadows a guardian, not a monster. Roof opening admits a shaft of silver moonlight. Calm exploration and a sense something wonderful is responding. Path and characters well lit; no black pit, danger or scary eyes.",
+      "file": "assets/05-echo-cavern.png",
+      "references": [
+        "assets/01-opening.png"
+      ]
+    },
+    {
+      "id": "06-guardian",
+      "prompt": "Use case: illustration-story. Generate a NEW landscape 16:9 cinematic game storyboard keyframe. The attached image is a CHARACTER AND ART-DIRECTION REFERENCE, not an edit target. Preserve exactly the same two little smooth round blob heroes: rose pink with small rose bow and powder blue with no accessories, tiny feet, expressive simple dark eyes. Also preserve the tiny floating cream-gold water spirit with leaflike fins. Premium painterly 2.5D adventure concept art, detailed natural environments and atmospheric depth, friendly and inviting for ages 4-7, wonder and gentle mystery, no scary elements. Original world, no existing game characters, no text/UI/borders or panel collage. After stage 25. Major reveal: inside the vast living hollow of the giant tree, the heroes meet a sleeping gentle guardian: an ENORMOUS plump cream-feathered bird, round owl-like face with closed crescent eyes, tiny rounded golden beak, soft small ear tufts, broad folded feather wings, subtle moss-green tips and a glowing amber teardrop-shaped mark on its forehead. Cuddly and magnificent, absolutely no sharp talons or angry brows. It nestles peacefully on a huge bed of moss and soft roots, fine dim golden threads lie loosely across wings like a faded song, no restraints or distress. A tiny floating leaf has settled on its beak, humorous touch. Pink and blue blobs and tiny golden water spirit stand at the lower-left looking up in awe, about one tenth its height. A shaft of warm morning light enters through opening high above, rich dark olive bark and fern green with cream and honey highlights. Welcoming natural cathedral, safe quiet grandeur. Guardian occupies right two thirds, faces easy to see.",
+      "file": "assets/06-guardian.png",
+      "references": [
+        "assets/01-opening.png"
+      ]
+    },
+    {
+      "id": "07-three-lights",
+      "prompt": "Use case: illustration-story. Generate a NEW landscape 16:9 cinematic game storyboard keyframe. The attached image is a CHARACTER AND ART-DIRECTION REFERENCE, not an edit target. Preserve exactly the same two little smooth round blob heroes: rose pink with small rose bow and powder blue with no accessories, tiny feet, expressive simple dark eyes. Also preserve the tiny floating cream-gold water spirit with leaflike fins. Premium painterly 2.5D adventure concept art, detailed natural environments and atmospheric depth, friendly and inviting for ages 4-7, wonder and gentle mystery, no scary elements. Original world, no existing game characters, no text/UI/borders or panel collage. After stage 30, preparation for the finale. At the roots of the giant tree, pink and blue heroes and golden spirit stand before THREE beautiful waist-high stone flower bowls in a gentle curve. Each bowl holds a warm glowing seed, gathered during their adventure. Thin golden streams lead from the three bowls into the tree. In the softly blurred background to the right is the enormous sleeping cream-feathered owl guardian from the second reference, forehead amber teardrop, small round beak, moss-green wing tips. Dawn light in cathedral-like tree hollow. Focus composition on the two tiny friends placing the final seed together, joyful purpose, clear count of three bowls, no text or symbols. Newly opened white flowers follow the golden streams. Medium wide frame, side-on view, premium painterly fantasy game still.",
+      "file": "assets/07-three-lights.png",
+      "references": [
+        "assets/01-opening.png",
+        "assets/06-guardian.png"
+      ]
+    },
+    {
+      "id": "08-awakening",
+      "prompt": "Use case: illustration-story. Generate a NEW landscape 16:9 cinematic game storyboard keyframe. The attached image is a CHARACTER AND ART-DIRECTION REFERENCE, not an edit target. Preserve exactly the same two little smooth round blob heroes: rose pink with small rose bow and powder blue with no accessories, tiny feet, expressive simple dark eyes. Also preserve the tiny floating cream-gold water spirit with leaflike fins. Premium painterly 2.5D adventure concept art, detailed natural environments and atmospheric depth, friendly and inviting for ages 4-7, wonder and gentle mystery, no scary elements. Original world, no existing game characters, no text/UI/borders or panel collage. After stage 35, the threshold of the final challenge. Use the guardian identity from reference 2: enormous gentle round cream-feathered owl guardian with tiny golden beak, moss-green tips, amber teardrop on forehead. Inside the great living tree hall, the guardian has ONE friendly sleepy eye partly open and starts lifting ONE broad feathered wing; the other remains folded. Pink bow blob and blue blob face it from the low foreground, golden companion between them. Three stone lily bowls glow gently, dim golden song-threads between them and guardian are beginning to untangle into light. Cinematic low angle emphasizes safe magnificent scale. Warm cream feathers against dark olive bark, dawn shaft, drifting soft petals, no explosive effects. Sense of 'we can help this magnificent friend', not fully awake yet, no threat or fear, no restraints.",
+      "file": "assets/08-awakening.png",
+      "references": [
+        "assets/01-opening.png",
+        "assets/06-guardian.png"
+      ]
+    },
+    {
+      "id": "09-first-flight",
+      "prompt": "Use case: illustration-story. Generate a NEW landscape 16:9 cinematic game storyboard keyframe. The attached image is a CHARACTER AND ART-DIRECTION REFERENCE, not an edit target. Preserve exactly the same two little smooth round blob heroes: rose pink with small rose bow and powder blue with no accessories, tiny feet, expressive simple dark eyes. Also preserve the tiny floating cream-gold water spirit with leaflike fins. Premium painterly 2.5D adventure concept art, detailed natural environments and atmospheric depth, friendly and inviting for ages 4-7, wonder and gentle mystery, no scary elements. Original world, no existing game characters, no text/UI/borders or panel collage. Ending after stage 36: spectacular joyful reward. The enormous gentle cream-feathered owl guardian from reference 2 is now flying peacefully across a wide open sunrise valley, wings stretched across the frame, moss-green feather tips and little amber teardrop forehead mark. Both tiny blob heroes sit nestled securely together in the soft feathers on its upper back, pink bow clearly visible and blue buddy beside, golden spirit flies beside them. Camera rear three-quarter view so we see heroes and the guardian's friendly round profile. Far below is the whole restored world: silver waterfall, water-lily river crossing, lantern village, and colossal tree now blooming with warm golden lights. A few floating garden islands in distant pale sky. Peach dawn, moss green landscape, ivory cloud sea. Exhilarating but safe, a earned victory lap, original children's adventure game cinematic, painterly atmosphere. No text or UI.",
+      "file": "assets/09-first-flight.png",
+      "references": [
+        "assets/01-opening.png",
+        "assets/06-guardian.png"
+      ]
+    }
+  ]
+}

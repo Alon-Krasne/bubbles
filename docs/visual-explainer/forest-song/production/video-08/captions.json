@@ -1,0 +1,17 @@
+{
+  "videoId": "forest-video-08",
+  "cues": [
+    {
+      "start": 0.4,
+      "end": 5.7,
+      "en": "Two flowers are open. One is still waiting.",
+      "he": "שני פרחים נפתחו. אחד עוד מחכה."
+    },
+    {
+      "start": 6.4,
+      "end": 11.7,
+      "en": "One last place to prepare for our friend.",
+      "he": "נשאר להכין עוד מקום לחבר שלנו."
+    }
+  ]
+}
