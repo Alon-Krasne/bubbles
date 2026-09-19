@@ -1,5 +1,5 @@
 import { getActivitySavePrefix } from '../prototype/shared/destinations.mjs';
-import { saveStorage, recordStageCompletion } from '../prototype/shared/saves.mjs';
+import { saveStorage } from '../prototype/shared/saves.mjs';
 import { configureTranslationHintButton } from '../prototype/shared/translation-hint-control.mjs';
 import { VOCAB_WORDS, type VocabWord } from './words';
 import { createShopItemArt } from './shop-art';
@@ -126,6 +126,7 @@ const SHOP_ITEMS: ShopItem[] = VOCAB_WORDS.filter((word) => word.shoppable);
 const SHOP_LEVELS = GAME_LEVELS.shop as readonly ShopLevel[];
 
 export function initShopGame(deps: ShopDeps) {
+  const hostedRoundRecords = new Map<string, string>();
   const state = {
     activeLevel: SHOP_LEVELS[0],
     currentOrder: null as ShopOrder | null,
@@ -137,6 +138,17 @@ export function initShopGame(deps: ShopDeps) {
     customerName: SHOP_CUSTOMER_NAMES[0],
     timers: [] as number[],
   };
+  if (deps.hostedSession) {
+    (window as any).render_game_to_text = () => JSON.stringify({
+      game: 'shop',
+      servedCustomers: state.servedCustomers,
+      targets: state.currentOrder?.targets.map(target => ({
+        itemId: target.item.id,
+        required: target.required,
+        served: target.served,
+      })),
+    });
+  }
   let orderPromptTimer: number | null = null;
 
   const levelMap = requireElement<HTMLElement>('shop-level-map');
@@ -573,6 +585,12 @@ export function initShopGame(deps: ShopDeps) {
   }
 
   function getShopStorage() {
+    if (deps.hostedSession) {
+      return {
+        getItem: (key: string) => hostedRoundRecords.get(key) ?? null,
+        setItem: (key: string, value: string) => { hostedRoundRecords.set(key, value); },
+      };
+    }
     const destination = deps.hostedSession ? deps.hostedSession.context.destination : 'wonder';
     const prefix = getActivitySavePrefix(deps.getActiveProfile().id, destination, getLearningLanguage());
     return {
@@ -583,11 +601,6 @@ export function initShopGame(deps: ShopDeps) {
 
   function saveActiveShopSession() {
     const order = requireCurrentOrder();
-    if (deps.hostedSession && state.servedCustomers >= state.activeLevel.customerCount) {
-      recordStageCompletion(deps.hostedSession.context, calculateMasteryStars({
-        mistakes: state.mistakes, challengeSize: state.activeLevel.customerCount,
-      }));
-    }
     saveShopSession(getShopStorage(), deps.getActiveProfile().id, state.activeLevel.id, {
       servedCustomers: state.servedCustomers,
       mistakes: state.mistakes,

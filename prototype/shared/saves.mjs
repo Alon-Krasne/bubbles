@@ -1,6 +1,4 @@
 import { createSaveClient, SAVE_CACHE_KEY } from './save-client.mjs';
-import { TRAIL_CONTENT_VERSION } from './track-progress.mjs';
-import { recordDestinationStageCompletion } from './destinations.mjs';
 
 export let saveStorage;
 
@@ -43,17 +41,52 @@ export async function initializeSaves() {
     }
   };
   panel.textContent = 'טוען שמירה…';
-  // One controller per browser tab tree; a second tab must not replace its local queue.
-  await new Promise((resolve, reject) => {
-    void navigator.locks.request('bubbles-save-tab', { ifAvailable: true }, async lock => {
-      if (!lock) { reject(new Error('המשחק כבר פתוח בלשונית אחרת. סגרו אותה ונסו שוב.')); return; }
-      resolve();
-      await new Promise(() => {});
-    }).catch(reject);
-  });
+  // The newest tab owns saves. The older tab drains its queue before handing off.
+  const tabId = crypto.randomUUID();
+  const channel = new BroadcastChannel('bubbles-save-tab-handoff');
+  let releaseLock;
+  let readyResolve;
+  let readyReject;
+  let canTransfer = false;
+  const lockHeld = new Promise(resolve => { releaseLock = resolve; });
+  const lockReady = new Promise((resolve, reject) => { readyResolve = resolve; readyReject = reject; });
+  channel.onmessage = async event => {
+    if (event.data?.type !== 'take-over' || event.data.tabId === tabId || !canTransfer) return;
+    canTransfer = false;
+    block();
+    await saveStorage.retire();
+    clearTimeout(hideTimer);
+    panel.hidden = false;
+    panel.textContent = 'המשחק עבר ללשונית החדשה.';
+    const returnButton = document.createElement('button');
+    returnButton.textContent = 'לשחק כאן';
+    returnButton.onclick = () => location.reload();
+    panel.append(returnButton);
+    channel.close();
+    releaseLock();
+  };
+  void navigator.locks.request('bubbles-save-tab', async () => {
+    readyResolve();
+    await lockHeld;
+  }).catch(readyReject);
+  const requestTakeover = () => channel.postMessage({ type: 'take-over', tabId });
+  const requestTimer = setInterval(requestTakeover, 400);
+  requestTakeover();
+  try {
+    await lockReady;
+  } finally {
+    clearInterval(requestTimer);
+  }
   saveStorage = createSaveClient({ storage: localStorage, fetcher: fetch.bind(window), onStatus: showStatus });
   window.bubblesSaveClient = saveStorage;
-  await saveStorage.load();
+  try {
+    await saveStorage.load();
+  } catch (error) {
+    channel.close();
+    releaseLock();
+    throw error;
+  }
+  canTransfer = true;
   window.addEventListener('online', () => { void saveStorage.flush(); });
   window.addEventListener('pagehide', () => { void saveStorage.flush(); });
 }
@@ -68,12 +101,4 @@ export function showSaveLoadError(error) {
   retry.onclick = () => location.reload();
   panel.append(retry);
   document.body.append(panel);
-}
-
-export function recordStageCompletion(context, stars) {
-  // An activity can be opened without a pre-created route (for example a direct
-  // deep link). Starting a fresh route keeps completion from crashing the game
-  // and stranding the child on the final customer.
-  // Stage progress is stamped with contentVersion: TRAIL_CONTENT_VERSION
-  return recordDestinationStageCompletion(context, stars, saveStorage);
 }

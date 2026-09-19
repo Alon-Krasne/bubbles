@@ -1,4 +1,4 @@
-import { getActivitySavePrefix, getRouteKey } from './shared/destinations.mjs';
+import { getActivitySavePrefix } from './shared/destinations.mjs';
 import { calculateMasteryStars, formatStarRating } from './shared/activity-scoring.mjs';
 import {
   MAGIC_HOUSE_OBJECTS,
@@ -12,7 +12,7 @@ import {
 import { selectVariedRequestIds } from './shared/magic-house-variation.mjs';
 import { MAGIC_HOUSE_PRACTICE_LEVEL, TRAIL_STAGES, getGameLevel } from './shared/trail-catalog.mjs';
 import { applyEnglishLearningTranslationHint } from './shared/translation-hint.mjs';
-import { saveStorage, recordStageCompletion } from './shared/saves.mjs';
+import { saveStorage } from './shared/saves.mjs';
 import { snapshotHouseRound, restoreHouseRound } from './shared/magic-house-save.mjs';
 import { configureTranslationHintButton } from './shared/translation-hint-control.mjs';
 
@@ -88,6 +88,13 @@ const activeProfiles = hostContext
 
 const objectById = new Map(OBJECTS.map((object) => [object.id, object]));
 const profileStates = new Map(Object.keys(activeProfiles).map((profileId) => [profileId, createProfileState(profileId)]));
+if (hostContext) {
+  window.render_game_to_text = () => JSON.stringify({
+    game: 'house',
+    requestIds: getState().requests.map(request => request.id),
+    completedRequests: getState().completedRequests,
+  });
+}
 const timers = new Set();
 
 let activeProfileId = hostContext ? hostContext.profileId : 'lotem';
@@ -177,14 +184,10 @@ function houseRoundKey(profileId) {
 
 function createProfileState(profileId) {
   const key = houseRoundKey(profileId);
-  const saved = saveStorage.getItem(key);
+  const saved = hostContext ? null : saveStorage.getItem(key);
   if (saved) {
     const snapshot = JSON.parse(saved);
     if (snapshot.completedRequests < snapshot.requestIds.length) return clampHelpLevel(restoreHouseRound(snapshot, REQUESTS, OBJECTS));
-    if (hostContext && !JSON.parse(saveStorage.getItem(getRouteKey(profileId, hostContext.destination, hostContext.profileLanguage))).progress[hostContext.stageId]) {
-      recordStageCompletion(hostContext, calculateMasteryStars({ mistakes: snapshot.mistakes, challengeSize: snapshot.requestIds.length }));
-      return clampHelpLevel(restoreHouseRound(snapshot, REQUESTS, OBJECTS));
-    }
   }
   const requests = selectLevelRequests(magicHouseLevel, profileId);
   const state = {
@@ -198,12 +201,12 @@ function createProfileState(profileId) {
     placedZoneByObjectId: new Map(),
     locked: false,
   };
-  saveStorage.setItem(key, JSON.stringify(snapshotHouseRound(state)));
+  if (!hostContext) saveStorage.setItem(key, JSON.stringify(snapshotHouseRound(state)));
   return state;
 }
 
 function saveRound() {
-  saveStorage.setItem(houseRoundKey(activeProfileId), JSON.stringify(snapshotHouseRound(getState())));
+  if (!hostContext) saveStorage.setItem(houseRoundKey(activeProfileId), JSON.stringify(snapshotHouseRound(getState())));
 }
 
 // A saved round may have been created when the level allowed more help; keep it
@@ -504,7 +507,6 @@ function completeRequest() {
   state.locked = true;
   state.completedRequests += 1;
   saveRound();
-  if (hostContext && state.completedRequests === state.requests.length) recordStageCompletion(hostContext, getFinalStars());
   instructionPanel.classList.add('is-success', 'show-keywords');
   translationElement.hidden = false;
   updateStars();

@@ -76,7 +76,6 @@ assert.equal(
 const worldMapHtml = readFileSync(new URL('../prototype/world-map.html', import.meta.url), 'utf8');
 const worldMapCss = readFileSync(new URL('../prototype/world-map.css', import.meta.url), 'utf8');
 const worldMapJs = readFileSync(new URL('../prototype/world-map.js', import.meta.url), 'utf8');
-const savesJs = readFileSync(new URL('../prototype/shared/saves.mjs', import.meta.url), 'utf8');
 
 assert.match(worldMapHtml, /השלב הבא למשחק/, 'progress selector must describe the selected stage');
 assert.match(worldMapHtml, /מחיקת פרופיל/, 'the destructive action must name the object being deleted');
@@ -101,6 +100,6 @@ assert.equal(isStageUnlocked({ id: 3, available: false }, 3), false, 'an unavail
 assert.match(worldMapJs, /isStageUnlocked\(stage, progress\.currentStage\)/, 'the map must lock stages using the shared frontier rule');
 assert.match(worldMapJs, /normalizeTrackProgress\(parsed, \{/, 'the map must run saved progress through the shared one-time reset');
 assert.match(worldMapJs, /contentVersion: TRAIL_CONTENT_VERSION/, 'saved route progress must be stamped with the content version');
-assert.match(savesJs, /contentVersion: TRAIL_CONTENT_VERSION/, 'activity completions must stamp the content version too');
+assert.match(worldMapJs, /function completeLaunchedStage[\s\S]*saveWorldProgress\(destination\)/, 'the map must save completed stages');
 
 console.log(JSON.stringify({ resetStages: [1, 6, 15], stageCount: 15 }));

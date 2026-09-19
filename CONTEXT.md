@@ -7,8 +7,8 @@ Bubbles Learning World is a child-focused route of short language-learning activ
 **Shared family space**:
 The current collection of children's profiles and saves shared by everyone admitted to the game. It does not belong to an individual adult sign-in.
 
-**Round save**:
-A child's unfinished Shop, Magic House, or Reveal the Magic activity, including the selected challenges and actions already completed, which can be resumed later. Memory Garden does not persist round state: opening or refreshing it creates a shuffled, closed board. Only completed Memory stage progress and settings persist.
+**Stage save**:
+The route progress written after a child finishes a stage. Unfinished activity moves stay in the open game session; leaving or refreshing an activity starts that stage again. Profile and journey choices are saved separately.
 
 **Chapter**:
 A themed group of six consecutive trail stages that share vocabulary categories and a difficulty band. Generated chapters let the route extend without hand-placing every stage.

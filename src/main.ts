@@ -5,7 +5,7 @@ import './memory-scene.css';
 import '../prototype/shared/hint-button.css';
 import moonlitGardenUrl from './assets/memory/moonlit-garden.webp';
 import { configureTranslationHintButton } from '../prototype/shared/translation-hint-control.mjs';
-import { recordStageCompletion, initializeSaves, showSaveLoadError } from '../prototype/shared/saves.mjs';
+import { initializeSaves, showSaveLoadError } from '../prototype/shared/saves.mjs';
 import { GameApp } from './game/GameApp';
 import { FigureType } from './entities/Character';
 import { FallingItemMode } from './entities/Bubble';
@@ -981,8 +981,7 @@ function matchMemoryCards() {
     const completionToken = memoryRoundToken;
     const celebrateIfStillCurrent = () => {
       if (completionToken !== memoryRoundToken) return;
-      if (isHostedMemoryActivity()) recordStageCompletion(hostedActivityContext, memoryRoundStars);
-      else saveMemoryLevelStars(activeMemoryLevel.id, memoryRoundStars);
+      if (!isHostedMemoryActivity()) saveMemoryLevelStars(activeMemoryLevel.id, memoryRoundStars);
       finishMemoryRound();
     };
     void waitForMemoryBoardReveal(renderedCards, pairCount)
