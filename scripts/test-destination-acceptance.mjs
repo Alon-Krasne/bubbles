@@ -23,12 +23,14 @@ try {
   });
 
   browser('open', 'http://127.0.0.1:8788/prototype/world-map.html');
-  browser('wait', '#destination-gate');
+  browser('wait', '.gate-profile-choice');
+  browser('click', '.gate-profile-choice[data-profile="lotem"]');
+  browser('wait', '#destination-gate:not([hidden])');
 
   // 1. Verify Destination Gate is displayed
   const gateVisible = browser('eval', '(!document.getElementById("destination-gate").hidden)');
   console.log('Destination Gate visible:', gateVisible.trim());
-  if (!gateVisible.includes('true')) throw new Error('Destination gate should be visible on startup');
+  if (!gateVisible.includes('true')) throw new Error('Destination gate should be visible after choosing child');
 
   const title = browser('eval', 'document.querySelector(".destination-heading h1").textContent');
   console.log('Gate title:', title.trim());

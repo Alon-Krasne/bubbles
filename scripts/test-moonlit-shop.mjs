@@ -8,10 +8,10 @@ const browser = (...args) => execFileSync('agent-browser', ['--session', 'moonli
 const evaluate = expression => JSON.parse(browser('eval', expression));
 const cases = [
   ['trail-shop-1', 2, 1440, 900, 4],
-  ['trail-shop-6', 17, 1024, 768, 6],
-  ['trail-shop-7', 20, 1024, 768, 6],
-  ['trail-shop-11', 32, 390, 844, 8],
-  ['trail-shop-12', 35, 390, 844, 8],
+  ['trail-shop-4', 16, 1024, 768, 6],
+  ['trail-shop-5', 17, 1024, 768, 6],
+  ['trail-shop-8', 32, 390, 844, 8],
+  ['trail-shop-9', 35, 390, 844, 8],
 ];
 
 const route = (level, stage) => `http://127.0.0.1:8788/index.html?${new URLSearchParams({

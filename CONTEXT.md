@@ -8,13 +8,13 @@ Bubbles Learning World is a child-focused route of short language-learning activ
 The current collection of children's profiles and saves shared by everyone admitted to the game. It does not belong to an individual adult sign-in.
 
 **Round save**:
-A child's unfinished Shop or Magic House activity, including the selected challenges and actions already completed, which can be resumed later. Memory Garden does not persist round state: opening or refreshing it creates a shuffled, closed board. Only completed Memory stage progress and settings persist.
+A child's unfinished Shop, Magic House, or Reveal the Magic activity, including the selected challenges and actions already completed, which can be resumed later. Memory Garden does not persist round state: opening or refreshing it creates a shuffled, closed board. Only completed Memory stage progress and settings persist.
 
 **Chapter**:
 A themed group of six consecutive trail stages that share vocabulary categories and a difficulty band. Generated chapters let the route extend without hand-placing every stage.
 
 **Generated trail**:
-The live learning route produced by `generateTrail()` from chapters, vocabulary categories, and game parameter recipes. It is deterministic and validated: six chapters × six stages = 36 stages whose Memory, Shop and Magic House levels scale in difficulty. The legacy hand-placed 15-stage route remains exported as `LEGACY_TRAIL_STAGES` for reference only.
+The live learning route produced by `generateTrail()` from chapters, vocabulary categories, and game parameter recipes. It is deterministic and validated: six chapters × six stages = 36 stages whose Memory, Shop, Magic House and Reveal the Magic levels scale in difficulty. Reveal the Magic is the fourth stop of every chapter (4, 10, 16, 22, 28, 34), earns normal route stars, and uses letter guessing in the selected learning language. Existing route stars and video milestones retain their positions. The legacy hand-placed 15-stage route remains exported as `LEGACY_TRAIL_STAGES` for reference only.
 
 **Trail content version**:
 A stamp written into each profile's saved route progress. When it is missing, the saved stars are treated as legacy and reset once, because stage ids cannot say which route produced them. The reset is destructive by owner approval (it also clears unversioned progress earned on the generated preview at stages 1–15). Progress already past the legacy trail, plus Memory/Shop/Magic House round and settings saves, is preserved.
@@ -32,7 +32,7 @@ The activity mode in which the learner listens to or reads English and may reque
 _Avoid_: English game
 
 **Hebrew-learning path**:
-The activity mode in which the learner hears Hebrew prompts and picks pictured choices. It is designed for a child who speaks Hebrew but cannot read, so every answer is reachable by sound and image; English-to-Hebrew translation hints do not appear.
+The activity mode in which the learner hears Hebrew prompts and picks pictured choices. It is designed for a child who speaks Hebrew but cannot read, so its listening activities are reachable by sound and image; English-to-Hebrew translation hints do not appear. Reveal the Magic is a reading activity by explicit product decision: children guess Hebrew letters, with recorded audio, a picture clue, and a lamp that reveals a remaining letter.
 _Avoid_: Hebrew game
 
 ## Example dialogue

@@ -1,6 +1,8 @@
+import { openMagicReveal } from './magicReveal';
 import './styles.css';
 import './shop-scene.css';
 import './memory-scene.css';
+import '../prototype/shared/hint-button.css';
 import moonlitGardenUrl from './assets/memory/moonlit-garden.webp';
 import { configureTranslationHintButton } from '../prototype/shared/translation-hint-control.mjs';
 import { recordStageCompletion, initializeSaves, showSaveLoadError } from '../prototype/shared/saves.mjs';
@@ -43,7 +45,7 @@ const hostedActivitySession = hostedActivityContext
   ? createHostedActivitySession(hostedActivityContext)
   : null;
 
-type ScreenId = 'game-select-screen' | 'memory-screen' | 'shop-screen' | 'start-screen' | 'game-hud' | 'end-screen';
+type ScreenId = 'magic-reveal-screen' | 'game-select-screen' | 'memory-screen' | 'shop-screen' | 'start-screen' | 'game-hud' | 'end-screen';
 type MemoryDifficulty = 'easy' | 'medium' | 'hard';
 type MemoryCardKind = 'hebrew' | 'english';
 type MemoryLevelId = string;
@@ -160,11 +162,9 @@ let memoryNeedsMismatchDismiss = false;
 let memoryMistakes = 0;
 let memoryRoundStars = 3;
 let memoryToastTimer: number | null = null;
-let memoryWinReturnTimer: number | null = null;
 // Bumped whenever a round is restarted or the Memory scene is left, so a win
 // that is still waiting to celebrate can tell it is stale and stand down.
 let memoryRoundToken = 0;
-const MEMORY_WIN_RETURN_DELAY_MS = 2400;
 // Hold the finished board on screen before celebrating. Without it, browsers
 // with reduced motion skip the flip transition and the celebration covers the
 // board the instant the last pair is matched.
@@ -584,6 +584,12 @@ function openHostedActivity() {
     return;
   }
 
+  if (hostedActivityContext.activityId === 'magic-reveal') {
+    showScreen('magic-reveal-screen');
+    openMagicReveal(hostedActivityContext, requireHostedActivitySession());
+    return;
+  }
+
   if (hostedActivityContext.activityId === 'memory-garden') {
     const level = MEMORY_LEVELS.find((candidate) => candidate.id === hostedActivityContext.levelId);
     if (!level) {
@@ -970,15 +976,13 @@ function matchMemoryCards() {
       mistakes: memoryMistakes,
       challengeSize: pairCount,
     });
-    if (isHostedMemoryActivity()) recordStageCompletion(hostedActivityContext, memoryRoundStars);
-    if (!isHostedMemoryActivity()) {
-      saveMemoryLevelStars(activeMemoryLevel.id, memoryRoundStars);
-    }
     const board = requireElement<HTMLDivElement>('memory-board');
     const renderedCards = Array.from(board.querySelectorAll<HTMLElement>('.memory-card'));
     const completionToken = memoryRoundToken;
     const celebrateIfStillCurrent = () => {
       if (completionToken !== memoryRoundToken) return;
+      if (isHostedMemoryActivity()) recordStageCompletion(hostedActivityContext, memoryRoundStars);
+      else saveMemoryLevelStars(activeMemoryLevel.id, memoryRoundStars);
       finishMemoryRound();
     };
     void waitForMemoryBoardReveal(renderedCards, pairCount)
@@ -986,7 +990,7 @@ function matchMemoryCards() {
       .then(celebrateIfStillCurrent)
       .catch((error) => {
         console.error('Memory reveal wait failed', error);
-        void holdMemoryBoard().then(celebrateIfStillCurrent);
+        // A cancelled reveal or an incomplete board must never award completion.
       });
   }
   updateMemoryStatus(message);
@@ -1001,15 +1005,6 @@ function holdMemoryBoard() {
 
 function finishMemoryRound() {
   showMemoryCelebration(memoryRoundStars);
-  clearMemoryWinReturnTimer();
-  memoryWinReturnTimer = window.setTimeout(() => {
-    if (isHostedMemoryActivity()) {
-      stopRecordedSpeech();
-      requireHostedActivitySession().complete(memoryRoundStars);
-      return;
-    }
-    returnToMemoryMapAfterWin();
-  }, MEMORY_WIN_RETURN_DELAY_MS);
 }
 
 function closeUnmatchedMemoryCards() {
@@ -1046,16 +1041,8 @@ function clearMemoryMismatchState() {
   }
 }
 
-function clearMemoryWinReturnTimer() {
-  if (memoryWinReturnTimer) {
-    clearTimeout(memoryWinReturnTimer);
-    memoryWinReturnTimer = null;
-  }
-}
-
 function cancelMemoryCompletion() {
   memoryRoundToken += 1;
-  clearMemoryWinReturnTimer();
 }
 
 function updateMemoryStatus(message: string) {

@@ -6,9 +6,9 @@ const browser=(...args)=>execFileSync('agent-browser',['--session','forest-chapt
 const evaluate=code=>JSON.parse(browser('eval',code));
 const url='http://127.0.0.1:8788/prototype/world-map.html';
 try {
-  browser('open',url);browser('wait','#destination-card-forest');
+  browser('open',url);browser('wait','.gate-profile-choice');browser('click','.gate-profile-choice[data-profile="lotem"]');browser('wait','#destination-card-forest');
   evaluate(`(async()=>{const s=window.bubblesSaveClient;for(const k of s.keys())if(k.includes('forest-lotem-en'))s.removeItem(k);s.setItem('forest-route-lotem-en',JSON.stringify({currentStage:1,progress:{},character:null,unlockedVideos:['forest-video-01'],seenVideos:[],contentVersion:2}));localStorage.setItem('bubble_world_map_profile_v1','lotem');await s.flush();return true;})()`);
-  browser('reload');browser('wait','#destination-card-forest');browser('click','#destination-card-forest');browser('click','[data-character="nevet"]');
+  browser('reload');browser('wait','.gate-profile-choice');browser('click','.gate-profile-choice[data-profile="lotem"]');browser('wait','#destination-card-forest');browser('click','#destination-card-forest');browser('click','[data-character="nevet"]');
   const opening=evaluate(`(async()=>{const v=document.querySelector('#forest-milestone-video');await v.play();await new Promise(r=>setTimeout(r,800));v.pause();return {time:v.currentTime,duration:v.duration,error:v.error,lang:document.querySelector('#forest-caption-language').value};})()`);
   assert.ok(opening.time>0);assert.equal(opening.error,null);assert.equal(opening.lang,'en');assert.ok(opening.duration>=24);
   browser('click','#forest-milestone-play-btn');
@@ -21,6 +21,8 @@ try {
     const setup=`const d=document.querySelector('#activity-frame').contentDocument;const sleep=ms=>new Promise(r=>setTimeout(r,ms));`;
     if(activity==='memory-garden') {
       evaluate(`(async()=>{${setup}const words=new Set([...d.querySelectorAll('.memory-card')].map(c=>c.dataset.wordId));for(const word of words){const cards=[...d.querySelectorAll('.memory-card')].filter(c=>c.dataset.wordId===word);cards[0].click();await sleep(250);cards[1].click();await sleep(1600);}for(let i=0;i<20&&!d.querySelector('#memory-celebration').classList.contains('is-visible');i++)await sleep(300);if(!d.querySelector('#memory-celebration').classList.contains('is-visible'))throw Error('Memory did not complete');d.querySelector('#memory-celebration-next-btn').click();return true;})()`);
+    } else if(activity==='magic-reveal') {
+      evaluate(`(()=>{const f=document.querySelector('#activity-frame');const w=f.contentWindow;const d=f.contentDocument;for(let round=0;round<3;round++){const state=JSON.parse(w.render_game_to_text());for(const letter of new Set(state.letters))d.querySelector('[data-letter="'+letter+'"]').click();d.querySelector('#reveal-next').click();}return true;})()`);
     } else if(activity==='listening-shop') {
       // Read the saved order, but answer only through the actual item controls.
       evaluate(`(async()=>{${setup}const level=new URL(document.querySelector('#activity-frame').src).searchParams.get('level');for(let i=0;i<55;i++){if(d.querySelector('#shop-celebration').classList.contains('is-visible')){d.querySelector('#shop-celebration-next-btn').click();return true;}const state=JSON.parse(window.bubblesSaveClient.getItem('forest-lotem-en-bubble_shop_sessions_v1')).lotem[level];const t=state.currentOrder.targets.find(t=>t.served<t.required);if(t){const tile=d.querySelector('[data-item-id="'+t.itemId+'"]');if(!tile.disabled)tile.click();}await sleep(500);}throw Error('Shop did not complete');})()`);
@@ -44,7 +46,7 @@ try {
   assert.equal(evaluate(`document.querySelector('#forest-milestone-video').getAttribute('src')`),'./assets/forest/forest-video-01.mp4');
   browser('click','#forest-milestone-play-btn');
   evaluate(`(async()=>{await window.bubblesSaveClient.flush();return true;})()`);
-  browser('reload');browser('wait','#destination-card-forest');browser('click','#destination-card-forest');
+  browser('reload');browser('wait','.gate-profile-choice');browser('click','.gate-profile-choice[data-profile="lotem"]');browser('wait','#destination-card-forest');browser('click','#destination-card-forest');
   assert.equal(evaluate(`document.querySelector('#forest-milestone-dialog').hidden`),true);
   assert.equal(evaluate(`document.querySelector('#traveller').dataset.stage`),'6');
   console.log('PASS: opening → five real activities → second video, captions, replay, reload and Wonder save isolation.');

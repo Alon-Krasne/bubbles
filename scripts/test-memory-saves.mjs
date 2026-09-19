@@ -43,6 +43,7 @@ try {
   for (const word of new Set(deck.map(c => c.word))) {
     for (const card of deck.filter(c => c.word === word)) click(card.id);
   }
+  browser('wait', '#memory-celebration.is-visible');
   flush();
   assert.equal(writes(), 1, 'Completing the board writes progress once');
   const saved = evaluate(`fetch('/api/saves').then(r=>r.json())`);

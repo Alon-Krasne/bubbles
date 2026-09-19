@@ -5,10 +5,10 @@ const browser=(...args)=>execFileSync('agent-browser',['--session','forest-entry
 const evaluate=code=>JSON.parse(browser('eval',code));
 try {
   browser('open','http://127.0.0.1:8788/prototype/world-map.html');
-  browser('wait','#destination-card-forest');
+  browser('wait','.gate-profile-choice');browser('click','.gate-profile-choice[data-profile="lotem"]');browser('wait','#destination-card-forest');
   evaluate(`(async()=>{const s=window.bubblesSaveClient;s.removeItem('forest-route-tom-en');s.setItem('bubble_world_map_profiles_v1',JSON.stringify([{id:'lotem',name:'לוטם',character:'princess',learningLanguage:'en'},{id:'tom',name:'תום',character:'dinosaur',learningLanguage:'he'}]));s.setItem('route-tom',JSON.stringify({currentStage:1,progress:{},contentVersion:2}));const fresh={currentStage:1,progress:{},character:null,unlockedVideos:['forest-video-01'],seenVideos:[],contentVersion:2};s.setItem('forest-route-lotem-en',JSON.stringify({...fresh,character:'nevet',seenVideos:['forest-video-01']}));s.setItem('forest-route-tom-he',JSON.stringify(fresh));await s.flush();return true;})()`);
   browser('eval',`localStorage.setItem('bubble_world_map_profile_v1','lotem')`);
-  browser('reload');browser('wait','#destination-card-forest');browser('click','#destination-card-forest');
+  browser('reload');browser('wait','.gate-profile-choice');browser('click','.gate-profile-choice[data-profile="lotem"]');browser('wait','#destination-card-forest');browser('click','#destination-card-forest');
   browser('click','#profile-button');browser('click','.profile-menu-option[data-profile="tom"]');
   assert.equal(evaluate(`!document.querySelector('#forest-character-picker').hidden`),true,'switching to a fresh sibling must show companion selection');
   assert.equal(evaluate(`document.querySelector('#world').inert`),true,'map stays blocked during forest onboarding');
@@ -37,7 +37,7 @@ try {
   assert.equal(saved.character,'adva');assert.equal(saved.currentStage,6);
   browser('click','#forest-milestone-play-btn');
   evaluate(`(async()=>{const s=window.bubblesSaveClient;s.setItem('forest-route-lotem-en',JSON.stringify({currentStage:1,progress:{},character:null,unlockedVideos:['forest-video-01'],seenVideos:[],contentVersion:2}));await s.flush();return true;})()`);
-  browser('reload');browser('wait','#destination-card-forest');browser('click','#destination-card-forest');
+  browser('reload');browser('wait','.gate-profile-choice');browser('click','.gate-profile-choice[data-profile="tom"]');browser('wait','#destination-card-forest');browser('click','#destination-card-forest');
   browser('click','#profile-button');browser('click','#edit-profile-button');browser('click','#delete-profile-button');browser('click','#confirm-delete-button');
   assert.equal(evaluate(`!document.querySelector('#profile-gate').hidden && document.querySelector('#forest-character-picker').hidden && document.querySelector('#forest-milestone-dialog').hidden`),true,'deletion shows only the profile gate');
   browser('click','.gate-profile-choice');

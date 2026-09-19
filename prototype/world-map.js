@@ -833,6 +833,7 @@ function renderGateProfiles() {
     const chooseButton = document.createElement('button');
     chooseButton.type = 'button';
     chooseButton.className = 'gate-profile-choice';
+    chooseButton.dataset.profile = profile.id;
     chooseButton.setAttribute('aria-label', `למסלול של ${profile.name}`);
     const image = document.createElement('img');
     image.src = getCharacterAsset(profile.character, 'idle');
@@ -1020,6 +1021,12 @@ function resetEditedProfileTrack() {
 
 function clearProfileRounds(profileId, destination = null, language = null) {
   for (const key of saveStorage.keys()) {
+    if (key.startsWith(`magic-reveal-forest-${profileId}-`) || key.startsWith(`magic-reveal-wonder-${profileId}-`)) {
+      const matchDestination = destination === null || key.startsWith(`magic-reveal-${destination}-${profileId}-`);
+      const matchLanguage = language === null || key.startsWith(`magic-reveal-${destination ?? 'forest'}-${profileId}-${language}-`) || key.startsWith(`magic-reveal-${destination ?? 'wonder'}-${profileId}-${language}-`);
+      if (matchDestination && matchLanguage) saveStorage.removeItem(key);
+      continue;
+    }
     const isForest = key.startsWith(`house-round-forest-${profileId}-`)
       || key.startsWith(`memory-round-forest-${profileId}-`)
       || key.startsWith(`forest-${profileId}-`);
@@ -1391,6 +1398,7 @@ playButton.addEventListener('click', launchSelectedStage);
 activityFrame.addEventListener('load', revealLoadedActivity);
 worldCompleteButton.addEventListener('click', closeWorldComplete);
 
+
 destinationsNavButton.addEventListener('click', openDestinationGate);
 destinationProfilePill.addEventListener('click', () => {
   destinationGateWasOpen = true;
@@ -1489,4 +1497,5 @@ window.addEventListener('resize', () => {
   });
 });
 setProfile(activeProfileId);
-openDestinationGate();
+destinationGateWasOpen = true;
+openGate();

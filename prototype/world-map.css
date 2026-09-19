@@ -2769,3 +2769,52 @@ body {
 }
 .forest-portrait[hidden] { display: none; }
 .forest-picker-heading h2 { color: #335c36; }
+
+/* Quiet chrome keeps the painted map as the main attraction. */
+.world-chrome { top: 16px; left: 20px; right: 20px; display:grid; grid-template-columns:auto minmax(160px,1fr) auto; gap:18px; align-items:center; direction:ltr; }
+.world-chrome .profile-button { min-width:0; height:58px; padding:6px 14px 6px 8px; border:1px solid #e8d2a580; border-radius:20px; background:#142a39ee; box-shadow:0 5px 16px #07172230; direction:rtl; }
+.world-chrome .profile-avatar { width:42px; height:42px; }
+.world-chrome .profile-copy strong { font-size:19px; color:#fff7e3; }
+.world-chrome .profile-copy small { font-size:12px; color:#c5d7d6; }
+.world-chrome .world-title { min-width:0; padding:0; border:0; background:none; box-shadow:none; backdrop-filter:none; text-align:center; }
+.world-chrome .world-title strong, .world[data-destination='forest'] .world-title strong { font-size:clamp(22px,2.3vw,34px); color:#fff5d9; text-shadow:0 2px 8px #06192f; }
+.world-chrome .world-title span { font-size:13px; color:#eff8ed; }
+.world-chrome .world-actions { display:flex; gap:8px; align-items:center; }
+.world-chrome .destinations-nav-button { min-height:46px; padding:9px 12px; border:1px solid #cfdfd05c; background:#16313fed; color:#fff3d3; border-radius:15px; box-shadow:0 3px 10px #081b3020; font:600 14px 'Rubik',sans-serif; white-space:nowrap; }
+.world-chrome .destinations-nav-icon { font-size:19px; }
+.world-chrome .star-total { border:0; border-radius:0; box-shadow:none; background:none; padding:0 6px; gap:5px; min-height:0; }
+.world-chrome .star-total > span { font-size:26px; }
+.world-chrome .star-total strong { font-size:22px; }
+.world-chrome .star-total small { font-size:12px; color:#d5e4dc; }
+.world-chrome .profile-menu { top:68px; }
+.profile-gate { background:linear-gradient(135deg,#123b37eb,#112338e0),url('./assets/destinations/forest-preview.jpg') center/cover; }
+.profile-gate::after { display:none; }
+.profile-gate .gate-content { max-width:850px; }
+.profile-gate .gate-heading h1 { color:#fff6df; font-size:clamp(32px,5vw,52px); }
+.profile-gate .gate-heading p { color:#dcecdf; font:500 18px 'Rubik',sans-serif; }
+.profile-gate .gate-kicker { color:#e2c780; background:none; border:0; box-shadow:none; }
+.profile-gate .gate-profile-card { border:1px solid #ecdcbb6b; background:#fff8e9; border-radius:30px; box-shadow:0 10px 30px #081e3330; }
+.profile-gate .gate-profile-choice { min-height:240px; }
+.profile-gate .gate-profile-choice img { width:120px; height:120px; }
+.profile-gate .gate-profile-choice strong { color:#274943; font-size:30px; }
+.profile-gate .gate-profile-choice span { color:#55726a; }
+.profile-gate .gate-profile-edit { color:#456159; background:transparent; }
+.profile-gate .add-profile-button { background:transparent; border:1px solid #ccdacf60; box-shadow:none; color:#e2eada; min-height:44px; font-size:14px; }
+@media(max-width:1000px) {
+ .world-chrome { gap:8px; left:12px; right:12px; grid-template-columns:auto 1fr; }
+ .world-chrome .world-title { grid-column:2;grid-row:1;text-align:right; }
+ .world-chrome .world-actions { grid-column:1/-1;grid-row:2;justify-content:flex-end; }
+ .world-chrome .world-title strong { font-size:24px; }
+ .world-chrome .profile-button { height:50px; }
+ .world-chrome .profile-avatar { width:34px;height:34px; }
+ .world-chrome .destinations-nav-button { font-size:13px;padding:8px;min-height:44px; }
+ .world-chrome .star-total { margin-right:auto; }
+ .world-chrome .profile-menu { top:56px; }
+ .stage-panel { top:auto;bottom:20px; }
+}
+@media(max-width:600px) {
+ .profile-gate .gate-profile-choice { min-height:175px; }
+ .profile-gate .gate-profile-choice img { width:90px;height:90px; }
+ .profile-gate .gate-profile-choice strong { font-size:25px; }
+}
+.activity-symbol-reveal::before { content:'✦'; font-size:42px; color:#66537d; }

@@ -1,0 +1,23 @@
+:root { --hint-fill:#ffe29a; --hint-ink:#4b391b; --hint-border:#fff0b5; }
+/* One recognizable lamp, in the same place in every learning activity. */
+#memory-game-area #memory-translation-hint,
+#shop-game-area #shop-translation-hint,
+html body #house-translation-hint,
+html body button.magic-hint-button {
+  position: fixed; top: max(16px, env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right));
+  z-index: 80; width: 104px; min-width: 104px; height: 48px; min-height: 48px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 8px 14px; border: 2px solid var(--hint-border); border-radius: 16px;
+  background: var(--hint-fill); color: var(--hint-ink); box-shadow: 0 3px 0 #987e45, 0 5px 14px #15261f33;
+  font: 800 18px 'Rubik', sans-serif; line-height: 1; cursor: pointer;
+}
+html body button.translation-hint-button[hidden],
+html body button.magic-hint-button[hidden],
+#memory-game-area #memory-translation-hint[hidden],
+#shop-game-area #shop-translation-hint[hidden],
+html body #house-translation-hint[hidden] {
+  display: none !important;
+}
+html body button.translation-hint-button[aria-pressed='true'] { background: #fff7cf; outline: 3px solid #c89a31; outline-offset: 3px; }
+html body button.translation-hint-button:focus-visible, html body button.magic-hint-button:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+html body button.magic-hint-button:disabled { opacity: .6; cursor: default; }
