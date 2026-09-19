@@ -10,7 +10,7 @@ import {
   MAGIC_HOUSE_ZONES,
 } from './shared/magic-house-room.mjs';
 import { selectVariedRequestIds } from './shared/magic-house-variation.mjs';
-import { MAGIC_HOUSE_PRACTICE_LEVEL, TRAIL_STAGES, getGameLevel } from './shared/trail-catalog.mjs';
+import { MAGIC_HOUSE_PRACTICE_LEVEL, TRAIL_STAGES, GAME_LEVELS, getGameLevel } from './shared/trail-catalog.mjs';
 import { applyEnglishLearningTranslationHint } from './shared/translation-hint.mjs';
 import { saveStorage } from './shared/saves.mjs';
 import { snapshotHouseRound, restoreHouseRound } from './shared/magic-house-save.mjs';
@@ -141,13 +141,12 @@ function readHostContext() {
   const profileCharacter = params.get('profileCharacter');
   const stageId = Number(params.get('stage'));
   const destination = params.get('destination');
-  const stage = TRAIL_STAGES.find((candidate) => candidate.id === stageId);
   const characterAssets = CHARACTER_ASSETS[profileCharacter];
   if ((destination !== 'forest' && destination !== 'wonder')
     || host !== 'world-map'
     || activityId !== 'magic-house'
-    || stage?.activity !== activityId
-    || stage?.level !== levelId
+    || !TRAIL_STAGES.some(stage => stage.id === stageId)
+    || !GAME_LEVELS.house.some(level => level.id === levelId)
     || !profileId
     || profileId.length > 64
     || !PROFILE_ID_PATTERN.test(profileId)
@@ -295,7 +294,7 @@ function renderProfile() {
   requireElement('profile-avatar').src = profile.idleCharacter;
   requireElement('profile-name').textContent = profile.name;
   requireElement('profile-language').textContent = profile.languageLabel;
-  requireElement('room-level-title').textContent = magicHouseLevel.title;
+  requireElement('room-level-title').textContent = hostContext ? `שלב ${hostContext.stageId}` : magicHouseLevel.title;
   guideCharacter.src = profile.idleCharacter;
   requireElement('celebration-character').src = profile.happyCharacter;
   // Both learning paths are spoken: English plays English clips, Hebrew plays

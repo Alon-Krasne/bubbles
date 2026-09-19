@@ -46,7 +46,7 @@ assert.equal(GAME_LEVELS, GENERATED_GAME_LEVELS, 'the generated levels are the l
 assert.equal(TRAIL_CHAPTERS.length, 6);
 assert.deepEqual(GENERATED_TRAIL_STAGES.map((stage) => stage.id), Array.from({ length: 36 }, (_, index) => index + 1));
 
-// Stages are shuffled across chapters with a cap of at most 2 consecutive stages of any game
+// The challenge pool has a varied source order; test-journey-order covers each saved journey's arrangement.
 const stageGames = GENERATED_TRAIL_STAGES.map((stage) => stage.game);
 let maxConsecutive = 1;
 let currentConsecutive = 1;
@@ -66,7 +66,7 @@ for (const game of ['memory', 'shop', 'house', 'reveal']) {
   assert.equal(count, 9, `${game} must have 9 stages across the route`);
 }
 
-// Chapter sequences are varied, not repeating a fixed 1-2-3-4 cycle
+// The source chapters do not repeat a fixed 1-2-3-4 cycle.
 const chapterPatterns = Array.from({ length: 6 }, (_, c) => stageGames.slice(c * 6, c * 6 + 6).join('-'));
 assert.ok(new Set(chapterPatterns).size > 1, 'chapter game sequences must vary, not repeat 1-2-3-4 all the way');
 

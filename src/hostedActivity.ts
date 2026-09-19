@@ -1,4 +1,4 @@
-import { TRAIL_STAGES } from '../prototype/shared/trail-catalog.mjs';
+import { GAME_LEVELS, TRAIL_STAGES } from '../prototype/shared/trail-catalog.mjs';
 
 export const ACTIVITY_MESSAGE_VERSION = 1;
 
@@ -52,7 +52,8 @@ export function readHostedActivityContext(): HostedActivityContext | null {
   const supportedActivities = new Set<HostedActivityId>(['memory-garden', 'listening-shop', 'magic-reveal']);
   const supportedLanguages = new Set<ProfileLanguage>(['en', 'he']);
   const supportedCharacters = new Set<ProfileCharacter>(['princess', 'dinosaur', 'puppy', 'unicorn']);
-  const expectedStage = TRAIL_STAGES.find((stage) => stage.id === stageId);
+  const gameByActivity = { 'memory-garden': 'memory', 'listening-shop': 'shop', 'magic-reveal': 'reveal' } as const;
+  const game = gameByActivity[activityId as HostedActivityId];
 
   if ((destination !== 'wonder' && destination !== 'forest')
     || host !== 'world-map'
@@ -68,7 +69,8 @@ export function readHostedActivityContext(): HostedActivityContext | null {
     || !supportedLanguages.has(profileLanguage as ProfileLanguage)
     || !supportedCharacters.has(profileCharacter as ProfileCharacter)
     || !Number.isInteger(stageId)
-    || (expectedStage?.activity !== activityId || expectedStage?.level !== levelId)
+    || !TRAIL_STAGES.some(stage => stage.id === stageId)
+    || !GAME_LEVELS[game]?.some(level => level.id === levelId)
     || PROFILE_EMOJI_BY_CHARACTER[profileCharacter as ProfileCharacter] !== profileEmoji) {
     throw new Error('Invalid hosted activity context');
   }

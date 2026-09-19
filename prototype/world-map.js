@@ -1,5 +1,6 @@
 import { FOREST_CAPTIONS } from './shared/forest-captions.mjs';
 import { LEGACY_TRAIL_STAGES, TRAIL_CHAPTERS, TRAIL_STAGES } from './shared/trail-catalog.mjs';
+import { createJourneyOrder, applyJourneyOrder } from './shared/journey-order.mjs';
 import {
   TRAIL_CONTENT_VERSION,
   createTrackProgress,
@@ -23,7 +24,7 @@ import {
   unlockForestMilestone,
 } from './shared/destinations.mjs';
 
-const stages = TRAIL_STAGES;
+let stages = TRAIL_STAGES;
 const availableStages = stages.filter((stage) => stage.available);
 const availableStarTotal = availableStages.length * 3;
 const lastAvailableStageId = availableStages[availableStages.length - 1].id;
@@ -145,6 +146,7 @@ let forestProgress = loadForestProgress();
 let activeProfileId = loadActiveProfileId();
 validateWorldState();
 upgradeCompletedFrontier();
+stages = applyJourneyOrder(TRAIL_STAGES, getRouteProgress(activeProfileId).stageOrder);
 let selectedStage = stages.find((stage) => stage.id === getRouteProgress(activeProfileId).currentStage);
 let editingProfileId = null;
 let editorReturnsToGate = true;
@@ -185,6 +187,8 @@ function validateWorldState() {
       || Array.isArray(storedProgress.progress)) {
       throw new Error(`Invalid route progress for ${profile.id}`);
     }
+    applyJourneyOrder(TRAIL_STAGES, storedProgress.stageOrder);
+    applyJourneyOrder(TRAIL_STAGES, forestProgress[profile.id].stageOrder);
 
     Object.entries(storedProgress.progress).forEach(([stageId, stars]) => {
       const stage = stages.find((candidate) => candidate.id === Number(stageId));
@@ -235,15 +239,16 @@ function loadWorldProgress() {
     const key = `route-${profile.id}`;
     const saved = saveStorage.getItem(key);
     if (!saved) {
-      const progress = createTrackProgress(1, stages.length);
+      const progress = { ...createTrackProgress(1, stages.length), stageOrder: createJourneyOrder(TRAIL_STAGES) };
       saveStorage.setItem(key, JSON.stringify({ ...progress, contentVersion: TRAIL_CONTENT_VERSION }));
       return [profile.id, progress];
     }
     const parsed = JSON.parse(saved);
-    const progress = normalizeTrackProgress(parsed, {
+    let progress = normalizeTrackProgress(parsed, {
       stageCount: stages.length,
       legacyStageCount: LEGACY_TRAIL_STAGES.length,
     });
+    if (!progress.stageOrder) progress = { ...progress, stageOrder: createJourneyOrder(TRAIL_STAGES) };
     if (progress !== parsed) saveStorage.setItem(key, JSON.stringify(progress));
     return [profile.id, progress];
   }));
@@ -259,7 +264,10 @@ function loadForestProgress() {
       return [profile.id, progress];
     }
     const parsed = JSON.parse(saved);
-    return [profile.id, parsed];
+    if (parsed.stageOrder) return [profile.id, parsed];
+    const progress = { ...parsed, stageOrder: createJourneyOrder(TRAIL_STAGES) };
+    saveStorage.setItem(key, JSON.stringify(progress));
+    return [profile.id, progress];
   }));
 }
 
@@ -631,6 +639,7 @@ function chooseDestination(destId) {
 
   activeDestination = destId;
   setActiveDestination(destId);
+  stages = applyJourneyOrder(TRAIL_STAGES, getRouteProgress(activeProfileId, destId).stageOrder);
   closeDestinationGate();
   updateWorldDestinationChrome();
   const progress = getRouteProgress();
@@ -749,6 +758,7 @@ function updateForestCaptions() {
 function setProfile(profileId) {
   activeProfileId = profileId;
   localStorage.setItem(WORLD_ACTIVE_PROFILE_STORAGE_KEY, profileId);
+  stages = applyJourneyOrder(TRAIL_STAGES, getRouteProgress().stageOrder);
   const profile = getProfile();
   const progress = getRouteProgress();
   document.getElementById('profile-avatar').src = getCharacterAsset(profile.character, 'idle');
@@ -995,15 +1005,20 @@ function resetEditedProfileTrack() {
   clearProfileRounds(editingProfileId, activeDestination, profile.learningLanguage);
   if (activeDestination === 'forest') {
     const previous = forestProgress[editingProfileId];
+    const fresh = createForestProgress(previous.character);
     const unlockedVideos = FOREST_MILESTONES.filter(m => m.triggerStage < stageId).map(m => m.videoId);
     forestProgress[editingProfileId] = {
-      ...createForestProgress(previous.character),
+      ...fresh,
       ...createTrackProgress(stageId, stages.length),
+      stageOrder: stageId === 1 ? fresh.stageOrder : previous.stageOrder,
       unlockedVideos,
       seenVideos: stageId === 1 ? [] : previous.seenVideos.filter(id => unlockedVideos.includes(id)),
     };
   } else {
-    routeProgress[editingProfileId] = createTrackProgress(stageId, stages.length);
+    routeProgress[editingProfileId] = {
+      ...createTrackProgress(stageId, stages.length),
+      stageOrder: stageId === 1 ? createJourneyOrder(TRAIL_STAGES) : routeProgress[editingProfileId].stageOrder,
+    };
   }
   saveWorldProgress();
   if (editingProfileId === activeProfileId) {
@@ -1077,7 +1092,7 @@ function saveProfileFromEditor(event) {
       learningLanguage,
     };
     profiles.push(profile);
-    routeProgress[profile.id] = createTrackProgress(1, stages.length);
+    routeProgress[profile.id] = { ...createTrackProgress(1, stages.length), stageOrder: createJourneyOrder(TRAIL_STAGES) };
     forestProgress[profile.id] = createForestProgress();
     activeProfileId = profile.id;
     saveWorldProgress('wonder');

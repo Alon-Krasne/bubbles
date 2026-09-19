@@ -16,10 +16,12 @@ try {
   assert.equal(evaluate(`!document.querySelector('#forest-milestone-dialog').hidden`),true,'new profile must see opening');
   assert.equal(evaluate(`document.querySelector('#forest-caption-language').value`),'he');
   browser('click','#forest-milestone-play-btn');
+  const tomOrder=evaluate(`JSON.parse(window.bubblesSaveClient.getItem('forest-route-tom-he')).stageOrder`);
   browser('click','#profile-button');browser('click','#edit-profile-button');
   browser('select','#track-stage-select','6');browser('click','#track-reset-button');browser('click','#confirm-track-reset-button');
   const reset=evaluate(`({forest:JSON.parse(window.bubblesSaveClient.getItem('forest-route-tom-he')),wonder:JSON.parse(window.bubblesSaveClient.getItem('route-tom'))})`);
   assert.equal(reset.forest.currentStage,6,'reset/jump targets the forest route');
+  assert.deepEqual(reset.forest.stageOrder,tomOrder,"jumping ahead keeps the child's stage order");
   assert.deepEqual(reset.wonder.progress,{},'forest jump leaves wonder unchanged');
   assert.deepEqual(reset.forest.unlockedVideos,['forest-video-01','forest-video-02']);
   assert.equal(reset.forest.character,'adva');

@@ -9,6 +9,7 @@ try {
   browser('open',url);browser('wait','.gate-profile-choice');browser('click','.gate-profile-choice[data-profile="lotem"]');browser('wait','#destination-card-forest');
   evaluate(`(async()=>{const s=window.bubblesSaveClient;for(const k of s.keys())if(k.includes('forest-lotem-en'))s.removeItem(k);s.setItem('forest-route-lotem-en',JSON.stringify({currentStage:1,progress:{},character:null,unlockedVideos:['forest-video-01'],seenVideos:[],contentVersion:2}));localStorage.setItem('bubble_world_map_profile_v1','lotem');await s.flush();return true;})()`);
   browser('reload');browser('wait','.gate-profile-choice');browser('click','.gate-profile-choice[data-profile="lotem"]');browser('wait','#destination-card-forest');browser('click','#destination-card-forest');browser('click','[data-character="nevet"]');
+  const journeyOrder=evaluate(`JSON.parse(window.bubblesSaveClient.getItem('forest-route-lotem-en')).stageOrder`);
   const opening=evaluate(`(async()=>{const v=document.querySelector('#forest-milestone-video');await v.play();await new Promise(r=>setTimeout(r,800));v.pause();return {time:v.currentTime,duration:v.duration,error:v.error,lang:document.querySelector('#forest-caption-language').value};})()`);
   assert.ok(opening.time>0);assert.equal(opening.error,null);assert.equal(opening.lang,'en');assert.ok(opening.duration>=24);
   browser('click','#forest-milestone-play-btn');
@@ -47,6 +48,7 @@ try {
   browser('click','#forest-milestone-play-btn');
   evaluate(`(async()=>{await window.bubblesSaveClient.flush();return true;})()`);
   browser('reload');browser('wait','.gate-profile-choice');browser('click','.gate-profile-choice[data-profile="lotem"]');browser('wait','#destination-card-forest');browser('click','#destination-card-forest');
+  assert.deepEqual(evaluate(`JSON.parse(window.bubblesSaveClient.getItem('forest-route-lotem-en')).stageOrder`),journeyOrder,'the child keeps the same stage order after reloading');
   assert.equal(evaluate(`document.querySelector('#forest-milestone-dialog').hidden`),true);
   assert.equal(evaluate(`document.querySelector('#traveller').dataset.stage`),'6');
   console.log('PASS: opening → five real activities → second video, captions, replay, reload and Wonder save isolation.');

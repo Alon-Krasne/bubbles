@@ -241,7 +241,7 @@ export const GENERATED_TRAIL_STAGES = Object.freeze(GENERATED_TRAIL.stages.map((
   chapterIndex: stage.chapterIndex,
 }, getGeneratedGameLevel)));
 
-// The generated trail is canonical: the world map route and every game read these.
+// The generated trail is the challenge pool; the world map arranges it per journey.
 export const GAME_LEVELS = GENERATED_GAME_LEVELS;
 export const TRAIL_STAGES = GENERATED_TRAIL_STAGES;
 

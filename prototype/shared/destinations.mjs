@@ -1,5 +1,6 @@
 import { TRAIL_STAGES } from './trail-catalog.mjs';
 import { TRAIL_CONTENT_VERSION } from './track-progress.mjs';
+import { createJourneyOrder } from './journey-order.mjs';
 
 export const ACTIVE_DESTINATION_STORAGE_KEY = 'bubble_active_destination_v1';
 
@@ -80,6 +81,7 @@ export function createForestProgress(character = null) {
   return {
     currentStage: 1,
     progress: {},
+    stageOrder: createJourneyOrder(TRAIL_STAGES),
     character,
     unlockedVideos: ['forest-video-01'],
     seenVideos: [],

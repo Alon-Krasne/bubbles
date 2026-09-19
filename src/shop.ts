@@ -305,7 +305,9 @@ export function initShopGame(deps: ShopDeps) {
     levelMap.classList.add('hidden');
     gameArea.classList.remove('hidden');
     gameArea.classList.remove('is-completing');
-    requireElement<HTMLElement>('shop-game-level-title').textContent = level.title;
+    requireElement<HTMLElement>('shop-game-level-title').textContent = deps.hostedSession
+      ? `שלב ${deps.hostedSession.context.stageId}`
+      : level.title;
     setFeedback('קונה חדש/ה בדרך לחנות');
     updateHud();
     const savedSession = loadShopSession(getShopStorage(), deps.getActiveProfile().id, level.id);
