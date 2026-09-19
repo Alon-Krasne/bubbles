@@ -1,0 +1,17 @@
+{
+  "videoId": "forest-video-07",
+  "cues": [
+    {
+      "start": 0.4,
+      "end": 5.7,
+      "en": "Our friends have found their way here!",
+      "he": "החברים שלנו מצאו את הדרך לכאן!"
+    },
+    {
+      "start": 6.4,
+      "end": 11.7,
+      "en": "Let’s get everything ready together.",
+      "he": "בואו נכין הכול ביחד."
+    }
+  ]
+}

@@ -199,6 +199,8 @@
   #shop-screen *, #shop-screen *::before, #shop-screen *::after { animation: none !important; transition: none !important; }
   .shop-fly-item { display: none; }
 }
+.shop-hud { right: 136px; }
+@media(max-width:600px) { .shop-hud { top:76px; right:16px; } .shop-game-level-title { max-width:calc(100vw - 205px); font-size:15px; } }
 
 :root[data-time-of-day="day"] #shop-screen {
   background-image: url('../prototype/assets/shop/sunlit-shop.webp');

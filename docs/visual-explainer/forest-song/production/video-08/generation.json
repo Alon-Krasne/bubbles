@@ -1,0 +1,49 @@
+{
+  "videoId": "forest-video-08",
+  "status": "generated-review-draft",
+  "model": "veo-3.1-generate-preview",
+  "nativeSecondsPerShot": 6,
+  "resolution": "720p",
+  "aspectRatio": "16:9",
+  "estimatedMaximumUsd": 4.8,
+  "authorization": "User explicitly replied i approve to: uploading the six scene images and derived frames to Google Veo for 13 clips, estimated $31.20 total, no retries.",
+  "negativePrompt": "speech, dialogue, narration, human voices, spoken sound-effect labels, singing, subtitles, captions, duplicated characters, morphing anatomy, extra tables, missing tables",
+  "shots": [
+    {
+      "id": 1,
+      "image": "first-frame.png",
+      "prompt": "Animate the exact supplied first frame for one continuous six-second painterly storybook shot. Preserve character anatomy, identity, cast count and fixed scenery. All communication is gestures and expressions, mouths relaxed without speech articulation. Audio: gentle environment only; music and captions will be added separately. Exactly six friends remain recognizable in the same hall with THREE tables. The LEFT and CENTER hanging ivory buds slowly open into luminous broad-petalled flowers; RIGHT bud remains tightly CLOSED. Warm light travels upward from those two flowers and lifts two narrow sections of overhead foliage, revealing a little blue sky. Camera gently tilts up enough to show the effect while preserving characters below. Rightmost table remains unfinished; do not place any object there.",
+      "status": "downloaded",
+      "submissionHistory": [
+        {
+          "error": {
+            "code": 429,
+            "message": "Your prepayment credits are depleted. Please go to AI Studio at https://ai.studio/projects to manage your project and billing. Learn more at https://ai.google.dev/gemini-api/docs/billing#prepay. ",
+            "status": "RESOURCE_EXHAUSTED"
+          },
+          "operationCreated": false
+        }
+      ],
+      "operation": "models/veo-3.1-generate-preview/operations/d80kjv7gtbfs"
+    },
+    {
+      "id": 2,
+      "image": "shot-1-last.png",
+      "prompt": "Animate the exact supplied first frame for one continuous six-second painterly storybook shot. Preserve character anatomy, identity, cast count and fixed scenery. All communication is gestures and expressions, mouths relaxed without speech articulation. Audio: gentle environment only; music and captions will be added separately. Continue same hall. Keep LEFT and CENTER blossoms OPEN and RIGHT blossom CLOSED; exactly three tables. Courier and gray traveler gently gesture the frog toward an empty cushion near the unfinished right-hand table, without carrying or placing any object. Nevet, Adva and Zohar turn toward the remaining empty place; a soft luminous root line approaches but stops before it. Hold calm anticipation. No activity solution, no item placement, no final canopy opening.",
+      "status": "downloaded",
+      "operation": "models/veo-3.1-generate-preview/operations/e4ticp24jzf2"
+    }
+  ],
+  "resumeNote": "User topped up Google prepaid credits. Rejected submissions created no operations; the approved batch then completed with one generated candidate per shot.",
+  "review": {
+    "method": "Sampled contact sheets, 12 frames per shot; live browser playback and Hebrew/English/off switching; not a frame-by-frame or listening review.",
+    "notes": [
+      "Six distinct characters remain in the sampled first shot and blossom-opening progress is visible.",
+      "Continuity defect: the right blossom also opens partly and the canopy reveals sky early, weakening the scripted two-open/one-closed contrast before the finale.",
+      "Shot 2 introduces another gray traveler while the original remains below; the last blossom then opens prematurely. The intended final unready place is not reliably conveyed."
+    ],
+    "integrationReady": false
+  },
+  "maximumAttemptsPerShot": 1,
+  "maximumGeneratedCandidates": 2
+}

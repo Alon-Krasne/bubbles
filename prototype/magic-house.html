@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="./magic-house.css">
 </head>
 <body data-prototype="magic-house">
+          <button type="button" id="house-translation-hint" class="translation-hint-button house-hint-button" hidden aria-label="הפעלת רמזי תרגום">💡</button>
   <main class="magic-house" aria-label="הבית הקסום">
     <section class="room-shell" aria-label="חדר השינה הקסום">
       <button class="trail-back-button" id="trail-back-button" type="button" aria-label="חזרה למסלול" title="חזרה למסלול" hidden>
@@ -48,6 +49,7 @@
         </div>
       </header>
 
+
       <section class="instruction-panel" id="instruction-panel" aria-live="polite">
         <button class="sound-button" id="sound-button" type="button" aria-label="השמעת המשפט שוב" title="השמעת המשפט שוב">
           <span class="sound-symbol" aria-hidden="true"></span>
@@ -57,7 +59,7 @@
           <p class="translation" id="translation" hidden></p>
         </div>
         <div class="instruction-actions">
-          <button type="button" id="house-translation-hint" class="translation-hint-button house-hint-button" hidden aria-label="הפעלת רמזי תרגום">💡</button>
+
           <button class="help-button" id="help-button" type="button" aria-label="עזרה" title="עזרה">
             <span aria-hidden="true">?</span>
             <small id="help-level">○○○</small>

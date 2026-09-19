@@ -8,7 +8,7 @@ const profile = `memory-save-test-${Date.now()}`;
 const routeKey = `route-${profile}`;
 const url = `http://127.0.0.1:8788/index.html?${new URLSearchParams({
   host: 'world-map', activity: 'memory-garden', level: 'trail-memory-1', stage: '1',
-  profile, profileName: 'Test', profileEmoji: '🌸', profileCharacter: 'princess', profileLanguage: 'en',
+  profile, profileName: 'Test', profileEmoji: '🌸', destination: 'wonder', profileCharacter: 'princess', profileLanguage: 'en',
 })}`;
 const cards = () => evaluate(`[...document.querySelectorAll('.memory-card')].map(c => ({id:c.dataset.cardId, word:c.dataset.wordId}))`);
 const click = id => browser('click', `[data-card-id="${id}"]`);
@@ -43,6 +43,7 @@ try {
   for (const word of new Set(deck.map(c => c.word))) {
     for (const card of deck.filter(c => c.word === word)) click(card.id);
   }
+  browser('wait', '#memory-celebration.is-visible');
   flush();
   assert.equal(writes(), 1, 'Completing the board writes progress once');
   const saved = evaluate(`fetch('/api/saves').then(r=>r.json())`);

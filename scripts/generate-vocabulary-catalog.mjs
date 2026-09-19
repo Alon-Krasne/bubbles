@@ -25,13 +25,15 @@ export function buildCatalogEntries(words = VOCAB_WORDS) {
       id: word.id,
       category: word.category,
       shoppable: Boolean(word.shoppable),
+      english: word.english,
+      hebrew: word.hebrew,
     };
   });
 }
 
 export function renderCatalogModule(entries) {
   const body = entries
-    .map((entry) => `  Object.freeze({ id: ${JSON.stringify(entry.id)}, category: ${JSON.stringify(entry.category)}, shoppable: ${entry.shoppable} }),`)
+    .map((entry) => `  Object.freeze({ id: ${JSON.stringify(entry.id)}, category: ${JSON.stringify(entry.category)}, shoppable: ${entry.shoppable}, english: ${JSON.stringify(entry.english)}, hebrew: ${JSON.stringify(entry.hebrew)} }),`)
     .join('\n');
   return `// AUTO-GENERATED FILE. Do not edit by hand.
 // Source: src/words.ts

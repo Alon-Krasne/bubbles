@@ -13,15 +13,15 @@ const browser = (...args) => execFileSync('agent-browser', ['--session', 'shop-r
 const runId = `${process.pid}-${Date.now()}`;
 const profileId = `rapid-${runId}`;
 const route = `http://127.0.0.1:8788/index.html?${new URLSearchParams({
-  host: 'world-map', activity: 'listening-shop', level: 'trail-shop-11', stage: '32',
+  host: 'world-map', activity: 'listening-shop', level: 'trail-shop-8', stage: '32',
   profile: profileId, profileName: 'Test', profileEmoji: '🫧',
-  profileCharacter: 'dinosaur', profileLanguage: 'he',
+  destination: 'wonder', profileCharacter: 'dinosaur', profileLanguage: 'he',
 })}`;
 const requestProfileId = `request-${runId}`;
 const requestRoute = `http://127.0.0.1:8788/index.html?${new URLSearchParams({
-  host: 'world-map', activity: 'listening-shop', level: 'trail-shop-11', stage: '32',
+  host: 'world-map', activity: 'listening-shop', level: 'trail-shop-8', stage: '32',
   profile: requestProfileId, profileName: 'Test', profileEmoji: '🫧',
-  profileCharacter: 'dinosaur', profileLanguage: 'he',
+  destination: 'wonder', profileCharacter: 'dinosaur', profileLanguage: 'he',
 })}`;
 
 const helpers = `

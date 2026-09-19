@@ -1,0 +1,29 @@
+{
+  "videoId": "forest-video-02",
+  "status": "superseded-do-not-submit",
+  "model": "veo-3.1-generate-preview",
+  "nativeSecondsPerShot": 6,
+  "resolution": "720p",
+  "aspectRatio": "16:9",
+  "maximumAttempts": 2,
+  "estimatedMaximumUsd": 4.8,
+  "pricingSource": "https://ai.google.dev/gemini-api/docs/pricing",
+  "actualBilling": "Not exposed by generation API",
+  "negativePrompt": "speech, dialogue, narration, spoken sound-effect labels, human voices, syllabic vocalizations, singing, lip-synced speech, subtitles, captions, duplicated characters, morphing anatomy",
+  "shots": [
+    {
+      "id": 1,
+      "image": "../art-pass-01/pilot-02-shot-01-v1.png",
+      "prompt": "Animate the supplied image as the exact first frame. Preserve its painterly storybook style, character anatomy, identity, scale, and number. One continuous six-second shot. Gentle small motions, relaxed mouths without speech articulation. No new characters enter. Audio: environmental running water and leaf movement only. Character sounds and music are added separately in post-production. Locked medium camera on exactly two characters: ochre Zohar at left and small olive frog resident at right. Zohar moves the offered basket a little forward. The resident supports the basket with both paws, looking at the two red apples and blue flask, then looks warmly up at Zohar. Zohar gives a pleased head tilt. A few woven threads on the basket glow softly amber in recognition. Keep basket rigid and contents fixed. End holding a shared grateful gaze. No extra hands, no sudden movements, no walking.",
+      "status": "superseded-do-not-submit"
+    },
+    {
+      "id": 2,
+      "image": "garden-first-frame.png",
+      "prompt": "Animate the supplied image as the exact first frame. Preserve its painterly storybook style, character anatomy, identity, scale, and number. One continuous six-second shot. Gentle small motions, relaxed mouths without speech articulation. No new characters enter. Audio: environmental running water and leaf movement only. Character sounds and music are added separately in post-production. Exactly four characters remain visible: green leaf-eared Nevet at far left, blue cheek-finned Adva second, ochre round-eared Zohar third, and olive frog resident at right. The basket stays stationary on the ground with its two red apples and blue flask. The resident gently draws the hanging leaves farther to the right, widening the existing gap into a sunlit garden path. The three friends tilt their heads toward the opening with quiet wonder, keeping their places. Warm light from the opening softly brightens their faces. Hold the open passage. Locked wide camera with only a very slight push toward the garden. The waterfall continues flowing. No walking, no turning backs, no character crossing another.",
+      "status": "superseded-do-not-submit"
+    }
+  ],
+  "approvalBlock": "Automatic approval review requires explicit user approval to upload the two listed project images to Google Veo and incur an estimated $4.80 for two six-second generations.",
+  "supersededBy": "adventure-plan.json"
+}

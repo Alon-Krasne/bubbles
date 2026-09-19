@@ -385,3 +385,10 @@ Green receipts:
 - Magic House rounds saved with more help than their level now allows are clamped on restore, so rank 5's zero-help championship never calls `repeat()` with a negative count.
 - `centerStageInMap` scrolls each axis independently, keeping the frontier visible when the map overflows only vertically (for example 1920×900).
 - Gates: `npx tsc --noEmit`, `test:trail`, `test:track`, `test:saves`, `test:memory-completion`, `test:world-map-layout`, `test:memory-saves`, `test:magic-house-*`, and the production build all pass.
+
+## September 19 journey game and day/night integration
+
+- Child selection now opens before destination choice. The map header is quieter, and hint lamps have a shared visible style and placement.
+- Memory Garden waits for the full board and an explicit Continue click. Reveal the Magic is a regular scored letter-guessing game in both learning languages; the 36-stage route balances all four games without moving video milestones.
+- Merged the new persistent day/night setting and its four existing daytime scene assets from `main`. Resolved overlapping map and game styles, then corrected the merged phone layout so the controls and selected-stage card stay usable.
+- Acceptance: TypeScript and production build, generated-trail validation, daytime setting and asset checks, five-stage forest browser playthrough, English/Hebrew Reveal rounds, Memory completion regression, and map layout at five viewport sizes passed. Saved stage positions remain keyed by stage number when the game sequence changes.

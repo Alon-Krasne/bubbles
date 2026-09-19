@@ -11,8 +11,9 @@ export function createShopItemArt(id: string): HTMLSpanElement {
   const art = document.createElement('span');
   art.className = 'shop-item-art';
   art.setAttribute('aria-hidden', 'true');
+  // Colored items are always "<color>-<shape>"; a bare id such as "orange" is a product (the fruit).
   const [color, shape] = id.split('-');
-  if (color in COLORS) {
+  if (shape !== undefined && color in COLORS) {
     art.classList.add('shop-colored-item', `shop-colored-${shape}`);
     art.style.setProperty('--item-color', COLORS[color]);
     if (shape === 'heart') art.textContent = '♥';

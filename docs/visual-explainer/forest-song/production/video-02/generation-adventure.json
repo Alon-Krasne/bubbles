@@ -1,0 +1,46 @@
+{
+  "videoId": "forest-video-02",
+  "status": "generated-draft-ready-for-user-review",
+  "model": "veo-3.1-generate-preview",
+  "nativeSecondsPerShot": 6,
+  "resolution": "720p",
+  "aspectRatio": "16:9",
+  "maximumAttempts": 3,
+  "estimatedMaximumUsd": 7.2,
+  "actualBilling": "Not exposed by API",
+  "negativePrompt": "speech, dialogue, narration, human voices, spoken sound-effect labels, singing, subtitles, captions, duplicated characters, morphing anatomy",
+  "shots": [
+    {
+      "id": 1,
+      "image": "../art-pass-01/pilot-02-shot-01-v1.png",
+      "prompt": "Use the supplied image as the exact first frame. Preserve the original painterly style and every character identity. One continuous six-second shot. All communication is gestures, eye contact and movement, with relaxed mouths and no speech articulation. Audio: water and leaf movement only. Music and captions will be added separately. Exactly two creatures: ochre Zohar on left, olive frog resident on right. In the first two seconds the resident places its paws under the offered rigid basket holding two apples and a blue flask. Warm amber light runs along the basket weave, then along a root toward the waterfall. The resident looks along that light and gestures toward a leafy opening beside the waterfall, inviting us onward. End following the light toward the leaves with a gentle camera move, motivating a cut into the village. Keep the basket and contents stable; nobody walks or changes shape.",
+      "status": "downloaded",
+      "operation": "models/veo-3.1-generate-preview/operations/9sid9ovrztj0"
+    },
+    {
+      "id": 2,
+      "image": "village-reveal-v2.png",
+      "prompt": "Use the supplied image as the exact first frame. Preserve the original painterly style and every character identity. One continuous six-second shot. All communication is gestures, eye contact and movement, with relaxed mouths and no speech articulation. Audio: water and leaf movement only. Music and captions will be added separately. A wide discovery shot of the same root village. Exactly three characters remain at lower left: green leaf-eared Nevet, blue fin-cheeked Adva, ochre Zohar. They take two small steps together along the broad stone path, looking up in wonder. Camera gently rises and pushes forward to reveal the bridges, warm windows and deeper village. The large suspended seed-pod carrier at right slowly glides a short distance upward along its vine. Waterfall flows, foliage sways. Keep all three distinct. No other creatures enter. No flying characters.",
+      "status": "downloaded",
+      "operation": "models/veo-3.1-generate-preview/operations/eg5g6h3bhu5o"
+    },
+    {
+      "id": 3,
+      "image": "village-courier-v2.png",
+      "prompt": "Use the supplied image as the exact first frame. Preserve the original painterly style and every character identity. One continuous six-second shot. All communication is gestures, eye contact and movement, with relaxed mouths and no speech articulation. Audio: water and leaf movement only. Music and captions will be added separately. Exactly four creatures, kept separate: Nevet, Adva and Zohar on the left; the chestnut dormouse courier with teal satchel on the right beside its wooden cart. The courier looks down one path then the other, lifts the parcel it already holds, and tilts its head in comical puzzlement. Adva begins pointing toward one direction, pauses and lowers its paw to think. The trio takes a small step toward the courier, ready to help. The cart stays still and the parcel stays in the same paw. End on their shared unanswered question. No correct route is revealed and no new character appears.",
+      "status": "downloaded",
+      "operation": "models/veo-3.1-generate-preview/operations/1bjurc2r6bfs"
+    }
+  ],
+  "authorization": "User explicitly approved the three listed image uploads to Google Veo and three six-second clips, estimated $7.20, no retries.",
+  "review": {
+    "visual": "12 sampled frames per shot checked: two creatures in gift shot, three in reveal, four in courier shot; no character duplication observed. Narrative beats visible.",
+    "limits": "Sampled frames are not exhaustive motion inspection; subjective pacing and soundtrack listening review remain with user.",
+    "playback": "Browser playback advanced, no media error; duration approximately 18 seconds. Hebrew, English and Off switched without changing current time. Mobile has no horizontal overflow.",
+    "audio": "Final assembly includes only locally synthesized soundtrack, not native generated audio.",
+    "attempts": 3,
+    "retries": 0,
+    "estimatedUsd": 7.2,
+    "actualBilling": "Not exposed"
+  }
+}

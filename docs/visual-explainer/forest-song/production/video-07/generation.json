@@ -1,0 +1,48 @@
+{
+  "videoId": "forest-video-07",
+  "status": "generated-review-draft",
+  "model": "veo-3.1-generate-preview",
+  "nativeSecondsPerShot": 6,
+  "resolution": "720p",
+  "aspectRatio": "16:9",
+  "estimatedMaximumUsd": 4.8,
+  "authorization": "User explicitly replied i approve to: uploading the six scene images and derived frames to Google Veo for 13 clips, estimated $31.20 total, no retries.",
+  "negativePrompt": "speech, dialogue, narration, human voices, spoken sound-effect labels, singing, subtitles, captions, duplicated characters, morphing anatomy, extra tables, missing tables",
+  "shots": [
+    {
+      "id": 1,
+      "image": "first-frame.png",
+      "prompt": "Animate the exact supplied first frame for one continuous six-second painterly storybook shot. Preserve character anatomy, identity, cast count and fixed scenery. All communication is gestures and expressions, mouths relaxed without speech articulation. Audio: gentle environment only; music and captions will be added separately. Exactly SIX characters in this hall, preserve each identity and all three tables and closed buds. Guests on left: teal-satchel courier, orange-scarf gray traveler, olive frog with basket. Friends on right: leaf-eared Nevet, fin-cheeked Adva, ochre Zohar. The guests take one small step forward from threshold; the trio waves a welcoming paw. Courier nudges cart only slightly and parks it beside door. Small cinematic forward camera move. No duplicates, no swapping traits.",
+      "status": "downloaded",
+      "submissionHistory": [
+        {
+          "error": {
+            "code": 429,
+            "message": "Your prepayment credits are depleted. Please go to AI Studio at https://ai.studio/projects to manage your project and billing. Learn more at https://ai.google.dev/gemini-api/docs/billing#prepay. ",
+            "status": "RESOURCE_EXHAUSTED"
+          },
+          "operationCreated": false
+        }
+      ],
+      "operation": "models/veo-3.1-generate-preview/operations/leb6lqm5ksgs"
+    },
+    {
+      "id": 2,
+      "image": "shot-1-last.png",
+      "prompt": "Animate the exact supplied first frame for one continuous six-second painterly storybook shot. Preserve character anatomy, identity, cast count and fixed scenery. All communication is gestures and expressions, mouths relaxed without speech articulation. Audio: gentle environment only; music and captions will be added separately. Continue same six-character hall. The gray traveler opens its folded wooden frame into a small hexagonal lantern and places it on a low hook beside the nearest table; keep action small and mechanically readable. The courier sets a cushion beside the table. The left and center closed blossoms gently stir but do NOT open. Everyone notices the mostly empty rightmost table and turns to it. Keep three tables and six characters intact. No character crosses behind another.",
+      "status": "downloaded",
+      "operation": "models/veo-3.1-generate-preview/operations/b2gg0p2947ox"
+    }
+  ],
+  "resumeNote": "User topped up Google prepaid credits. Rejected submissions created no operations; the approved batch then completed with one generated candidate per shot.",
+  "review": {
+    "method": "Sampled contact sheets, 12 frames per shot; live browser playback and Hebrew/English/off switching; not a frame-by-frame or listening review.",
+    "notes": [
+      "Guests and the trio meet in the hall.",
+      "Continuity defects: shot 1 duplicates the dormouse courier, creating seven characters. Shot 2 retains that extra courier and introduces an extra large frog; table setup is not clearly completed. This draft needs continuity correction before final game integration."
+    ],
+    "integrationReady": false
+  },
+  "maximumAttemptsPerShot": 1,
+  "maximumGeneratedCandidates": 2
+}

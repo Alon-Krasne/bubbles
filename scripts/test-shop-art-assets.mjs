@@ -7,9 +7,9 @@ const browser = (...args) => execFileSync('agent-browser', ['--session', 'shop-a
 });
 const evaluate = expression => JSON.parse(browser('eval', expression));
 const route = `http://127.0.0.1:8788/index.html?${new URLSearchParams({
-  host: 'world-map', activity: 'listening-shop', level: 'trail-shop-12', stage: '35',
+  host: 'world-map', activity: 'listening-shop', level: 'trail-shop-9', stage: '35',
   profile: 'shop-art-test', profileName: 'Art', profileEmoji: '🌸',
-  profileCharacter: 'princess', profileLanguage: 'en',
+  destination: 'wonder', profileCharacter: 'princess', profileLanguage: 'en',
 })}`;
 
 try {
@@ -60,8 +60,13 @@ try {
         const rect = tile.getBoundingClientRect();
         return [rect.width, rect.height];
       }),
+      colorSwatchIds: tiles
+        .filter(tile => tile.querySelector('.shop-colored-item'))
+        .map(tile => tile.dataset.itemId),
     };
   })()`);
+  const colorSwatchProducts = result.colorSwatchIds.filter(id => !id.includes('-'));
+  assert.deepEqual(colorSwatchProducts, [], `Bare product ids must draw product art, not a colour swatch: ${colorSwatchProducts.join(', ')}`);
   assert.deepEqual(result.dimensions[0], [1586, 992], 'Moonlit scene must decode at its authored size');
   assert.deepEqual(result.dimensions[1], [1774, 887], 'Customer atlas must decode at its authored size');
   assert.ok(result.dimensions.slice(2).every(([width, height]) => width === 1254 && height === 1254), 'Every product atlas must decode at its authored size');

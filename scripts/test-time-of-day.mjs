@@ -16,6 +16,7 @@ try {
   browser('wait', '.gate-profile-choice');
   assert.equal(evaluate('document.documentElement.dataset.timeOfDay'), 'day', 'Choice survives reload');
   browser('click', '.gate-profile-choice >> nth=0');
+  browser('click', '#destination-card-wonder');
   for (const [width, height] of [[390, 844], [820, 1180], [1440, 900]]) {
     browser('set', 'viewport', String(width), String(height));
     assert.equal(evaluate(`(() => {

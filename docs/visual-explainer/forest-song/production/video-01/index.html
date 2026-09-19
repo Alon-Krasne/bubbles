@@ -1,0 +1,20 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>The forest’s first request · Video draft</title><style>body{margin:0;background:#f5f0e4;color:#263b32;font:18px/1.6 system-ui}main{max-width:1060px;margin:auto;padding:40px 24px}h1{font-size:clamp(30px,5vw,54px);line-height:1.1}video{width:100%;border-radius:18px;background:#152820}a{color:#346143}.note{background:#fff6d9;padding:18px;border-radius:12px}small{color:#516357}.shots{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}@media(max-width:700px){.shots{grid-template-columns:1fr}}video::cue{font:600 24px system-ui;color:white;background:rgba(15,29,23,.88)}.caption-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0}.caption-controls select{font:inherit;padding:10px 16px;border:1px solid #738778;border-radius:10px;background:#fff;color:#263b32;min-height:44px}</style><main><a href="../../index.html">← Full storybook</a><h1>A request we don’t yet understand</h1><p>Opening video · Before stage 1 · Wordless audio revision</p><div class="caption-controls"><label for="caption-language">Story captions / כתוביות</label><select id="caption-language"><option value="he" selected>עברית</option><option value="en">English</option><option value="off">Off / ללא</option></select></div><video controls playsinline preload="metadata" src="forest-video-01-wordless.mp4"></video><p><strong>Audio repaired:</strong> the original voices have been replaced with locally made water-like ambience and soft instrumental notes. Identical picture; no new AI generation.</p><p>A friend needs help. A root begins to glow. Somewhere across the valley, a warm window waits.</p><p class="note"><strong>Review copy, not final game footage.</strong> Shot 2 merges Nevet’s leaf ears with the river resident and loses Nevet’s separate identity. Shot 3 duplicates Adva. Both need replacement. Sampled frames were inspected; full motion and listening approval remain pending.</p><div class="shots"><section><h2>1 · The request</h2><video controls playsinline preload="metadata" src="shot-1-wordless.mp4"></video></section><section><h2>2 · The trail</h2><video controls playsinline preload="metadata" src="shot-2-wordless.mp4"></video></section><section><h2>3 · The destination</h2><video controls playsinline preload="metadata" src="shot-3-wordless.mp4"></video></section></div><p><small>Google Veo 3.1 · Three 8-second source shots · $9.60 estimated generation cost, actual billing not exposed · No aesthetic retries</small></p><p><a href="generation.json">Prompts and generation record</a> · <a href="../../../../STORYBOOK.md">Implementation storybook</a></p><p><small>Short story captions follow the selected language. The shared video stays wordless; captions are added by the player.</small></p></main><script>
+const storyCues=[{"start":0.5,"end":7.5,"en":"The basket is empty.","he":"הסל ריק."},{"start":8.5,"end":15.5,"en":"Look! A glowing path.","he":"תראו! שביל זוהר."},{"start":16.5,"end":23.5,"en":"Let’s follow the light.","he":"בואו נלך בעקבות האור."}];
+const language=document.getElementById('caption-language');
+const players=Array.from(document.querySelectorAll('video')).map((video,index)=>{
+ const offset=index===0?0:(index-1)*8;
+ const tracks={};
+ for(const lang of ['he','en']){
+  const track=video.addTextTrack('subtitles',lang==='he'?'עברית':'English',lang);
+  for(const entry of storyCues){
+   if(index!==0 && (entry.start<offset || entry.start>=offset+8))continue;
+   const cue=new VTTCue(entry.start-offset,entry.end-offset,entry[lang]);
+   cue.align='center';track.addCue(cue);
+  }
+  tracks[lang]=track;
+ }
+ return {video,tracks};
+});
+function applyCaptions(){for(const {tracks} of players)for(const lang of ['he','en'])tracks[lang].mode=language.value===lang?'showing':'disabled';}
+language.addEventListener('change',applyCaptions);applyCaptions();
+</script></html>

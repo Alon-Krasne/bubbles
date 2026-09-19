@@ -4,9 +4,11 @@ import {
   GENERATED_TRAIL,
   MAGIC_REQUEST_TARGET_IDS,
   TRAIL_CHAPTERS,
+  TRAIL_GAME_SEQUENCE,
   createMagicHouseLevel,
   createMemoryLevel,
   createShopLevel,
+  createRevealLevelRecipe,
   generateTrail,
 } from './trail-recipes.mjs';
 
@@ -15,9 +17,11 @@ export {
   GENERATED_TRAIL,
   MAGIC_REQUEST_TARGET_IDS,
   TRAIL_CHAPTERS,
+  TRAIL_GAME_SEQUENCE,
   createMagicHouseLevel,
   createMemoryLevel,
   createShopLevel,
+  createRevealLevelRecipe,
   generateTrail,
 };
 
@@ -35,6 +39,7 @@ export const LANGUAGE_POLICIES = Object.freeze({
 });
 
 const GAME_DEFINITIONS = Object.freeze({
+  reveal: Object.freeze({ activity: 'magic-reveal', entry: '../index.html', label: 'התמונה הקסומה' }),
   memory: Object.freeze({ activity: 'memory-garden', entry: '../index.html', label: 'גן מילים' }),
   shop: Object.freeze({ activity: 'listening-shop', entry: '../index.html', label: 'החנות הקטנה' }),
   house: Object.freeze({ activity: 'magic-house', entry: './magic-house.html', label: 'הבית הקסום' }),
@@ -236,7 +241,7 @@ export const GENERATED_TRAIL_STAGES = Object.freeze(GENERATED_TRAIL.stages.map((
   chapterIndex: stage.chapterIndex,
 }, getGeneratedGameLevel)));
 
-// The generated trail is canonical: the world map route and every game read these.
+// The generated trail is the challenge pool; the world map arranges it per journey.
 export const GAME_LEVELS = GENERATED_GAME_LEVELS;
 export const TRAIL_STAGES = GENERATED_TRAIL_STAGES;
 
@@ -333,6 +338,14 @@ export function validateGeneratedTrail({ vocabularyIds, magicRequestIds }) {
     for (const requestId of level.requestIds) {
       if (!magicRequestIds.has(requestId)) {
         throw new Error(`Generated Magic House level ${level.id} references unknown request ${requestId}`);
+      }
+    }
+  }
+
+  for (const level of GENERATED_GAME_LEVELS.reveal || []) {
+    for (const wordId of level.wordPool) {
+      if (!vocabularyIds.has(wordId)) {
+        throw new Error(`Generated Reveal level ${level.id} references unknown word ${wordId}`);
       }
     }
   }

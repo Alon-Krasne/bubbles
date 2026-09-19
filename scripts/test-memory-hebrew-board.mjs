@@ -12,7 +12,7 @@ const runId = `${process.pid}-${Date.now()}`;
 const route = `http://127.0.0.1:8788/index.html?${new URLSearchParams({
   host: 'world-map', activity: 'memory-garden', level: 'trail-memory-1', stage: '1',
   profile: `memory-${runId}`, profileName: 'Test', profileEmoji: '🫧',
-  profileCharacter: 'dinosaur', profileLanguage: 'he',
+  destination: 'wonder', profileCharacter: 'dinosaur', profileLanguage: 'he',
 })}`;
 
 try {

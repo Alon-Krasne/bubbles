@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import { readHostedActivityContext } from '../src/hostedActivity.ts';
+import { TRAIL_STAGES } from '../prototype/shared/trail-catalog.mjs';
+import { recordDestinationStageCompletion } from '../prototype/shared/destinations.mjs';
+const stage = TRAIL_STAGES.find(s => s.activity === 'memory-garden');
+const params = new URLSearchParams({host:'world-map',activity:stage.activity,level:stage.level,stage:String(stage.id),profile:'lotem',profileName:'לוטם',profileEmoji:'🌸',profileCharacter:'princess',profileLanguage:'en',destination:'forest'});
+globalThis.window={location:{search:'?'+params}};
+const context=readHostedActivityContext();
+assert.equal(context.destination,'forest','hosted activities must retain destination when saving completion');
+const saves=new Map([['route-lotem',JSON.stringify({currentStage:1,progress:{}})]]);
+recordDestinationStageCompletion(context,3,{getItem:k=>saves.get(k),setItem:(k,v)=>saves.set(k,v)});
+assert.deepEqual(JSON.parse(saves.get('route-lotem')).progress,{},'forest activity must not award wonder stars');
+assert.equal(JSON.parse(saves.get('forest-route-lotem-en')).progress[stage.id],3);
+console.log('PASS: real hosted context keeps Forest completion out of Wonder saves.');

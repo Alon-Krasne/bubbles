@@ -10,17 +10,18 @@ Fresh start was explicitly chosen: the new shared profiles are Lotem and Tom,
 both at level 1 with zero stars. Old browser profiles and route progress are not
 imported, deleted, or read by the new save system.
 
-Profiles, per-child routes, Memory cards, Shop orders, and Magic House placements
-are saved. A durable browser queue retains pending writes across reloads and
+Profiles, per-child routes, and completed stages are saved. Moves inside a journey
+activity remain in that open session; leaving or refreshing starts the stage again.
+A durable browser queue retains pending writes across reloads and
 retries when connectivity returns. The status distinguishes local-only saves
 from cloud acknowledgements. Conflicting device writes stop play and offer an
-explicit cloud reload after retaining a local recovery copy. One active tab per
-browser prevents competing tabs from overwriting the same pending queue.
+explicit cloud reload after retaining a local recovery copy. A newly opened game
+tab takes over the save session after the older tab drains pending writes. The
+older tab stops play and offers a button to return to it.
 
-Completion is recorded on the final correct action, before celebrations. A
-completed round also repairs an interrupted route write when reopened. Profile
-reset and language changes clear unfinished rounds so they cannot restore the
-previous route or language. Only the selected child is device-local.
+Journey completion is recorded by the map after the activity's completion action.
+Profile and journey choices are saved separately. Only the selected child is
+device-local.
 
 ## Storage foundation
 
@@ -54,23 +55,19 @@ data has been imported. The live game has not been switched to this API.
 acknowledgement, competing writes, and service replacement. It also tests Access
 using locally signed test tokens; only the signing-key HTTP boundary is mocked.
 
-Local browser proxy checks (provisional, September 8):
-
-- Memory: a matched pair survived reload; final answer immediately saved stage 2.
-- Shop: served customer count survived reload; final answer immediately saved stage 3.
-- Magic House: apple/table placement survived reload mid-request; final answer
-  immediately saved stage 4, before celebration finished.
-- A separate browser session loaded the same cloud route and house placement.
-- Tom stayed at stage 1 with zero stars throughout Lotem's play.
-- A rebuilt frontend retained the same saved round.
+The journey browser checks now verify that all five activities finish through
+their real controls and that stage progress survives reload. A separate two-tab
+check verifies that a new tab takes over without an error, the retired tab cannot
+write, and returning to that tab retains the completed save. Reveal the Magic
+checks verify that unfinished English and Hebrew guesses restart on reload.
 
 Run `node scripts/serve-save-test.mjs` after building for a loopback-only browser
 fixture backed by temporary real D1. This fixture deliberately omits Access and
 is not a deployment entrypoint.
 
-Pending human acceptance: on the authenticated preview, play part of a round,
-reload, then finish and reload during celebration. Open another device and
-confirm the same profile/route. Production remains unchanged until PR merge.
+Pending human acceptance: on the authenticated preview, complete a stage, reload,
+and confirm its stars. Open another device and confirm the same profile/route.
+Production remains unchanged until PR merge.
 
 Final automated receipts (7.15.0):
 
