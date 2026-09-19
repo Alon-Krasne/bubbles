@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
+  <script src="./shared/time-of-day.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>עולם הבועות - אבטיפוס</title>
@@ -44,6 +45,10 @@
             <span class="destinations-nav-icon" aria-hidden="true">🗺️</span>
             <span class="destinations-nav-label">איפה נטייל?</span>
           </button>
+          <div class="time-of-day-control" role="group" aria-label="יום או לילה">
+            <button type="button" data-time-toggle="day" aria-pressed="false"><span aria-hidden="true">☀️</span> יום</button>
+            <button type="button" data-time-toggle="night" aria-pressed="true"><span aria-hidden="true">🌙</span> לילה</button>
+          </div>
           <div class="star-total" aria-label="8 מתוך 45 כוכבים">
             <span aria-hidden="true">★</span>
             <strong id="star-total">8</strong>
@@ -145,6 +150,10 @@
         <span class="gate-kicker">הרפתקה חדשה מתחילה</span>
         <h1>מי יוצא להרפתקה?</h1><p>בחרו את עצמכם, ואז נבחר לאן לטייל.</p>
       </header>
+      <div class="time-of-day-control" role="group" aria-label="יום או לילה">
+            <button type="button" data-time-toggle="day" aria-pressed="false"><span aria-hidden="true">☀️</span> יום</button>
+            <button type="button" data-time-toggle="night" aria-pressed="true"><span aria-hidden="true">🌙</span> לילה</button>
+          </div>
       <div class="gate-profile-list" id="gate-profile-list"></div>
       <button class="add-profile-button" id="add-profile-button" type="button">
         <span aria-hidden="true">＋</span>

@@ -1287,3 +1287,10 @@ body {
     transition-duration: 1ms !important;
   }
 }
+
+:root[data-time-of-day="day"] .room-canvas {
+  background-image: url('./assets/magic-house/sunlit-room.webp');
+}
+:root[data-time-of-day="day"] .room-canvas::before {
+  background: radial-gradient(ellipse at 61% 25%, #fff4c522, transparent 50%);
+}

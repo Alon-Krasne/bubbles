@@ -196,3 +196,35 @@
     pointer-events: auto;
     transform: none !important;
 }
+
+ :root[data-time-of-day="day"] {
+    --day-garden-ink: #304f42;
+    --day-garden-surface: #fff9edef;
+    --day-garden-depth: #739b7c;
+}
+:root[data-time-of-day="day"] #memory-screen:has(.memory-game-area:not(.hidden)) {
+    background-image: url('../prototype/assets/sunlit-garden.webp');
+    background-color: #daedc9;
+}
+:root[data-time-of-day="day"] #memory-game-area .memory-level-title {
+    color: var(--day-garden-ink);
+    text-shadow: 0 1px 3px #fff9ed;
+}
+:root[data-time-of-day="day"] #memory-game-area .memory-status-panel {
+    background: var(--day-garden-surface);
+    border-color: #b6ce9b;
+}
+:root[data-time-of-day="day"] #memory-game-area .memory-message,
+:root[data-time-of-day="day"] #memory-game-area .memory-progress { color: var(--day-garden-ink); }
+:root[data-time-of-day="day"] #memory-board {
+    background: linear-gradient(135deg, var(--day-garden-surface), #e2efcfeF);
+    border-color: #acc79c;
+    box-shadow: 0 16px 40px #34563333;
+}
+:root[data-time-of-day="day"] #memory-board .memory-card-back {
+    background: linear-gradient(145deg, #d4eaba, #a6cfae);
+    color: #375846;
+    border-color: var(--day-garden-depth);
+    text-shadow: none;
+    box-shadow: 0 5px 0 var(--day-garden-depth), 0 8px 16px #34563326;
+}
