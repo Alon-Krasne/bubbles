@@ -269,7 +269,6 @@ export function createMagicHouseLevelRecipe({ levelId, rank, title, magicRequest
 }
 
 function getLetterCount(str, isHebrew) {
-  if (!str) return 0;
   const regex = isHebrew ? /[\u05D0-\u05EA]/u : /[A-Za-z]/u;
   return [...str].filter((c) => regex.test(c)).length;
 }
@@ -278,8 +277,7 @@ export function createRevealLevelRecipe({ levelId, rank, title, categories, inde
   const count = Math.min(5, 2 + rank);
   const words = poolForCategories(index, categories, count + 4, offset);
   const wordScore = (id) => {
-    const item = index.wordById?.get(id);
-    if (!item) return id.length;
+    const item = index.wordById.get(id);
     const en = getLetterCount(item.english, false);
     const he = getLetterCount(item.hebrew, true);
     return (en + he) * 10 + Math.max(en, he);
@@ -287,26 +285,22 @@ export function createRevealLevelRecipe({ levelId, rank, title, categories, inde
   const sorted = [...words].sort((a, b) => wordScore(a) - wordScore(b));
 
   let candidates;
-  if (index.wordById) {
-    const enLen = (id) => getLetterCount(index.wordById.get(id)?.english, false);
-    const heLen = (id) => getLetterCount(index.wordById.get(id)?.hebrew, true);
-    if (rank === 1) {
-      candidates = sorted.filter((id) => Math.max(enLen(id), heLen(id)) <= 4);
-    } else if (rank === 2) {
-      candidates = sorted.filter((id) => Math.max(enLen(id), heLen(id)) <= 5 && Math.min(enLen(id), heLen(id)) >= 3);
-    } else if (rank === 3) {
-      candidates = sorted.filter((id) => (enLen(id) + heLen(id)) >= 8 && (enLen(id) + heLen(id)) <= 12);
-    } else if (rank === 4) {
-      candidates = sorted.filter((id) => (enLen(id) + heLen(id)) >= 11 && (enLen(id) + heLen(id)) <= 16);
-    } else {
-      candidates = sorted.filter((id) => Math.max(enLen(id), heLen(id)) >= 8);
-    }
+  const enLen = (id) => getLetterCount(index.wordById.get(id).english, false);
+  const heLen = (id) => getLetterCount(index.wordById.get(id).hebrew, true);
+  if (rank === 1) {
+    candidates = sorted.filter((id) => Math.max(enLen(id), heLen(id)) <= 4);
+  } else if (rank === 2) {
+    candidates = sorted.filter((id) => Math.max(enLen(id), heLen(id)) <= 5 && Math.min(enLen(id), heLen(id)) >= 3);
+  } else if (rank === 3) {
+    candidates = sorted.filter((id) => (enLen(id) + heLen(id)) >= 8 && (enLen(id) + heLen(id)) <= 12);
+  } else if (rank === 4) {
+    candidates = sorted.filter((id) => (enLen(id) + heLen(id)) >= 11 && (enLen(id) + heLen(id)) <= 16);
+  } else {
+    candidates = sorted.filter((id) => Math.max(enLen(id), heLen(id)) >= 8);
   }
 
-  if (!candidates || candidates.length < count) {
-    const maxOffset = Math.max(0, sorted.length - count);
-    const startIdx = Math.min(maxOffset, Math.floor(((rank - 1) / 4) * maxOffset));
-    candidates = sorted.slice(startIdx, startIdx + count + 4);
+  if (candidates.length < count) {
+    throw new Error(`Reveal level ${levelId} needs ${count} words at rank ${rank}, found ${candidates.length}`);
   }
 
   const shift = ((offset % candidates.length) + candidates.length) % candidates.length;
