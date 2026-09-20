@@ -11,7 +11,7 @@ export function openMagicReveal(context: HostedActivityContext, session: HostedA
   const wordIds = level.wordPool.slice(0, level.wordCount);
   const progress = { round: 0, guesses: [] as string[], mistakes: 0, hints: 0 };
   const alphabet = context.profileLanguage === 'en' ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' : 'אבגדהוזחטיכךלמםנןסעפףצץקרשת';
-  const pictures = ['strawberry-island', 'pearl-village', 'moon-garden'];
+  const pictures = ['strawberry-island', 'pearl-village', 'moon-garden', 'woodland-bakery', 'rainbow-railway', 'snowy-village', 'butterfly-garden', 'dragon-library'];
   const firstPicture = Math.floor(Math.random() * pictures.length);
   let tileOrder: number[];
   let choices: string[];
