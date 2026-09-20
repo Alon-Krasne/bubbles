@@ -14,4 +14,4 @@ Prompt set (shared direction): landscape 16:10 full-bleed children's picture-rev
 - `butterfly-garden.webp`: oversized flowers, friendly patterned butterflies, hedgehog watering seedlings, arched stream bridge, leaf-roofed shed and stepping stones.
 - `dragon-library.webp`: cuddly mint-green dragon reading a picture book to a rabbit and owl, curved bookshelves, cushions, lanterns, spiral staircase, round window, teapot and plants; no fire or lettering on books.
 
-The activity chooses a random first scene and cycles through the set without repeats within any current level (three to five words). Starter letters, tile order and letter choices randomize separately each round.
+The activity shuffles the set and puts pictures this child has not collected first, without repeats within any current level (three to five words). Completing a word adds its picture to the child’s cloud-saved gallery immediately. Starter letters, tile order and letter choices randomize separately each round.

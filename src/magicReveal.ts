@@ -4,6 +4,8 @@ import { getRevealState, getRevealHint, getInitialRevealedLetters, createRevealT
 import { getGameLevel } from '../prototype/shared/trail-catalog.mjs';
 import type { HostedActivitySession, HostedActivityContext } from './hostedActivity';
 import './magic-reveal.css';
+import { saveStorage } from '../prototype/shared/saves.mjs';
+import { collectPicture, getCollectedPictures, getPictureOrder } from '../prototype/shared/gallery.mjs';
 
 
 export function openMagicReveal(context: HostedActivityContext, session: HostedActivitySession) {
@@ -11,8 +13,7 @@ export function openMagicReveal(context: HostedActivityContext, session: HostedA
   const wordIds = level.wordPool.slice(0, level.wordCount);
   const progress = { round: 0, guesses: [] as string[], mistakes: 0, hints: 0 };
   const alphabet = context.profileLanguage === 'en' ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' : 'אבגדהוזחטיכךלמםנןסעפףצץקרשת';
-  const pictures = ['strawberry-island', 'pearl-village', 'moon-garden', 'woodland-bakery', 'rainbow-railway', 'snowy-village', 'butterfly-garden', 'dragon-library'];
-  const firstPicture = Math.floor(Math.random() * pictures.length);
+  const pictures = getPictureOrder(getCollectedPictures(context.profileId, saveStorage));
   let tileOrder: number[];
   let choices: string[];
   let lastLetter = '';
@@ -44,7 +45,7 @@ export function openMagicReveal(context: HostedActivityContext, session: HostedA
       group.replaceChildren(...[...word].filter(letter=>!/[\u0591-\u05C7]/u.test(letter)).map(letter=>{const span=document.createElement('span');const guessable=/[A-Zא-ת]/u.test(letter);span.textContent=!guessable||progress.guesses.includes(letter)?letter:'·';if(!guessable)span.className='separator';else {span.classList.toggle('filled',progress.guesses.includes(letter));span.classList.toggle('just-found',letter===lastLetter);}return span;}));
       return group;
     }));
-    $('reveal-image').setAttribute('src',`./prototype/assets/reveal/${pictures[(firstPicture + progress.round) % pictures.length]}.webp`);
+    $('reveal-image').setAttribute('src',`./prototype/${pictures[progress.round].src}`);
     const openTiles = new Set(tileOrder.slice(0, state.tiles));
     root.querySelectorAll('.reveal-curtain span').forEach((tile,index)=>tile.classList.toggle('revealed',openTiles.has(index)));
     root.classList.toggle('round-complete',state.complete);
@@ -54,7 +55,7 @@ export function openMagicReveal(context: HostedActivityContext, session: HostedA
     $('reveal-next').hidden=!state.complete;
     $('reveal-next').textContent=progress.round === wordIds.length - 1 ? 'כל הכבוד! ממשיכים במסע ←' : 'למילה הבאה ←';
     $('reveal-progress').textContent=`מילה ${progress.round + 1} מתוך ${wordIds.length}`;
-    if(state.complete) $('reveal-message').textContent='כל האותיות התגלו — והתמונה מלאה בקסם!';
+    if(state.complete) $('reveal-message').textContent='כל הכבוד! התמונה נוספה לגלריה שלכם ✨';
   }
   function guess(letter:string) {
     const state=getRevealState(target(),progress.guesses);
@@ -62,6 +63,7 @@ export function openMagicReveal(context: HostedActivityContext, session: HostedA
     const correct = state.letters.includes(letter);
     if(!correct) progress.mistakes++;
     progress.guesses.push(letter);
+    if(getRevealState(target(),progress.guesses).complete) collectPicture(context.profileId,pictures[progress.round].id,saveStorage);
     lastLetter = correct ? letter : '';
     if(correct) choices = getRevealChoices(target(),progress.guesses,alphabet);
     render();
