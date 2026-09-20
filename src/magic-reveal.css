@@ -39,3 +39,16 @@
   #reveal-message { min-height: 32px; font-size: 15px; margin: 6px 0; }
   .reveal-picture { max-height: 220px; border-radius: 20px; }
 }
+
+/* A small letter tray and a game-show word board. */
+#reveal-word span:not(.separator) { background:#102b32; border:1px solid #75988a; border-bottom:4px solid #8da98a; border-radius:9px; color:#8ca99c; }
+#reveal-word span.filled { background:#fff3db; color:#254b42; border-color:#e7c987; box-shadow:0 3px 0 #081e2860; }
+#reveal-word span.just-found { animation:reveal-letter-pop .45s ease-out; }
+#reveal-keyboard { gap:18px; min-height:80px; align-items:center; margin:16px auto; }
+#reveal-keyboard button { width:76px; height:76px; border-radius:22px; border-bottom:5px solid #baa478; font-size:34px; box-shadow:0 5px 16px #081e2830; transition:transform .16s,opacity .16s; }
+#reveal-keyboard button:not(:disabled):hover { transform:translateY(-4px); background:#fff9e9; }
+#reveal-keyboard button:not(:disabled):active { transform:translateY(2px); }
+#magic-reveal-screen button:focus-visible { outline:3px solid #ffda7d; outline-offset:5px; }
+.round-complete .reveal-picture { border-color:#ffe5a1; box-shadow:0 0 32px #ffdf9d50; }
+@keyframes reveal-letter-pop { 50% { transform:translateY(-7px) scale(1.12); background:#e0f2c4; } }
+@media(prefers-reduced-motion:reduce) { #reveal-word span.just-found { animation:none; } #reveal-keyboard button { transition:none; } }
