@@ -1,0 +1,40 @@
+{
+  "videoId": "forest-video-03",
+  "status": "generated-draft-ready-for-review",
+  "model": "veo-3.1-generate-preview",
+  "nativeSecondsPerShot": 6,
+  "resolution": "720p",
+  "aspectRatio": "16:9",
+  "maximumAttempts": 2,
+  "estimatedMaximumUsd": 4.8,
+  "actualBilling": "Not exposed",
+  "negativePrompt": "speech, dialogue, narration, human voices, spoken sound-effect labels, singing, subtitles, captions, duplicate characters, morphing anatomy",
+  "shots": [
+    {
+      "id": 1,
+      "image": "delivery-first-frame.png",
+      "prompt": "Animate the supplied exact first frame as one six-second painterly storybook shot. Preserve character identities, count, proportions and scene geometry. Audio: water and leaves only. Relaxed mouths with no speech articulation; soundtrack and captions are added separately. Exactly four creatures: green Nevet, blue Adva and ochre Zohar on left, dormouse courier with teal satchel on right. Courier places the one parcel onto the hatch shelf and withdraws its paws. Parcel stays on shelf, cart remains empty and still. Nobody appears inside the dark hatch. The lantern above pulses much brighter in thanks, then a traveling amber pulse lights the row of already warm windows toward the river. Friends turn their eyes to follow the moving light. Small gentle camera pan left follows the chain of light. No extra objects appear.",
+      "status": "downloaded",
+      "operation": "models/veo-3.1-generate-preview/operations/02uvpxopw6ay"
+    },
+    {
+      "id": 2,
+      "image": "bridge-first-frame.png",
+      "prompt": "Animate the supplied exact first frame as one six-second painterly storybook shot. Preserve character identities, count, proportions and scene geometry. Audio: water and leaves only. Relaxed mouths with no speech articulation; soundtrack and captions are added separately. Exactly three creatures: blue Adva and dormouse courier with teal satchel on left, olive frog resident on right. The resident sweeps a paw and the central curled lily leaf unfurls flat, completing the supported bridge. Adva and courier roll their EMPTY cart slowly onto the broad first leaves. One cart wheel gives a tiny gentle bounce, and Adva steadies the side. Camera tracks slightly right toward the workshop whose round door opens invitingly at the end. Keep rigid wheels, rails and distinct paws; nobody falls, jumps, floats or walks through the cart. Nevet and Zohar remain outside this framing. Do not add them.",
+      "status": "downloaded",
+      "operation": "models/veo-3.1-generate-preview/operations/4poavsof4ozf"
+    }
+  ],
+  "authorization": "User replied go on to the explicit request to upload these two images to Google Veo for two six-second clips, estimated $4.80 total, no retries.",
+  "review": {
+    "method": "12 sampled frames per shot; ffprobe duration; browser playback and caption checks",
+    "shot1": "Four characters retained; parcel reaches shelf, light travels through village.",
+    "shot2": "Three characters retained; leaf flattens, cart advances across bridge. Courier appears partly riding/inside cart rather than consistently walking beside it; workshop-door opening is not clearly established in sampled frames.",
+    "audio": "Final assembly uses only separate local synthesized wordless soundtrack; native generated audio excluded.",
+    "limits": "Full motion and subjective listening review remain with user. No retries made.",
+    "attempts": 2,
+    "retries": 0,
+    "estimatedUsd": 4.8,
+    "actualBilling": "Not exposed by API"
+  }
+}

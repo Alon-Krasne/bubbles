@@ -37,7 +37,7 @@ assert.deepEqual(generatedReport, {
   chapterCount: 6,
   stageCount: 36,
   playableStageCount: 36,
-  gameCount: 3,
+  gameCount: 4,
   maxStars: 108,
 });
 
@@ -45,23 +45,62 @@ assert.equal(TRAIL_STAGES, GENERATED_TRAIL_STAGES, 'the generated trail is the l
 assert.equal(GAME_LEVELS, GENERATED_GAME_LEVELS, 'the generated levels are the live levels');
 assert.equal(TRAIL_CHAPTERS.length, 6);
 assert.deepEqual(GENERATED_TRAIL_STAGES.map((stage) => stage.id), Array.from({ length: 36 }, (_, index) => index + 1));
-assert.deepEqual(
-  GENERATED_TRAIL_STAGES.slice(0, 6).map((stage) => stage.game),
-  ['memory', 'shop', 'house', 'memory', 'shop', 'house'],
-  'every chapter must contain Memory, Store, then Magic House twice',
-);
+
+// The challenge pool has a varied source order; test-journey-order covers each saved journey's arrangement.
+const stageGames = GENERATED_TRAIL_STAGES.map((stage) => stage.game);
+let maxConsecutive = 1;
+let currentConsecutive = 1;
+for (let i = 1; i < stageGames.length; i += 1) {
+  if (stageGames[i] === stageGames[i - 1]) {
+    currentConsecutive += 1;
+    if (currentConsecutive > maxConsecutive) maxConsecutive = currentConsecutive;
+  } else {
+    currentConsecutive = 1;
+  }
+}
+assert.ok(maxConsecutive <= 2, `never more than 2 in a row of the same game (max was ${maxConsecutive})`);
+
+// All 4 games appear balanced across the route
+for (const game of ['memory', 'shop', 'house', 'reveal']) {
+  const count = stageGames.filter((g) => g === game).length;
+  assert.equal(count, 9, `${game} must have 9 stages across the route`);
+}
+
+// The source chapters do not repeat a fixed 1-2-3-4 cycle.
+const chapterPatterns = Array.from({ length: 6 }, (_, c) => stageGames.slice(c * 6, c * 6 + 6).join('-'));
+assert.ok(new Set(chapterPatterns).size > 1, 'chapter game sequences must vary, not repeat 1-2-3-4 all the way');
+
 assert.ok(GENERATED_TRAIL_STAGES.every((stage) => stage.activity && stage.level && stage.entry));
 assert.ok(
   GENERATED_TRAIL_STAGES.every((stage) => stage.chapter === TRAIL_CHAPTERS[stage.chapterIndex].id),
   'every generated stage must belong to its chapter',
 );
 
-for (const game of ['memory', 'shop', 'house']) {
+for (const game of ['memory', 'shop', 'house', 'reveal']) {
   const ranks = GENERATED_TRAIL_STAGES
     .filter((stage) => stage.game === game)
     .map((stage) => getGameLevel(stage.game, stage.level).difficultyRank);
   assert.ok(ranks.every((rank, index) => index === 0 || rank >= ranks[index - 1]), `${game} difficulty must never drop`);
   assert.equal(ranks.at(-1), 5, `${game} must reach the championship rank`);
+}
+
+const enLen = (w) => [...w.english].filter((c) => /[a-z]/i.test(c)).length;
+const heLen = (w) => [...w.hebrew].filter((c) => /[א-ת]/.test(c)).length;
+const vocabById = new Map(VOCAB_WORDS.map((w) => [w.id, w]));
+
+for (const level of GENERATED_GAME_LEVELS.reveal) {
+  const activeWords = level.wordPool.slice(0, level.wordCount).map((id) => vocabById.get(id));
+  if (level.difficultyRank === 1) {
+    assert.ok(
+      activeWords.every((w) => enLen(w) <= 4 && heLen(w) <= 4),
+      `Rank 1 reveal level ${level.id} must only use words with 3-4 letters in both languages`,
+    );
+  } else if (level.difficultyRank === 5) {
+    assert.ok(
+      activeWords.every((w) => Math.max(enLen(w), heLen(w)) >= 8),
+      `Rank 5 reveal level ${level.id} must include championship long words (8+ letters)`,
+    );
+  }
 }
 
 for (const level of GENERATED_GAME_LEVELS.house) {
@@ -121,8 +160,8 @@ for (const level of GENERATED_GAME_LEVELS.shop) {
     `generated Shop level ${level.id} must only stock items with committed artwork`,
   );
 }
-for (const game of ['memory', 'shop', 'house']) {
-  assert.equal(GENERATED_GAME_LEVELS[game].length, 12, `${game} must generate 12 levels`);
+for (const game of ['memory', 'shop', 'house', 'reveal']) {
+  assert.equal(GENERATED_GAME_LEVELS[game].length, 9, `${game} must generate 9 levels`);
 }
 
 // Magic House difficulty must live in its parameters, not only in the rank

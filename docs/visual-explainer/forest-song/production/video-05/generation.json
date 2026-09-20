@@ -1,0 +1,48 @@
+{
+  "videoId": "forest-video-05",
+  "status": "generated-review-draft",
+  "model": "veo-3.1-generate-preview",
+  "nativeSecondsPerShot": 6,
+  "resolution": "720p",
+  "aspectRatio": "16:9",
+  "estimatedMaximumUsd": 4.8,
+  "authorization": "User explicitly replied i approve to: uploading the six scene images and derived frames to Google Veo for 13 clips, estimated $31.20 total, no retries.",
+  "negativePrompt": "speech, dialogue, narration, human voices, spoken sound-effect labels, singing, subtitles, captions, duplicated characters, morphing anatomy, extra tables, missing tables",
+  "shots": [
+    {
+      "id": 1,
+      "image": "first-frame.png",
+      "prompt": "Animate the exact supplied first frame for one continuous six-second painterly storybook shot. Preserve character anatomy, identity, cast count and fixed scenery. All communication is gestures and expressions, mouths relaxed without speech articulation. Audio: gentle environment only; music and captions will be added separately. Exactly four creatures remain in this crystal cave: Nevet, Adva and Zohar on left; the silver-gray mole traveler with orange scarf on right. Zohar raises the travel lantern slightly; its reflection moves across shallow water. The traveler answers by lifting its lantern and showing the folded wooden lantern frame. The three friends acknowledge this with attentive leaning and a small open-paw gesture toward the prepared backpack. Broad safe platforms, no danger. Slight camera push to the answering traveler.",
+      "status": "downloaded",
+      "submissionHistory": [
+        {
+          "error": {
+            "code": 429,
+            "message": "Your prepayment credits are depleted. Please go to AI Studio at https://ai.studio/projects to manage your project and billing. Learn more at https://ai.google.dev/gemini-api/docs/billing#prepay. ",
+            "status": "RESOURCE_EXHAUSTED"
+          },
+          "operationCreated": false
+        }
+      ],
+      "operation": "models/veo-3.1-generate-preview/operations/cfn2w3cmk6wz"
+    },
+    {
+      "id": 2,
+      "image": "shot-1-last.png",
+      "prompt": "Animate the exact supplied first frame for one continuous six-second painterly storybook shot. Preserve character anatomy, identity, cast count and fixed scenery. All communication is gestures and expressions, mouths relaxed without speech articulation. Audio: gentle environment only; music and captions will be added separately. Continue the same cave encounter with exactly four creatures. The traveler sets its lantern securely beside its feet and gently guides the wide root gangway until its free end rests firmly on the left platform. Warm light runs along the railing toward the enormous wooden door behind the traveler. The three friends step onto the stable connected path. Door edges glow, but door stays closed for the next chapter. Preserve distinct bodies; no one falls, flies or walks through rails.",
+      "status": "downloaded",
+      "operation": "models/veo-3.1-generate-preview/operations/h7kpw7onikwl"
+    }
+  ],
+  "resumeNote": "User topped up Google prepaid credits. Rejected submissions created no operations; the approved batch then completed with one generated candidate per shot.",
+  "review": {
+    "method": "Sampled contact sheets, 12 frames per shot; live browser playback and Hebrew/English/off switching; not a frame-by-frame or listening review.",
+    "notes": [
+      "Four distinct characters remain visible in sampled frames; recognition and a glowing crossing toward the great-tree door are readable.",
+      "The gangway becomes a glowing ramp; the door is not visibly opened in the sampled ending."
+    ],
+    "integrationReady": false
+  },
+  "maximumAttemptsPerShot": 1,
+  "maximumGeneratedCandidates": 2
+}

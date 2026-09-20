@@ -13,7 +13,7 @@ const runtime = new Miniflare({ workers: [{ config: {
 const SAVES = await runtime.getD1Database('SAVES');
 await SAVES.exec((await readFile('migrations/0001_saves.sql', 'utf8')).replaceAll('\n', ' '));
 const root = resolve('dist');
-const mime = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.mp3': 'audio/mpeg', '.png': 'image/png', '.webp': 'image/webp', '.woff2': 'font/woff2' };
+const mime = { '.mp4': 'video/mp4', '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.mp3': 'audio/mpeg', '.png': 'image/png', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml', '.woff2': 'font/woff2' };
 const server = createServer(async (incoming, outgoing) => {
   try {
     const url = new URL(incoming.url, 'http://127.0.0.1:8788');

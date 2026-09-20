@@ -1,0 +1,48 @@
+{
+  "videoId": "forest-video-06",
+  "status": "generated-review-draft",
+  "model": "veo-3.1-generate-preview",
+  "nativeSecondsPerShot": 6,
+  "resolution": "720p",
+  "aspectRatio": "16:9",
+  "estimatedMaximumUsd": 4.8,
+  "authorization": "User explicitly replied i approve to: uploading the six scene images and derived frames to Google Veo for 13 clips, estimated $31.20 total, no retries.",
+  "negativePrompt": "speech, dialogue, narration, human voices, spoken sound-effect labels, singing, subtitles, captions, duplicated characters, morphing anatomy, extra tables, missing tables",
+  "shots": [
+    {
+      "id": 1,
+      "image": "first-frame.png",
+      "prompt": "Animate the exact supplied first frame for one continuous six-second painterly storybook shot. Preserve character anatomy, identity, cast count and fixed scenery. All communication is gestures and expressions, mouths relaxed without speech articulation. Audio: gentle environment only; music and captions will be added separately. Exactly three friends enter the hall: Nevet, Adva, Zohar. The partly open foreground door swings a little wider as camera moves gently inward with their two small steps. Reveal exactly THREE round tables and THREE CLOSED hanging ivory blossom buds, with the rear picture mosaic. Friends look up in wonder. Preserve all three tables and all three buds. No guests yet.",
+      "status": "downloaded",
+      "submissionHistory": [
+        {
+          "error": {
+            "code": 429,
+            "message": "Your prepayment credits are depleted. Please go to AI Studio at https://ai.studio/projects to manage your project and billing. Learn more at https://ai.google.dev/gemini-api/docs/billing#prepay. ",
+            "status": "RESOURCE_EXHAUSTED"
+          },
+          "operationCreated": false
+        }
+      ],
+      "operation": "models/veo-3.1-generate-preview/operations/r40klh3yvg0c"
+    },
+    {
+      "id": 2,
+      "image": "shot-1-last.png",
+      "prompt": "Animate the exact supplied first frame for one continuous six-second painterly storybook shot. Preserve character anatomy, identity, cast count and fixed scenery. All communication is gestures and expressions, mouths relaxed without speech articulation. Audio: gentle environment only; music and captions will be added separately. Continue inside the same hall with the same three friends. Three root channels on the floor light outward toward the three rear arches. One small seed-shaped carrier holding a folded picture invitation floats slowly along each channel toward its arch: three carriers total, no written words. The trio follows them with their gaze, then turns toward the empty places. Keep all three blossom buds CLOSED. No new creatures.",
+      "status": "downloaded",
+      "operation": "models/veo-3.1-generate-preview/operations/90q5ladl2gxh"
+    }
+  ],
+  "resumeNote": "User topped up Google prepaid credits. Rejected submissions created no operations; the approved batch then completed with one generated candidate per shot.",
+  "review": {
+    "method": "Sampled contact sheets, 12 frames per shot; live browser playback and Hebrew/English/off switching; not a frame-by-frame or listening review.",
+    "notes": [
+      "The trio enters a spacious hall with three tables; illuminated paths and floating invitation-like carriers appear.",
+      "Continuity defect: hanging blossom petals open during the invitation shot, earlier than the approved story. Do not treat this draft as matching the required closed-bud state."
+    ],
+    "integrationReady": false
+  },
+  "maximumAttemptsPerShot": 1,
+  "maximumGeneratedCandidates": 2
+}

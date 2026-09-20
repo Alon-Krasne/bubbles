@@ -1,0 +1,23 @@
+{
+  "videoId": "forest-video-09",
+  "cues": [
+    {
+      "start": 0.4,
+      "end": 5.7,
+      "en": "Now everyone has a place.",
+      "he": "עכשיו יש מקום לכולם."
+    },
+    {
+      "start": 6.4,
+      "end": 11.7,
+      "en": "Look! The whole forest is waking up.",
+      "he": "תראו! כל היער מתעורר."
+    },
+    {
+      "start": 12.4,
+      "end": 17.7,
+      "en": "We understood. We helped. We brought everyone together.",
+      "he": "הבנו, עזרנו, והבאנו את כולם יחד."
+    }
+  ]
+}

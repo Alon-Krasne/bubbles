@@ -1,0 +1,28 @@
+{
+  "status": "generated-review-drafts",
+  "storySource": "../storybook-v2.json",
+  "videos": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "shots": 13,
+  "seconds": 78,
+  "estimatedMaximumVideoUsd": 31.2,
+  "imageCalls": 6,
+  "retries": 0,
+  "actualImageBilling": "Not exposed",
+  "rejectedImage": "video-08/reference-rejected-missing-table.png",
+  "note": "Video 8 uses intact video-07 scene; two buds open during first shot. Original storyline retained; no video regeneration authorized.",
+  "submittedVideoOperations": 13,
+  "authorization": "User explicitly approved six scene images plus derived frames to Google Veo, 13 clips, estimated $31.20, no retries.",
+  "rejectedSubmissionCount": 6,
+  "completedVideos": 6,
+  "completedShots": 13,
+  "generatedCandidateRetries": 0,
+  "reviewNotes": "REVIEW.md",
+  "billingStatus": "User topped up prepaid credits; all 13 operations completed. Cost remains estimated, not a billing receipt."
+}

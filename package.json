@@ -1,6 +1,6 @@
 {
   "name": "bubbles-game",
-  "version": "7.22.0",
+  "version": "7.24.0",
   "description": "בועות! - A cooperative bubble-catching game for two players",
   "main": "index.html",
   "scripts": {
@@ -9,7 +9,8 @@
     "dev": "vite",
     "start": "vite",
     "preview": "vite preview",
-    "test:trail": "node --experimental-strip-types scripts/test-trail-catalog.mjs",
+    "test:trail": "node --experimental-strip-types scripts/test-trail-catalog.mjs && node scripts/test-journey-order.mjs && node scripts/test-magic-reveal.mjs",
+    "test:destinations": "node scripts/test-destination-saves.mjs",
     "test:track": "node scripts/test-track-progress.mjs",
     "test:vocabulary": "node --experimental-strip-types scripts/test-vocabulary.mjs",
     "test:translations": "node --experimental-strip-types scripts/test-translation-hints.mjs && node scripts/test-translation-hint-control.mjs",
@@ -21,7 +22,7 @@
     "test:shop-order-hint": "node scripts/test-shop-order-hint.mjs",
     "test:shop-rapid-answers": "node scripts/run-shop-rapid-answers.mjs",
     "test:memory-hebrew-board": "node scripts/run-memory-hebrew-board.mjs",
-    "test:shop-art": "node scripts/test-shop-art-assets.mjs",
+    "test:shop-art": "node --experimental-strip-types scripts/test-shop-art-ids.mjs && node scripts/test-shop-art-assets.mjs",
     "test:audio-integrity": "node scripts/test-audio-integrity.mjs",
     "test:audio-playback": "node --experimental-strip-types scripts/test-audio-playback-queue.mjs",
     "test:activity-scoring": "node scripts/test-activity-scoring.mjs",
@@ -42,7 +43,8 @@
     "generate:vocabulary-tts": "node --experimental-strip-types scripts/generate-vocabulary-tts.mjs",
     "bundle": "vite build",
     "share": "vite build && open dist/index.html",
-    "release": "npm version major --no-git-tag-version && bun run bundle"
+    "release": "npm version major --no-git-tag-version && bun run bundle",
+    "test:forest": "node scripts/run-forest-acceptance.mjs"
   },
   "keywords": [
     "game",

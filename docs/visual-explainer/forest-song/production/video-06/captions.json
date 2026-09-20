@@ -1,0 +1,17 @@
+{
+  "videoId": "forest-video-06",
+  "cues": [
+    {
+      "start": 0.4,
+      "end": 5.7,
+      "en": "The great tree has room for everyone.",
+      "he": "בעץ הגדול יש מקום לכולם."
+    },
+    {
+      "start": 6.4,
+      "end": 11.7,
+      "en": "Let’s invite the friends we helped.",
+      "he": "בואו נזמין את החברים שעזרנו להם."
+    }
+  ]
+}

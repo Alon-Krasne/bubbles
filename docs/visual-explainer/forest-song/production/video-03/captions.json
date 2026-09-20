@@ -1,0 +1,18 @@
+{
+  "videoId": "forest-video-03",
+  "status": "Timed for generated twelve-second assembly",
+  "cues": [
+    {
+      "start": 0.4,
+      "end": 5.7,
+      "en": "The last parcel is here. The village lights up!",
+      "he": "החבילה האחרונה הגיעה. הכפר מואר!"
+    },
+    {
+      "start": 6.4,
+      "end": 11.7,
+      "en": "The bridge is open. What is inside the workshop?",
+      "he": "הגשר פתוח. מה יש בתוך הסדנה?"
+    }
+  ]
+}

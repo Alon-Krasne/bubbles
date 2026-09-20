@@ -1,0 +1,306 @@
+{
+  "title": "היער הלוחש",
+  "subtitle": "Understand a friend. Change the forest.",
+  "status": "Revised adventure story: meaningful world changes, new locations and recurring characters. Video 1 remains a reviewed draft; video 2 garden-only concept is superseded. Media production follows bounded per-video scopes.",
+  "premise": "The great tree once connected the forest’s communities. Its paths have grown quiet, and neighbors have lost touch. Three little friends set out to bring everyone together again. By learning to understand requests, recognize words and help each other, the child restores those connections. Each reunion adds a musical voice to the forest’s song. The destination is a gathering inside the great tree, where every friend has a place.",
+  "cast": [
+    {
+      "name": "נבט",
+      "role": "The curious friend",
+      "design": "A small round moss creature with two broad leaf ears, an earthy green body and a cream face. Simple, readable silhouette.",
+      "personality": "First to investigate; pauses and listens when a friend needs help.",
+      "gesture": "Tilts both leaf ears toward a sound, then offers an open hand.",
+      "englishName": "Nevet",
+      "pronunciation": "Nevet, like a sprout"
+    },
+    {
+      "name": "אדוה",
+      "role": "The playful friend",
+      "design": "A small rounded river creature with scalloped side fins, a slate-blue body and pale belly. Stays on the ground during gameplay.",
+      "personality": "Tries things enthusiastically; turns small surprises into shared laughter.",
+      "gesture": "Bounces once, splashes a toe, then looks back to invite the others."
+    },
+    {
+      "name": "זוהר",
+      "role": "The thoughtful friend",
+      "design": "A small rounded woodland creature with an amber belly patch and three simple light spots. Warm ochre, short limbs, no elaborate costume.",
+      "personality": "Notices what another creature is trying to communicate.",
+      "gesture": "Looks from a friend to an object, checks with a questioning chirp, then offers it."
+    }
+  ],
+  "scenes": [
+    {
+      "id": 1,
+      "milestone": 0,
+      "when": "Before stage 1",
+      "title": "A request we don’t yet understand",
+      "he": "מה החבר מבקש?",
+      "duration": 18,
+      "tone": "Curiosity",
+      "shots": [
+        {
+          "seconds": 6,
+          "see": "At a quiet stream, a small forest resident holds out an empty basket and makes a hopeful gesture. The three friends look from the basket to the resident, curious.",
+          "hear": "Running water. A questioning chirp. A warm answering hum."
+        },
+        {
+          "seconds": 6,
+          "see": "The friends kneel beside the resident. One notices a faint trail of light in the roots; all three look toward it together.",
+          "hear": "Three little notes, each with a different timbre. Soft leaf rustle."
+        },
+        {
+          "seconds": 6,
+          "see": "The trail leads toward an immense tree across the valley. Most of its canopy is quiet, but one warm window glows. The resident invites the friends onto the path.",
+          "hear": "The three notes receive a distant, incomplete musical answer."
+        }
+      ],
+      "learn": "Stages 1–5: recognize familiar animals and objects, connect words to meaning, and fulfill simple requests using the existing three activities. Suggested known vocabulary: rabbit, apple, water, cup.",
+      "change": "The player has someone to help and a destination to discover. The first five activities are small acts of understanding.",
+      "hook": "What is that little friend trying to tell us?",
+      "budget": "Establish cast and tree once. No readable signs, burned-in subtitles or speech in the video file. The player may add short story captions in the chosen language.",
+      "videoId": "forest-video-01"
+    },
+    {
+      "id": 2,
+      "milestone": 5,
+      "when": "After stage 5",
+      "title": "The village behind the waterfall",
+      "he": "הכפר שמאחורי המפל",
+      "duration": 18,
+      "tone": "Discovery → comedy → a new mission",
+      "shots": [
+        {
+          "seconds": 6,
+          "see": "Keep the gift brief: Zohar offers the filled basket; the river resident recognizes the supplies. Light runs from the basket through the roots toward a curtain of leaves. The resident pulls it aside, revealing the entrance to a new place.",
+          "hear": "Separate sound pass: environmental movement and instrumental music only; no generated creature speech."
+        },
+        {
+          "seconds": 6,
+          "see": "A wide reveal opens onto a village built among enormous roots: little bridges, warm round windows and seed-shaped lifts. Nevet, Adva and Zohar enter along the lower path, small against the inviting architecture. One seed lift glides upward, making the place feel alive.",
+          "hear": "Separate sound pass: environmental movement and instrumental music only; no generated creature speech."
+        },
+        {
+          "seconds": 6,
+          "see": "At a fork beside the village entrance, a small dormouse courier pulls a wooden parcel cart to a stop. It looks down one path, then the other, checks the parcels and makes an exaggerated puzzled face. Adva starts to point one way, pauses, and looks back at the others. They gather around the cart to help; do not reveal the correct route.",
+          "hear": "Separate sound pass: environmental movement and instrumental music only; no generated creature speech."
+        }
+      ],
+      "learn": "Payoff for stages 1–5: understanding the resident’s request opens the village route. Stages 6–10 identify familiar food and objects requested for the courier’s deliveries through the existing Memory, single-item Shop and House activities. Routes and parcel delivery are story framing, not a new navigation or address-reading task; no early quantity/color modes.",
+      "change": "The hidden root village becomes visible and accessible. The courier joins the ongoing story with a concrete delivery problem.",
+      "hook": "What does each neighbor need—and how can we help the courier?",
+      "budget": "Three six-second editorial shots. Reuse the gift image only as reference; the former two-shot garden-only video-02 plan is superseded. Introduce one courier, reusing root-host identity. No crowds or readable parcel labels. Approve scene keyframes before video generation.",
+      "videoId": "forest-video-02"
+    },
+    {
+      "id": 3,
+      "milestone": 10,
+      "when": "After stage 10",
+      "title": "The bridge wakes up",
+      "he": "הגשר מתעורר",
+      "duration": 12,
+      "tone": "Payoff → movement → delight",
+      "shots": [
+        {
+          "seconds": 6,
+          "see": "The courier delivers the final prepared parcel to a root-door hatch. The pictured recipient stays offscreen: a small thank-you lantern lights above the doorway. A chain of warm windows lights across the village toward the river; the friends and courier follow it with their eyes.",
+          "hear": "Separate sound pass: environmental movement and instrumental music only; no generated creature speech."
+        },
+        {
+          "seconds": 6,
+          "see": "The river resident unfolds broad lily leaves into a safe bridge between two root platforms. The courier rolls the now-empty cart across with the trio. One wheel makes a gentle comic bounce; Adva steadies the cart. Across the river, the courier’s cozy workshop door opens.",
+          "hear": "Separate sound pass: environmental movement and instrumental music only; no generated creature speech."
+        }
+      ],
+      "learn": "Payoff for stages 6–10: matching requested objects lets the courier finish deliveries and wakes the crossing. Stages 11–15 help put familiar household objects in their supported places inside the courier’s workshop. Cinematic deliveries do not add new gameplay systems.",
+      "change": "Deliveries reconnect the village and open a permanent river crossing to the workshop.",
+      "hook": "What has the courier been keeping in that workshop?",
+      "budget": "One delivery detail shot and one bridge shot; no extra voiced villagers, dangerous crossing or precision-jump challenge.",
+      "videoId": "forest-video-03"
+    },
+    {
+      "id": 4,
+      "milestone": 15,
+      "when": "After stage 15",
+      "title": "The map inside the workshop",
+      "he": "המפה שבסדנה",
+      "duration": 12,
+      "tone": "Comedy → revelation → purpose",
+      "shots": [
+        {
+          "seconds": 6,
+          "see": "Inside the courier’s root workshop, the objects prepared in gameplay are now in place. The courier parks the cart, hangs up its teal satchel and pulls a broad rolled picture map from a shelf. The roll gently unfurls past Adva’s feet; Adva steps over it with an amused wobble.",
+          "hear": "Separate sound pass: environmental movement and instrumental music only; no generated creature speech."
+        },
+        {
+          "seconds": 6,
+          "see": "The picture map shows river, village and cave routes meeting at the great tree. Two routes glow; the cave route remains dim. The courier opens a window toward a distant crystal ridge and offers the trio a travel lantern. They gather beside the window, seeing where to go next.",
+          "hear": "Separate sound pass: environmental movement and instrumental music only; no generated creature speech."
+        }
+      ],
+      "learn": "Payoff for stages 11–15: understanding object placements restores the working room and makes the old route map accessible. Familiar words include book, cup, chair and lamp, using supported destinations. Stages 16–20 prepare travel supplies for the crystal route.",
+      "change": "The courier becomes our host. The friends discover why the tree matters and where the missing connection lies.",
+      "hook": "Who is waiting beyond the crystal ridge?",
+      "budget": "The courier and root-host are the same character. Picture map only; no invented alphabet or readable navigation test.",
+      "videoId": "forest-video-04"
+    },
+    {
+      "id": 5,
+      "milestone": 20,
+      "when": "After stage 20",
+      "title": "A light across the crystal water",
+      "he": "אור מעבר למים",
+      "duration": 12,
+      "tone": "Exploration → surprise → connection",
+      "shots": [
+        {
+          "seconds": 6,
+          "see": "In a spacious moonlit crystal cavern, the travel lantern catches a distant answering light across shallow water. What looked like a moving reflection resolves into a small cave traveler on a broad root platform, trying to bring a folded lantern frame toward the tree. The friends lift their supplies in recognition.",
+          "hear": "Separate sound pass: environmental movement and instrumental music only; no generated creature speech."
+        },
+        {
+          "seconds": 6,
+          "see": "Using the supplies already prepared in gameplay, the traveler swings a wide stable root gangway into place. Its light reveals a huge carved doorway in the great tree’s roots. The trio joins the traveler at the newly connected platform; the doorway begins to glow.",
+          "hear": "Separate sound pass: environmental movement and instrumental music only; no generated creature speech."
+        }
+      ],
+      "learn": "Payoff for stages 16–20: understanding travel-supply requests equips the group to reconnect the crystal route. Familiar vocabulary only; use catalog IDs. The gangway opens in the video and is not a new construction puzzle. Stages 21–25 prepare the great tree meeting place.",
+      "change": "The third community is reachable and the entrance to the great tree is found.",
+      "hook": "What is behind that enormous door?",
+      "budget": "One new recurring cave traveler; safe moonlight, shallow water, broad paths. No monster silhouette or peril.",
+      "videoId": "forest-video-05"
+    },
+    {
+      "id": 6,
+      "milestone": 25,
+      "when": "After stage 25",
+      "title": "The tree opens its doors",
+      "he": "העץ פותח את הדלתות",
+      "duration": 12,
+      "tone": "Arrival → awe → a plan",
+      "shots": [
+        {
+          "seconds": 6,
+          "see": "The glowing root doorway opens into an immense garden hall. The camera travels just inside to reveal three low tables beneath three closed hanging blossoms, with a picture mosaic of the forest communities together. The friends stand small in the doorway, then step into the hall.",
+          "hear": "Separate sound pass: environmental movement and instrumental music only; no generated creature speech."
+        },
+        {
+          "seconds": 6,
+          "see": "As the prepared room comes to life, three root channels light outward from the hall toward river, village and cave. The courier’s small picture invitations ride gently outward in seed-shaped carriers. The friends watch the invitations leave and turn toward the empty tables.",
+          "hear": "Separate sound pass: environmental movement and instrumental music only; no generated creature speech."
+        }
+      ],
+      "learn": "Payoff for stages 21–25: understanding placements restores a usable meeting place and reconnects its invitation routes. Stages 26–30 practice requests needed to help the three guests prepare for the gathering. Seed carriers are cinematic, not an added collectible system.",
+      "change": "The destination is reached. The hall can now reach the communities we helped.",
+      "hook": "Will our friends come?",
+      "budget": "Lock one hall, three tables and three blossoms for videos 6–9. The courier’s invitations have pictures only. No fourth supporting character.",
+      "videoId": "forest-video-06"
+    },
+    {
+      "id": 7,
+      "milestone": 30,
+      "when": "After stage 30",
+      "title": "All paths lead here",
+      "he": "כל השבילים נפגשים",
+      "duration": 12,
+      "tone": "Reunion → anticipation",
+      "shots": [
+        {
+          "seconds": 6,
+          "see": "At the tree entrance, the river resident arrives from the newly opened crossing, the courier rolls in its cart, and the cave traveler carries the folded lantern frame. The trio welcomes the three familiar guests as their separate routes meet beneath the doorway.",
+          "hear": "Separate sound pass: environmental movement and instrumental music only; no generated creature speech."
+        },
+        {
+          "seconds": 6,
+          "see": "Inside the same hall, the traveler unfolds the frame into a hanging lantern above the tables while the courier unloads the supplies. Two blossoms stir but remain closed. An incomplete third place is visibly waiting; the group notices the gap and gets ready to help.",
+          "hear": "Separate sound pass: environmental movement and instrumental music only; no generated creature speech."
+        }
+      ],
+      "learn": "Stages 31–33 rehearse familiar vocabulary for the gathering. Stages 34–36 form the final challenge using the existing Memory → Shop → House order. No unintroduced vocabulary in the finale.",
+      "change": "The restored routes now bring real friends together. The final activities complete a shared event instead of another isolated errand.",
+      "hook": "The hall is waking up. What will happen when everyone has a place?",
+      "budget": "Use a small recurring supporting cast, not a newly generated crowd. Keep all three selectable friends part of the same shared video.",
+      "videoId": "forest-video-07"
+    },
+    {
+      "id": 8,
+      "milestone": 35,
+      "when": "After stage 35",
+      "title": "The last light",
+      "he": "האור האחרון",
+      "duration": 12,
+      "tone": "Visible progress → calm suspense",
+      "shots": [
+        {
+          "seconds": 6,
+          "see": "Two prepared tables now sit beneath two open blossoms. Their light travels up the trunk and lifts two sections of the canopy, revealing a glimpse of the sky garden above. The third section remains closed over the unfinished place.",
+          "hear": "Separate sound pass: environmental movement and instrumental music only; no generated creature speech."
+        },
+        {
+          "seconds": 6,
+          "see": "The courier and cave traveler help the river resident settle near the third table. Nevet, Adva and Zohar turn toward the remaining supplies. A soft thread of light stops at the unfinished space; hold the anticipation without placing any item or showing the pending answer.",
+          "hear": "Separate sound pass: environmental movement and instrumental music only; no generated creature speech."
+        }
+      ],
+      "learn": "Stages 34 and 35 have matched meanings and fulfilled requests. Stage 36 is the final Magic House activity: arrange familiar objects using supported placement instructions. The video does not show the solution or read the prompt aloud.",
+      "change": "The child can see two parts of the final transformation already working. One familiar activity remains before the full reveal.",
+      "hook": "One more place to finish—then the whole canopy can open.",
+      "budget": "Same tree hall. Avoid a new boss minigame or a three-game bundle inside stage 36.",
+      "videoId": "forest-video-08"
+    },
+    {
+      "id": 9,
+      "milestone": 36,
+      "when": "After stage 36",
+      "title": "The forest understands",
+      "he": "היער שוב שר",
+      "duration": 18,
+      "tone": "Joy + pride",
+      "shots": [
+        {
+          "seconds": 6,
+          "see": "Begin after the final gameplay placement, with no repeated object-placement shot. The final guest settles into the completed place and gives the friends a grateful gesture. The third hanging blossom opens.",
+          "hear": "A rising instrumental flourish. The missing musical phrase completes."
+        },
+        {
+          "seconds": 6,
+          "see": "Warm light travels from all three blossoms up the trunk. The canopy slowly unfolds into a luminous garden overhead. The same three playable friends and three returning guests look up together as their musical voices join.",
+          "hear": "A wordless musical chorus built from the familiar character sounds. Warm, moderate volume."
+        },
+        {
+          "seconds": 6,
+          "see": "A gentle camera rise reveals the root village, moving seed lifts, lily crossing and crystal route from the tree balcony. Warm paths now connect the places visited throughout the journey. Return to the trio and the river resident, courier and cave traveler sharing the gathering; hold the reunited group.",
+          "hear": "The forest theme resolves. Leaves, water and soft ambient movement remain."
+        }
+      ],
+      "learn": "A complete payoff: understanding words helped us understand needs, help friends and bring a community together. The language work caused the celebration.",
+      "change": "The restored map and unlocked video album remain. Favorite learning activities can be revisited without requiring another quest.",
+      "hook": "Look what we helped make happen.",
+      "budget": "Keep the existing owl and flight illustrations intact as references. Render the reunion and opening-canopy ending described here; do not let an older illustration replace the final script.",
+      "videoId": "forest-video-09"
+    }
+  ],
+  "approval": {
+    "scope": "Story, shared cast concepts, two destinations, wordless generated video format and forest-gathering finale",
+    "nextStep": "Implement against docs/STORYBOOK.md; retain all existing images. Prepare character references and a bounded video pilot before full media production.",
+    "mediaGeneratedThisUpdate": 0
+  },
+  "canonicalBrief": "../../STORYBOOK.md",
+  "supportingCast": [
+    {
+      "id": "river-resident",
+      "role": "The same single resident at the stream, river crossing and final gathering"
+    },
+    {
+      "id": "root-host",
+      "role": "The village courier introduced in video 2 becomes the root-dwelling host in video 4 and returns at the gathering. One continuing character, not two.",
+      "design": "A small chestnut dormouse with rounded ears, cream muzzle, a teal cross-body mail satchel and a short curled tail. Pulls a small wooden two-wheel parcel cart. No new proper name yet."
+    },
+    {
+      "id": "cave-traveler",
+      "role": "The same single traveler in the cave and gathering"
+    }
+  ],
+  "learningPolicy": "Preserve the active runtime learning contracts for the selected track. Current catalog policy and Magic House behavior use spoken prompts in both tracks. Do not restore a reading-only Hebrew rule from stale prose documentation. Wordless story videos never replace educational recordings or disclose a pending task’s answer.",
+  "captionPolicy": "Optional player-rendered story captions in the selected learning language (he/en), one simple sentence per shot; off control; never generated or burned into the shared video. Opening draft cues: production/video-01/captions.json.",
+  "adventureRule": "Every milestone must pay off previous language work, visibly change the world, and create a concrete reason to continue. Gestures support action; they are not the entire event. New traversal and delivery events are cinematic story rewards, not promises of new gameplay mechanics."
+}

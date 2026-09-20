@@ -1,0 +1,56 @@
+{
+  "videoId": "forest-video-01",
+  "status": "draft-needs-continuity-fixes",
+  "model": "veo-3.1-generate-preview",
+  "nativeSecondsPerShot": 8,
+  "editorialSecondsPerShot": 6,
+  "resolution": "720p",
+  "aspectRatio": "16:9",
+  "maximumAttempts": 3,
+  "estimatedMaximumUsd": 9.6,
+  "pricingSource": "https://ai.google.dev/gemini-api/docs/pricing",
+  "actualBilling": "Not exposed by generation API",
+  "references": [
+    "../art-pass-01/cast-reference-v1.png",
+    "../art-pass-01/pilot-02-shot-01-v1.png"
+  ],
+  "shots": [
+    {
+      "id": 1,
+      "prompt": "An original warm painterly children's forest adventure, soft illustrated textures, expressive rounded creatures, mossy green and warm amber with slate-blue shadows. Match the supplied references exactly. Reference 1 is a character sheet: use exactly ONE of each of its three characters, not their repeated studies: Nevet the green leaf-eared sprout, Adva the slate-blue scalloped cheek-fin creature, Zohar the ochre round-eared creature with exactly three belly lights. Reference 2 establishes the olive frog-like river resident and woodland atmosphere ONLY: in this opening the woven basket must be EMPTY, with no apples or flask. Four creatures total, no humans. All communication is gestures, animal chirps and instrumental notes, absolutely no intelligible words, dialogue, narration, singing lyrics, lettering or subtitles. Gentle, safe, curious mood, no menace. One continuous shot, no montage. Do not render a character sheet. Medium-wide eye-level shot at a quiet mossy stream. The small olive river resident on the right lifts an EMPTY wicker basket toward Nevet, Adva and Zohar together on the left. It tilts the basket so its empty interior is visible, then makes a hopeful open-paw gesture. The three friends exchange curious glances and lean slightly toward it, wanting to understand. Keep basket and paws separate and anatomically stable. Soft running water, one questioning animal chirp, a warm wordless answering hum. Hold the final curious pose.",
+      "status": "downloaded",
+      "operation": "models/veo-3.1-generate-preview/operations/997u9ni5w76b"
+    },
+    {
+      "id": 2,
+      "prompt": "An original warm painterly children's forest adventure, soft illustrated textures, expressive rounded creatures, mossy green and warm amber with slate-blue shadows. Match the supplied references exactly. Reference 1 is a character sheet: use exactly ONE of each of its three characters, not their repeated studies: Nevet the green leaf-eared sprout, Adva the slate-blue scalloped cheek-fin creature, Zohar the ochre round-eared creature with exactly three belly lights. Reference 2 establishes the olive frog-like river resident and woodland atmosphere ONLY: in this opening the woven basket must be EMPTY, with no apples or flask. Four creatures total, no humans. All communication is gestures, animal chirps and instrumental notes, absolutely no intelligible words, dialogue, narration, singing lyrics, lettering or subtitles. Gentle, safe, curious mood, no menace. One continuous shot, no montage. Do not render a character sheet. At the same quiet mossy stream, the olive resident rests its EMPTY wicker basket on the ground beside it. Nevet, Adva and Zohar crouch beside the resident. A faint amber thread of light slowly travels along a root at their feet. Nevet notices it, tilts both leaf ears and points gently. The other three turn their gaze along the root in the same direction. Camera gently follows their gaze toward the path without leaving the group. Three soft instrumental notes, each with a distinct timbre, leaf rustle and stream. No objects appear in the basket.",
+      "status": "downloaded",
+      "operation": "models/veo-3.1-generate-preview/operations/kequith1yabx"
+    },
+    {
+      "id": 3,
+      "prompt": "An original warm painterly children's forest adventure, soft illustrated textures, expressive rounded creatures, mossy green and warm amber with slate-blue shadows. Match the supplied references exactly. Reference 1 is a character sheet: use exactly ONE of each of its three characters, not their repeated studies: Nevet the green leaf-eared sprout, Adva the slate-blue scalloped cheek-fin creature, Zohar the ochre round-eared creature with exactly three belly lights. Reference 2 establishes the olive frog-like river resident and woodland atmosphere ONLY: in this opening the woven basket must be EMPTY, with no apples or flask. Four creatures total, no humans. All communication is gestures, animal chirps and instrumental notes, absolutely no intelligible words, dialogue, narration, singing lyrics, lettering or subtitles. Gentle, safe, curious mood, no menace. One continuous shot, no montage. Do not render a character sheet. Wide rear three-quarter composition from the same stream bank, the four small friends in the lower foreground. The resident holds the EMPTY wicker basket beside its leg. Slowly lift the camera just above the group to reveal a sweeping quiet forest valley and one immense broad-canopied tree in the distance. A single warm amber window shines in its trunk; the rest of its canopy stays muted. A faint luminous root trail leads toward it. The resident gently extends its free paw inviting the trio along the path; they lean forward in shared wonder. Three soft instrumental notes receive a distant incomplete musical answer. End on the destination revealed, without flying creatures or riders.",
+      "status": "downloaded",
+      "operation": "models/veo-3.1-generate-preview/operations/92i4ukpethdi"
+    }
+  ],
+  "submissionErrors": [
+    {
+      "shot": 1,
+      "error": {
+        "code": 400,
+        "message": "`inlineData` isn't supported by this model. Please remove it or refer to the Gemini API documentation for supported usage.",
+        "status": "INVALID_ARGUMENT"
+      },
+      "operationCreated": false
+    }
+  ],
+  "review": {
+    "method": "Eight sampled frames per shot and ffprobe metadata; not full motion/audio review",
+    "shot1": "Four distinct characters retained in sampled frames; basket empty.",
+    "shot2": "Rejected for identity continuity: Nevet is absent as a separate creature, resident gains leaf ears.",
+    "shot3": "Rejected for cast count: duplicate Adva; destination is closer than the valley reveal in script.",
+    "audio": "Audio track present. Listening review pending.",
+    "nextStep": "Use one approved scene keyframe per shot before another bounded video attempt. Keep shot 1 for review."
+  }
+}

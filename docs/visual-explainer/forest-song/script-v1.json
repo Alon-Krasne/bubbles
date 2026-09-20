@@ -1,0 +1,326 @@
+[
+  {
+    "title": "A song in the water",
+    "heTitle": "השיר שבמים",
+    "stage": "Before stage 1",
+    "short": "Opening",
+    "tone": "Curiosity",
+    "duration": "25 sec",
+    "summary": "A little water spirit sings one note. Far away, a sleeping tree answers.",
+    "alt": "Pink and blue blob friends meet a golden water spirit beside a dusk stream, with a giant tree across the valley.",
+    "lines": [
+      [
+        "המספרת",
+        "פעם, כל היער שר יחד. עכשיו נשאר רק צליל אחד.",
+        "Once, the whole forest sang together. Now only one note remains."
+      ],
+      [
+        "ניצוץ",
+        "שמעתם? העץ ענה לי!",
+        "Did you hear? The tree answered me!"
+      ],
+      [
+        "ניצוץ",
+        "בואו נגלה מה יש שם.",
+        "Let’s find out what’s over there."
+      ]
+    ],
+    "shots": [
+      "0–6s · Close on small hands touching the stream. Golden ripples appear.",
+      "6–15s · A tiny spirit rises and sings one clear note.",
+      "15–25s · Pull back: a light answers inside the distant tree. A trail opens beside the waterfall."
+    ],
+    "play": "Touch the ripple to begin the journey.",
+    "change": "The giant tree becomes the destination on the map.",
+    "hook": "What is waiting inside that tree?",
+    "bridge": "Stages 1–5 · Familiar Memory, Shop and House activities help the first forest friends. Each completion extends the light trail."
+  },
+  {
+    "title": "Behind the waterfall",
+    "heTitle": "מאחורי המפל",
+    "stage": "After stage 5",
+    "short": "5",
+    "tone": "Discovery",
+    "duration": "22 sec",
+    "summary": "A hidden garden holds the first seed of the forest’s song.",
+    "alt": "The friends discover a golden seed in a stone flower behind a sunlit waterfall.",
+    "lines": [
+      [
+        "ניצוץ",
+        "יש כאן שביל! ממש מאחורי המים!",
+        "There’s a path! Right behind the water!"
+      ],
+      [
+        "המספרת",
+        "בתוך הפרח חיכה זרע של שיר.",
+        "Inside the flower waited a seed of song."
+      ],
+      [
+        "ניצוץ",
+        "הוא זוהר כשאנחנו מקשיבים.",
+        "It glows when we listen."
+      ]
+    ],
+    "shots": [
+      "0–7s · Follow the companion through the curtain of water.",
+      "7–15s · A stone flower opens. The first seed gives a soft musical note.",
+      "15–22s · The heroes lift it; hanging seed lanterns light a new passage."
+    ],
+    "play": "Tap the stone flower. The seed floats into the journey pouch.",
+    "change": "First song seed collected; the hidden garden stays lit.",
+    "hook": "Where does this new passage lead?",
+    "bridge": "Stages 6–10 · Help river creatures through familiar learning activities. Their gratitude opens the crossing."
+  },
+  {
+    "title": "The river joins in",
+    "heTitle": "הנהר מצטרף",
+    "stage": "After stage 10",
+    "short": "10",
+    "tone": "Play",
+    "duration": "20 sec",
+    "summary": "The river creatures unfold a bridge of giant lily pads. The journey begins to move.",
+    "alt": "Pink and blue blobs hop onto wide lily pads while friendly river creatures watch at sunset.",
+    "lines": [
+      [
+        "יצור הנהר",
+        "תודה שעזרתם! מוכנים לעבור?",
+        "Thanks for helping! Ready to cross?"
+      ],
+      [
+        "ניצוץ",
+        "אחת… שתיים… הופ!",
+        "One… two… hop!"
+      ],
+      [
+        "ניצוץ",
+        "גם אני קפצתי! בערך.",
+        "I jumped too! Sort of."
+      ]
+    ],
+    "shots": [
+      "0–6s · A river creature whistles. Lily pads unfold one after another.",
+      "6–14s · The heroes bounce across. Their floating friend proudly attempts a jump.",
+      "14–20s · From the far bank, lanterns appear among enormous roots."
+    ],
+    "play": "Tap a broad leaf for a little celebratory bounce. No timing test.",
+    "change": "A permanent crossing connects the two sides of the map.",
+    "hook": "Who lives among those lanterns?",
+    "bridge": "Stages 11–15 · Meet the woodland community. Shop requests now feel like helping travelers prepare for the road."
+  },
+  {
+    "title": "Lanterns in the roots",
+    "heTitle": "אורות בין השורשים",
+    "stage": "After stage 15",
+    "short": "15",
+    "tone": "Belonging",
+    "duration": "28 sec",
+    "summary": "The travelers find a bustling market—and learn that someone is dreaming inside the tree.",
+    "alt": "A warm lantern market inside giant roots, with woodland merchants and the blob heroes carrying a picnic basket.",
+    "lines": [
+      [
+        "הקיפוד",
+        "קחו צידה לדרך. העץ עוד רחוק.",
+        "Take some food for the journey. The tree is still far away."
+      ],
+      [
+        "ניצוץ",
+        "והעוגייה הזאת? גם היא לדרך?",
+        "And this cookie? Is it for the journey too?"
+      ],
+      [
+        "הקיפוד",
+        "כן. וכשתגיעו, תקשיבו. שומר היער שר מתוך שינה.",
+        "Yes. And when you arrive, listen. The forest guardian sings in his sleep."
+      ]
+    ],
+    "shots": [
+      "0–8s · Enter the warm market; familiar friends wave from their stalls.",
+      "8–19s · A hedgehog packs the basket. The spirit inspects a cookie upside down.",
+      "19–28s · The merchant points to a passage marked with a feather carving."
+    ],
+    "play": "Accept the picnic basket from the shopkeeper.",
+    "change": "The village stays lively; its residents become returning friends.",
+    "hook": "Who is the forest guardian?",
+    "bridge": "Stages 16–20 · Listen, recognize and arrange familiar vocabulary. Each small success makes the route to the echo cavern clearer."
+  },
+  {
+    "title": "Someone answers",
+    "heTitle": "מישהו עונה",
+    "stage": "After stage 20",
+    "short": "20",
+    "tone": "Safe mystery",
+    "duration": "25 sec",
+    "summary": "A tiny note receives a giant answer. A feather carving reveals the guardian’s shape.",
+    "alt": "A moonlit crystal cavern with a mirror lake, golden sound ripples and a feathered guardian mural.",
+    "lines": [
+      [
+        "ניצוץ",
+        "שלום?",
+        "Hello?"
+      ],
+      [
+        "ההד",
+        "שלום…",
+        "Hello…"
+      ],
+      [
+        "ניצוץ",
+        "זה לא הקול שלי. מישהו שר איתנו!",
+        "That isn’t my voice. Someone is singing with us!"
+      ]
+    ],
+    "shots": [
+      "0–8s · A single note travels across the mirror lake. Leave a short, quiet pause.",
+      "8–17s · A deeper, warm note answers. The feather mural shines softly.",
+      "17–25s · A second seed rises from the water; the root doorway opens."
+    ],
+    "play": "Touch the answering ripple to collect the second song seed.",
+    "change": "Second seed collected; an illuminated doorway replaces the closed passage.",
+    "hook": "The voice sounds enormous. What will its owner look like?",
+    "bridge": "Stages 21–25 · Continue the learning route into the roots. The guardian’s three-note melody becomes clearer as the children approach."
+  },
+  {
+    "title": "The sleeping guardian",
+    "heTitle": "שומר היער הישן",
+    "stage": "After stage 25",
+    "short": "25",
+    "tone": "Awe + affection",
+    "duration": "30 sec",
+    "summary": "The mysterious voice belongs to an enormous, gentle bird. A leaf tickles its beak.",
+    "alt": "A huge friendly cream-feathered guardian sleeps inside a living tree, with a leaf on its beak and the tiny heroes nearby.",
+    "lines": [
+      [
+        "ניצוץ",
+        "אז אתה זה ששר לנו.",
+        "So you’re the one who was singing to us."
+      ],
+      [
+        "שומר היער",
+        "מממ… עוד צליל אחד…",
+        "Mmm… one more note…"
+      ],
+      [
+        "ניצוץ",
+        "נמצא אותו. מבטיחים.",
+        "We’ll find it. We promise."
+      ]
+    ],
+    "shots": [
+      "0–9s · Camera climbs from tiny heroes to the enormous sleeping bird.",
+      "9–18s · A leaf lands on its beak. A sleepy puff sends it drifting onto the blue hero.",
+      "18–30s · The guardian hums two notes. The third fades. One final seed-shaped hollow lights up."
+    ],
+    "play": "Brush away the little leaf. The guardian gives a sleepy smile.",
+    "change": "The destination becomes a friend who needs help.",
+    "hook": "Can we find the missing note?",
+    "bridge": "Stages 26–30 · Help the last root-garden residents. Completing their activities reveals the third song seed."
+  },
+  {
+    "title": "Three little lights",
+    "heTitle": "שלושה אורות קטנים",
+    "stage": "After stage 30",
+    "short": "30",
+    "tone": "Purpose",
+    "duration": "24 sec",
+    "summary": "The last seed completes the collection. Three lights reconnect the roots to the guardian.",
+    "alt": "Three stone flower bowls hold glowing seeds as the two heroes place the final one, with the guardian asleep behind them.",
+    "lines": [
+      [
+        "ניצוץ",
+        "מצאנו את שלושתם!",
+        "We found all three!"
+      ],
+      [
+        "המספרת",
+        "כל זרע שמר חלק מהשיר. יחד, הם האירו את השורשים.",
+        "Each seed held a part of the song. Together, they lit the roots."
+      ],
+      [
+        "ניצוץ",
+        "עכשיו נעזור לו לשיר אותם יחד.",
+        "Now let’s help him sing them together."
+      ]
+    ],
+    "shots": [
+      "0–7s · The last seed joins the two already in the pouch.",
+      "7–17s · Place the three seeds in the stone flowers. Light runs into the roots.",
+      "17–24s · The guardian stirs; a path rises gently toward its resting place."
+    ],
+    "play": "Place each seed into its flower. No wrong slot.",
+    "change": "All three song seeds are visible at the tree; flowers open along its roots.",
+    "hook": "What happens when the whole song returns?",
+    "bridge": "Stages 31–35 · The last familiar activities prepare the awakening. Keep help available; the story does not depend on perfect scores."
+  },
+  {
+    "title": "One eye opens",
+    "heTitle": "עין אחת נפתחת",
+    "stage": "After stage 35",
+    "short": "35",
+    "tone": "Anticipation",
+    "duration": "20 sec",
+    "summary": "The guardian recognizes its helpers. The final stage will give it back its full song.",
+    "alt": "The huge feathered guardian opens one warm eye and begins raising a wing over the two little heroes.",
+    "lines": [
+      [
+        "שומר היער",
+        "שמעתי אתכם… כל הדרך.",
+        "I heard you… all the way here."
+      ],
+      [
+        "ניצוץ",
+        "אתה יכול כבר לעוף?",
+        "Can you fly yet?"
+      ],
+      [
+        "שומר היער",
+        "כמעט. נשיר יחד?",
+        "Almost. Shall we sing together?"
+      ]
+    ],
+    "shots": [
+      "0–7s · One friendly eye opens. The music holds a gentle unfinished phrase.",
+      "7–14s · One wing lifts. Dim strands of song begin turning into light.",
+      "14–20s · The guardian lowers its head to the children; three flowers await the final challenge."
+    ],
+    "play": "Touch the lit flower to enter stage 36.",
+    "change": "The finale opens: three short activities, one continuous awakening.",
+    "hook": "We’re going to see those wings open.",
+    "bridge": "Stage 36 · Memory reconnects the song; Shop gathers its familiar objects; House places them. Each completed round wakes one part of the guardian."
+  },
+  {
+    "title": "Our first flight",
+    "heTitle": "הטיסה הראשונה שלנו",
+    "stage": "After stage 36",
+    "short": "Finale",
+    "tone": "Joy + pride",
+    "duration": "35 sec",
+    "summary": "The guardian takes the heroes above the world they restored. Every place below is familiar.",
+    "alt": "The awakened cream-feathered guardian carries both blob heroes safely over a glowing valley at sunrise.",
+    "lines": [
+      [
+        "שומר היער",
+        "עכשיו תורי להראות לכם משהו.",
+        "Now it’s my turn to show you something."
+      ],
+      [
+        "ניצוץ",
+        "תראו! הגשר שלנו! והכפר!",
+        "Look! Our bridge! And the village!"
+      ],
+      [
+        "המספרת",
+        "היער שוב שר. ובשיר שלו היו גם הקולות שלנו.",
+        "The forest sang again. And our voices were part of its song."
+      ]
+    ],
+    "shots": [
+      "0–10s · Full wings unfold. The heroes settle into a soft nest of feathers.",
+      "10–27s · A smooth flight passes the waterfall, crossing, village and blooming tree.",
+      "27–35s · Friends wave from below. Hold on a celebration portrait, then return to the restored map."
+    ],
+    "play": "Point out the places you recognize. Save the journey portrait to the story album.",
+    "change": "A permanently restored world and a replayable ending; the adventure has a complete finish.",
+    "hook": "We did this. Look how far we came.",
+    "bridge": "After the journey · Revisit favorite games and replay unlocked scenes. No new task is required to keep the happy ending."
+  }
+]

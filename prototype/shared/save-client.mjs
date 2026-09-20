@@ -5,6 +5,8 @@ export function createSaveClient({ storage, fetcher, onStatus = () => {} }) {
   let records = cached ? JSON.parse(cached) : {};
   let running = null;
   let conflict = false;
+  let active = true;
+  let retired = false;
   const persist = () => storage.setItem(SAVE_CACHE_KEY, JSON.stringify(records));
   const status = value => onStatus(value);
   const client = {
@@ -25,6 +27,7 @@ export function createSaveClient({ storage, fetcher, onStatus = () => {} }) {
     getItem(key) { return records[key]?.value ?? null; },
     keys() { return Object.keys(records).filter(key => records[key].value !== null); },
     setItem(key, value) {
+      if (!active) throw new Error('This game tab has handed off its save session');
       if (conflict) throw new Error('Resolve the save conflict before continuing');
       const row = records[key] ?? { revision: 0, value: null };
       if (row.value === value) return;
@@ -36,7 +39,12 @@ export function createSaveClient({ storage, fetcher, onStatus = () => {} }) {
       queueMicrotask(() => { void client.flush(); });
     },
     removeItem(key) { client.setItem(key, null); },
+    retire() {
+      active = false;
+      return client.flush().finally(() => { retired = true; });
+    },
     flush() {
+      if (retired) return Promise.resolve();
       if (running) return running;
       if (conflict) return Promise.resolve();
       running = (async () => {

@@ -143,6 +143,59 @@
 @media (prefers-reduced-motion: reduce) {
     #memory-game-area, #memory-board .memory-card-back, #memory-board .memory-card-front { transition: none; }
 }
+/* The finished board remains visible until the child chooses Continue. */
+#memory-celebration {
+    position: fixed;
+    top: auto;
+    right: auto;
+    bottom: max(16px, env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    width: min(92vw, 680px);
+    height: auto;
+    padding: 0;
+    margin: 0;
+    background: none;
+    backdrop-filter: none;
+    opacity: 1;
+    z-index: 100;
+}
+#memory-celebration.is-visible { display: block; }
+#memory-celebration .memory-celebration-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    width: 100%;
+    padding: 14px 20px;
+    border: 2px solid #ecd59e;
+    border-radius: 22px;
+    transform: none;
+    background: #fff8e8;
+    box-shadow: 0 10px 30px #06162566;
+}
+#memory-celebration .memory-celebration-stars { font-size: 24px; }
+#memory-celebration .memory-celebration-title { font-size: 22px; margin: 0; color: #23443e; }
+#memory-celebration .memory-celebration-subtitle { display: none; }
+#memory-celebration .memory-celebration-next-btn {
+    margin: 0;
+    padding: 10px 22px;
+    font-size: 17px;
+    border-radius: 14px;
+    border: 0;
+    background: #4ea884;
+    color: #fff;
+    cursor: pointer;
+    font-family: 'Rubik', sans-serif;
+    font-weight: 700;
+}
+#memory-game-area.is-completing {
+    opacity: 0.9 !important;
+    pointer-events: auto;
+    transform: none !important;
+}
 
  :root[data-time-of-day="day"] {
     --day-garden-ink: #304f42;

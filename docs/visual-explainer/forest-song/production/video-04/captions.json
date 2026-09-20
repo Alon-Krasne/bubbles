@@ -1,0 +1,17 @@
+{
+  "videoId": "forest-video-04",
+  "cues": [
+    {
+      "start": 0.4,
+      "end": 5.7,
+      "en": "An old map shows us the way.",
+      "he": "מפה ישנה מראה לנו את הדרך."
+    },
+    {
+      "start": 6.4,
+      "end": 11.7,
+      "en": "One path is still dark. Who is waiting there?",
+      "he": "שביל אחד עדיין חשוך. מי מחכה שם?"
+    }
+  ]
+}

@@ -15,6 +15,7 @@
 </head>
 <body>
     <div id="game-container">
+        <div id="magic-reveal-screen" class="screen"></div>
         <!-- Game Select Screen -->
         <div id="game-select-screen" class="screen active">
             <div class="game-select-decoration game-select-decoration-sun" aria-hidden="true"></div>
@@ -170,6 +171,7 @@
             </section>
 
             <section id="shop-game-area" class="shop-game-area hidden" aria-label="משחק החנות הקטנה">
+                <button type="button" id="shop-translation-hint" class="translation-hint-button shop-hint-button" hidden aria-label="הפעלת רמזי תרגום">💡 רמז</button>
                 <img class="shop-scene-art" src="./prototype/assets/shop/moonlit-shop.webp" alt="" aria-hidden="true">
                 <div class="shop-fireflies" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
                 <div class="shop-game-toolbar">
@@ -191,7 +193,6 @@
                             <div class="shop-speech-bubble">
                                 <span id="shop-order-prompt" class="shop-order-prompt">אני רוצה בבקשה...</span>
                                 <button type="button" id="shop-order-replay-btn" class="shop-order-replay-btn" aria-label="השמעת ההזמנה שוב">🔊</button>
-                                <button type="button" id="shop-translation-hint" class="translation-hint-button" hidden>💡</button>
                             </div>
                         </div>
                     </div>

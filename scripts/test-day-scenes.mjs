@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 const browser = (...args) => execFileSync('agent-browser', ['--session', 'day-scenes-test', ...args], { encoding: 'utf8' });
 const origin = 'http://127.0.0.1:8788';
-const profile = { host: 'world-map', profile: 'day-scenes', profileName: 'Test', profileEmoji: '🫧', profileCharacter: 'dinosaur', profileLanguage: 'he' };
+const profile = { host: 'world-map', profile: 'day-scenes', profileName: 'Test', profileEmoji: '🫧', profileCharacter: 'dinosaur', profileLanguage: 'he', destination: 'wonder' };
 const scenes = [
   ['memory', `/index.html?${new URLSearchParams({ ...profile, activity: 'memory-garden', level: 'trail-memory-1', stage: '1' })}`, '#memory-screen', 'backgroundImage', '.memory-card', 'sunlit-garden'],
-  ['shop', `/index.html?${new URLSearchParams({ ...profile, activity: 'listening-shop', level: 'trail-shop-11', stage: '32' })}`, '.shop-scene-art', 'content', '.shop-game-area:not(.hidden)', 'sunlit-shop'],
+  ['shop', `/index.html?${new URLSearchParams({ ...profile, activity: 'listening-shop', level: 'trail-shop-8', stage: '32' })}`, '.shop-scene-art', 'content', '.shop-game-area:not(.hidden)', 'sunlit-shop'],
   ['house', '/prototype/magic-house.html', '.room-canvas', 'backgroundImage', '.room-canvas', 'sunlit-room'],
 ];
 try {

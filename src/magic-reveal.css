@@ -1,0 +1,41 @@
+#magic-reveal-screen { --reveal-ink:#254b42; --reveal-paper:#fff3db; --reveal-gold:#dccda3; --reveal-success:#a9d2a0; overflow-y:auto; background:radial-gradient(ellipse at 20% 0,#325b62,#142c3c 65%); color:#fff4dc; padding:24px; }
+#magic-reveal-screen.active { display:block; overflow-y:auto; overflow-x:hidden; }
+.reveal-header { display:flex; align-items:center; gap:24px; padding-right:120px; max-width:1250px; margin:0 auto 20px; }
+.reveal-header h1 { font:clamp(27px,4vw,42px) 'Secular One',sans-serif; margin:4px 0; }
+.reveal-header small { color:#b5d0c5; }
+.reveal-header button, .reveal-clue button, #reveal-next { min-height:48px; border:1px solid #ddce9f; border-radius:15px; background:#fff2d2; color:#24423d; padding:10px 18px; font:700 17px 'Rubik',sans-serif; cursor:pointer; }
+.reveal-stage { max-width:1250px; margin:auto; display:grid; grid-template-columns:1.25fr 1fr; align-items:center; gap:30px; }
+.reveal-picture { position:relative; aspect-ratio:16/10; border:6px solid #bfa775; border-radius:30px; overflow:hidden; box-shadow:0 14px 40px #07131c60; }
+.reveal-picture img { width:100%;height:100%;object-fit:cover; }
+.reveal-curtain { position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr); }
+.reveal-curtain span { display:grid;place-items:center;background:linear-gradient(135deg,#50695f,#243e40);border:1px solid #acbf9722;color:#d5be7c;font-size:30px;transition:opacity .6s,transform .6s; }
+.reveal-curtain .revealed { opacity:0;transform:scale(.85); }
+.reveal-puzzle { text-align:center; }
+.reveal-clue { display:flex;justify-content:center;align-items:center;gap:16px;margin:0 0 20px; }
+#reveal-clue-picture { font-size:48px; }
+#reveal-word { display:flex;justify-content:center;gap:8px; }
+#reveal-word span { display:grid;place-items:center;min-width:38px;height:54px;border-bottom:3px solid #e7c987;font:700 32px 'Rubik',sans-serif; }
+#reveal-message { min-height:48px;color:#e0eedf;font-size:17px; }
+#reveal-keyboard { display:flex;flex-wrap:wrap;justify-content:center;gap:8px; }
+#reveal-keyboard button { width:44px;height:48px;border:1px solid var(--reveal-gold);border-radius:12px;background:var(--reveal-paper);color:var(--reveal-ink);font:700 23px 'Rubik',sans-serif;cursor:pointer; }
+#reveal-keyboard button:disabled { opacity:.3;cursor:default; }
+#reveal-keyboard button.correct:disabled { opacity:1;background:var(--reveal-success); }
+#reveal-next { margin-top:20px;background:#d9eccb; }
+#reveal-progress { display:block;margin:18px;color:#b7d2c5; }
+@media(max-width:800px) { #magic-reveal-screen{padding:16px;} .reveal-header{padding-top:60px;padding-right:0;gap:16px;} .reveal-stage{grid-template-columns:1fr;gap:24px;} .reveal-picture{max-width:580px;width:100%;margin:auto;aspect-ratio:16/9;} #reveal-keyboard{max-width:480px;margin:auto;} }
+@media(prefers-reduced-motion:reduce){.reveal-curtain span{transition:none;}}
+#reveal-word { flex-wrap:wrap; column-gap:18px; row-gap:12px; }
+.reveal-word-group { display:flex; justify-content:center; gap:5px; max-width:100%; }
+#reveal-word span { min-width:0; width:clamp(18px,3vw,38px); flex-shrink:1; }
+#reveal-word span.separator { border:0; width:16px; }
+@media(max-width:480px) { #reveal-word span { width:25px;height:42px;font-size:24px; } .reveal-word-group { gap:3px; } }
+@media (max-height: 540px) {
+  #magic-reveal-screen { padding: 12px 16px; }
+  .reveal-header { margin: 0 auto 10px; }
+  .reveal-header h1 { font-size: 24px; }
+  .reveal-header small { display: none; }
+  .reveal-clue { margin: 0 0 10px; }
+  #reveal-clue-picture { font-size: 36px; }
+  #reveal-message { min-height: 32px; font-size: 15px; margin: 6px 0; }
+  .reveal-picture { max-height: 220px; border-radius: 20px; }
+}
