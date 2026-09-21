@@ -1,6 +1,6 @@
 # Picture-reveal illustrations
 
-Generated with Codex's built-in imagegen tool on 2026-09-20, exclusively for the picture-reveal activity. These are reward scenes, independent of the vocabulary clue. They replace reused forest video stills. Each source is 1586 × 992; shipped as WebP quality 82 (eight scenes, approximately 3 MB for the set).
+Generated with Codex's built-in imagegen tool on 2026-09-20 and 2026-09-21, exclusively for the picture-reveal activity. These are reward scenes, independent of the vocabulary clue. They replace reused forest video stills. Each source is 1586 × 992; shipped as WebP quality 82 (nine scenes, approximately 3 MB for the set).
 
 Prompt set (shared direction): landscape 16:10 full-bleed children's picture-reveal artwork for ages 4–7; tactile cut-paper and gouache storybook style; pastel coral, seafoam, butter yellow and lavender; friendly rounded forms; interesting discoveries distributed across the frame for a 4×3 hidden-tile board. No grid, text, letters, border, UI or watermark; no photorealism or cinematic video-still appearance.
 
@@ -13,5 +13,7 @@ Prompt set (shared direction): landscape 16:10 full-bleed children's picture-rev
 - `snowy-village.webp`: rounded cottages with glowing windows, penguins building a snow-penguin, polar bear cub pulling a sled, snowy pines, frozen pond and pink sky.
 - `butterfly-garden.webp`: oversized flowers, friendly patterned butterflies, hedgehog watering seedlings, arched stream bridge, leaf-roofed shed and stepping stones.
 - `dragon-library.webp`: cuddly mint-green dragon reading a picture book to a rabbit and owl, curved bookshelves, cushions, lanterns, spiral staircase, round window, teapot and plants; no fire or lettering on books.
+
+- `seaside-bubble-workshop.webp`: approved September 21 demo; an otter in a seafoam apron blowing a large transparent iridescent bubble on a seaside boardwalk, a delighted rabbit, yellow duck and ceramic bubble bowl; coral-and-cream workshop awning, glass jars, turquoise sea, sailboat, lighthouse, wildflowers and shells. Clear central focus, airy translucent bubbles and readable expressions in the same tactile gouache/cut-paper style. Generated with the built-in image tool.
 
 The activity shuffles the set and puts pictures this child has not collected first, without repeats within any current level (three to five words). Completing a word adds its picture to the child’s cloud-saved gallery immediately. Starter letters, tile order and letter choices randomize separately each round.

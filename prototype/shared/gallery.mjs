@@ -5,6 +5,7 @@ export const REVEAL_PICTURES = [
   ['moon-garden', 'גן הירח'], ['woodland-bakery', 'מאפיית היער'],
   ['rainbow-railway', 'רכבת הקשת'], ['snowy-village', 'כפר השלג'],
   ['butterfly-garden', 'גן הפרפרים'], ['dragon-library', 'ספריית הדרקון'],
+  ['seaside-bubble-workshop', 'סדנת הבועות על הים'],
 ].map(([id, title]) => ({ id, title, src: `assets/reveal/${id}.webp` }));
 
 export const getGalleryKey = profileId => `gallery-${profileId}`;

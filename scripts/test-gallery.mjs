@@ -3,7 +3,7 @@ import { REVEAL_PICTURES, collectPicture, getGalleryItems } from '../prototype/s
 import { createForestProgress, getRouteKey } from '../prototype/shared/destinations.mjs';
 const records = new Map();
 const storage = {getItem: key => records.get(key) ?? null, setItem: (key,value) => records.set(key,value)};
-assert.equal(getGalleryItems('lotem',storage).length,17);
+assert.equal(getGalleryItems('lotem',storage).length,18);
 assert.equal(getGalleryItems('lotem',storage).filter(item=>item.unlocked).length,0);
 collectPicture('lotem',REVEAL_PICTURES[0].id,storage);
 collectPicture('lotem',REVEAL_PICTURES[0].id,storage);
@@ -22,11 +22,11 @@ assert.equal(getGalleryItems('lotem',storage).filter(item=>item.type==='video' &
 assert.equal(getGalleryItems('tom',storage).filter(item=>item.unlocked).length,0);
 const {getPictureOrder} = await import('../prototype/shared/gallery.mjs');
 const order = getPictureOrder([REVEAL_PICTURES[0].id],()=>0.5);
-assert.equal(order.length,8);
-assert.equal(new Set(order.map(item=>item.id)).size,8);
-assert.equal(order[7].id,REVEAL_PICTURES[0].id,'Uncollected pictures come first');
+assert.equal(order.length,9);
+assert.equal(new Set(order.map(item=>item.id)).size,9);
+assert.equal(order[8].id,REVEAL_PICTURES[0].id,'Uncollected pictures come first');
 assert.notDeepEqual(order.map(item=>item.id),getPictureOrder([REVEAL_PICTURES[0].id],()=>0).map(item=>item.id));
-assert.equal(getPictureOrder(REVEAL_PICTURES.map(item=>item.id)).length,8,'All-collected games remain playable');
+assert.equal(getPictureOrder(REVEAL_PICTURES.map(item=>item.id)).length,9,'All-collected games remain playable');
 console.log('PASS: videos combine both learning languages; shuffled picture order prefers unseen art without repeats.');
 
 const { GAME_LEVELS } = await import('../prototype/shared/trail-catalog.mjs');
