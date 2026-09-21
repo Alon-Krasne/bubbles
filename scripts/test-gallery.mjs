@@ -1,0 +1,35 @@
+import assert from 'node:assert/strict';
+import { REVEAL_PICTURES, collectPicture, getGalleryItems } from '../prototype/shared/gallery.mjs';
+import { createForestProgress, getRouteKey } from '../prototype/shared/destinations.mjs';
+const records = new Map();
+const storage = {getItem: key => records.get(key) ?? null, setItem: (key,value) => records.set(key,value)};
+assert.equal(getGalleryItems('lotem',storage).length,18);
+assert.equal(getGalleryItems('lotem',storage).filter(item=>item.unlocked).length,0);
+collectPicture('lotem',REVEAL_PICTURES[0].id,storage);
+collectPicture('lotem',REVEAL_PICTURES[0].id,storage);
+assert.equal(getGalleryItems('lotem',storage).filter(item=>item.unlocked).length,1);
+assert.equal(getGalleryItems('tom',storage).filter(item=>item.unlocked).length,0);
+const reloadedStorage={getItem:key=>JSON.parse(JSON.stringify([...records])).find(([id])=>id===key)?.[1] ?? null};
+assert.equal(getGalleryItems('lotem',reloadedStorage)[0].unlocked,true);
+assert.throws(()=>collectPicture('lotem','unknown',storage));
+console.log('PASS: picture collection persists, deduplicates, rejects unknown IDs and stays separate per child.');
+
+const enRoute = createForestProgress(); enRoute.unlockedVideos.push('forest-video-02');
+const heRoute = createForestProgress(); heRoute.unlockedVideos.push('forest-video-03');
+storage.setItem(getRouteKey('lotem','forest','en'),JSON.stringify(enRoute));
+storage.setItem(getRouteKey('lotem','forest','he'),JSON.stringify(heRoute));
+assert.equal(getGalleryItems('lotem',storage).filter(item=>item.type==='video' && item.unlocked).length,3);
+assert.equal(getGalleryItems('tom',storage).filter(item=>item.unlocked).length,0);
+const {getPictureOrder} = await import('../prototype/shared/gallery.mjs');
+const order = getPictureOrder([REVEAL_PICTURES[0].id],()=>0.5);
+assert.equal(order.length,9);
+assert.equal(new Set(order.map(item=>item.id)).size,9);
+assert.equal(order[8].id,REVEAL_PICTURES[0].id,'Uncollected pictures come first');
+assert.notDeepEqual(order.map(item=>item.id),getPictureOrder([REVEAL_PICTURES[0].id],()=>0).map(item=>item.id));
+assert.equal(getPictureOrder(REVEAL_PICTURES.map(item=>item.id)).length,9,'All-collected games remain playable');
+console.log('PASS: videos combine both learning languages; shuffled picture order prefers unseen art without repeats.');
+
+const { GAME_LEVELS } = await import('../prototype/shared/trail-catalog.mjs');
+for (const level of GAME_LEVELS.reveal) assert.ok(level.wordCount <= REVEAL_PICTURES.length);
+const { existsSync } = await import('node:fs');
+for (const picture of REVEAL_PICTURES) assert.ok(existsSync(new URL(`../prototype/${picture.src}`,import.meta.url)));

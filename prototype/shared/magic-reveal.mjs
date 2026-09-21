@@ -23,3 +23,26 @@ export function getInitialRevealedLetters(word, random = Math.random) {
   }
   return chosen;
 }
+
+function shuffled(items, random) {
+  const result = [...items];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+export function createRevealTileOrder(random = Math.random) {
+  return shuffled(Array.from({ length: 12 }, (_, index) => index), random);
+}
+
+export function getRevealChoices(word, guesses, alphabet, random = Math.random) {
+  const state = getRevealState(word, guesses);
+  if (state.complete) return [];
+  const chosen = new Set(guesses.map(letter => letter.toLocaleUpperCase()));
+  const remaining = [...new Set(state.letters)].filter(letter => !chosen.has(letter));
+  const answer = remaining[Math.floor(random() * remaining.length)];
+  const distractors = shuffled([...alphabet].filter(letter => !state.letters.includes(letter) && !chosen.has(letter)), random).slice(0, 2);
+  return shuffled([answer, ...distractors], random);
+}

@@ -1,6 +1,6 @@
 {
   "name": "bubbles-game",
-  "version": "7.24.0",
+  "version": "7.26.1",
   "description": "בועות! - A cooperative bubble-catching game for two players",
   "main": "index.html",
   "scripts": {
@@ -44,7 +44,8 @@
     "bundle": "vite build",
     "share": "vite build && open dist/index.html",
     "release": "npm version major --no-git-tag-version && bun run bundle",
-    "test:forest": "node scripts/run-forest-acceptance.mjs"
+    "test:forest": "node scripts/run-forest-acceptance.mjs",
+    "test:gallery": "node scripts/test-gallery.mjs"
   },
   "keywords": [
     "game",

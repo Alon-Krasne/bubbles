@@ -1,3 +1,5 @@
+import { openGallery } from './gallery.js';
+import { getGalleryKey } from './shared/gallery.mjs';
 import { FOREST_CAPTIONS } from './shared/forest-captions.mjs';
 import { LEGACY_TRAIL_STAGES, TRAIL_CHAPTERS, TRAIL_STAGES } from './shared/trail-catalog.mjs';
 import { createJourneyOrder, applyJourneyOrder } from './shared/journey-order.mjs';
@@ -1136,6 +1138,7 @@ function confirmProfileDeletion() {
   const deletedId = profiles[deletedIndex].id;
   clearProfileRounds(deletedId);
   saveStorage.removeItem(`route-${deletedId}`);
+  saveStorage.removeItem(getGalleryKey(deletedId));
   for (const lang of Object.keys(languageOptions)) {
     saveStorage.removeItem(getRouteKey(deletedId, 'forest', lang));
   }
@@ -1464,6 +1467,7 @@ forestStoriesButton.addEventListener('click', () => {
 });
 
 document.addEventListener('keydown', (event) => {
+  if (document.querySelector('.collection-gallery[open]')) return;
   const modal = !forestMilestoneDialog.hidden ? forestMilestoneDialog : !forestCharacterPicker.hidden ? forestCharacterPicker : null;
   if (modal && event.key === 'Tab') {
     const controls = [...modal.querySelectorAll('button, select, video[controls]')];
@@ -1514,3 +1518,7 @@ window.addEventListener('resize', () => {
 setProfile(activeProfileId);
 destinationGateWasOpen = true;
 openGate();
+
+for (const id of ['gallery-button', 'destination-gallery-button']) {
+  document.getElementById(id).addEventListener('click', () => openGallery(getProfile(), saveStorage));
+}

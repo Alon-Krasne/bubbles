@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>עולם הבועות - אבטיפוס</title>
   <link rel="stylesheet" href="./world-map.css">
+  <link rel="stylesheet" href="./gallery.css">
 </head>
 <body data-prototype="unified-world-map">
   <main class="world" id="world" aria-label="מפת עולם הבועות" aria-hidden="true" inert>
@@ -40,6 +41,7 @@
         </div>
 
         <div class="world-actions">
+          <button id="gallery-button" class="destinations-nav-button" type="button">הגלריה שלי 🖼️</button>
           <button id="forest-stories-button" class="destinations-nav-button" type="button" hidden>סיפורי היער ▶</button>
           <button class="destinations-nav-button" id="destinations-nav-button" type="button" aria-label="בחירת יעד למסע: איפה נטייל היום?" title="בחירת יעד למסע">
             <span class="destinations-nav-icon" aria-hidden="true">🗺️</span>
@@ -249,6 +251,7 @@
         </button>
         <span class="destination-kicker">יוצאים להרפתקה</span>
         <h1>איפה נטייל היום?</h1>
+        <button id="destination-gallery-button" class="destinations-nav-button" type="button">הגלריה שלי 🖼️</button>
       </header>
 
       <div class="destination-cards" aria-label="יעדים לבחירה">
