@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>שבלונות וצבע — Tap & Fill Studio</title>
+<style>
+  :root {
+    --bg: #F7F5FA;
+    --card: #FFFFFF;
+    --coral: #FF6B8B;
+    --mint: #38D9A9;
+    --sun: #FFD43B;
+    --sky: #4DABF7;
+    --purple: #845EF7;
+    --text: #2D3436;
+    --outline: #2D3436;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Rubik', system-ui, -apple-system, sans-serif;
+    background: radial-gradient(circle at 10% 20%, #FFF0F5 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, #E8F7FF 0%, transparent 45%),
+                var(--bg);
+    min-height: 100vh;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--text);
+    user-select: none;
+  }
+  header {
+    width: 100%;
+    max-width: 920px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .nav-btn {
+    background: white;
+    border: 2px solid #E4D8EB;
+    border-radius: 20px;
+    padding: 8px 18px;
+    font-weight: 700;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 15px;
+    box-shadow: 0 4px 0 #E4D8EB;
+  }
+  .nav-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #E4D8EB; }
+
+  /* Studio Stage */
+  .studio-layout {
+    width: 100%;
+    max-width: 920px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .canvas-card {
+    width: 100%;
+    background: white;
+    border-radius: 32px;
+    padding: 24px;
+    box-shadow: 0 12px 36px rgba(132, 94, 247, 0.08), 0 4px 0 #E4D8EB;
+    border: 3px solid #ECE4F2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+  .canvas-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .word-target {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--purple);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .word-target span {
+    font-size: 14px;
+    background: #EDE8F7;
+    color: var(--purple);
+    padding: 4px 12px;
+    border-radius: 14px;
+  }
+  .paint-action-hint {
+    font-size: 15px;
+    font-weight: 700;
+    color: #888;
+  }
+
+  /* SVG Coloring Art */
+  .svg-canvas-box {
+    width: min(100%, 380px);
+    aspect-ratio: 1;
+    cursor: pointer;
+  }
+  .svg-canvas-box svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 6px 16px rgba(0,0,0,0.06));
+  }
+  .paint-zone {
+    cursor: pointer;
+    transition: fill 250ms cubic-bezier(0.34, 1.56, 0.64, 1), transform 200ms ease;
+  }
+  .paint-zone:hover {
+    filter: brightness(1.1);
+  }
+  .paint-zone.pop-fill {
+    animation: zonePop 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes zonePop {
+    0% { transform: scale(0.97); }
+    50% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+  }
+
+  /* Bottom Palette: Paint Jars */
+  .palette-bar {
+    width: 100%;
+    background: white;
+    border-radius: 28px;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.05), 0 3px 0 #E4D8EB;
+    border: 3px solid #ECE4F2;
+    overflow-x: auto;
+  }
+  .palette-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #999;
+    white-space: nowrap;
+    margin-left: 8px;
+  }
+  .paint-jar {
+    width: 64px;
+    height: 72px;
+    border-radius: 20px;
+    border: 3px solid #2D3436;
+    box-shadow: 0 5px 0 #2D3436;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: 8px;
+    transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+  }
+  .paint-jar::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 12px;
+    right: 12px;
+    height: 10px;
+    background: rgba(255,255,255,0.45);
+    border-radius: 8px;
+  }
+  .paint-jar.active {
+    transform: translateY(-8px) scale(1.12);
+    box-shadow: 0 10px 0 #2D3436, 0 12px 24px rgba(0,0,0,0.15);
+  }
+  .paint-jar-letter {
+    font-size: 20px;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+
+  /* Jar Colors */
+  .jar-red    { background: linear-gradient(180deg, #FF6B8B 0%, #E83E65 100%); }
+  .jar-yellow { background: linear-gradient(180deg, #FFD43B 0%, #FCC419 100%); }
+  .jar-green  { background: linear-gradient(180deg, #51CF66 0%, #37B24D 100%); }
+  .jar-blue   { background: linear-gradient(180deg, #4DABF7 0%, #228BE6 100%); }
+  .jar-purple { background: linear-gradient(180deg, #B197FC 0%, #845EF7 100%); }
+  .jar-orange { background: linear-gradient(180deg, #FFA94D 0%, #F76707 100%); }
+
+  .clear-btn {
+    margin-right: auto;
+    background: #F1F3F5;
+    border: 2px solid #DEE2E6;
+    border-radius: 16px;
+    padding: 8px 16px;
+    font-weight: 700;
+    color: #666;
+    cursor: pointer;
+  }
+  .clear-btn:active { transform: translateY(2px); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="nav-btn" href="index.html">← חזרה למשחקים</a>
+  <h1 style="color:var(--purple); font-size:22px; font-weight:800;">שבלונות וצבע · Tap & Fill</h1>
+  <button class="clear-btn" onclick="clearCanvas()">איפוס צבעים ↺</button>
+</header>
+
+<div class="studio-layout">
+  <!-- Interactive Coloring Book Canvas -->
+  <div class="canvas-card">
+    <div class="canvas-header">
+      <div class="word-target">
+        פרפר / BUTTERFLY
+        <span>געו באזור כדי לצבוע!</span>
+      </div>
+      <div class="paint-action-hint" id="active-color-name">
+        צבע נבחר: ורוד 🎨
+      </div>
+    </div>
+
+    <div class="svg-canvas-box">
+      <svg viewBox="0 0 320 320">
+        <!-- Background soft shine -->
+        <circle cx="160" cy="160" r="140" fill="#FFFBF5"/>
+
+        <!-- Upper Wings (Left & Right) -->
+        <path id="part-wing-tl" class="paint-zone"
+              d="M150 140 C110 50, 40 40, 30 90 C20 140, 80 180, 150 160 Z"
+              fill="#FFFFFF" stroke="#2D3436" stroke-width="5" stroke-linejoin="round"/>
+        <path id="part-wing-tr" class="paint-zone"
+              d="M170 140 C210 50, 280 40, 290 90 C300 140, 240 180, 170 160 Z"
+              fill="#FFFFFF" stroke="#2D3436" stroke-width="5" stroke-linejoin="round"/>
+
+        <!-- Wing Circles / Stencils -->
+        <circle id="part-spot-tl" class="paint-zone" cx="80" cy="100" r="22"
+                fill="#FFFFFF" stroke="#2D3436" stroke-width="4.5"/>
+        <circle id="part-spot-tr" class="paint-zone" cx="240" cy="100" r="22"
+                fill="#FFFFFF" stroke="#2D3436" stroke-width="4.5"/>
+
+        <!-- Lower Wings (Left & Right) -->
+        <path id="part-wing-bl" class="paint-zone"
+              d="M150 165 C100 180, 60 215, 75 250 C95 280, 140 240, 155 190 Z"
+              fill="#FFFFFF" stroke="#2D3436" stroke-width="5" stroke-linejoin="round"/>
+        <path id="part-wing-br" class="paint-zone"
+              d="M170 165 C220 180, 260 215, 245 250 C225 280, 180 240, 165 190 Z"
+              fill="#FFFFFF" stroke="#2D3436" stroke-width="5" stroke-linejoin="round"/>
+
+        <!-- Lower Spots -->
+        <circle id="part-spot-bl" class="paint-zone" cx="110" cy="225" r="14"
+                fill="#FFFFFF" stroke="#2D3436" stroke-width="4"/>
+        <circle id="part-spot-br" class="paint-zone" cx="210" cy="225" r="14"
+                fill="#FFFFFF" stroke="#2D3436" stroke-width="4"/>
+
+        <!-- Antennae -->
+        <path d="M150 110 Q130 70 115 75" fill="none" stroke="#2D3436" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="113" cy="74" r="5" fill="#2D3436"/>
+        <path d="M170 110 Q190 70 205 75" fill="none" stroke="#2D3436" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="207" cy="74" r="5" fill="#2D3436"/>
+
+        <!-- Body -->
+        <rect id="part-body" class="paint-zone" x="146" y="110" width="28" height="100" rx="14"
+              fill="#FFFFFF" stroke="#2D3436" stroke-width="5"/>
+
+        <!-- Cute Kawaii Face on Head -->
+        <circle cx="154" cy="130" r="3.5" fill="#2D3436"/>
+        <circle cx="166" cy="130" r="3.5" fill="#2D3436"/>
+        <path d="M158 138 Q160 142 162 138" fill="none" stroke="#2D3436" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Cheeks -->
+        <ellipse cx="150" cy="135" rx="3.5" ry="2" fill="#FFAAA6"/>
+        <ellipse cx="170" cy="135" rx="3.5" ry="2" fill="#FFAAA6"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Bottom Palette: Paint Jars with Letter Stencils -->
+  <div class="palette-bar">
+    <span class="palette-title">צנצנות צבע:</span>
+
+    <div class="paint-jar jar-red active" data-color="#FF6B8B" data-name="ורוד">
+      <span class="paint-jar-letter">R</span>
+    </div>
+    <div class="paint-jar jar-yellow" data-color="#FFD43B" data-name="צהוב">
+      <span class="paint-jar-letter">Y</span>
+    </div>
+    <div class="paint-jar jar-green" data-color="#51CF66" data-name="ירוק">
+      <span class="paint-jar-letter">G</span>
+    </div>
+    <div class="paint-jar jar-blue" data-color="#4DABF7" data-name="תכלת">
+      <span class="paint-jar-letter">B</span>
+    </div>
+    <div class="paint-jar jar-purple" data-color="#B197FC" data-name="סגול">
+      <span class="paint-jar-letter">P</span>
+    </div>
+    <div class="paint-jar jar-orange" data-color="#FFA94D" data-name="כתום">
+      <span class="paint-jar-letter">O</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// Audio synthesizer for pop sounds
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playFillPop(pitch = 500) {
+  try {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(pitch, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(pitch * 1.5, audioCtx.currentTime + 0.15);
+    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.2);
+  } catch(e) {}
+}
+
+let activeColor = '#FF6B8B';
+
+// Select Paint Jar
+document.querySelectorAll('.paint-jar').forEach(jar => {
+  jar.addEventListener('click', () => {
+    document.querySelectorAll('.paint-jar').forEach(j => j.classList.remove('active'));
+    jar.classList.add('active');
+    activeColor = jar.dataset.color;
+    document.getElementById('active-color-name').textContent = `צבע נבחר: ${jar.dataset.name} 🎨`;
+    playFillPop(380);
+  });
+});
+
+// Tap to fill zones
+document.querySelectorAll('.paint-zone').forEach(zone => {
+  zone.addEventListener('click', () => {
+    zone.setAttribute('fill', activeColor);
+    zone.classList.remove('pop-fill');
+    void zone.offsetWidth;
+    zone.classList.add('pop-fill');
+    playFillPop(620);
+  });
+});
+
+function clearCanvas() {
+  document.querySelectorAll('.paint-zone').forEach(zone => {
+    zone.setAttribute('fill', '#FFFFFF');
+  });
+  playFillPop(300);
+}
+</script>
+</body>
+</html>

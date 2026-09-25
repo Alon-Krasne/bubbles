@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>ג · שביל הצעדים — אב-טיפוס</title>
+<style>
+  :root {
+    --sky: #cfeaff;
+    --sky-deep: #a6c8ec;
+    --grass: #8ac46c;
+    --grass-dark: #6ba84a;
+    --stone: #bca58b;
+    --stone-dark: #8a7158;
+    --bunny: #bca897;
+    --bunny-c: #e8d5c5;
+    --sun: #FFC93C;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Rubik', system-ui, sans-serif;
+    background: linear-gradient(180deg, var(--sky) 0%, #eaf4fb 60%, var(--grass) 100%);
+    min-height: 100vh;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    color: #2D3436;
+  }
+  header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  header a, header span.counter {
+    background: white;
+    border-radius: 18px;
+    padding: 6px 14px;
+    font-weight: 700;
+    color: #6a4ca8;
+    text-decoration: none;
+    font-size: 14px;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.05);
+  }
+  h1 {
+    color: #5a3a1a;
+    font-size: clamp(20px, 2.6vw, 28px);
+    font-weight: 800;
+  }
+  .scene {
+    position: relative;
+    width: min(880px, 100%);
+    aspect-ratio: 16 / 8;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+    background:
+      radial-gradient(circle at 75% 25%, rgba(255, 240, 180, 0.5) 0%, transparent 50%),
+      linear-gradient(180deg, var(--sky) 0%, var(--sky-deep) 50%, #d4e8c4 70%, var(--grass) 100%);
+  }
+  .ground {
+    position: absolute;
+    inset: 60% 0 0 0;
+    background: linear-gradient(180deg, #c2dd9e 0%, var(--grass) 50%, var(--grass-dark) 100%);
+  }
+  .ground::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 10% 20%, rgba(255,255,255,0.4) 0 1.5px, transparent 3px),
+      radial-gradient(circle at 30% 70%, rgba(255,255,255,0.05) 0 2px, transparent 4px),
+      radial-gradient(circle at 80% 30%, rgba(255,255,255,0.05) 0 2px, transparent 4px),
+      radial-gradient(circle at 60% 85%, rgba(255,255,255,0.05) 0 2px, transparent 4px);
+  }
+
+  .sun {
+    position: absolute;
+    top: 5%;
+    right: 6%;
+    width: 80px;
+    height: 80px;
+    background: radial-gradient(circle at 50% 50%, #fff3b0 0%, var(--sun) 60%, #f1a000 100%);
+    border-radius: 50%;
+    box-shadow: 0 0 60px rgba(255, 222, 130, 0.65);
+  }
+  .sun::before {
+    content: '';
+    position: absolute;
+    top: 30%; left: 30%;
+    width: 8px; height: 12px;
+    background: #2D3436;
+    border-radius: 50%;
+    box-shadow: 22px 0 0 #2D3436;
+  }
+  .sun::after {
+    content: '';
+    position: absolute;
+    top: 55%; left: 32%;
+    width: 26px; height: 10px;
+    border: 3px solid #2D3436;
+    border-top: 0;
+    border-radius: 0 0 16px 16px;
+  }
+
+  .cloud {
+    position: absolute;
+    background: white;
+    border-radius: 50px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  }
+  .cloud.c1 { top: 14%; left: 8%; width: 110px; height: 38px; }
+  .cloud.c2 { top: 8%; left: 36%; width: 80px; height: 28px; opacity: 0.85; }
+
+  .tree {
+    position: absolute;
+    bottom: 22%;
+  }
+  .tree.left { left: 4%; }
+  .tree.right { right: 4%; }
+  .tree .trunk {
+    position: relative;
+    width: 24px; height: 60px;
+    background: #6e4e2a;
+    margin: 0 auto;
+    border-radius: 4px;
+  }
+  .tree .top {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 130px; height: 130px;
+    background: radial-gradient(circle at 50% 50%, #a0d068 0%, #6ba84a 70%, #4a8a2a 100%);
+    border-radius: 50%;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  }
+  .tree.right .top { background: radial-gradient(circle at 50% 50%, #ffd9a0 0%, #ffb070 70%, #d97a40 100%); }
+  .tree.left .top::before, .tree.right .top::before {
+    content: '';
+    position: absolute;
+    top: 20%; left: 50%;
+    width: 32px; height: 32px;
+    background: rgba(255,255,255,0.18);
+    border-radius: 50%;
+    transform: translateX(-60%);
+  }
+
+  .path {
+    position: absolute;
+    bottom: 18%;
+    left: 50%;
+    transform: translateX(-50%) skewX(-15deg);
+    width: 78%;
+    height: 90px;
+    background:
+      repeating-linear-gradient(90deg,
+        var(--stone) 0 28px,
+        var(--stone-dark) 28px 32px);
+    border-radius: 30px;
+    box-shadow:
+      inset 0 -8px 0 rgba(0,0,0,0.15),
+      0 8px 14px rgba(0,0,0,0.18);
+  }
+  .path::before, .path::after {
+    content: '';
+    position: absolute;
+    border: 5px solid rgba(255,255,255,0.45);
+  }
+  .path::before {
+    top: -2px; bottom: -2px; left: 4px; right: 4px;
+    border-radius: 30px;
+  }
+  .path::after {
+    top: 0; bottom: 0; left: 50%;
+    width: 1px; background: rgba(0,0,0,0.1);
+    transform: translateX(-50%);
+  }
+  .slot {
+    position: absolute;
+    top: 30%;
+    width: 70px; height: 70px;
+    background: rgba(255,255,255,0.45);
+    border: 4px dashed rgba(0,0,0,0.25);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+    color: rgba(0,0,0,0.4);
+    transition: border-color 250ms ease, background-color 250ms ease;
+transform: skewX(15deg);
+  }
+  .slot.s1 { left: 18%; }
+  .slot.s2 { left: 45%; }
+  .slot.s3 { left: 72%; }
+  .slot.target-here {
+    border-color: var(--sun);
+    background: rgba(255, 222, 130, 0.55);
+  }
+  .slot.filled {
+    border: 4px solid var(--grass-dark);
+    background: rgba(255,255,255,0.9);
+    font-size: 36px;
+  }
+  .slot.filled span:not(.slot-num) { transform: skewX(15deg); display: inline-block; }
+
+  .bunny {
+    position: absolute;
+    bottom: 22%;
+    left: 23%;
+    width: 56px; height: 70px;
+    transform: skewX(15deg);
+    transition: left 600ms ease, bottom 600ms ease, transform 600ms ease;
+    z-index: 5;
+  }
+  .bunny .ear-l, .bunny .ear-r {
+    position: absolute;
+    top: -16px;
+    width: 10px; height: 28px;
+    background: var(--bunny);
+    border: 3px solid #8a7158;
+    border-radius: 6px 6px 2px 2px;
+    transform: skewX(-15deg);
+  }
+  .bunny .ear-l { left: 12px; }
+  .bunny .ear-r { right: 12px; }
+  .bunny .body {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 50px;
+    background: var(--bunny);
+    border: 3px solid #8a7158;
+    border-radius: 30px 30px 18px 18px;
+  }
+  .bunny .cheek {
+    position: absolute;
+    bottom: 12px;
+    width: 8px; height: 12px;
+    background: #FFC4D6;
+    border-radius: 50%;
+  }
+  .bunny .cheek-l { left: 8px; }
+  .bunny .cheek-r { right: 8px; }
+  .bunny .eye {
+    position: absolute;
+    top: 14px;
+    width: 6px; height: 8px;
+    background: #2D3436;
+    border-radius: 50%;
+  }
+  .bunny .eye-l { left: 16px; }
+  .bunny .eye-r { right: 16px; }
+  .bunny .nose {
+    position: absolute;
+    top: 24px; left: 50%;
+    transform: translateX(-50%);
+    width: 6px; height: 4px;
+    background: #b25676;
+    border-radius: 50%;
+  }
+  .bunny.bounce { animation: bounce 600ms ease; }
+  @keyframes bounce {
+    0% { transform: skewX(15deg) translateY(0); }
+    40% { transform: skewX(15deg) translateY(-30px); }
+    80% { transform: skewX(15deg) translateY(-8px); }
+    100% { transform: skewX(15deg) translateY(0); }
+  }
+  .bunny.sleep .eye { display: none; }
+  .bunny.sleep::after {
+    content: 'z z z';
+    position: absolute;
+    top: -22px; right: -10px;
+    font-size: 12px;
+    font-weight: 800;
+    color: #6a4ca8;
+    font-family: 'Secular One', serif;
+  }
+
+  .tray-title {
+    color: #5a3a1a;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .pieces-rail {
+    position: absolute;
+    top: 18%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 18px;
+    padding: 14px 22px;
+    background: rgba(255,255,255,0.7);
+    border: 4px solid #2D3436;
+    border-radius: 32px;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.12);
+    z-index: 4;
+  }
+  .piece {
+    width: 78px; height: 78px;
+    border-radius: 22px;
+    background: white;
+    border: 4px solid #2D3436;
+    box-shadow: 0 5px 0 #2D3436;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 44px;
+    line-height: 1;
+    transition: transform 200ms ease;
+    position: relative;
+    user-select: none;
+  }
+  .piece:hover { transform: translateY(-4px); }
+  .piece:active { cursor: grabbing; transform: translateY(2px); box-shadow: 0 4px 0 #2D3436; }
+  .piece.dragging {
+    position: fixed;
+    z-index: 100;
+    transform: translate(-50%, -50%) scale(1.15) rotate(-4deg);
+    pointer-events: none;
+  }
+  .piece[data-kind="carrot"] { background: #FFE066; border-color: #b59400; box-shadow: 0 6px 0 #b59400; }
+  .piece[data-kind="jump"]   { background: #76D7C4; border-color: #1a9366; box-shadow: 0 6px 0 #1a9366; }
+  .piece[data-kind="sleep"]  { background: #A87FE0; border-color: #6a4ca8; box-shadow: 0 6px 0 #6a4ca8; }
+
+  .piece[data-kind="carrot"]::after,
+  .piece[data-kind="jump"]::after,
+  .piece[data-kind="sleep"]::after {
+    /* tiny quick label */
+    content: '';
+    position: absolute;
+    bottom: 6px;
+    left: 50%; transform: translateX(-50%);
+    width: 6px; height: 6px;
+    background: rgba(0,0,0,0.18);
+    border-radius: 50%;
+  }
+
+  .help {
+    background: rgba(106, 76, 168, 0.1);
+    color: #5a3a1a;
+    border-radius: 14px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .toast {
+    position: fixed;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.6);
+    background: white;
+    color: #6a4ca8;
+    padding: 30px 50px;
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    font-size: 28px;
+    font-weight: 800;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 300ms ease, transform 300ms ease;
+    z-index: 200;
+    text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+</style>
+</head>
+<body>
+<header>
+  <a href="index.html">← חזרה</a>
+  <h1>שביל הצעדים · ג</h1>
+  <span class="counter"><span id="score">0</span>/3</span>
+</header>
+
+<div class="help" id="help">סדר הפעולות: <strong>אוכל ← קופץ ← ישן</strong>. הקישו על אריח כדי למקם אותו בתחנה הבאה.</div>
+
+<div class="scene" id="scene">
+  <div class="sun"></div>
+  <div class="cloud c1"></div>
+  <div class="cloud c2"></div>
+  <div class="tree left"><div class="top"></div><div class="trunk"></div></div>
+  <div class="tree right"><div class="top"></div><div class="trunk"></div></div>
+  <div class="ground"></div>
+
+  <div class="pieces-rail">
+    <div class="piece" data-kind="sleep" data-emoji="💤" id="p3">💤</div>
+    <div class="piece" data-kind="jump" data-emoji="🐰" id="p2">🐰</div>
+    <div class="piece" data-kind="carrot" data-emoji="🥕" id="p1">🥕</div>
+  </div>
+
+  <div class="path">
+    <div class="slot s1" id="slot-0"><span class="slot-num">1</span></div>
+    <div class="slot s2" id="slot-1"><span class="slot-num">2</span></div>
+    <div class="slot s3" id="slot-2"><span class="slot-num">3</span></div>
+  </div>
+
+  <div class="bunny" id="bunny">
+    <div class="ear-l"></div>
+    <div class="ear-r"></div>
+    <div class="body"></div>
+    <div class="eye-l"></div>
+    <div class="eye-r"></div>
+    <div class="cheek-l"></div>
+    <div class="cheek-r"></div>
+    <div class="nose"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast">🎉 סיפור שלם!</div>
+
+<script>
+(function () {
+  const slots = [document.getElementById('slot-0'), document.getElementById('slot-1'), document.getElementById('slot-2')];
+  const pieces = Array.from(document.querySelectorAll('.piece'));
+  const bunny = document.getElementById('bunny');
+  const scoreEl = document.getElementById('score');
+  const toast = document.getElementById('toast');
+  const help = document.getElementById('help');
+
+  const targetOrder = ['carrot', 'jump', 'sleep'];
+  let placed = 0;
+  let score = 0;
+  let dragging = null;
+  let offX = 0, offY = 0;
+
+  function highlightNext() {
+    slots.forEach((s, i) => s.classList.toggle('target-here', i === placed && placed < targetOrder.length));
+  }
+  highlightNext();
+
+  function checkSlot(piece, slotIndex) {
+    if (slotIndex !== placed) return false;
+    return piece.dataset.kind === targetOrder[slotIndex];
+  }
+  function moveBunnyTo(idx) {
+    const positions = ['25%', '52%', '78%'];
+    bunny.style.left = positions[idx];
+  }
+  function advance() {
+    placed += 1;
+    score += 1;
+    scoreEl.textContent = String(score);
+    if (placed < 3) {
+      moveBunnyTo(placed - 1);
+      bunny.classList.add('bounce');
+      setTimeout(() => bunny.classList.remove('bounce'), 600);
+      highlightNext();
+    } else {
+      bunny.classList.add('bounce', 'sleep');
+      setTimeout(() => bunny.classList.remove('bounce'), 600);
+      setTimeout(() => {
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 1600);
+      }, 200);
+    }
+  }
+
+  function onDown(e) {
+    const item = e.currentTarget;
+    const p = e.touches ? e.touches[0] : e;
+    const r = item.getBoundingClientRect();
+    dragging = item;
+    offX = p.clientX - r.left - r.width / 2;
+    offY = p.clientY - r.top - r.height / 2;
+    document.body.appendChild(item);
+    item.classList.add('dragging');
+    item.style.left = (p.clientX - offX) + 'px';
+    item.style.top = (p.clientY - offY) + 'px';
+    e.preventDefault();
+  }
+  function onMove(e) {
+    if (!dragging) return;
+    const p = e.touches ? e.touches[0] : e;
+    dragging.style.left = (p.clientX - offX) + 'px';
+    dragging.style.top = (p.clientY - offY) + 'px';
+  }
+  function onUp(e) {
+    if (!dragging) return;
+    const p = e.changedTouches ? e.changedTouches[0] : e;
+    let slotIdx = -1;
+    slots.forEach((s, i) => {
+      const r = s.getBoundingClientRect();
+      if (p.clientX >= r.left && p.clientX <= r.right && p.clientY >= r.top && p.clientY <= r.bottom) slotIdx = i;
+    });
+    const piece = dragging;
+    dragging = null;
+    piece.classList.remove('dragging');
+    if (slotIdx >= 0 && checkSlot(piece, slotIdx)) {
+      const slot = slots[slotIdx];
+      slot.innerHTML = piece.dataset.emoji;
+      slot.classList.add('filled');
+      slot.classList.remove('target-here');
+      piece.remove();
+      advance();
+    } else if (slotIdx >= 0) {
+      // wrong slot - shake the piece and bounce back via blip animation
+      const slot = slots[slotIdx];
+      slot.style.transition = 'transform 300ms ease';
+      slot.style.transform = 'skewX(15deg) translateX(-6px)';
+      setTimeout(() => { slot.style.transform = 'skewX(15deg) translateX(0)'; }, 200);
+    }
+    if (piece.isConnected && piece.parentElement === document.body) piece.remove();
+  }
+
+  pieces.forEach((p) => {
+    p.addEventListener('mousedown', onDown);
+    p.addEventListener('touchstart', onDown, { passive: false });
+  });
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('touchmove', onMove, { passive: false });
+  window.addEventListener('mouseup', onUp);
+  window.addEventListener('touchend', onUp);
+})();
+</script>
+</body>
+</html>

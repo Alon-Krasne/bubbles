@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>א · סל המילים — אב-טיפוס</title>
+<style>
+  :root {
+    --wood: #e6c79c;
+    --wood-dark: #c8a472;
+    --coral: #FF7B7B;
+    --mint: #76D7C4;
+    --tablecloth: #f9e6c5;
+    --apple: #E53935;
+    --carrot: #FFA42B;
+    --berry: #A87FE0;
+    --cup: #FFA07A;
+    --pear: #B5C542;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Rubik', system-ui, sans-serif;
+    background: var(--tablecloth) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='60'><circle cx='15' cy='20' r='2' fill='%23e0a96d' opacity='.4'/><circle cx='45' cy='40' r='2' fill='%23e0a96d' opacity='.4'/><path d='M15 35 Q30 30 45 35' stroke='%23b08850' stroke-width='1' fill='none' opacity='.3'/></svg>");
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 920px;
+  }
+  header a {
+    color: #6a5135;
+    text-decoration: none;
+    font-size: 14px;
+    background: rgba(255,255,255,0.7);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 700;
+  }
+  h1 {
+    color: #6a5135;
+    font-size: clamp(22px, 3vw, 32px);
+    font-weight: 800;
+  }
+  .stage {
+    width: 100%;
+    max-width: 920px;
+    aspect-ratio: 16 / 11;
+    background: var(--wood);
+    background-image:
+      linear-gradient(180deg, transparent 0, transparent calc(100% - 4px), var(--wood-dark) calc(100% - 4px), var(--wood-dark) 100%);
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15), inset 0 -4px 0 rgba(0,0,0,0.06);
+    position: relative;
+    overflow: hidden;
+  }
+  .bin {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 220px;
+    height: 110px;
+    border-radius: 18px 18px 22px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 200ms ease;
+  }
+  .bin::before {
+    content: '';
+    position: absolute;
+    inset: 14px 24px auto 24px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+  }
+  .bin.emojis { font-size: 56px; line-height: 1; }
+  .bin .label {
+    position: absolute;
+    bottom: 6px;
+    right: 0;
+    left: 0;
+    text-align: center;
+    color: rgba(255,255,255,0.9);
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .bin.top { top: 30px; background: var(--coral); }
+  .bin.bottom { bottom: 30px; background: var(--mint); }
+  .bin:hover { transform: translateX(-50%) translateY(-3px) scale(1.04); }
+  .bin.flash-good { animation: flashGood 600ms ease; }
+  .bin.flash-bad { animation: flashBad 400ms ease; }
+  @keyframes flashGood {
+    50% { filter: brightness(1.3); transform: translateX(-50%) scale(1.1); }
+  }
+  @keyframes flashBad {
+    20%, 60% { transform: translateX(calc(-50% - 12px)); }
+    40%, 80% { transform: translateX(calc(-50% + 12px)); }
+  }
+  .tray {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 360px;
+    height: 360px;
+    border-radius: 50%;
+    background: var(--tablecloth);
+    box-shadow: inset 0 4px 12px rgba(0,0,0,0.15), 0 4px 8px rgba(0,0,0,0.08);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    place-items: center;
+    padding: 20px;
+    gap: 8px;
+  }
+  .item {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 56px;
+    line-height: 1;
+    transition: transform 200ms ease;
+    user-select: none;
+    position: relative;
+    background: white;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.15), 0 6px 16px rgba(0,0,0,0.06);
+  }
+  .item::before {
+    content: '';
+    position: absolute;
+    top: 12%;
+    left: 22%;
+    width: 14%;
+    height: 8%;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.6);
+  }
+  .item:hover { transform: scale(1.06); }
+  .item:active { cursor: grabbing; transform: scale(0.95); }
+  .item.dragging {
+    position: fixed;
+    z-index: 100;
+    transform: translate(-50%, -50%) scale(1.2);
+    pointer-events: none;
+  }
+  .item.settled {
+    transition: transform 400ms ease, opacity 400ms ease;
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  .item.kind-apple { color: var(--apple); }
+  .item.kind-carrot { color: var(--carrot); }
+  .item.kind-pear { color: var(--pear); }
+  .item.kind-puppy { background: #ffeacd; }
+  .item.kind-kitten { background: #fff0ea; }
+  .item.kind-bee { background: #fff5cc; }
+  .counter {
+    background: white;
+    border-radius: 16px;
+    padding: 10px 18px;
+    font-weight: 700;
+    color: #6a5135;
+    font-size: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .toast {
+    position: fixed;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.6);
+    background: white;
+    color: #6a5135;
+    padding: 30px 50px;
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    font-size: 28px;
+    font-weight: 800;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 300ms ease, transform 300ms ease;
+    z-index: 200;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  .reset {
+    background: #6a5135;
+    color: white;
+    border: 0;
+    padding: 12px 28px;
+    border-radius: 24px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #4a3827;
+    font-family: inherit;
+  }
+  .reset:active { transform: translateY(2px); box-shadow: 0 2px 0 #4a3827; }
+</style>
+</head>
+<body>
+<header>
+  <a href="index.html">← חזרה</a>
+  <h1>סל המילים · א</h1>
+  <span class="counter"><span id="score">0</span> מתוך 3</span>
+</header>
+
+<div class="stage" id="stage">
+  <div class="bin top emojis" data-bin="food">
+     <span style="position:relative;z-index:1">🍎</span>
+    <span class="label">אוכל</span>
+  </div>
+
+  <div class="tray" id="tray">
+    <div class="item kind-apple" data-kind="food" draggable="true">🍎</div>
+    <div class="item kind-carrot" data-kind="food" draggable="true">🥕</div>
+    <div class="item kind-pear" data-kind="food" draggable="true">🍐</div>
+    <div class="item kind-puppy" data-kind="animal" draggable="true">🐶</div>
+    <div class="item kind-kitten" data-kind="animal" draggable="true">🐱</div>
+    <div class="item kind-bee" data-kind="animal" draggable="true">🐝</div>
+  </div>
+
+  <div class="bin bottom emojis" data-bin="animal">
+     <span style="position:relative;z-index:1">🐾</span>
+    <span class="label">חיות</span>
+  </div>
+</div>
+
+<button class="reset" id="reset">איפוס</button>
+
+<div class="toast" id="toast">🎉 כל הכבוד!</div>
+
+<script>
+(function () {
+  const items = document.querySelectorAll('.item');
+  const bins = document.querySelectorAll('.bin');
+  const tray = document.getElementById('tray');
+  const scoreEl = document.getElementById('score');
+  const toast = document.getElementById('toast');
+  const reset = document.getElementById('reset');
+  let score = 0;
+  let draggingItem = null;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  function updateScore() { scoreEl.textContent = String(score); }
+
+  function onItemDown(e) {
+    const item = e.currentTarget;
+    const point = e.touches ? e.touches[0] : e;
+    const rect = item.getBoundingClientRect();
+    draggingItem = item;
+    offsetX = point.clientX - rect.left - rect.width / 2;
+    offsetY = point.clientY - rect.top - rect.height / 2;
+    item.classList.add('dragging');
+    document.body.appendChild(item);
+    item.style.left = (point.clientX - offsetX) + 'px';
+    item.style.top = (point.clientY - offsetY) + 'px';
+    e.preventDefault();
+  }
+  function onMove(e) {
+    if (!draggingItem) return;
+    const point = e.touches ? e.touches[0] : e;
+    draggingItem.style.left = (point.clientX - offsetX) + 'px';
+    draggingItem.style.top = (point.clientY - offsetY) + 'px';
+  }
+  function onUp(e) {
+    if (!draggingItem) return;
+    const point = e.changedTouches ? e.changedTouches[0] : e;
+    let droppedInto = null;
+    bins.forEach((bin) => {
+      const r = bin.getBoundingClientRect();
+      if (point.clientX >= r.left && point.clientX <= r.right &&
+          point.clientY >= r.top && point.clientY <= r.bottom) droppedInto = bin;
+    });
+    const item = draggingItem;
+    draggingItem = null;
+    item.classList.remove('dragging');
+    if (droppedInto) {
+      const itemKind = item.dataset.kind;
+      const binKind = droppedInto.dataset.bin;
+      if (itemKind === binKind) {
+        score += 1;
+        updateScore();
+        droppedInto.classList.add('flash-good');
+        setTimeout(() => droppedInto.classList.remove('flash-good'), 600);
+        item.classList.add('settled');
+        setTimeout(() => {
+          if (!item.parentElement || item.parentElement !== document.body) return;
+          item.remove();
+          if (score >= 3) showToast();
+        }, 400);
+        return;
+      }
+      droppedInto.classList.add('flash-bad');
+      setTimeout(() => droppedInto.classList.remove('flash-bad'), 400);
+    }
+    tray.appendChild(item);
+    item.style.left = '';
+    item.style.top = '';
+  }
+  function showToast() {
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1400);
+  }
+
+  items.forEach((it) => {
+    it.addEventListener('mousedown', onItemDown);
+    it.addEventListener('touchstart', onItemDown, { passive: false });
+  });
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('touchmove', onMove, { passive: false });
+  window.addEventListener('mouseup', onUp);
+  window.addEventListener('touchend', onUp);
+
+  reset.addEventListener('click', () => {
+    score = 0;
+    updateScore();
+    const fresh = tray.cloneNode(true);
+    tray.parentNode.replaceChild(fresh, tray);
+    location.reload();
+  });
+})();
+</script>
+</body>
+</html>

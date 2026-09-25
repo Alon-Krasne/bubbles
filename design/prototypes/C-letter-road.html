@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>מסלול האותיות — Letter Road</title>
+<style>
+  :root {
+    --bg: #F0F9FF;
+    --card: #FFFFFF;
+    --sky: #38D9A9;
+    --road: #FFEAA7;
+    --road-border: #FDCB6E;
+    --text: #2D3436;
+    --pink-blob: #FF9EB5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Rubik', system-ui, -apple-system, sans-serif;
+    background: radial-gradient(circle at 20% 20%, #E8F7FF 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, #FFF5EB 0%, transparent 50%),
+                var(--bg);
+    min-height: 100vh;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--text);
+    user-select: none;
+  }
+  header {
+    width: 100%;
+    max-width: 920px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .nav-btn {
+    background: white;
+    border: 2px solid #D2E7F5;
+    border-radius: 20px;
+    padding: 8px 18px;
+    font-weight: 700;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 15px;
+    box-shadow: 0 4px 0 #D2E7F5;
+  }
+  .nav-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #D2E7F5; }
+
+  /* Main Container */
+  .road-stage {
+    width: 100%;
+    max-width: 920px;
+    background: white;
+    border-radius: 32px;
+    padding: 24px;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.06), 0 4px 0 #D2E7F5;
+    border: 3px solid #E1EFF8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+  }
+
+  /* Word Bar */
+  .spell-deck {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    direction: ltr;
+  }
+  .spell-tile {
+    width: 68px;
+    height: 76px;
+    border-radius: 20px;
+    background: #F4F8FA;
+    border: 3px solid #DCE7EC;
+    box-shadow: 0 5px 0 #DCE7EC;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    font-weight: 800;
+    color: #BDC9CF;
+    transition: all 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .spell-tile.active {
+    background: #FFF9E6;
+    border-color: #F1C40F;
+    box-shadow: 0 6px 0 #D4AC0D;
+    color: #F39C12;
+    transform: scale(1.1);
+  }
+  .spell-tile.done {
+    background: #E8F8F5;
+    border-color: #2ECC71;
+    box-shadow: 0 6px 0 #27AE60;
+    color: #2ECC71;
+    transform: scale(1.05);
+  }
+
+  /* Road Slate */
+  .slate-wrap {
+    width: min(100%, 340px);
+    aspect-ratio: 1;
+    background: #FAF8F5;
+    border-radius: 28px;
+    border: 4px solid #EADBCC;
+    box-shadow: inset 0 6px 14px rgba(0,0,0,0.04);
+    position: relative;
+    overflow: hidden;
+    touch-action: none;
+  }
+  .road-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* The Draggable Blob Mascot */
+  .blob-cursor {
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #FFB6C1 0%, #FF85A2 100%);
+    border: 3px solid #D85D7B;
+    box-shadow: 0 6px 14px rgba(216, 93, 123, 0.4);
+    transform: translate(-50%, -50%);
+    cursor: grab;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+  }
+  .blob-cursor:active {
+    cursor: grabbing;
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+  .blob-eyes {
+    position: relative;
+    width: 20px;
+    height: 10px;
+  }
+  .blob-eyes::before, .blob-eyes::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    width: 4px;
+    height: 5px;
+    background: #2D3436;
+    border-radius: 50%;
+  }
+  .blob-eyes::before { left: 2px; }
+  .blob-eyes::after { right: 2px; }
+  .blob-bow {
+    position: absolute;
+    top: -5px;
+    right: 4px;
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  /* Road graphics */
+  .road-track {
+    fill: none;
+    stroke: #FFEAA7;
+    stroke-width: 48;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .road-border {
+    fill: none;
+    stroke: #FDCB6E;
+    stroke-width: 56;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .road-dashed-center {
+    fill: none;
+    stroke: #FFFFFF;
+    stroke-width: 4;
+    stroke-dasharray: 8 8;
+    stroke-linecap: round;
+  }
+  .road-painted-trail {
+    fill: none;
+    stroke: #FF7675;
+    stroke-width: 36;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.9;
+  }
+
+  .hint-text {
+    font-size: 16px;
+    font-weight: 800;
+    color: #666;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="nav-btn" href="index.html">← חזרה למשחקים</a>
+  <h1 style="color:#2980B9; font-size:22px; font-weight:800;">מסלול האותיות · Letter Road</h1>
+  <div style="width:90px;"></div>
+</header>
+
+<div class="road-stage">
+  <!-- Word Cards (e.g. C - A - T) -->
+  <div class="spell-deck">
+    <div class="spell-tile active" id="tile-0">C</div>
+    <div class="spell-tile" id="tile-1">A</div>
+    <div class="spell-tile" id="tile-2">T</div>
+  </div>
+
+  <div class="hint-text" id="hint-text">
+    הסיעו את לוטם הורודה לאורך החץ של האות C! 🚗✨
+  </div>
+
+  <!-- Drawing Slate with Road -->
+  <div class="slate-wrap" id="slate-wrap">
+    <svg class="road-svg" viewBox="0 0 340 340">
+      <!-- Outer Border -->
+      <path id="road-border-path" class="road-border" d="M250 110 C180 30, 80 50, 80 170 C80 290, 180 310, 250 230"/>
+      <!-- Inner Road -->
+      <path id="road-track-path" class="road-track" d="M250 110 C180 30, 80 50, 80 170 C80 290, 180 310, 250 230"/>
+      <!-- Dashed centerline -->
+      <path id="road-dash-path" class="road-dashed-center" d="M250 110 C180 30, 80 50, 80 170 C80 290, 180 310, 250 230"/>
+      <!-- Painted Trail (grows behind cursor) -->
+      <path id="road-painted" class="road-painted-trail" d=""/>
+      <!-- Start & End Flags -->
+      <circle cx="250" cy="110" r="10" fill="#2ECC71" stroke="white" stroke-width="3"/>
+      <circle cx="250" cy="230" r="10" fill="#E74C3C" stroke="white" stroke-width="3"/>
+    </svg>
+
+    <!-- The Drag Mascot -->
+    <div class="blob-cursor" id="blob-cursor" style="left: 250px; top: 110px;">
+      <div class="blob-bow">🎀</div>
+      <div class="blob-eyes"></div>
+    </div>
+  </div>
+
+  <div style="font-size:14px; font-weight:700; color:#888;">
+    כל אות מובילה לצביעת חתול חמוד! 🐱
+  </div>
+</div>
+
+<script>
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playChime(freq = 440) {
+  try {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.2);
+  } catch(e) {}
+}
+
+const letters = [
+  {
+    char: 'C',
+    path: 'M250 110 C180 30, 80 50, 80 170 C80 290, 180 310, 250 230',
+    start: {x: 250, y: 110},
+    end: {x: 250, y: 230}
+  },
+  {
+    char: 'A',
+    path: 'M170 60 L70 270 M170 60 L270 270 M110 200 L230 200',
+    start: {x: 170, y: 60},
+    end: {x: 270, y: 270}
+  },
+  {
+    char: 'T',
+    path: 'M70 70 L270 70 M170 70 L170 270',
+    start: {x: 70, y: 70},
+    end: {x: 170, y: 270}
+  }
+];
+
+let curIdx = 0;
+let isDragging = false;
+const slate = document.getElementById('slate-wrap');
+const blob = document.getElementById('blob-cursor');
+const paintedPath = document.getElementById('road-painted');
+
+function updateMascotPos(x, y) {
+  blob.style.left = x + 'px';
+  blob.style.top = y + 'px';
+}
+
+function onDown(e) {
+  isDragging = true;
+  playChime(350);
+}
+
+function onMove(e) {
+  if (!isDragging) return;
+  const rect = slate.getBoundingClientRect();
+  const touch = e.touches ? e.touches[0] : e;
+  const x = (touch.clientX - rect.left) * (340 / rect.width);
+  const y = (touch.clientY - rect.top) * (340 / rect.height);
+
+  updateMascotPos(x, y);
+
+  const cur = letters[curIdx];
+  const d = Math.hypot(x - cur.end.x, y - cur.end.y);
+  if (d < 35) {
+    onDoneLetter();
+  }
+}
+
+function onUp() {
+  isDragging = false;
+}
+
+function onDoneLetter() {
+  isDragging = false;
+  playChime(660);
+
+  const tile = document.getElementById(`tile-${curIdx}`);
+  tile.classList.remove('active');
+  tile.classList.add('done');
+
+  curIdx++;
+  if (curIdx < letters.length) {
+    document.getElementById(`tile-${curIdx}`).classList.add('active');
+    const next = letters[curIdx];
+    document.getElementById('hint-text').textContent =
+      `מעולה! עכשיו הסיעו את לוטם לאורך האות ${next.char}! ✨`;
+
+    // update road paths
+    document.getElementById('road-border-path').setAttribute('d', next.path);
+    document.getElementById('road-track-path').setAttribute('d', next.path);
+    document.getElementById('road-dash-path').setAttribute('d', next.path);
+    updateMascotPos(next.start.x, next.start.y);
+  } else {
+    document.getElementById('hint-text').textContent =
+      `🎉 כל הכבוד! כתבתם CAT והחתול שמח! 🐱✨`;
+    playChime(880);
+  }
+}
+
+blob.addEventListener('mousedown', onDown);
+slate.addEventListener('mousemove', onMove);
+window.addEventListener('mouseup', onUp);
+
+blob.addEventListener('touchstart', onDown, { passive: false });
+slate.addEventListener('touchmove', onMove, { passive: false });
+window.addEventListener('touchend', onUp);
+</script>
+</body>
+</html>
