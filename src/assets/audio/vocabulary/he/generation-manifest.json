@@ -886,5 +886,241 @@
   "words/ocean.mp3": {
     "hash": "b690149904521feea4126400f517a5678f8217d29e3db964c0e284633ccd61b8",
     "verified": true
+  },
+  "words/glasses.mp3": {
+    "hash": "2e62cb21443c87f5e804257e640ccb690db5686b41e866109a0bc69d30fe6c85",
+    "verified": true
+  },
+  "words/swimsuit.mp3": {
+    "hash": "899959ffa44a08ab47498b07c2c606992cbabd18944e23c7aa3f7a99b9c28a39",
+    "verified": true
+  },
+  "words/boots.mp3": {
+    "hash": "2dceb5e4a3dd4ec5181d2e3f82391c3eaeac6a30ef8420a6d9c726d36cb21b22",
+    "verified": true
+  },
+  "words/crown.mp3": {
+    "hash": "c11d1f0b632723d838b4fc4986e7f22eba42b3825f7f316db6ba669b5a1f4d5f",
+    "verified": true
+  },
+  "words/ring.mp3": {
+    "hash": "530a75d720fc39d5c6a58e9f1177e2175ad6858afb963eab2381cccf7c348fae",
+    "verified": true
+  },
+  "words/doll.mp3": {
+    "hash": "55ed02621a91df6faf1f2b596fe7248eb054762f28e2ba7cc518c20e0ae266ae",
+    "verified": true
+  },
+  "words/necklace.mp3": {
+    "hash": "ed55ea401c9c96ff37c8a49ba5a9504da0dd248f5e6eac76e86ad51b47f3fd39",
+    "verified": true
+  },
+  "words/robot.mp3": {
+    "hash": "29c28a091c99d76864b72497c075a05d7f9cd5b985fddb8af37abd4e219cf22a",
+    "verified": true
+  },
+  "words/puzzle.mp3": {
+    "hash": "7241b3caf89c4c8e1acf8d248764a5c359dd57cbd1395935a19e980578a03cc5",
+    "verified": true
+  },
+  "words/drum.mp3": {
+    "hash": "2cbfca975817cd3cb3acf451e02f57b6a1ee0a02080fcf2cb529bcf72decad5a",
+    "verified": true
+  },
+  "words/yo-yo.mp3": {
+    "hash": "a4147bb2c9c5886c2e4048bbe856d693fc8e1d34f2dba02b89a0e296186d2740",
+    "verified": true
+  },
+  "words/guitar.mp3": {
+    "hash": "7e35e46c743620b863716b1e3c507598643f6f70a193b6da7c43e7f544822bc1",
+    "verified": true
+  },
+  "words/truck.mp3": {
+    "hash": "10fcde1d9902e5a1e2501569264b4b1b8214de7ea5fa7426f6619e3eade2e5a1",
+    "verified": true
+  },
+  "words/helicopter.mp3": {
+    "hash": "035f6361c7fc2e55eb33d1bd3f5bed609a434a5ea9eaf6d1eaa2142da4fbf94a",
+    "verified": true
+  },
+  "words/fire-truck.mp3": {
+    "hash": "f1b686908adec9ed44bc463e666bc6b35583e7f804e2f2aaf3c4a2b02a9075f7",
+    "verified": true
+  },
+  "words/ambulance.mp3": {
+    "hash": "a78937f9ebbcedc85958c27c5c25b6e2b754d31bf0a7afd8ae74351ad6e9eec8",
+    "verified": true
+  },
+  "words/motorcycle.mp3": {
+    "hash": "312c52c8c918ff9787bdc2881c0d77486a03e7930cb1e2bbee927f092b6835ee",
+    "verified": true
+  },
+  "words/head.mp3": {
+    "hash": "407236eaacb275284735a2190fd0ae9f796204b7eedf3b750805c6826f9b49cc",
+    "verified": true
+  },
+  "words/arm.mp3": {
+    "hash": "f9974289ccf67d12738f7375d2122d29692a76a7b49e3801b921cbd302ac5c1c",
+    "verified": true
+  },
+  "words/hair.mp3": {
+    "hash": "f15c972977d595b8733e29ef1576b3c704e9e3f9e7aff7def28fb2c4f4603ee5",
+    "verified": true
+  },
+  "words/knee.mp3": {
+    "hash": "55b3a07ed872bd9d17df3bc1b6f0fda3a706158501cdcc92dba2e118bd0e3411",
+    "verified": true
+  },
+  "words/tongue.mp3": {
+    "hash": "e2c2a14b4ec276c7e55d61d06ccfc84782fc0918f629607cf11e58e3ad264c65",
+    "verified": true
+  },
+  "words/finger.mp3": {
+    "hash": "4a8995d7fdffae54fbc6e8a846a95411ab687f50feaee301341da2b2778d72b9",
+    "verified": true
+  },
+  "words/mom.mp3": {
+    "hash": "a9b68af3768c1f427b07bf24fdf6ebcec2fd95bcd5c6180061e06c4f6d47bbfa",
+    "verified": true
+  },
+  "words/dad.mp3": {
+    "hash": "5f3adf65c3309842c30442399ca723fe38e4e0808592521a487af10ecbd2afbb",
+    "verified": true
+  },
+  "words/grandma.mp3": {
+    "hash": "33d10a47a9e3bab08649b33406bb08c839850f8370678632e34623a8dd6f0784",
+    "verified": true
+  },
+  "words/grandpa.mp3": {
+    "hash": "d8c96fc26508e2510ca6558f5d0aaadf3c03f6b221b6c4c78a46f2696c47cd8f",
+    "verified": true
+  },
+  "words/doctor.mp3": {
+    "hash": "c34487e1b765cfbf5e75c6ac597a2d799e330ef2305e9548943dcfcfc55fd363",
+    "verified": true
+  },
+  "words/friend.mp3": {
+    "hash": "9bc74cbd06d5d91430cfa0646369fb8c2f5041c4c021213b544b5731cca9638b",
+    "verified": true
+  },
+  "words/crab.mp3": {
+    "hash": "a004f72aefd4994e9e732ac55e0a604ce19454bca82b0c5c7443e7df401e8a15",
+    "verified": true
+  },
+  "words/octopus.mp3": {
+    "hash": "ea4eff4013b676e46c59fd53d457c01391046c6cf8de8744544a90bc3ab1925c",
+    "verified": true
+  },
+  "words/shark.mp3": {
+    "hash": "9ab23af96b9d675118f3b7de554a6aceb7eae93987e01ee105ea74b48faa0f80",
+    "verified": true
+  },
+  "words/owl.mp3": {
+    "hash": "41b64f33c643a78761fbc4dd98f92a08f2baf2e817753bf6073dc4abd96cecdd",
+    "verified": true
+  },
+  "words/deer.mp3": {
+    "hash": "2f8b7d7084e2c7c309a911569612165d20090e9a6b6f7be99ca85938026063e1",
+    "verified": true
+  },
+  "words/hedgehog.mp3": {
+    "hash": "f1fb4e8d094341533abf24b47ed12d55ce8e6b1c690263115dd11b608ac30dfc",
+    "verified": true
+  },
+  "words/parrot.mp3": {
+    "hash": "f3f9022f0cc5525df069c6e37956a426b566d3a0c9528dd2de0fe7a4eb2d4fb4",
+    "verified": true
+  },
+  "words/juice.mp3": {
+    "hash": "8459513afd59a1afc37010c857e67b1a99a96f3e8ddfa9acc64846cc69b861bd",
+    "verified": true
+  },
+  "words/pancake.mp3": {
+    "hash": "c7c0d022e0c4be4aefd1294549c8248b3f9e79674b265bce0cb11845e7e58b34",
+    "verified": true
+  },
+  "words/dinosaur.mp3": {
+    "hash": "673a9f7f81d31b4205917af5af80bf9f0abe08eb1b224a41f1f3d31a021ed370",
+    "verified": true
+  },
+  "words/pretzel.mp3": {
+    "hash": "e98e73a98b6c7e0e26bf5e0dfecce4a0c660160515216582f0c9248e5a879539",
+    "verified": true
+  },
+  "words/popcorn.mp3": {
+    "hash": "cb5ee75a53db5b6cddbca93f01920b43b551c41a830c2425714f162e021b5083",
+    "verified": true
+  },
+  "words/forest.mp3": {
+    "hash": "61d6e9c8875b3ea91f5b6a5120f58ad34544ddbf65562181c4035ec682a932a9",
+    "verified": true
+  },
+  "words/cucumber.mp3": {
+    "hash": "3b3b581134d6e9d3405cb0ba9de834db58895225ea4cbf18c39be9db55f5bec4",
+    "verified": true
+  },
+  "words/rock.mp3": {
+    "hash": "379f148e96caac13fd67d864b0904378d90a9923ecd5dba3a1c4b3db8999d255",
+    "verified": true
+  },
+  "words/lightning.mp3": {
+    "hash": "11fc45633f07183f4c8b46fbf97751959ec845bfa38106fa70eb344298a684cf",
+    "verified": true
+  },
+  "words/grass.mp3": {
+    "hash": "f37af8dfb652cff5c01e158c2b09a3cffb7f689c6bf30376effe89eaa6e634e9",
+    "verified": true
+  },
+  "words/wind.mp3": {
+    "hash": "53786ae54594ab1d70f9178362f7e8e060473544b82b6ae59c1e04526701bdfd",
+    "verified": true
+  },
+  "words/window.mp3": {
+    "hash": "3c2c8c9b680f0e4075b0eb860cc3830ab58cb8b74d64769754b01f7be4a523df",
+    "verified": true
+  },
+  "words/mirror.mp3": {
+    "hash": "a6d85e8182fcad2ad8318031938a8078e8c7bcbdb2512eeb8b4551cdf4da3363",
+    "verified": true
+  },
+  "words/candle.mp3": {
+    "hash": "37015c6cd41edbdde1a6eefc81e071fdf641d0f8738db143a7a924e3f344615c",
+    "verified": true
+  },
+  "words/bathtub.mp3": {
+    "hash": "b0fdb04b0fbc3878ccf1dc4769da3af3813b3460ee57595073b0079fa152818f",
+    "verified": true
+  },
+  "words/broom.mp3": {
+    "hash": "b83f63c7fcb6840d6c0a1c44cbcb01b6a16124c187f19f1f27c8ff70d5ae5538",
+    "verified": true
+  },
+  "words/museum.mp3": {
+    "hash": "924495e7ebfe764d74dab81f988ffc24adbc9523ed400db8c68e4a42be141e5e",
+    "verified": true
+  },
+  "words/castle.mp3": {
+    "hash": "b2ff1930d878006a1bf8f2b745447334f294488a48071f710247be2e55a91cb1",
+    "verified": true
+  },
+  "words/pool.mp3": {
+    "hash": "daee243fc56068e5fa6b153a36a6a7c07074ccce00efe4695add14ee458fe4cf",
+    "verified": true
+  },
+  "words/fly.mp3": {
+    "hash": "ca1c7b10f9aff1e8d4d77e6fdc387fcae3d70d836819d923ae3f14191b02047c",
+    "verified": true
+  },
+  "words/climb.mp3": {
+    "hash": "0dcbeee79d8d745a71fea88600fdb5a7996e35b6d18f394f814bf8b02c573cc6",
+    "verified": true
+  },
+  "words/hug.mp3": {
+    "hash": "43fbf0b47dde2475b3e1a10281c1f8deb287edebff3bfa9c6e29bfa4e2d0c3f3",
+    "verified": true
+  },
+  "words/smile.mp3": {
+    "hash": "0251f963a116bd79986b5b23a8e37ff657c55595a6752867d70525b032154d08",
+    "verified": true
   }
 }

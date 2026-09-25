@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const EXPECTED_CLIP_COUNTS = { en: 243, he: 222 };
+const EXPECTED_CLIP_COUNTS = { en: 302, he: 281 };
 
 const durations = [];
 let decodedClips = 0;
