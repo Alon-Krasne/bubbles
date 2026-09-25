@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>ב · חלון ההקשבה — אב-טיפוס</title>
+<style>
+  :root {
+    --wall-a: #d6c6e0;
+    --wall-b: #fff4e6;
+    --rug-a: #FF9EB5;
+    --rug-b: #76D7C4;
+    --rug-c: #FFE066;
+    --lamp-shade: #FFE066;
+    --lamp-glow: #FFC93C;
+    --wood: #8b6f47;
+    --wood-dark: #6d5535;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; }
+  body {
+    font-family: 'Rubik', system-ui, sans-serif;
+    background: linear-gradient(180deg, #fff8ed 0%, #f9e6c5 100%);
+    min-height: 100vh;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  header a, header span.counter {
+    background: white;
+    border-radius: 18px;
+    padding: 6px 14px;
+    font-weight: 700;
+    color: #6a4ca8;
+    text-decoration: none;
+    font-size: 14px;
+  }
+  h1 {
+    color: #6a4ca8;
+    font-size: clamp(20px, 2.6vw, 26px);
+    font-weight: 800;
+  }
+
+  .diorama {
+    position: relative;
+    width: min(880px, 100%);
+    aspect-ratio: 16 / 11;
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow:
+      inset 0 0 0 8px rgba(255,255,255,0.6),
+      inset 0 0 0 14px rgba(198, 165, 134, 0.7),
+      0 20px 50px rgba(0,0,0,0.15);
+    background:
+      repeating-linear-gradient(90deg, var(--wall-a) 0 56px, var(--wall-b) 56px 112px);
+    cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><path d='M14 12 L24 28 L18 28 L20 36 L12 36 L10 28 L6 28 Z' fill='%23FF9EB5' stroke='%2388466d' stroke-width='2' stroke-linejoin='round'/></svg>") 20 20, auto;
+  }
+  .floor {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: 0;
+    height: 38%;
+    background: linear-gradient(180deg, #f4e4c8 0%, #e8c89c 100%);
+    border-top: 4px solid rgba(0,0,0,0.05);
+  }
+  .rug {
+    position: absolute;
+    bottom: 8%;
+    left: 50%;
+    transform: translateX(-50%) skewX(-12deg);
+    width: 75%;
+    height: 22%;
+    border-radius: 6px;
+    background:
+      linear-gradient(90deg,
+        var(--rug-a) 0 25%,
+        var(--rug-b) 25% 50%,
+        var(--rug-c) 50% 75%,
+        var(--rug-a) 75% 100%);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+  }
+  .rug::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 6px solid rgba(255,255,255,0.45);
+    border-radius: 6px;
+  }
+  .chair {
+    position: absolute;
+    left: 7%;
+    bottom: 24%;
+    width: 110px;
+    height: 140px;
+  }
+  .chair .back {
+    position: absolute;
+    bottom: 70px;
+    left: 4px;
+    width: 100px;
+    height: 80px;
+    background: var(--wood);
+    border: 3px solid var(--wood-dark);
+    border-radius: 16px 16px 8px 8px;
+    box-shadow: inset -8px 0 0 rgba(0,0,0,0.08);
+  }
+  .chair .seat {
+    position: absolute;
+    bottom: 60px;
+    left: 0;
+    width: 110px;
+    height: 18px;
+    background: var(--wood-dark);
+    border-radius: 14px;
+  }
+  .chair .leg {
+    position: absolute;
+    bottom: 0;
+    width: 14px;
+    height: 60px;
+    background: var(--wood-dark);
+    border-radius: 6px;
+  }
+  .chair .leg-l { left: 6px; }
+  .chair .leg-r { right: 6px; }
+  .chair::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0; right: 0;
+    height: 10px;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0.18) 0, transparent 70%);
+  }
+
+  .table {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 22%;
+    width: 130px;
+    height: 90px;
+  }
+  .table .top {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 20px;
+    background:
+      radial-gradient(ellipse at 30% 30%, #fff 0 12%, transparent 30%),
+      var(--wood);
+    border: 3px solid var(--wood-dark);
+    border-radius: 8px;
+  }
+  .table .cloth {
+    position: absolute;
+    top: 18px;
+    left: 0; right: 0;
+    height: 14px;
+    background: #FF9EB5;
+    border-radius: 0 0 6px 6px;
+  }
+  .table .leg {
+    position: absolute;
+    bottom: 0;
+    width: 12px;
+    height: 60px;
+    background: var(--wood-dark);
+    border-radius: 4px;
+  }
+  .table .leg-l { left: 12px; }
+  .table .leg-r { right: 12px; }
+
+  .lamp {
+    position: absolute;
+    right: 6%;
+    bottom: 22%;
+    width: 90px;
+    height: 170px;
+  }
+  .lamp .shade {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 70px;
+    background:
+      radial-gradient(ellipse at 50% 0%, var(--lamp-shade) 0%, var(--lamp-glow) 100%);
+    border: 3px solid var(--wood-dark);
+    border-radius: 4px;
+    clip-path: polygon(8% 0%, 92% 0%, 80% 100%, 20% 100%);
+    box-shadow:
+      0 -20px 60px rgba(255, 222, 130, 0.55),
+      0 0 30px rgba(255, 222, 130, 0.4);
+  }
+  .lamp .neck {
+    position: absolute;
+    top: 70px; left: 50%;
+    transform: translateX(-50%);
+    width: 6px; height: 60px;
+    background: var(--wood-dark);
+  }
+  .lamp .base {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px; height: 14px;
+    background: var(--wood-dark);
+    border-radius: 50% 50% 8px 8px;
+  }
+
+  .creature {
+    position: absolute;
+    cursor: pointer;
+    transition: transform 250ms ease, filter 250ms ease;
+    user-select: none;
+  }
+  .creature.spark {
+    animation: pop 700ms ease;
+  }
+  @keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); filter: drop-shadow(0 0 14px currentColor); }
+    100% { transform: scale(1); }
+  }
+  .creature.shake { animation: shake 350ms ease; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25%, 75% { transform: translateX(-12px) rotate(-3deg); }
+    50% { transform: translateX(12px) rotate(3deg); }
+  }
+
+  .kitten {
+    left: 18%;
+    top: 28%;
+    width: 90px;
+    height: 80px;
+  }
+  .kitten .head {
+    position: absolute;
+    inset: 0;
+    background: #FF9EB5;
+    border: 4px solid #b25676;
+    border-radius: 50%;
+  }
+  .kitten .ear-l, .kitten .ear-r {
+    position: absolute;
+    top: -10px;
+    width: 24px;
+    height: 28px;
+    background: #FF9EB5;
+    border: 4px solid #b25676;
+    border-bottom: 0;
+		border-radius: 12px 12px 0 0;
+  }
+  .kitten .ear-l { left: 6px; transform: rotate(-10deg); }
+  .kitten .ear-r { right: 6px; transform: rotate(10deg); }
+  .kitten .ear-l::after, .kitten .ear-r::after {
+    content: '';
+    position: absolute;
+    bottom: 4px; left: 4px; right: 4px;
+    height: 12px;
+    background: #FFC4D6;
+    border-radius: 8px 8px 0 0;
+  }
+  .kitten .eye-l, .kitten .eye-r {
+    position: absolute;
+    top: 32px;
+    width: 14px; height: 18px;
+    background: #2D3436;
+    border-radius: 50%;
+  }
+  .kitten .eye-l { left: 22px; }
+  .kitten .eye-r { right: 22px; }
+  .kitten .eye-l::after, .kitten .eye-r::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 4px; height: 4px;
+    background: white;
+    border-radius: 50%;
+  }
+  .kitten .nose {
+    position: absolute;
+    top: 56px; left: 50%;
+    transform: translateX(-50%);
+    width: 8px; height: 6px;
+    background: #b25676;
+    border-radius: 50%;
+  }
+  .kitten:hover { transform: translateY(-4px) scale(1.04); }
+
+  .bunny {
+    left: 46%;
+    bottom: 22%;
+    width: 80px;
+    height: 50px;
+  }
+  .bunny .head {
+    position: absolute;
+    inset: 0;
+    background: #7EC8E8;
+    border: 4px solid #2f7ba3;
+    border-radius: 50%;
+  }
+  .bunny .ear-l, .bunny .ear-r {
+    position: absolute;
+    top: -36px;
+    width: 14px; height: 44px;
+    background: #7EC8E8;
+    border: 4px solid #2f7ba3;
+    border-radius: 10px 10px 4px 4px;
+  }
+  .bunny .ear-l { left: 22px; transform: rotate(-8deg); }
+  .bunny .ear-r { right: 22px; transform: rotate(8deg); }
+  .bunny .ear-l::after, .bunny .ear-r::after {
+    content: '';
+    position: absolute;
+    top: 6px; left: 1px;
+    width: 6px; height: 30px;
+    background: #cce6f5;
+    border-radius: 4px;
+  }
+  .bunny .eye {
+    position: absolute;
+    top: 18px; left: 50%;
+    transform: translateX(-50%);
+    width: 16px; height: 20px;
+    background: #2D3436;
+    border-radius: 50%;
+  }
+  .bunny .eye::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 5px; height: 5px;
+    background: white;
+    border-radius: 50%;
+  }
+  .bunny .nose {
+    position: absolute;
+    top: 32px; left: 50%;
+    transform: translateX(-50%);
+    width: 6px; height: 5px;
+    background: #2f7ba3;
+    border-radius: 50%;
+  }
+  .bunny:hover { transform: translateY(-2px) scale(1.05); }
+
+  .duck {
+    right: 9%;
+    bottom: 22%;
+    width: 78px; height: 90px;
+  }
+  .duck .body {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 50px;
+    background: #FFE066;
+    border: 4px solid #b59400;
+    border-radius: 50px 50px 30px 30px;
+  }
+  .duck .wing {
+    position: absolute;
+    bottom: 8px; right: 6px;
+    width: 30px; height: 36px;
+    background: #f5cf3c;
+    border: 3px solid #b59400;
+    border-radius: 50% 50% 30% 30%;
+    transform: rotate(20deg);
+  }
+  .duck .head {
+    position: absolute;
+    top: 0; left: 12px;
+    width: 50px; height: 46px;
+    background: #FFE066;
+    border: 4px solid #b59400;
+    border-radius: 50%;
+  }
+  .duck .beak {
+    position: absolute;
+    top: 22px; left: -4px;
+    width: 22px; height: 12px;
+    background: #FF7B7B;
+    border: 3px solid #b04a4a;
+    border-radius: 4px;
+  }
+  .duck .eye {
+    position: absolute;
+    top: 14px; left: 22px;
+    width: 12px; height: 14px;
+    background: #2D3436;
+    border-radius: 50%;
+  }
+  .duck .eye::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 4px; height: 4px;
+    background: white;
+    border-radius: 50%;
+  }
+  .duck:hover { transform: translateY(-4px) rotate(-3deg) scale(1.04); }
+
+  .cloud {
+    position: absolute;
+    top: 8%;
+    left: 4%;
+    background: white;
+    padding: 16px 36px;
+    border-radius: 40px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    border: 4px solid #d6c6e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cloud::before {
+    content: '';
+    position: absolute;
+    bottom: -12px;
+    left: 30px;
+    width: 20px; height: 20px;
+    background: white;
+    border-right: 4px solid #d6c6e0;
+    border-bottom: 4px solid #d6c6e0;
+    transform: rotate(45deg);
+  }
+  .cloud .q {
+    font-family: 'Secular One', serif;
+    font-size: clamp(40px, 5vw, 56px);
+    color: #6a4ca8;
+    line-height: 1;
+  }
+
+  .ceiling {
+    position: absolute;
+    left: 0; right: 0;
+    top: 0;
+    height: 6%;
+    background: #f0d8b8;
+    border-bottom: 3px solid rgba(0,0,0,0.06);
+  }
+
+  .toast {
+    position: fixed;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.6);
+    background: white;
+    color: #6a4ca8;
+    padding: 30px 50px;
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    font-size: 28px;
+    font-weight: 800;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 300ms ease, transform 300ms ease;
+    z-index: 200;
+    text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+  .help {
+    background: rgba(106, 76, 168, 0.1);
+    color: #6a4ca8;
+    border-radius: 14px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<header>
+  <a href="index.html">← חזרה</a>
+  <h1>חלון ההקשבה · ב</h1>
+  <span class="counter"><span id="score">0</span>/3</span>
+</header>
+
+<div class="help" id="help">שאלה: <strong>איפה החתול?</strong> — הקישו עליו</div>
+
+<div class="diorama" id="diorama">
+  <div class="ceiling"></div>
+  <div class="floor"></div>
+  <div class="rug"></div>
+
+  <div class="chair">
+    <div class="back"></div>
+    <div class="seat"></div>
+    <div class="leg leg-l"></div>
+    <div class="leg leg-r"></div>
+  </div>
+  <div class="table">
+    <div class="top"></div>
+    <div class="cloth"></div>
+    <div class="leg leg-l"></div>
+    <div class="leg leg-r"></div>
+  </div>
+  <div class="lamp">
+    <div class="shade"></div>
+    <div class="neck"></div>
+    <div class="base"></div>
+  </div>
+
+  <div class="creature kitten" id="kitten" data-correct="true">
+    <div class="ear-l"></div>
+    <div class="ear-r"></div>
+    <div class="head"></div>
+    <div class="eye-l"></div>
+    <div class="eye-r"></div>
+    <div class="nose"></div>
+  </div>
+
+  <div class="creature bunny" id="bunny" data-correct="false">
+    <div class="ear-l"></div>
+    <div class="ear-r"></div>
+    <div class="head"></div>
+    <div class="eye"></div>
+    <div class="nose"></div>
+  </div>
+
+  <div class="creature duck" id="duck" data-correct="false">
+    <div class="wing"></div>
+    <div class="head"></div>
+    <div class="beak"></div>
+    <div class="eye"></div>
+    <div class="body"></div>
+  </div>
+
+  <div class="cloud"><span class="q">?</span></div>
+</div>
+
+<div class="toast" id="toast">🎉 מצאתם את החתול!</div>
+
+<script>
+(function () {
+  const creatures = document.querySelectorAll('.creature');
+  const scoreEl = document.getElementById('score');
+  const toast = document.getElementById('toast');
+  const help = document.getElementById('help');
+  let score = 0;
+  const questions = [
+    { q: 'איפה החתול?', ask: 'החתול' },
+    { q: 'איפה הארנב?', ask: 'הארנב' },
+    { q: 'איפה הברווז?', ask: 'הברווז' },
+  ];
+  let qIndex = 0;
+
+  function setQuestion() {
+    help.innerHTML = 'שאלה: <strong>' + questions[qIndex].q + '</strong> — הקישו עליו';
+  }
+  function nextQuestion() {
+    qIndex = (qIndex + 1) % 3;
+    if (qIndex === 0) { score = 0; scoreEl.textContent = '0'; }
+    setQuestion();
+  }
+
+  creatures.forEach((c) => {
+    c.addEventListener('click', () => {
+      if (c.dataset.correct === 'true') {
+        if (c.id === 'kitten' && questions[qIndex].ask !== 'החתול') { c.dataset.correct = 'false'; }
+        else if (c.id === 'bunny' && questions[qIndex].ask !== 'הארנב') { c.dataset.correct = 'false'; }
+        else if (c.id === 'duck' && questions[qIndex].ask !== 'הברווז') { c.dataset.correct = 'false'; }
+      }
+      if (c.dataset.correct === 'true') {
+        score += 1; scoreEl.textContent = String(score);
+        c.classList.add('spark');
+        setTimeout(() => c.classList.remove('spark'), 700);
+        toast.classList.add('show');
+        setTimeout(() => { toast.classList.remove('show'); updateTargets(); nextQuestion(); }, 1300);
+      } else {
+        c.classList.add('shake');
+        setTimeout(() => c.classList.remove('shake'), 350);
+      }
+    });
+  });
+
+  function updateTargets() {
+    const ask = questions[qIndex].ask;
+    creatures.forEach((c) => {
+      if (c.id === 'kitten') c.dataset.correct = ask === 'החתול' ? 'true' : 'false';
+      else if (c.id === 'bunny') c.dataset.correct = ask === 'הארנב' ? 'true' : 'false';
+      else c.dataset.correct = ask === 'הברווז' ? 'true' : 'false';
+    });
+  }
+  setQuestion();
+})();
+</script>
+</body>
+</html>

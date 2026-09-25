@@ -1,0 +1,1158 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>מציירים מילים — Magic Brush Painter</title>
+<style>
+  :root {
+    --bg: #FDF9F5;
+    --card: #FFFFFF;
+    --coral: #FF5E62;
+    --coral-dark: #D94549;
+    --mint: #4EBA6F;
+    --sky: #4D96FF;
+    --sun: #FFD166;
+    --wood: #8D6E63;
+    --text: #2D3436;
+    --guide-line: #E2D7CB;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Rubik', system-ui, -apple-system, sans-serif;
+    background: radial-gradient(circle at 10% 15%, #FFEFE8 0%, transparent 45%),
+                radial-gradient(circle at 90% 85%, #EAF7EE 0%, transparent 50%),
+                var(--bg);
+    min-height: 100vh;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--text);
+    user-select: none;
+  }
+  header {
+    width: 100%;
+    max-width: 980px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .nav-btn {
+    background: white;
+    border: 2px solid #EAD8C7;
+    border-radius: 20px;
+    padding: 8px 18px;
+    font-weight: 700;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 14px;
+    box-shadow: 0 4px 0 #EAD8C7;
+  }
+  .nav-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #EAD8C7; }
+
+  /* Header controls */
+  .header-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .brush-color-picker {
+    display: flex;
+    background: white;
+    border: 2px solid #EAD8C7;
+    border-radius: 24px;
+    padding: 3px;
+    gap: 6px;
+  }
+  .color-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: pointer;
+    transition: transform 150ms ease;
+  }
+  .color-dot.active {
+    transform: scale(1.15);
+    border-color: #2D3436;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+  .dot-red    { background: #FF5E62; }
+  .dot-purple { background: #9B59B6; }
+  .dot-blue   { background: #3498DB; }
+  .dot-gold   { background: #F1C40F; }
+
+  /* Language Switcher */
+  .lang-toggle {
+    display: flex;
+    background: white;
+    border: 2px solid #EAD8C7;
+    border-radius: 20px;
+    padding: 3px;
+    gap: 4px;
+  }
+  .lang-opt {
+    padding: 6px 14px;
+    border-radius: 16px;
+    border: none;
+    background: none;
+    font-weight: 800;
+    cursor: pointer;
+    font-size: 13px;
+    color: #888;
+  }
+  .lang-opt.active {
+    background: var(--coral);
+    color: white;
+  }
+
+  /* Main Grid */
+  .main-stage {
+    width: 100%;
+    max-width: 980px;
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 20px;
+    align-items: stretch;
+  }
+  @media (max-width: 820px) {
+    .main-stage { grid-template-columns: 1fr; }
+  }
+
+  /* Word Bar */
+  .word-banner {
+    grid-column: 1 / -1;
+    background: white;
+    border-radius: 24px;
+    padding: 12px 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.04), 0 3px 0 #EAD8C7;
+    border: 2px solid #F0E4D7;
+  }
+  .word-banner-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #999;
+    margin-inline-end: 8px;
+  }
+  .letter-slot {
+    width: 54px;
+    height: 60px;
+    border-radius: 18px;
+    background: #F8F5F0;
+    border: 3px dashed #D6C7B7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 800;
+    color: #BDADA0;
+    transition: all 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .letter-slot.active {
+    border-color: #FF9F43;
+    background: #FFF9EE;
+    color: #FF9F43;
+    animation: slotPulse 1.4s infinite;
+  }
+  @keyframes slotPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,159,67,0.4); }
+    50% { transform: scale(1.06); box-shadow: 0 0 0 8px rgba(255,159,67,0); }
+  }
+  .letter-slot.filled {
+    background: var(--coral);
+    border: 3px solid var(--coral-dark);
+    color: white;
+    box-shadow: 0 5px 0 #B8363A;
+    transform: scale(1.05);
+  }
+
+  /* Left: The Magic Brush Drawing Slate (NO TRACKS) */
+  .slate-card {
+    background: white;
+    border-radius: 30px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.06), 0 4px 0 #EAD8C7;
+    border: 3px solid #F0E4D7;
+    min-height: 440px;
+    position: relative;
+  }
+  .slate-instruction {
+    font-size: 16px;
+    font-weight: 800;
+    color: #555;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .slate-board {
+    width: 320px;
+    height: 320px;
+    background: #FAF7F2;
+    background-image:
+      radial-gradient(circle at 50% 50%, rgba(255,255,255,0.7) 0%, transparent 80%);
+    border-radius: 28px;
+    border: 4px solid #EADBCC;
+    position: relative;
+    overflow: hidden;
+    touch-action: none;
+    box-shadow: inset 0 6px 16px rgba(0,0,0,0.04);
+    cursor: crosshair;
+  }
+  .guide-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Dotted & subtle letterform guides (NO asphalt or roads!) */
+  .letter-ghost-line {
+    fill: none;
+    stroke: #EAE3D9;
+    stroke-width: 26;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  /* Each dash of the trace line is a small arrow gliding toward the star */
+  .dash-arrow-shaft {
+    stroke: #FF70A6;
+    stroke-width: 4;
+    stroke-linecap: round;
+  }
+  .dash-arrow-head {
+    fill: #FF70A6;
+    stroke: #FF70A6;
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+  }
+
+  /* Start Dot & Star */
+  .guide-start-dot {
+    fill: #FF70A6;
+    stroke: white;
+    stroke-width: 3.5;
+    filter: drop-shadow(0 3px 6px rgba(255, 112, 166, 0.45));
+    animation: startPulse 1.4s ease infinite;
+  }
+  @keyframes startPulse {
+    0%, 100% { r: 15; }
+    50% { r: 18; }
+  }
+  .guide-start-text {
+    font-size: 15px;
+    font-weight: 800;
+    fill: white;
+    text-anchor: middle;
+    dominant-baseline: central;
+    pointer-events: none;
+  }
+  .guide-end-star {
+    font-size: 22px;
+    text-anchor: middle;
+    dominant-baseline: central;
+    pointer-events: none;
+    filter: drop-shadow(0 0 6px rgba(241, 196, 15, 0.6));
+    animation: starSpin 3s linear infinite;
+  }
+
+  /* Mistake feedback */
+  .slate-feedback {
+    position: absolute;
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%) translateY(8px);
+    background: #FFF4E6;
+    color: #C0661B;
+    border: 2px solid #FFC078;
+    padding: 6px 14px;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 800;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 200ms ease, transform 200ms ease;
+    z-index: 20;
+  }
+  .slate-feedback.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .slate-board.shake { animation: slateShake 320ms ease; }
+  @keyframes slateShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  /* HTML5 Canvas for Real Freehand Fluid Watercolor Drawing */
+  #paint-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    touch-action: none;
+  }
+
+  /* Right Side: The Living Coloring Book (Storybook Watercolor Reveal) */
+  .paint-card {
+    background: white;
+    border-radius: 30px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.06), 0 4px 0 #EAD8C7;
+    border: 3px solid #F0E4D7;
+    min-height: 440px;
+    position: relative;
+  }
+  .paint-badge {
+    position: absolute;
+    top: 18px;
+    right: 20px;
+    background: #EAF7EE;
+    color: #2ECC71;
+    font-size: 13px;
+    font-weight: 800;
+    padding: 6px 14px;
+    border-radius: 20px;
+    z-index: 10;
+  }
+  .art-canvas-wrap {
+    width: 100%;
+    max-width: 360px;
+    aspect-ratio: 16 / 9.5;
+    position: relative;
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08), inset 0 0 0 2px rgba(255,255,255,0.9);
+    background: #FAF5EB;
+  }
+  .art-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+  .art-sketch {
+    /* Delicate pencil sketch on watercolor paper */
+    filter: grayscale(1) contrast(1.3) brightness(1.08) opacity(0.34);
+    z-index: 1;
+  }
+  .art-color-wrap {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    -webkit-mask-image: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0));
+    mask-image: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0));
+    transition: opacity 400ms ease;
+  }
+  .art-color {
+    filter: saturate(1.12) contrast(1.05);
+    transition: transform 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .art-color.bloom-pop {
+    animation: imagePop 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes imagePop {
+    0% { transform: scale(0.97); filter: brightness(1.2) saturate(1.2); }
+    50% { transform: scale(1.03); }
+    100% { transform: scale(1); filter: saturate(1.12) contrast(1.05); }
+  }
+  .paint-card-caption {
+    font-size: 15px;
+    font-weight: 800;
+    color: #888;
+    margin-top: 14px;
+    text-align: center;
+    min-height: 24px;
+  }
+
+  /* Win Modal */
+  .celebrate-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(45,52,54,0.65);
+    backdrop-filter: blur(5px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+  .celebrate-overlay.show { display: flex; animation: fadeIn 300ms ease; }
+  .celebrate-box {
+    background: white;
+    padding: 36px 44px;
+    border-radius: 36px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    border: 4px solid var(--sun);
+    max-width: 440px;
+    animation: popUp 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes popUp {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .celebrate-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--coral);
+    margin-bottom: 8px;
+  }
+  .celebrate-sub {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 24px;
+  }
+  .celebrate-btn {
+    background: var(--mint);
+    border: none;
+    color: white;
+    font-size: 18px;
+    font-weight: 800;
+    padding: 12px 32px;
+    border-radius: 22px;
+    cursor: pointer;
+    box-shadow: 0 6px 0 #399654;
+  }
+  .celebrate-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 #399654; }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="nav-btn" href="index.html">← חזרה למשחקים</a>
+
+  <div class="header-controls">
+    <!-- Choose brush color -->
+    <div class="brush-color-picker">
+      <div class="color-dot dot-red active" data-color="#FF5E62" onclick="setBrushColor('#FF5E62', this)" title="אדום תות"></div>
+      <div class="color-dot dot-purple" data-color="#9B59B6" onclick="setBrushColor('#9B59B6', this)" title="סגול קסם"></div>
+      <div class="color-dot dot-blue" data-color="#3498DB" onclick="setBrushColor('#3498DB', this)" title="כחול שמיים"></div>
+      <div class="color-dot dot-gold" data-color="#F1C40F" onclick="setBrushColor('#F1C40F', this)" title="זהב מנצנץ"></div>
+    </div>
+
+    <!-- Choose Language -->
+    <div class="lang-toggle">
+      <button class="lang-opt active" id="btn-en" onclick="setLanguage('en')">English</button>
+      <button class="lang-opt" id="btn-he" onclick="setLanguage('he')">עברית</button>
+    </div>
+  </div>
+</header>
+
+<div class="main-stage">
+  <!-- Word Cards Bar -->
+  <div class="word-banner" id="word-banner">
+    <!-- Populated dynamically -->
+  </div>
+
+  <!-- Left Side: Freehand Magic Brush Tracing (NO TRACKS) -->
+  <div class="slate-card">
+    <div class="slate-instruction">
+      <span>🎨</span>
+      <strong id="slate-instruction-text">ציירו עם האצבע מנקודה ① לאורך החץ של האות A</strong>
+    </div>
+
+    <div class="slate-board" id="slate-board">
+      <!-- Underlying SVG guide with clean letter outline & arrow -->
+      <svg class="guide-svg" id="guide-svg" viewBox="0 0 320 320">
+        <!-- Full letter faint backdrop -->
+        <path id="svg-ghost-letter" class="letter-ghost-line" d=""/>
+        <!-- Dotted centerline guide -->
+        <!-- Trace line: every dash is a small arrow pointing along the stroke -->
+        <g id="svg-stroke-dashes"></g>
+        <!-- Invisible centerline of the current stroke (for sampling & arrow motion) -->
+        <path id="svg-stroke-path" d="" fill="none" stroke="none"/>
+        <!-- Start dot with ① -->
+        <g id="svg-start-group">
+          <circle id="svg-start-dot" class="guide-start-dot" cx="0" cy="0" r="16"/>
+          <text id="svg-start-text" class="guide-start-text" x="0" y="0">1</text>
+        </g>
+        <!-- End Star -->
+        <text id="svg-end-star" class="guide-end-star" x="0" y="0">⭐</text>
+      </svg>
+
+      <!-- Freehand Drawing Canvas -->
+      <canvas id="paint-canvas" width="320" height="320"></canvas>
+
+      <!-- Mistake feedback bubble -->
+      <div class="slate-feedback" id="slate-feedback"></div>
+    </div>
+
+    <div style="font-size:14px; font-weight:700; color:#888; margin-top:14px;">
+      ציירו בתוך האות, בכיוון החץ, עד הכוכב ⭐
+    </div>
+  </div>
+
+  <!-- Right Side: The Living Coloring Book (Storybook Watercolor Reveal) -->
+  <div class="paint-card">
+    <div class="paint-badge" id="paint-badge">נצבע: 0 / 5</div>
+
+    <div class="art-canvas-wrap">
+      <!-- Layer 1: Sketch Layer -->
+      <img class="art-layer art-sketch" src="assets/storybook_apple.jpg" alt="Pencil Sketch Outline">
+
+      <!-- Layer 2: Watercolor Painted Layer (revealed via dynamic CSS watercolor masks) -->
+      <div class="art-color-wrap" id="art-color-wrap">
+        <img class="art-layer art-color" id="art-color-img" src="assets/storybook_apple.jpg" alt="Watercolor Painting">
+      </div>
+    </div>
+
+    <div class="paint-card-caption" id="paint-caption">
+      כל אות שתציירו במדויק תחשוף גל צבעי מים בציור! 🎨
+    </div>
+  </div>
+</div>
+
+<!-- Win Modal -->
+<div class="celebrate-overlay" id="celebrate-overlay">
+  <div class="celebrate-box">
+    <div style="font-size: 64px; margin-bottom: 8px;">🍎🎨✨</div>
+    <div class="celebrate-title">ציור מושלם!</div>
+    <div class="celebrate-sub" id="celebrate-text">ציירתם את כל האותיות והתפוח התעורר לחיים!</div>
+    <button class="celebrate-btn" onclick="resetRound()">לצייר שוב ✨</button>
+  </div>
+</div>
+
+<script>
+// --- Web Audio Synthesizer for cheerful sound effects ---
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playChime(freq = 440, duration = 0.22) {
+  try {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch(e) {}
+}
+function playSplashChime() {
+  [440, 554.37, 659.25].forEach((f, i) => setTimeout(() => playChime(f, 0.3), i * 80));
+}
+function playFanfare() {
+  const notes = [523.25, 659.25, 783.99, 1046.50];
+  notes.forEach((f, i) => setTimeout(() => playChime(f, 0.4), i * 110));
+}
+function playDissolveSound() {
+  try {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(320, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(140, audioCtx.currentTime + 0.25);
+    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.25);
+  } catch(e) {}
+}
+
+// --- Letter stroke data ---
+const DATA = {
+  en: {
+    word: 'APPLE',
+    title: 'Apple',
+    letters: [
+      {
+        char: 'A',
+        mask: 'radial-gradient(circle 55px at 50% 55%, black 75%, transparent 100%)',
+        captionHeb: 'תפוח אדום ועסיסי נצבע! 🍎',
+        strokes: [
+          { d: 'M160 55 L75 240', from: {x: 160, y: 55}, to: {x: 75, y: 240}, label: '1' },
+          { d: 'M160 55 L245 240', from: {x: 160, y: 55}, to: {x: 245, y: 240}, label: '2' },
+          { d: 'M105 170 L215 170', from: {x: 105, y: 170}, to: {x: 215, y: 170}, label: '3' }
+        ]
+      },
+      {
+        char: 'P',
+        mask: 'radial-gradient(ellipse 50px 70px at 27% 48%, black 75%, transparent 100%)',
+        captionHeb: 'זר פרחי הבר משמאל נצבע! 🌸',
+        strokes: [
+          { d: 'M100 55 L100 245', from: {x: 100, y: 55}, to: {x: 100, y: 245}, label: '1' },
+          { d: 'M100 55 C195 55, 195 150, 100 150', from: {x: 100, y: 55}, to: {x: 100, y: 150}, label: '2' }
+        ]
+      },
+      {
+        char: 'P',
+        mask: 'radial-gradient(ellipse 50px 70px at 73% 48%, black 75%, transparent 100%)',
+        captionHeb: 'זר פרחי הבר מימין נצבע! 🌼',
+        strokes: [
+          { d: 'M100 55 L100 245', from: {x: 100, y: 55}, to: {x: 100, y: 245}, label: '1' },
+          { d: 'M100 55 C195 55, 195 150, 100 150', from: {x: 100, y: 55}, to: {x: 100, y: 150}, label: '2' }
+        ]
+      },
+      {
+        char: 'L',
+        mask: 'radial-gradient(ellipse 180px 50px at 50% 78%, black 75%, transparent 100%)',
+        captionHeb: 'מדף העץ הכפרי נצבע! 🪵',
+        strokes: [
+          { d: 'M110 55 L110 240', from: {x: 110, y: 55}, to: {x: 110, y: 240}, label: '1' },
+          { d: 'M110 240 L220 240', from: {x: 110, y: 240}, to: {x: 220, y: 240}, label: '2' }
+        ]
+      },
+      {
+        char: 'E',
+        mask: 'full',
+        captionHeb: 'קרני שמש חמימות וניצוצות זהב! ✨',
+        strokes: [
+          { d: 'M110 55 L110 240', from: {x: 110, y: 55}, to: {x: 110, y: 240}, label: '1' },
+          { d: 'M110 55 L215 55', from: {x: 110, y: 55}, to: {x: 215, y: 55}, label: '2' },
+          { d: 'M110 148 L195 148', from: {x: 110, y: 148}, to: {x: 195, y: 148}, label: '3' },
+          { d: 'M110 240 L215 240', from: {x: 110, y: 240}, to: {x: 215, y: 240}, label: '4' }
+        ]
+      }
+    ]
+  },
+  he: {
+    word: 'תפוח',
+    title: 'תפוח',
+    letters: [
+      {
+        char: 'ת',
+        mask: 'radial-gradient(circle 55px at 50% 55%, black 75%, transparent 100%)',
+        captionHeb: 'גוף התפוח האדום נצבע! 🍎',
+        strokes: [
+          { d: 'M220 70 L90 70', from: {x: 220, y: 70}, to: {x: 90, y: 70}, label: '1' },
+          { d: 'M90 70 L90 235', from: {x: 90, y: 70}, to: {x: 90, y: 235}, label: '2' },
+          { d: 'M220 70 L220 235', from: {x: 220, y: 70}, to: {x: 220, y: 235}, label: '3' }
+        ]
+      },
+      {
+        char: 'פ',
+        mask: 'radial-gradient(ellipse 50px 70px at 27% 48%, black 75%, transparent 100%), radial-gradient(ellipse 50px 70px at 73% 48%, black 75%, transparent 100%)',
+        captionHeb: 'פרחי הבר הצבעוניים נצבעו! 🌸🌼',
+        strokes: [
+          { d: 'M215 70 L95 70', from: {x: 215, y: 70}, to: {x: 95, y: 70}, label: '1' },
+          { d: 'M95 70 L95 235', from: {x: 95, y: 70}, to: {x: 95, y: 235}, label: '2' },
+          { d: 'M95 235 L215 235', from: {x: 95, y: 235}, to: {x: 215, y: 235}, label: '3' }
+        ]
+      },
+      {
+        char: 'ו',
+        mask: 'radial-gradient(ellipse 180px 50px at 50% 78%, black 75%, transparent 100%)',
+        captionHeb: 'שולחן העץ הטבעי נצבע! 🪵',
+        strokes: [
+          { d: 'M160 55 L160 240', from: {x: 160, y: 55}, to: {x: 160, y: 240}, label: '1' }
+        ]
+      },
+      {
+        char: 'ח',
+        mask: 'full',
+        captionHeb: 'קרני השמש וניצוצות הזהב! ✨',
+        strokes: [
+          { d: 'M220 70 L90 70', from: {x: 220, y: 70}, to: {x: 90, y: 70}, label: '1' },
+          { d: 'M90 70 L90 235', from: {x: 90, y: 70}, to: {x: 90, y: 235}, label: '2' },
+          { d: 'M220 70 L220 235', from: {x: 220, y: 70}, to: {x: 220, y: 235}, label: '3' }
+        ]
+      }
+    ]
+  }
+};
+
+let currentLang = 'en';
+let brushColor = '#FF5E62';
+let letterIdx = 0;
+let strokeIdx = 0;
+let activeMasks = [];
+
+// Stroke validation state
+// A stroke passes only if the child starts at ①, stays inside the letter
+// corridor the whole way, moves forward along the stroke in order, and
+// reaches the end without scribbling.
+const START_RADIUS = 36;        // px: how close the first touch must be to ①
+const CORRIDOR = 26;            // px: max distance from the stroke centerline
+const MAX_AHEAD = 40;           // px: max progress jump per sub-step (no shortcuts)
+const MAX_BACKTRACK = 24;       // px: small wobble backwards allowed
+const SCRIBBLE_RATIO = 1.4;     // drawn length vs. covered length
+const SCRIBBLE_SLACK = 30;      // px of forgiveness for small wobbles
+const END_MARGIN = 10;          // px from the end that counts as finished
+const SUBSTEP = 6;              // px: interpolate fast moves in small steps
+
+let pathSamples = [];           // dense samples along the stroke {x, y, len}
+let strokeLength = 0;
+let progressLen = 0;            // furthest valid distance reached along the stroke
+let drawnLen = 0;               // total ink length drawn in this attempt
+let userPathPoints = [];
+let completedStrokes = [];      // strokes of the current letter that passed
+let isDrawing = false;
+
+// Flowing arrow-dashes along the current stroke
+const DASH_SPACING = 20;        // px between arrows
+const DASH_EDGE = 18;           // keep clear of the start dot and the end star
+const DASH_FADE = 10;           // px over which arrows fade in/out at the ends
+const DASH_SPEED = 20;          // px per second along the path
+let dashArrows = [];
+let dashCycle = 0;              // total loop length (count * spacing)
+
+const canvas = document.getElementById('paint-canvas');
+const ctx = canvas.getContext('2d');
+const slate = document.getElementById('slate-board');
+
+function setBrushColor(color, el) {
+  brushColor = color;
+  document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+  el.classList.add('active');
+  playChime(500, 0.1);
+}
+
+function updateColorMask() {
+  const wrap = document.getElementById('art-color-wrap');
+  if (!wrap) return;
+  if (activeMasks.length === 0) {
+    wrap.style.webkitMaskImage = 'linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0))';
+    wrap.style.maskImage = 'linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0))';
+  } else if (activeMasks.includes('full')) {
+    wrap.style.webkitMaskImage = 'none';
+    wrap.style.maskImage = 'none';
+  } else {
+    const combined = activeMasks.join(', ');
+    wrap.style.webkitMaskImage = combined;
+    wrap.style.maskImage = combined;
+  }
+}
+
+function setLanguage(lang) {
+  currentLang = lang;
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  document.getElementById('btn-he').classList.toggle('active', lang === 'he');
+  resetRound();
+}
+
+function resetRound() {
+  document.getElementById('celebrate-overlay').classList.remove('show');
+  letterIdx = 0;
+  strokeIdx = 0;
+  activeMasks = [];
+  updateColorMask();
+
+  const colorImg = document.getElementById('art-color-img');
+  if (colorImg) colorImg.classList.remove('bloom-pop');
+  document.getElementById('paint-caption').textContent = 'כל אות שתציירו במדויק תחשוף גל צבעי מים בציור! 🎨';
+
+  completedStrokes = [];
+  userPathPoints = [];
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  renderWordBanner();
+  loadStroke();
+}
+
+function renderWordBanner() {
+  const data = DATA[currentLang];
+  const banner = document.getElementById('word-banner');
+  banner.style.direction = currentLang === 'en' ? 'ltr' : 'rtl';
+  banner.innerHTML = `<span class="word-banner-title">${currentLang === 'en' ? 'Word:' : 'המילה:'}</span>`;
+
+  data.letters.forEach((item, idx) => {
+    const slot = document.createElement('div');
+    slot.className = 'letter-slot';
+    slot.id = `slot-${idx}`;
+    if (idx < letterIdx) {
+      slot.classList.add('filled');
+      slot.textContent = item.char;
+    } else if (idx === letterIdx) {
+      slot.classList.add('active');
+      slot.textContent = item.char;
+    } else {
+      slot.textContent = '?';
+    }
+    banner.appendChild(slot);
+  });
+}
+
+function loadStroke() {
+  const data = DATA[currentLang];
+  if (letterIdx >= data.letters.length) {
+    onCompleteWord();
+    return;
+  }
+
+  const curLetter = data.letters[letterIdx];
+  const curStroke = curLetter.strokes[strokeIdx];
+
+  // Update instruction
+  document.getElementById('slate-instruction-text').textContent =
+    `ציירו מנקודה ① לאורך החץ של האות ${curLetter.char} (קו ${strokeIdx + 1}/${curLetter.strokes.length})`;
+  document.getElementById('paint-badge').textContent =
+    `נצבע: ${letterIdx} / ${data.letters.length}`;
+
+  // Update Faint Full Letter Background
+  const fullLetterD = curLetter.strokes.map(s => s.d).join(' ');
+  document.getElementById('svg-ghost-letter').setAttribute('d', fullLetterD);
+
+  // Update Start Point ①
+  const dot = document.getElementById('svg-start-dot');
+  const txt = document.getElementById('svg-start-text');
+  dot.setAttribute('cx', curStroke.from.x);
+  dot.setAttribute('cy', curStroke.from.y);
+  txt.setAttribute('x', curStroke.from.x);
+  txt.setAttribute('y', curStroke.from.y);
+  txt.textContent = curStroke.label;
+
+  // Update End Star
+  const star = document.getElementById('svg-end-star');
+  star.setAttribute('x', curStroke.to.x);
+  star.setAttribute('y', curStroke.to.y + 4);
+
+  // Densely sample the stroke centerline (every ~3px) for validation
+  const mathPath = document.getElementById('svg-stroke-path');
+  mathPath.setAttribute('d', curStroke.d);
+  strokeLength = mathPath.getTotalLength();
+  pathSamples = [];
+  const count = Math.max(20, Math.ceil(strokeLength / 3));
+  for (let i = 0; i <= count; i++) {
+    const len = (i / count) * strokeLength;
+    const p = mathPath.getPointAtLength(len);
+    pathSamples.push({ x: p.x, y: p.y, len });
+  }
+
+  // Arrow-dashes: positioned every frame by animateDashArrows()
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  const dashGroup = document.getElementById('svg-stroke-dashes');
+  dashGroup.innerHTML = '';
+  const dashSpan = strokeLength - DASH_EDGE * 2;
+  const dashCount = Math.max(1, Math.ceil(dashSpan / DASH_SPACING));
+  dashCycle = dashCount * DASH_SPACING;
+  dashArrows = [];
+  for (let i = 0; i < dashCount; i++) {
+    const arrow = document.createElementNS(SVG_NS, 'g');
+    arrow.setAttribute('class', 'dash-arrow');
+    const shaft = document.createElementNS(SVG_NS, 'line');
+    shaft.setAttribute('class', 'dash-arrow-shaft');
+    shaft.setAttribute('x1', -6);
+    shaft.setAttribute('y1', 0);
+    shaft.setAttribute('x2', 1);
+    shaft.setAttribute('y2', 0);
+    const head = document.createElementNS(SVG_NS, 'path');
+    head.setAttribute('class', 'dash-arrow-head');
+    head.setAttribute('d', 'M0 -5 L7 0 L0 5 Z');
+    arrow.appendChild(shaft);
+    arrow.appendChild(head);
+    dashGroup.appendChild(arrow);
+    dashArrows.push(arrow);
+  }
+
+  progressLen = 0;
+  drawnLen = 0;
+  userPathPoints = [];
+  isDrawing = false;
+}
+
+// Slide every arrow-dash forward along the real path; arrows fade in at ① and
+// fade out before ⭐, and wrap around only while invisible, so the flow never jumps.
+function animateDashArrows(time) {
+  const path = document.getElementById('svg-stroke-path');
+  const span = strokeLength - DASH_EDGE * 2;
+  const phase = (time / 1000) * DASH_SPEED;
+  dashArrows.forEach((arrow, i) => {
+    const u = (phase + i * DASH_SPACING) % dashCycle;
+    const opacity = Math.max(0, Math.min(1, u / DASH_FADE, (span - u) / DASH_FADE));
+    arrow.setAttribute('opacity', opacity);
+    if (opacity === 0) return;
+    const len = DASH_EDGE + u;
+    const p = path.getPointAtLength(len);
+    const behind = path.getPointAtLength(len - 2);
+    const ahead = path.getPointAtLength(len + 2);
+    const angle = Math.atan2(ahead.y - behind.y, ahead.x - behind.x) * 180 / Math.PI;
+    arrow.setAttribute('transform', `translate(${p.x} ${p.y}) rotate(${angle})`);
+  });
+  requestAnimationFrame(animateDashArrows);
+}
+requestAnimationFrame(animateDashArrows);
+
+// Coordinate extraction
+function getTouchPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  const t = e.touches ? e.touches[0] : e;
+  return {
+    x: (t.clientX - rect.left) * (canvas.width / rect.width),
+    y: (t.clientY - rect.top) * (canvas.height / rect.height)
+  };
+}
+
+// --- Canvas painting helpers ---
+const BRUSH_WIDTH = 14;         // px (the letter corridor is 26px wide)
+const BRUSH_OPACITY = 0.6;      // see-through ink so the guide arrows show beneath
+
+function paintPoints(points, color, alpha = 1) {
+  if (points.length < 2) return;
+  ctx.save();
+  ctx.globalAlpha = alpha * BRUSH_OPACITY;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = BRUSH_WIDTH;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, points[0].y);
+  for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function redrawCanvas(currentAlpha = 1) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  completedStrokes.forEach(s => paintPoints(s.points, s.color, 1));
+  paintPoints(userPathPoints, brushColor, currentAlpha);
+}
+
+// --- Mistake feedback ---
+let feedbackTimer = null;
+function showFeedback(message) {
+  const el = document.getElementById('slate-feedback');
+  el.textContent = message;
+  el.classList.add('show');
+  document.getElementById('slate-board').classList.remove('shake');
+  void document.getElementById('slate-board').offsetWidth;
+  document.getElementById('slate-board').classList.add('shake');
+  clearTimeout(feedbackTimer);
+  feedbackTimer = setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+const FEEDBACK = {
+  start: 'התחילו מהנקודה הורודה ①',
+  off: 'אופס! יצאתם מהקו — נסו שוב מנקודה ①',
+  backwards: 'לכיוון החץ, מ-① אל הכוכב ⭐',
+  scribble: 'בקו אחד רגוע לאורך החץ ✏️',
+  lifted: 'כמעט! המשיכו בלי להרים עד הכוכב ⭐',
+};
+
+function failStroke(reason) {
+  isDrawing = false;
+  playDissolveSound();
+  showFeedback(FEEDBACK[reason]);
+  let alpha = 1;
+  const fade = () => {
+    alpha -= 0.12;
+    if (alpha > 0) {
+      redrawCanvas(alpha);
+      requestAnimationFrame(fade);
+    } else {
+      userPathPoints = [];
+      redrawCanvas();
+    }
+  };
+  fade();
+}
+
+// --- Stroke validation ---
+// Returns the nearest centerline sample inside the allowed progress window,
+// so a finger near a *different* part of the stroke (e.g. the end of P's loop,
+// which sits right next to its start) can never be used as a shortcut.
+function nearestInWindow(pt) {
+  let best = null;
+  let bestDist = Infinity;
+  const minLen = progressLen - MAX_BACKTRACK;
+  const maxLen = progressLen + MAX_AHEAD;
+  for (const s of pathSamples) {
+    if (s.len < minLen || s.len > maxLen) continue;
+    const d = Math.hypot(pt.x - s.x, pt.y - s.y);
+    if (d < bestDist) { bestDist = d; best = s; }
+  }
+  return { sample: best, dist: bestDist };
+}
+
+// Nearest sample anywhere on the stroke (used to tell "backwards" from "off")
+function nearestAnywhere(pt) {
+  let best = null;
+  let bestDist = Infinity;
+  for (const s of pathSamples) {
+    const d = Math.hypot(pt.x - s.x, pt.y - s.y);
+    if (d < bestDist) { bestDist = d; best = s; }
+  }
+  return { sample: best, dist: bestDist };
+}
+
+// Validates one small step of the finger. Returns a failure reason or null.
+function validateStep(pt) {
+  const local = nearestInWindow(pt);
+  if (local.sample && local.dist <= CORRIDOR) {
+    if (local.sample.len > progressLen) {
+      const before = progressLen;
+      progressLen = local.sample.len;
+      // melodic rising chime roughly every 15% of the stroke
+      const step = strokeLength * 0.15;
+      if (Math.floor(progressLen / step) > Math.floor(before / step)) {
+        playChime(380 + (progressLen / strokeLength) * 320, 0.08);
+      }
+    }
+    return null;
+  }
+  // Outside the allowed window: is the finger on an earlier part of the stroke?
+  const global = nearestAnywhere(pt);
+  if (global.dist <= CORRIDOR && global.sample.len < progressLen - MAX_BACKTRACK) {
+    return 'backwards';
+  }
+  return 'off';
+}
+
+function onDrawDown(e) {
+  e.preventDefault();
+  const data = DATA[currentLang];
+  if (letterIdx >= data.letters.length) return;
+  const pt = getTouchPos(e);
+  const start = pathSamples[0];
+
+  if (Math.hypot(pt.x - start.x, pt.y - start.y) > START_RADIUS) {
+    playDissolveSound();
+    showFeedback(FEEDBACK.start);
+    return;
+  }
+
+  isDrawing = true;
+  progressLen = 0;
+  drawnLen = 0;
+  userPathPoints = [pt];
+  playChime(360, 0.12);
+}
+
+function onDrawMove(e) {
+  if (!isDrawing) return;
+  e.preventDefault();
+  const target = getTouchPos(e);
+  const prev = userPathPoints[userPathPoints.length - 1];
+  const segLen = Math.hypot(target.x - prev.x, target.y - prev.y);
+  if (segLen < 1) return;
+
+  // Validate in small sub-steps so a fast swipe can't jump over the path
+  const steps = Math.max(1, Math.ceil(segLen / SUBSTEP));
+  for (let i = 1; i <= steps; i++) {
+    const t = i / steps;
+    const pt = { x: prev.x + (target.x - prev.x) * t, y: prev.y + (target.y - prev.y) * t };
+    const last = userPathPoints[userPathPoints.length - 1];
+    drawnLen += Math.hypot(pt.x - last.x, pt.y - last.y);
+    userPathPoints.push(pt);
+
+    const failure = validateStep(pt);
+    if (failure) {
+      redrawCanvas();
+      failStroke(failure);
+      return;
+    }
+
+    // Scribbling: far more ink than forward progress along the stroke
+    if (drawnLen > progressLen * SCRIBBLE_RATIO + SCRIBBLE_SLACK) {
+      redrawCanvas();
+      failStroke('scribble');
+      return;
+    }
+
+    if (progressLen >= strokeLength - END_MARGIN) {
+      redrawCanvas();
+      onStrokeSuccess();
+      return;
+    }
+  }
+  redrawCanvas();
+}
+
+function onDrawUp() {
+  if (!isDrawing) return;
+  failStroke('lifted');
+}
+
+function onStrokeSuccess() {
+  isDrawing = false;
+  playSplashChime();
+
+  // Keep the child's own successful stroke painted on the letter
+  completedStrokes.push({ points: userPathPoints.slice(), color: brushColor });
+  userPathPoints = [];
+  redrawCanvas();
+
+  const data = DATA[currentLang];
+  const curLetter = data.letters[letterIdx];
+  strokeIdx++;
+
+  if (strokeIdx < curLetter.strokes.length) {
+    loadStroke();
+  } else {
+    onCompleteLetter(curLetter);
+  }
+}
+
+function onCompleteLetter(letterObj) {
+  playChime(780, 0.4);
+
+  // 1. Add watercolor mask bloom for this letter
+  if (letterObj.mask) {
+    activeMasks.push(letterObj.mask);
+    updateColorMask();
+  }
+  const colorImg = document.getElementById('art-color-img');
+  if (colorImg) {
+    colorImg.classList.remove('bloom-pop');
+    void colorImg.offsetWidth;
+    colorImg.classList.add('bloom-pop');
+  }
+
+  // Update caption
+  if (letterObj.captionHeb) {
+    document.getElementById('paint-caption').textContent = letterObj.captionHeb;
+  }
+
+  // 2. Mark Word Slot Filled
+  const slot = document.getElementById(`slot-${letterIdx}`);
+  if (slot) {
+    slot.classList.remove('active');
+    slot.classList.add('filled');
+    slot.textContent = letterObj.char;
+  }
+
+  // Advance: let the finished letter shine briefly, then clear the slate
+  letterIdx++;
+  strokeIdx = 0;
+  setTimeout(() => {
+    completedStrokes = [];
+    userPathPoints = [];
+    redrawCanvas();
+    renderWordBanner();
+    loadStroke();
+  }, 700);
+}
+
+function onCompleteWord() {
+  playFanfare();
+  document.getElementById('paint-badge').textContent = `הושלם! ✨`;
+  document.getElementById('celebrate-overlay').classList.add('show');
+}
+
+// Touch and Mouse Event Listeners
+canvas.addEventListener('mousedown', onDrawDown);
+canvas.addEventListener('mousemove', onDrawMove);
+window.addEventListener('mouseup', onDrawUp);
+
+canvas.addEventListener('touchstart', onDrawDown, { passive: false });
+canvas.addEventListener('touchmove', onDrawMove, { passive: false });
+window.addEventListener('touchend', onDrawUp);
+
+// Start
+setLanguage('en');
+</script>
+</body>
+</html>
