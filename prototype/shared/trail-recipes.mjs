@@ -1,3 +1,4 @@
+import { PAINTER_CHAPTER_WORDS } from './painter-content.mjs';
 import { MAGIC_HOUSE_REQUESTS } from './magic-house-content.mjs';
 import { SHOP_ART_IDS } from './shop-art-ids.mjs';
 import { VOCABULARY } from './vocabulary-catalog.mjs';
@@ -18,20 +19,20 @@ export const MAGIC_REQUEST_TARGET_IDS = Object.freeze(Object.fromEntries(
 
 export const TRAIL_GAME_SEQUENCE = Object.freeze([
   // Chapter 1 (stages 1-6) - Rank 1
-  'memory', 'shop', 'house', 'reveal', 'memory', 'shop',
+  'memory', 'shop', 'house', 'reveal', 'painter', 'shop',
   // Chapter 2 (stages 7-12) - Rank 1-2
-  'house', 'reveal', 'memory', 'reveal', 'house', 'shop',
+  'house', 'reveal', 'memory', 'painter', 'house', 'shop',
   // Chapter 3 (stages 13-18) - Rank 2-3
-  'memory', 'memory', 'reveal', 'shop', 'shop', 'house',
+  'memory', 'memory', 'reveal', 'shop', 'painter', 'house',
   // Chapter 4 (stages 19-24) - Rank 3-4
-  'reveal', 'reveal', 'memory', 'house', 'house', 'shop',
+  'reveal', 'reveal', 'memory', 'house', 'painter', 'shop',
   // Chapter 5 (stages 25-30) - Rank 4-5
-  'shop', 'memory', 'reveal', 'house', 'memory', 'house',
+  'shop', 'memory', 'reveal', 'house', 'painter', 'house',
   // Chapter 6 (stages 31-36) - Rank 5
-  'reveal', 'shop', 'memory', 'house', 'shop', 'reveal',
+  'reveal', 'shop', 'memory', 'house', 'shop', 'painter',
 ]);
 export const STAGES_PER_CHAPTER = 6;
-const LEVEL_ID_PREFIX = Object.freeze({ memory: 'trail-memory', shop: 'trail-shop', house: 'trail-house', reveal: 'trail-reveal' });
+const LEVEL_ID_PREFIX = Object.freeze({ memory: 'trail-memory', shop: 'trail-shop', house: 'trail-house', reveal: 'trail-reveal', painter: 'trail-painter' });
 
 const LEVEL_DIFFICULTY_BY_RANK = Object.freeze({ 1: 'easy', 2: 'medium', 3: 'medium', 4: 'hard', 5: 'hard' });
 const SHOP_MODE_BY_RANK = Object.freeze({ 1: 'single', 2: 'single', 3: 'quantity', 4: 'color', 5: 'double' });
@@ -414,9 +415,9 @@ function buildRoutePoints(totalStages) {
 
 export function generateTrail({ vocabulary = VOCABULARY, magicRequests = MAGIC_HOUSE_REQUESTS } = {}) {
   const index = buildVocabularyIndex(vocabulary);
-  const levels = { memory: [], shop: [], house: [], reveal: [] };
+  const levels = { memory: [], shop: [], house: [], reveal: [], painter: [] };
   const stages = [];
-  const appearanceCount = { memory: 0, shop: 0, house: 0, reveal: 0 };
+  const appearanceCount = { memory: 0, shop: 0, house: 0, reveal: 0, painter: 0 };
   const totalStages = TRAIL_CHAPTERS.length * STAGES_PER_CHAPTER;
   const routePoints = buildRoutePoints(totalStages);
 
@@ -437,6 +438,8 @@ export function generateTrail({ vocabulary = VOCABULARY, magicRequests = MAGIC_H
       level = createShopLevelRecipe({ ...recipe, vocabulary });
     } else if (game === 'house') {
       level = createMagicHouseLevelRecipe({ ...recipe, magicRequests });
+    } else if (game === 'painter') {
+      level = freezeLevel({ id: levelId, title, difficultyRank: rank, wordId: PAINTER_CHAPTER_WORDS[chapterIndex] });
     } else {
       level = createRevealLevelRecipe(recipe);
     }

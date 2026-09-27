@@ -2,7 +2,7 @@ import { GAME_LEVELS, TRAIL_STAGES } from '../prototype/shared/trail-catalog.mjs
 
 export const ACTIVITY_MESSAGE_VERSION = 1;
 
-export type HostedActivityId = 'memory-garden' | 'listening-shop' | 'magic-reveal';
+export type HostedActivityId = 'memory-garden' | 'listening-shop' | 'magic-reveal' | 'magic-painter';
 export type ProfileLanguage = 'en' | 'he';
 export type ProfileCharacter = 'princess' | 'dinosaur' | 'puppy' | 'unicorn';
 
@@ -49,10 +49,10 @@ export function readHostedActivityContext(): HostedActivityContext | null {
   const profileCharacter = params.get('profileCharacter');
   const stageId = Number(params.get('stage'));
   const destination = params.get('destination');
-  const supportedActivities = new Set<HostedActivityId>(['memory-garden', 'listening-shop', 'magic-reveal']);
+  const supportedActivities = new Set<HostedActivityId>(['memory-garden', 'listening-shop', 'magic-reveal', 'magic-painter']);
   const supportedLanguages = new Set<ProfileLanguage>(['en', 'he']);
   const supportedCharacters = new Set<ProfileCharacter>(['princess', 'dinosaur', 'puppy', 'unicorn']);
-  const gameByActivity = { 'memory-garden': 'memory', 'listening-shop': 'shop', 'magic-reveal': 'reveal' } as const;
+  const gameByActivity = { 'memory-garden': 'memory', 'listening-shop': 'shop', 'magic-reveal': 'reveal', 'magic-painter': 'painter' } as const;
   const game = gameByActivity[activityId as HostedActivityId];
 
   if ((destination !== 'wonder' && destination !== 'forest')

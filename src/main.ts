@@ -1,3 +1,4 @@
+import { openMagicPainter } from './magicPainter';
 import { openMagicReveal } from './magicReveal';
 import './styles.css';
 import './shop-scene.css';
@@ -45,7 +46,7 @@ const hostedActivitySession = hostedActivityContext
   ? createHostedActivitySession(hostedActivityContext)
   : null;
 
-type ScreenId = 'magic-reveal-screen' | 'game-select-screen' | 'memory-screen' | 'shop-screen' | 'start-screen' | 'game-hud' | 'end-screen';
+type ScreenId = 'magic-painter-screen' | 'magic-reveal-screen' | 'game-select-screen' | 'memory-screen' | 'shop-screen' | 'start-screen' | 'game-hud' | 'end-screen';
 type MemoryDifficulty = 'easy' | 'medium' | 'hard';
 type MemoryCardKind = 'hebrew' | 'english';
 type MemoryLevelId = string;
@@ -581,6 +582,12 @@ function finishMemoryCelebration() {
 
 function openHostedActivity() {
   if (!hostedActivityContext) {
+    return;
+  }
+
+  if (hostedActivityContext.activityId === 'magic-painter') {
+    showScreen('magic-painter-screen');
+    openMagicPainter(hostedActivityContext, requireHostedActivitySession());
     return;
   }
 

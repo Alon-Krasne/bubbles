@@ -2913,3 +2913,5 @@ body {
   .world-chrome .star-total { margin-right: auto; }
   .stage-panel { top: auto; bottom: 16px; height: auto; min-height: 106px; }
 }
+
+.activity-symbol-painter::before { content: '🎨'; font-size: 38px; line-height: 1; }
