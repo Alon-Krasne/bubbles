@@ -15,3 +15,4 @@ Run `npm run test:forest` with `agent-browser` installed and port 8788 free. The
 - `npm run test:destinations`, `node --experimental-strip-types scripts/test-forest-activity-context.mjs`, `npm run test:track`, `npm run test:trail`, `npm run test:shop-session`, `npm run test:saves`, and `npx tsc --noEmit` cover the surrounding contracts.
 
 The browser checks establish the first five-screen segment, not a complete playthrough of all 36 stages. The later milestone contracts have unit coverage. No deployment is part of this change.
+
