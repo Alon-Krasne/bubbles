@@ -122,6 +122,8 @@ const forestStageLabel = document.getElementById('forest-stage-label');
 const forestCharacterPicker = document.getElementById('forest-character-picker');
 const forestPickerClose = document.getElementById('forest-picker-close');
 const forestPickerBackdrop = document.getElementById('forest-picker-backdrop');
+const forestFriendCards = [...document.querySelectorAll('.forest-friend-card')];
+const forestFriendButton = document.getElementById('forest-friend-button');
 const forestMilestoneDialog = document.getElementById('forest-milestone-dialog');
 const forestMilestoneTitle = document.getElementById('forest-milestone-title');
 const forestMilestoneDesc = document.getElementById('forest-milestone-desc');
@@ -548,13 +550,14 @@ function renderActivityIcon(container, stage) {
 }
 
 function setCompanionPortrait(container, characterId) {
-  container.style.setProperty('--friend-position', {nevet:'0%',adva:'50%',zohar:'100%'}[characterId]);
+  container.dataset.friend = characterId;
 }
 
 function updateWorldDestinationChrome() {
   const profile = getProfile();
   world.dataset.destination = activeDestination;
   forestStoriesButton.hidden = activeDestination !== 'forest';
+  forestFriendButton.hidden = activeDestination !== 'forest';
   const dest = DESTINATIONS[activeDestination];
   const titleEl = document.querySelector('.world-title strong');
   const journeyEl = document.getElementById('journey-label');
@@ -657,24 +660,51 @@ function chooseDestination(destId) {
   }
 }
 
-function openForestCharacterPicker() {
+// 'onboarding' opens over the destination gate before the forest starts;
+// 'switch' opens over the forest map to change the companion mid-journey.
+let forestPickerMode = 'onboarding';
+
+function openForestCharacterPicker(mode = 'onboarding') {
+  forestPickerMode = mode;
+  const currentFriend = mode === 'switch' ? forestProgress[activeProfileId].character : null;
+  forestFriendCards.forEach((card) => {
+    card.setAttribute('aria-pressed', String(card.dataset.character === currentFriend));
+  });
   forestCharacterPicker.hidden = false;
-  destinationGate.inert = true;
-  document.querySelector('.forest-friend-card').focus();
+  if (mode === 'switch') {
+    world.inert = true;
+    world.setAttribute('aria-hidden', 'true');
+    forestFriendCards.find((card) => card.dataset.character === currentFriend).focus();
+  } else {
+    destinationGate.inert = true;
+    forestFriendCards[0].focus();
+  }
 }
 
 function closeForestCharacterPicker() {
   forestCharacterPicker.hidden = true;
-  destinationGate.inert = false;
-  destinationCardForest.focus();
+  if (forestPickerMode === 'switch') {
+    world.inert = false;
+    world.removeAttribute('aria-hidden');
+    profileButton.focus();
+  } else {
+    destinationGate.inert = false;
+    destinationCardForest.focus();
+  }
 }
 
 function chooseForestCompanion(characterId) {
-  const profile = getProfile(activeProfileId);
-  forestProgress[profile.id].character = characterId;
+  const mode = forestPickerMode;
+  forestProgress[activeProfileId].character = characterId;
   saveForestProgress();
   closeForestCharacterPicker();
-  chooseDestination('forest');
+  if (mode === 'switch') {
+    // Only the companion changes; stars, stage and story progress stay as they are.
+    updateWorldDestinationChrome();
+    updateTravellerAsset('idle');
+  } else {
+    chooseDestination('forest');
+  }
 }
 
 function showForestMilestone(milestone, isPending = false) {
@@ -1425,8 +1455,12 @@ destinationProfilePill.addEventListener('click', () => {
 destinationCardWonder.addEventListener('click', () => chooseDestination('wonder'));
 destinationCardForest.addEventListener('click', () => chooseDestination('forest'));
 
-document.querySelectorAll('.forest-friend-card').forEach((btn) => {
+forestFriendCards.forEach((btn) => {
   btn.addEventListener('click', () => chooseForestCompanion(btn.dataset.character));
+});
+forestFriendButton.addEventListener('click', () => {
+  closeProfileMenu();
+  openForestCharacterPicker('switch');
 });
 forestPickerClose.addEventListener('click', closeForestCharacterPicker);
 forestPickerBackdrop.addEventListener('click', closeForestCharacterPicker);

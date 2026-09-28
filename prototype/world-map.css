@@ -2595,6 +2595,12 @@ body {
   background: #2f855a;
 }
 
+/* The companion already on the journey, when switching from the forest map */
+.forest-friend-card[aria-pressed='true'] {
+  border-color: #38a169;
+  background: #f0fff4;
+}
+
 /* Forest Milestone Dialog */
 .forest-milestone-dialog {
   position: fixed;
@@ -2723,15 +2729,17 @@ body {
   transform: translateY(-2px);
 }
 
-/* Reuse the approved cast sheet as framed portraits; these are not animation sprites. */
+/* Transparent cutouts from the approved cast sheet; these are not animation sprites. */
 .forest-portrait {
   display: inline-block;
   width: 120px;
   height: 140px;
-  border-radius: 48% 48% 38% 38%;
-  background: #fff7e6 url('./assets/forest/companions.jpg') var(--friend-position) 0 / 300% 167% no-repeat;
-  box-shadow: 0 5px 18px #273e2525;
+  background: center bottom / contain no-repeat;
+  filter: drop-shadow(0 6px 6px #1b2b1f40);
 }
+.forest-portrait[data-friend='nevet'] { background-image: url('./assets/forest/companion-nevet.webp'); }
+.forest-portrait[data-friend='adva'] { background-image: url('./assets/forest/companion-adva.webp'); }
+.forest-portrait[data-friend='zohar'] { background-image: url('./assets/forest/companion-zohar.webp'); }
 .traveller.forest-portrait { width: 84px; height: 98px; }
 .traveller img[hidden], .launch-overlay img[hidden], .world-complete-overlay img[hidden] { display: none; }
 .launch-overlay .forest-portrait { width: 155px; height: 180px; }
