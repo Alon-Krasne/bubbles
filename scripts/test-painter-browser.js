@@ -125,8 +125,17 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
     draw(samplePath(mem));
     check('worksheet מ arch rises before right leg',state().strokeIdx===1 && state().mistakes===0,state());
 
+    const hebrewWords=['חתול','תפוח','שמש','סירה','מפה','מדליה'];
     for(const language of ['en','he']) for(let level=1;level<=6;level++) {
       await load(level,language);
+      if(language==='he') {
+        check(`Hebrew word spelling ${level}`,state().word===hebrewWords[level-1],state());
+        const banner=frame.contentDocument.querySelector('#word-banner');
+        const slots=[...banner.querySelectorAll('.letter-slot')];
+        check(`Hebrew RTL order ${level}`,banner.style.direction==='rtl' &&
+          slots[0].getBoundingClientRect().left>slots[1].getBoundingClientRect().left,
+          {direction:banner.style.direction,first:slots[0].getBoundingClientRect().left,second:slots[1].getBoundingClientRect().left});
+      }
       frame.contentDocument.querySelector('#painter-sound').click();
       const audio=frame.contentDocument.querySelector('#recorded-speech');
       for(let n=0;n<100 && (!audio.src || audio.readyState<2);n++) await wait(20);
@@ -147,6 +156,8 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
         }
       }
       check(`complete ${level}/${language}`,state().complete && state().mistakes===0,state());
+      if(language==='he') check(`Hebrew completed banner ${level}`,
+        [...frame.contentDocument.querySelectorAll('#word-banner .letter-slot')].map(slot=>slot.textContent).join('')===hebrewWords[level-1]);
       check(`picture ${level}/${language}`,frame.contentDocument.querySelector('#art-color-img').naturalWidth>0 && frame.contentDocument.querySelector('#art-color-wrap').style.maskImage==='none');
       const before=messages.length;
       frame.contentDocument.querySelector('#painter-finish').click();

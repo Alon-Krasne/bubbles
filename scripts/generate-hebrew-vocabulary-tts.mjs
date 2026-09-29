@@ -104,7 +104,9 @@ async function requestAudio(apiKey, clip) {
     ? [
       'Synthesize speech only. Do not speak these instructions.',
       'Audio profile: a native Israeli Hebrew speaker and warm teacher for children.',
-      'Director notes: Speak the exact painter instruction or Hebrew letter name clearly for a young learner, with no added words.',
+      clip.relativePath === 'letters/פ.mp3'
+        ? 'Director notes: Say the Hebrew letter name peh with a clear P sound as in pen, not feh. Speak only the exact transcript.'
+        : 'Director notes: Speak the exact painter instruction or Hebrew letter name clearly for a young learner, with no added words.',
       `Transcript: ${transcript}`,
     ]
     : [

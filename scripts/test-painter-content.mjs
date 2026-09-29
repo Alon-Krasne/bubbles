@@ -3,8 +3,11 @@ import { existsSync } from 'node:fs';
 import { PAINTER_WORDS, getPainterWord } from '../prototype/shared/painter-content.mjs';
 import { TRAIL_STAGES, getGameLevel } from '../prototype/shared/trail-catalog.mjs';
 import { VOCABULARY } from '../prototype/shared/vocabulary-catalog.mjs';
+import { painterAudioClips } from './painter-audio-clips.mjs';
 
 const chapterCategories = ['animals', 'food', 'nature', 'transport', 'school', 'sports'];
+assert.equal(painterAudioClips('he').find(clip => clip.relativePath === 'letters/פ.mp3').transcript,
+  'האות פֵּא', 'פ letter-name recording must request peh with a P sound');
 
 const stages = TRAIL_STAGES.filter(stage => stage.game === 'painter');
 assert.equal(stages.length, 6, 'one painter activity per chapter');

@@ -1,7 +1,7 @@
 import { PAINTER_CHAPTER_WORDS, getPainterWord } from '../prototype/shared/painter-content.mjs';
 
 const HEBREW_NAMES = {
-  'ח': 'חית', 'ת': 'תיו', 'ו': 'וו', 'ל': 'למד', 'פ': 'פא', 'ש': 'שין',
+  'ח': 'חית', 'ת': 'תיו', 'ו': 'וו', 'ל': 'למד', 'פ': 'פֵּא', 'ש': 'שין',
   'מ': 'מם', 'ס': 'סמך', 'י': 'יוד', 'ר': 'ריש', 'ה': 'הֵא', 'ד': 'דלת',
 };
 
