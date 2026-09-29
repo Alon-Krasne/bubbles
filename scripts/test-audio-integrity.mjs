@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const EXPECTED_CLIP_COUNTS = { en: 243, he: 222 };
+const EXPECTED_CLIP_COUNTS = { en: 257, he: 235 };
 
 const durations = [];
 let decodedClips = 0;
@@ -23,7 +23,8 @@ for (const [language, expectedCount] of Object.entries(EXPECTED_CLIP_COUNTS)) {
     assert.equal(result.status, 0, `ffprobe could not decode ${file}: ${result.stderr}`);
     const duration = Number(result.stdout.trim());
     assert.ok(Number.isFinite(duration), `missing audio duration for ${file}`);
-    assert.ok(duration >= 0.25 && duration <= 5, `unexpected ${duration}s duration for ${file}`);
+    const maxDuration = file.endsWith('/ui/painter-start.mp3') ? 8 : 5;
+    assert.ok(duration >= 0.25 && duration <= maxDuration, `unexpected ${duration}s duration for ${file}`);
     durations.push(duration);
     decodedClips += 1;
   }

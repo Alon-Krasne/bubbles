@@ -2,7 +2,7 @@ import { getPainterWord } from '../prototype/shared/painter-content.mjs';
 import { calculateMasteryStars, formatStarRating } from '../prototype/shared/activity-scoring.mjs';
 
 // Promoted from the reviewed Magic Brush Painter prototype (9b71348).
-export function mountPainter(root, { wordId, language, speak, onExit, onComplete }) {
+export function mountPainter(root, { wordId, language, speakWord, speakGuidance, speakLetter, onExit, onComplete }) {
 const get = id => root.querySelector('#' + id);
 let disposed = false;
 const timers = new Set();
@@ -95,8 +95,10 @@ let userPathPoints = [];
 let completedStrokes = [];      // strokes of the current letter that passed
 let fadingStroke = null;        // failed attempt fading out {points, color, alpha}; separate from the live attempt
 let isDrawing = false;
+let pausedStroke = false;       // a valid partial stroke can continue after a finger lifts
 let inputLocked = false;        // true between letters, until the next guide and state are loaded
 let letterTransitionTimer = null;
+let firstLetterSpoken = false;
 
 // Flowing arrow-dashes along the current stroke
 const DASH_SPACING = 20;        // px between arrows
@@ -141,6 +143,7 @@ function resetRound() {
   letterIdx = 0;
   strokeIdx = 0;
   activeMasks = [];
+  firstLetterSpoken = false;
   updateColorMask();
 
   const colorImg = get('art-color-img');
@@ -177,6 +180,15 @@ function renderWordBanner() {
   });
 }
 
+function setStartMarker(point) {
+  const dot = get('svg-start-dot');
+  const txt = get('svg-start-text');
+  dot.setAttribute('cx', point.x);
+  dot.setAttribute('cy', point.y);
+  txt.setAttribute('x', point.x);
+  txt.setAttribute('y', point.y);
+}
+
 function loadStroke() {
   
   if (letterIdx >= data.letters.length) {
@@ -198,12 +210,8 @@ function loadStroke() {
   get('svg-ghost-letter').setAttribute('d', fullLetterD);
 
   // Update Start Point ①
-  const dot = get('svg-start-dot');
   const txt = get('svg-start-text');
-  dot.setAttribute('cx', curStroke.from.x);
-  dot.setAttribute('cy', curStroke.from.y);
-  txt.setAttribute('x', curStroke.from.x);
-  txt.setAttribute('y', curStroke.from.y);
+  setStartMarker(curStroke.from);
   txt.textContent = curStroke.label;
 
   // Update End Star
@@ -253,6 +261,7 @@ function loadStroke() {
   drawnLen = 0;
   userPathPoints = [];
   isDrawing = false;
+  pausedStroke = false;
 }
 
 // Slide every arrow-dash forward along the real path; arrows fade in at ① and
@@ -300,8 +309,12 @@ function paintPoints(points, color, alpha = 1) {
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.beginPath();
-  ctx.moveTo(points[0].x, points[0].y);
-  for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+  for (let i = 0; i < points.length; i++) {
+    const point = points[i];
+    if (point === null) continue;
+    if (i === 0 || points[i - 1] === null) ctx.moveTo(point.x, point.y);
+    else ctx.lineTo(point.x, point.y);
+  }
   ctx.stroke();
   ctx.restore();
 }
@@ -315,13 +328,15 @@ function redrawCanvas() {
 
 // --- Mistake feedback ---
 let feedbackTimer = null;
-function showFeedback(message) {
+function showFeedback(message, shake = true) {
   const el = get('slate-feedback');
   el.textContent = message;
   el.classList.add('show');
-  get('slate-board').classList.remove('shake');
-  void get('slate-board').offsetWidth;
-  get('slate-board').classList.add('shake');
+  if (shake) {
+    get('slate-board').classList.remove('shake');
+    void get('slate-board').offsetWidth;
+    get('slate-board').classList.add('shake');
+  }
   clearTimeout(feedbackTimer);
   feedbackTimer = schedule(() => el.classList.remove('show'), 1800);
 }
@@ -331,12 +346,17 @@ const FEEDBACK = {
   off: 'אופס! יצאתם מהקו — נסו שוב מהנקודה הוורודה',
   backwards: 'לכיוון החץ, מהנקודה הוורודה אל הכוכב ⭐',
   scribble: 'בקו אחד רגוע לאורך החץ ✏️',
-  lifted: 'כמעט! המשיכו בלי להרים עד הכוכב ⭐',
+  continue: 'יופי! המשיכו מהנקודה הוורודה עד הכוכב ⭐',
+  resume: 'געו בנקודה הוורודה כדי להמשיך ⭐',
 };
 
 function failStroke(reason) {
   mistakes++;
   isDrawing = false;
+  pausedStroke = false;
+  progressLen = 0;
+  drawnLen = 0;
+  setStartMarker(pathSamples[0]);
   playDissolveSound();
   showFeedback(FEEDBACK[reason]);
   // Hand the failed ink to its own fade; a new attempt can start right away.
@@ -413,19 +433,25 @@ function onDrawDown(e) {
   
   if (letterIdx >= data.letters.length) return;
   const pt = getTouchPos(e);
-  const start = pathSamples[0];
+  const start = pausedStroke ? get('svg-stroke-path').getPointAtLength(progressLen) : pathSamples[0];
 
   if (Math.hypot(pt.x - start.x, pt.y - start.y) > START_RADIUS) {
-    mistakes++;
-    playDissolveSound();
-    showFeedback(FEEDBACK.start);
+    showFeedback(pausedStroke ? FEEDBACK.resume : FEEDBACK.start, false);
     return;
   }
 
   isDrawing = true;
-  progressLen = 0;
-  drawnLen = 0;
-  userPathPoints = [pt];
+  if (pausedStroke) userPathPoints.push(null, pt);
+  else {
+    progressLen = 0;
+    drawnLen = 0;
+    userPathPoints = [pt];
+  }
+  pausedStroke = false;
+  if (!firstLetterSpoken) {
+    firstLetterSpoken = true;
+    speakLetter(data.letters[0].char);
+  }
   playChime(360, 0.12);
 }
 
@@ -471,11 +497,15 @@ function onDrawMove(e) {
 
 function onDrawUp() {
   if (!isDrawing) return;
-  failStroke('lifted');
+  isDrawing = false;
+  pausedStroke = true;
+  setStartMarker(get('svg-stroke-path').getPointAtLength(progressLen));
+  showFeedback(FEEDBACK.continue, false);
 }
 
 function onStrokeSuccess() {
   isDrawing = false;
+  pausedStroke = false;
   playSplashChime();
 
   // Keep the child's own successful stroke painted on the letter
@@ -530,6 +560,7 @@ function onCompleteLetter(letterObj) {
     renderWordBanner();
     loadStroke();
     inputLocked = false;
+    if (letterIdx < data.letters.length) speakLetter(data.letters[letterIdx].char);
   }, 700);
 }
 
@@ -539,7 +570,7 @@ function onCompleteWord() {
   get('celebrate-overlay').classList.add('show');
   get('painter-stars').textContent = formatStarRating(calculateMasteryStars({ mistakes, challengeSize: totalStrokes }));
   get('painter-finish').focus();
-  speak();
+  speakWord();
 }
 
 
@@ -562,7 +593,11 @@ canvas.addEventListener('pointerup', releasePointer);
 canvas.addEventListener('pointercancel', releasePointer);
 canvas.addEventListener('lostpointercapture', releasePointer);
 get('painter-back').onclick = () => { dispose(); onExit(); };
-get('painter-sound').onclick = speak;
+get('painter-sound').onclick = () => {
+  if (inputLocked || letterIdx >= data.letters.length) return;
+  firstLetterSpoken = true;
+  speakGuidance(data.letters[letterIdx].char);
+};
 get('painter-finish').onclick = () => {
   if (letterIdx !== data.letters.length) return;
   const stars = calculateMasteryStars({ mistakes, challengeSize: totalStrokes });
@@ -574,7 +609,7 @@ root.querySelectorAll('.art-layer').forEach(image => { image.src = './prototype/
 resetRound();
 window.render_game_to_text = () => JSON.stringify({
   game: 'magic-painter', language, wordId, word: data.word, letterIdx, strokeIdx,
-  mistakes, inputLocked, isDrawing, completedStrokes: completedStrokes.length,
+  mistakes, inputLocked, isDrawing, pausedStroke, progressLen, completedStrokes: completedStrokes.length,
   complete: letterIdx === data.letters.length,
   stroke: letterIdx < data.letters.length ? data.letters[letterIdx].strokes[strokeIdx] : null,
 });

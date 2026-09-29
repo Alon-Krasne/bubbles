@@ -886,5 +886,57 @@
   "words/ocean.mp3": {
     "hash": "b690149904521feea4126400f517a5678f8217d29e3db964c0e284633ccd61b8",
     "verified": true
+  },
+  "letters/ו.mp3": {
+    "hash": "4060f8a52249a424688237a27499382421816b5faa323160a607a4569eabf48e",
+    "verified": true
+  },
+  "letters/ח.mp3": {
+    "hash": "11135691088f2f036b5953345e39861184c234b842b6cf628ddf38bde1ac415a",
+    "verified": true
+  },
+  "ui/painter-start.mp3": {
+    "hash": "7ee86b204679b4f980dd8855c395f1b208345d1530a8197066c04c1c41b71dfa",
+    "verified": true
+  },
+  "letters/ל.mp3": {
+    "hash": "bffa7339030651dafc3f9241fe3f786e0c66fc33a06fa7c1b0dd291a7f0b84ff",
+    "verified": true
+  },
+  "letters/ש.mp3": {
+    "hash": "933cec9a9ff12e15c232314b1fa03acb8027a0b0910be8e4e3a3f4442ee07bd8",
+    "verified": true
+  },
+  "letters/ת.mp3": {
+    "hash": "753d91da3617c0161994334c8b780c666b7bce3602a1b8b5782231424969e9d2",
+    "verified": true
+  },
+  "letters/מ.mp3": {
+    "hash": "6e393f3c8c9eda37c7c5db4de110b48da6fc785929b2897f39cba9bbb543f741",
+    "verified": true
+  },
+  "letters/פ.mp3": {
+    "hash": "77d0cdf4b6b93ebabd4636a0afd75a9a540b17b88fbf7bfa3da2fd7fcf2b6710",
+    "verified": true
+  },
+  "letters/ס.mp3": {
+    "hash": "4687457fb468e2d0bfd474ec8db3f5c6ef83ce983e23845a97ab7f8e01d4c191",
+    "verified": true
+  },
+  "letters/י.mp3": {
+    "hash": "93f1b7e5984bba7306b60de95b7e292ee7290af61799a56491bd7f1203ed333e",
+    "verified": true
+  },
+  "letters/ר.mp3": {
+    "hash": "7f477fd33794bb85bd79c412193bbc10db6aaf8f756ff4ae8cad55e0b085cbcb",
+    "verified": true
+  },
+  "letters/ד.mp3": {
+    "hash": "0b98c844bad43d565a7d6b1b1bf91280572aa5acefabbc47fa44e58462d0ad61",
+    "verified": true
+  },
+  "letters/ה.mp3": {
+    "hash": "ee8dba44bef0ce05b15d7a42696dce716f5b9428f31938e8e630c53dbac13c23",
+    "verified": true
   }
 }

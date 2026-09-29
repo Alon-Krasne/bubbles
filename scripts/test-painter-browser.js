@@ -52,12 +52,22 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
   try {
     await load(2,'en');
     let path = points();
-    draw(path.slice(0,Math.floor(path.length/2)));
-    check('early lift rejects incomplete stroke',state().strokeIdx===0 && state().mistakes===1,state());
-    fire('pointerdown',path[0]);
-    await wait(220);
-    path.slice(1).forEach(point=>fire('pointermove',point)); fire('pointerup',path.at(-1));
-    check('quick retry keeps the new ink',state().strokeIdx===1,state());
+    fire('pointerdown',{x:300,y:300});fire('pointerup',{x:300,y:300});
+    check('stray touch costs no star',state().mistakes===0 && !state().isDrawing,state());
+    fire('pointerdown',path[0]);fire('pointermove',{x:300,y:300});fire('pointerup',{x:300,y:300});
+    check('invalid trace still counts as mistake',state().mistakes===1 && state().strokeIdx===0,state());
+    const halfway=Math.floor(path.length/2);
+    draw(path.slice(0,halfway));
+    const pausedProgress=state().progressLen;
+    check('finger lift preserves partial line',state().pausedStroke && state().strokeIdx===0 && state().mistakes===1 && pausedProgress>0,state());
+    const marker=frame.contentDocument.querySelector('#svg-start-dot');
+    check('pink resume marker moves to partial line',Math.hypot(Number(marker.getAttribute('cx'))-path[0].x,
+      Number(marker.getAttribute('cy'))-path[0].y)>10);
+    fire('pointerdown',{x:300,y:300});fire('pointerup',{x:300,y:300});
+    check('stray resume costs no star or progress',state().pausedStroke && state().mistakes===1 && state().progressLen===pausedProgress,state());
+    fire('pointerdown',path[halfway-1]);
+    path.slice(halfway).forEach(point=>fire('pointermove',point));fire('pointerup',path.at(-1));
+    check('quick retry and partial resume keep new ink',state().strokeIdx===1 && state().mistakes===1,state());
     // Starting a second pointer cannot replace the primary stroke.
     path=points(); fire('pointerdown',path[0]);
     fire('pointerdown',{x:300,y:300},2); fire('pointerup',{x:300,y:300},2);
@@ -75,7 +85,7 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
 
     await load(2,'he');
     draw(points().reverse());
-    check('backwards stroke rejected',state().strokeIdx===0 && state().mistakes===1,state());
+    check('backwards start ignored without penalty',state().strokeIdx===0 && state().mistakes===0,state());
     path=points();fire('pointerdown',path[0]);fire('pointermove',path[5]);fire('pointercancel',path[5]);
     check('cancelled pointer stops drawing',!state().isDrawing,state());
     draw(points());
@@ -101,12 +111,27 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
     draw(points());
     check('ש middle stroke completes the letter',state().letterIdx===1 && state().mistakes===0,state());
 
+    await load(4,'he');
+    // Yo-yoo print worksheet 60679: across the roof to the right, down and
+    // around, then up the left edge. Draw from independent geometric landmarks.
+    const samekh = frame.contentDocument.createElementNS('http://www.w3.org/2000/svg','path');
+    samekh.setAttribute('d','M87 74 L182 74 C221 74 229 96 229 128 L229 183 C229 222 212 239 166 239 C121 239 91 225 91 183 L91 74');
+    draw(samplePath(samekh));
+    check('worksheet ס clockwise closed stroke accepted',state().letterIdx===1 && state().mistakes===0,state());
+
+    await load(5,'he');
+    const mem = frame.contentDocument.createElementNS('http://www.w3.org/2000/svg','path');
+    mem.setAttribute('d','M82 238 L116 130 C119 94 138 73 169 73 C204 73 220 88 220 115');
+    draw(samplePath(mem));
+    check('worksheet מ arch rises before right leg',state().strokeIdx===1 && state().mistakes===0,state());
+
     for(const language of ['en','he']) for(let level=1;level<=6;level++) {
       await load(level,language);
       frame.contentDocument.querySelector('#painter-sound').click();
       const audio=frame.contentDocument.querySelector('#recorded-speech');
       for(let n=0;n<100 && (!audio.src || audio.readyState<2);n++) await wait(20);
-      check(`word recording ${level}/${language}`,audio.readyState>=2 && !audio.error,{src:audio.src,error:audio.error});
+      check(`spoken prompt ${level}/${language}`,audio.readyState>=2 && !audio.error && audio.dataset.sequenceLength==='3',
+        {src:audio.src,error:audio.error,sequenceLength:audio.dataset.sequenceLength});
       let attempts=0;
       while(!state().complete && attempts++<30) {
         const before=state();
@@ -114,7 +139,12 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
         const after=state();
         check(`stroke ${level}/${language}/${before.letterIdx}/${before.strokeIdx}`,
           after.letterIdx>before.letterIdx || after.strokeIdx>before.strokeIdx,after);
-        if(after.inputLocked) await wait(740);
+        if(after.inputLocked) {
+          frame.contentDocument.querySelector('#painter-sound').click();
+          await wait(740);
+          if(!state().complete) check(`next letter spoken ${level}/${language}/${state().letterIdx}`,
+            audio.dataset.sequenceLength==='1',{sequenceLength:audio.dataset.sequenceLength});
+        }
       }
       check(`complete ${level}/${language}`,state().complete && state().mistakes===0,state());
       check(`picture ${level}/${language}`,frame.contentDocument.querySelector('#art-color-img').naturalWidth>0 && frame.contentDocument.querySelector('#art-color-wrap').style.maskImage==='none');
