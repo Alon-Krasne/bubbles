@@ -28,14 +28,14 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
     frame.contentWindow.addEventListener('unhandledrejection', event => errors.push(String(event.reason)));
     check(`load ${level}/${language}`, state().game === 'magic-painter', state());
   };
-  const points = () => {
-    const path = frame.contentDocument.querySelector('#svg-stroke-path');
+  const samplePath = path => {
     const length = path.getTotalLength();
     return Array.from({length:Math.ceil(length / 4)+1}, (_,index) => {
       const point = path.getPointAtLength(Math.min(index*4,length));
       return {x:point.x,y:point.y};
     });
   };
+  const points = () => samplePath(frame.contentDocument.querySelector('#svg-stroke-path'));
   const fire = (type, point, pointerId=1) => {
     const canvas = frame.contentDocument.querySelector('#paint-canvas');
     const rect = canvas.getBoundingClientRect();
@@ -82,6 +82,24 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
     check('retry after pointer cancellation succeeds',state().strokeIdx===1,state());
     frame.contentDocument.querySelector('#painter-back').click();await wait(30);
     check('early exit awards no stars',messages.at(-1).type==='bubbles.activity.exit' && !('stars' in messages.at(-1)),messages.at(-1));
+
+    await load(3,'en');
+    draw(points()); await wait(740); // S
+    draw(points()); await wait(740); // U
+    check('worksheet N test reaches N',state().letterIdx===2,state());
+    // Independent worksheet direction, rather than sampling the game's N guide.
+    const nDown = Array.from({length:46},(_,index)=>({x:85,y:60+index*4}));
+    draw(nDown);
+    check('worksheet N downward first stroke accepted',state().strokeIdx===1 && state().mistakes===0,state());
+
+    await load(3,'he');
+    // Yo-yoo worksheet 60673: right leg down, curve left, left leg up.
+    const shin = frame.contentDocument.createElementNS('http://www.w3.org/2000/svg','path');
+    shin.setAttribute('d','M255 72 L232 210 Q225 240 195 240 L125 240 Q95 240 90 220 L65 72');
+    draw(samplePath(shin));
+    check('worksheet ש right-to-left outer stroke accepted',state().strokeIdx===1 && state().mistakes===0,state());
+    draw(points());
+    check('ש middle stroke completes the letter',state().letterIdx===1 && state().mistakes===0,state());
 
     for(const language of ['en','he']) for(let level=1;level<=6;level++) {
       await load(level,language);

@@ -26,6 +26,15 @@ for (const stage of stages) {
   }
 }
 assert.equal(Object.keys(PAINTER_WORDS).length, 6);
+// Ohio State ABC Lessons, p. 16/263: N starts at the top and pulls down.
+const nFirstStroke = getPainterWord('sun', 'en').letters[2].strokes[0];
+assert.equal(nFirstStroke.from.x, nFirstStroke.to.x);
+assert.ok(nFirstStroke.from.y < nFirstStroke.to.y, 'N begins with a downward left leg');
+// Yo-yoo print worksheet 60673: ש goes down the right leg, around, then up the left.
+const shinStrokes = getPainterWord('sun', 'he').letters[0].strokes;
+assert.ok(shinStrokes[0].from.x > shinStrokes[0].to.x, 'ש outer stroke starts on the right');
+assert.equal(shinStrokes[0].from.y, shinStrokes[0].to.y, 'ש outer stroke ends at the top of the left leg');
+assert.ok(shinStrokes[1].from.y < shinStrokes[1].to.y, 'ש middle stroke goes down last');
 assert.notDeepEqual(getPainterWord('apple', 'he').letters[0].strokes, getPainterWord('apple', 'he').letters[3].strokes);
 assert.throws(() => getPainterWord('missing', 'en'), /Unknown painter word/);
 assert.throws(() => getPainterWord('apple', 'fr'), /Unknown painter language/);
