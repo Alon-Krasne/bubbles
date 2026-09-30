@@ -148,7 +148,7 @@ export const VOCAB_WORDS: VocabWord[] = [
   { id: 'volcano', english: 'volcano', hebrew: 'הר געש', drawing: '🌋', category: 'nature' },
   { id: 'ocean', english: 'ocean', hebrew: 'ים', drawing: '🌊', category: 'nature' },
   { id: 'cactus', english: 'cactus', hebrew: 'קקטוס', drawing: '🌵', category: 'nature' },
-  { id: 'forest', english: 'forest', hebrew: 'יער', drawing: '🌲', category: 'nature' },
+  { id: 'forest', english: 'forest', hebrew: 'יער', drawing: '🌲🌳🌲', category: 'nature' },
   { id: 'rock', english: 'rock', hebrew: 'אבן', drawing: '🪨', category: 'nature' },
   { id: 'lightning', english: 'lightning', hebrew: 'ברק', drawing: '⚡', category: 'nature' },
   { id: 'wind', english: 'wind', hebrew: 'רוח', drawing: '💨', category: 'nature' },
@@ -260,7 +260,7 @@ export const VOCAB_WORDS: VocabWord[] = [
   { id: 'airport', english: 'airport', hebrew: 'נמל תעופה', drawing: '🛫', category: 'places' },
   { id: 'bridge', english: 'bridge', hebrew: 'גשר', drawing: '🌉', category: 'places' },
   { id: 'museum', english: 'museum', hebrew: 'מוזיאון', drawing: '🏛️', category: 'places' },
-  { id: 'pool', english: 'pool', hebrew: 'בריכה', drawing: '🏊', category: 'places' },
+  { id: 'pool', english: 'pool', hebrew: 'בריכה', drawing: '🪜🏊', category: 'places' },
   { id: 'castle', english: 'castle', hebrew: 'טירה', drawing: '🏰', category: 'places' },
 
   { id: 'basketball', english: 'basketball', hebrew: 'כדורסל', drawing: '🏀', category: 'sports', shoppable: true },
