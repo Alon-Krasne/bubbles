@@ -18,8 +18,10 @@ function animate(callback) {
 function dispose() {
   if (disposed) return;
   disposed = true;
+  setCompletionModal(false);
   timers.forEach(clearTimeout);
   frames.forEach(cancelAnimationFrame);
+  motionPreference.removeEventListener('change', updateDashMotion);
   if (audioCtx) audioCtx.close();
   delete window.render_game_to_text;
   delete window.advanceTime;
@@ -96,6 +98,7 @@ let completedStrokes = [];      // strokes of the current letter that passed
 let fadingStroke = null;        // failed attempt fading out {points, color, alpha}; separate from the live attempt
 let isDrawing = false;
 let pausedStroke = false;       // a valid partial stroke can continue after a finger lifts
+let awaitingResumePoint = false; // a nearby regrab must reach the saved checkpoint before adding ink
 let inputLocked = false;        // true between letters, until the next guide and state are loaded
 let letterTransitionTimer = null;
 let firstLetterSpoken = false;
@@ -107,6 +110,8 @@ const DASH_FADE = 10;           // px over which arrows fade in/out at the ends
 const DASH_SPEED = 20;          // px per second along the path
 let dashArrows = [];
 let dashCycle = 0;              // total loop length (count * spacing)
+const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+let dashFrame = null;
 
 const canvas = get('paint-canvas');
 const ctx = canvas.getContext('2d');
@@ -135,7 +140,7 @@ function updateColorMask() {
 }
 
 function resetRound() {
-  get('celebrate-overlay').classList.remove('show');
+  setCompletionModal(false);
   clearTimeout(letterTransitionTimer);
   letterTransitionTimer = null;
   inputLocked = false;
@@ -190,7 +195,7 @@ function setStartMarker(point) {
 }
 
 function loadStroke() {
-  
+  clearFeedback();
   if (letterIdx >= data.letters.length) {
     onCompleteWord();
     return;
@@ -262,14 +267,15 @@ function loadStroke() {
   userPathPoints = [];
   isDrawing = false;
   pausedStroke = false;
+  awaitingResumePoint = false;
+  updateDashMotion();
 }
 
 // Slide every arrow-dash forward along the real path; arrows fade in at ① and
 // fade out before ⭐, and wrap around only while invisible, so the flow never jumps.
-function animateDashArrows(time) {
+function renderDashArrows(phase) {
   const path = get('svg-stroke-path');
   const span = strokeLength - DASH_EDGE * 2;
-  const phase = (time / 1000) * DASH_SPEED;
   dashArrows.forEach((arrow, i) => {
     const u = (phase + i * DASH_SPACING) % dashCycle;
     const opacity = Math.max(0, Math.min(1, u / DASH_FADE, (span - u) / DASH_FADE));
@@ -282,9 +288,21 @@ function animateDashArrows(time) {
     const angle = Math.atan2(ahead.y - behind.y, ahead.x - behind.x) * 180 / Math.PI;
     arrow.setAttribute('transform', `translate(${p.x} ${p.y}) rotate(${angle})`);
   });
-  animate(animateDashArrows);
 }
-animate(animateDashArrows);
+function animateDashArrows(time) {
+  renderDashArrows((time / 1000) * DASH_SPEED);
+  dashFrame = animate(animateDashArrows);
+}
+function updateDashMotion() {
+  if (dashFrame !== null) {
+    cancelAnimationFrame(dashFrame);
+    frames.delete(dashFrame);
+    dashFrame = null;
+  }
+  if (motionPreference.matches) renderDashArrows(DASH_SPACING / 2);
+  else dashFrame = animate(animateDashArrows);
+}
+motionPreference.addEventListener('change', updateDashMotion);
 
 // Coordinate extraction
 function getTouchPos(e) {
@@ -328,7 +346,16 @@ function redrawCanvas() {
 
 // --- Mistake feedback ---
 let feedbackTimer = null;
+function clearFeedback() {
+  clearTimeout(feedbackTimer);
+  timers.delete(feedbackTimer);
+  feedbackTimer = null;
+  get('slate-feedback').classList.remove('show');
+  get('slate-feedback').textContent = '';
+  get('slate-board').classList.remove('shake');
+}
 function showFeedback(message, shake = true) {
+  clearFeedback();
   const el = get('slate-feedback');
   el.textContent = message;
   el.classList.add('show');
@@ -337,7 +364,6 @@ function showFeedback(message, shake = true) {
     void get('slate-board').offsetWidth;
     get('slate-board').classList.add('shake');
   }
-  clearTimeout(feedbackTimer);
   feedbackTimer = schedule(() => el.classList.remove('show'), 1800);
 }
 
@@ -347,13 +373,14 @@ const FEEDBACK = {
   backwards: 'לכיוון החץ, מהנקודה הוורודה אל הכוכב ⭐',
   scribble: 'בקו אחד רגוע לאורך החץ ✏️',
   continue: 'יופי! המשיכו מהנקודה הוורודה עד הכוכב ⭐',
-  resume: 'געו בנקודה הוורודה כדי להמשיך ⭐',
+  resume: 'חזרו לנקודה הוורודה כדי להמשיך ⭐',
 };
 
 function failStroke(reason) {
   mistakes++;
   isDrawing = false;
   pausedStroke = false;
+  awaitingResumePoint = false;
   progressLen = 0;
   drawnLen = 0;
   setStartMarker(pathSamples[0]);
@@ -440,6 +467,17 @@ function onDrawDown(e) {
     return;
   }
 
+  if (pausedStroke) {
+    const checkpoint = nearestInWindow(pt);
+    if (checkpoint.dist > CORRIDOR || checkpoint.sample.len > progressLen) {
+      awaitingResumePoint = true;
+      showFeedback(FEEDBACK.resume, false);
+      return;
+    }
+  }
+
+  awaitingResumePoint = false;
+  clearFeedback();
   isDrawing = true;
   if (pausedStroke) userPathPoints.push(null, pt);
   else {
@@ -456,6 +494,10 @@ function onDrawDown(e) {
 }
 
 function onDrawMove(e) {
+  if (awaitingResumePoint) {
+    onDrawDown(e);
+    return;
+  }
   if (!isDrawing) return;
   e.preventDefault();
   const target = getTouchPos(e);
@@ -496,6 +538,7 @@ function onDrawMove(e) {
 }
 
 function onDrawUp() {
+  awaitingResumePoint = false;
   if (!isDrawing) return;
   isDrawing = false;
   pausedStroke = true;
@@ -506,6 +549,7 @@ function onDrawUp() {
 function onStrokeSuccess() {
   isDrawing = false;
   pausedStroke = false;
+  clearFeedback();
   playSplashChime();
 
   // Keep the child's own successful stroke painted on the letter
@@ -564,12 +608,20 @@ function onCompleteLetter(letterObj) {
   }, 700);
 }
 
+function setCompletionModal(open) {
+  const dialog = get('celebrate-overlay');
+  for (const child of root.children) {
+    if (child !== dialog) child.inert = open;
+  }
+  dialog.classList.toggle('show', open);
+  if (open) get('painter-finish').focus();
+}
+
 function onCompleteWord() {
   playFanfare();
   get('paint-badge').textContent = `הושלם! ✨`;
-  get('celebrate-overlay').classList.add('show');
   get('painter-stars').textContent = formatStarRating(calculateMasteryStars({ mistakes, challengeSize: totalStrokes }));
-  get('painter-finish').focus();
+  setCompletionModal(true);
   speakWord();
 }
 
@@ -592,6 +644,13 @@ function releasePointer(event) {
 canvas.addEventListener('pointerup', releasePointer);
 canvas.addEventListener('pointercancel', releasePointer);
 canvas.addEventListener('lostpointercapture', releasePointer);
+get('celebrate-overlay').addEventListener('keydown', event => {
+  // Continue is this dialog's only action; keep both Tab directions on it.
+  if (event.key === 'Tab') {
+    event.preventDefault();
+    get('painter-finish').focus();
+  }
+});
 get('painter-back').onclick = () => { dispose(); onExit(); };
 get('painter-sound').onclick = () => {
   if (inputLocked || letterIdx >= data.letters.length) return;

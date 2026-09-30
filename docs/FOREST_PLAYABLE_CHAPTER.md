@@ -10,6 +10,8 @@ Profile changes, new learning languages, and profile deletion must enter the sam
 
 Run `npm run test:forest` with `agent-browser` installed and port 8788 free. The runner builds the app, starts an isolated in-memory D1 save server, and closes its browser sessions and server afterward. It never accesses production saves.
 
+Run `npm run test:painter-browser` with the same prerequisites for Painter's complete browser acceptance. It builds and serves an isolated test app, traces all six words in Hebrew and English, checks audio and worksheet directions, and exercises actual mouse capture, partial-stroke resume, and completion keyboard controls in both languages. It also checks static direction arrows under reduced motion and preference changes during play. A failed assertion exits nonzero; the browser session and local server close on success or failure.
+
 - `test-forest-entry.mjs`: fresh sibling and learning-language onboarding; forest stage jump and milestone reconciliation; Wonder save isolation; profile deletion without overlapping dialogs.
 - `test-forest-chapter.mjs`: seeds a valid saved journey with Painter first and all five activity types before the stage-5 story. It plays the real opening, completes those stages through their actual controls, plays video 2, switches captions, replays the opening, and reloads at stage 6. It checks that the child's stage order survives reload. Tests read current activity state to choose answers but do not inject completion messages or alter progress during gameplay.
 - `test-forest-friend-switch.mjs`: switches the companion from the profile menu, verifies transparent portraits, preserves progress and story history, and reloads the saved choice.

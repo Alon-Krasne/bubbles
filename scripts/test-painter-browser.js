@@ -1,5 +1,4 @@
-// Serve the built app with scripts/serve-save-test.mjs, open that origin using
-// agent-browser, then run: agent-browser eval --stdin < scripts/test-painter-browser.js
+// Run through npm run test:painter-browser (agent-browser and port 8788 required).
 // Uses real hosted activity pages and pointer events; no game-state mutation.
 window.painterAcceptance = { status: 'running', progress: 'starting' };
 (async () => {
@@ -80,8 +79,33 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
     draw(points());
     path=points();draw([path[0],path.at(-1)]);
     check('P loop shortcut rejected',state().strokeIdx===1,state());
-    draw(path); await wait(740);
+    draw(path);
+    check('successful retry clears old mistake feedback',!frame.contentDocument.querySelector('#slate-feedback').classList.contains('show'));
+    await wait(740);
     check('P curve accepted after immediate retry',state().letterIdx===2,state());
+
+    for (const [level,language] of [[1,'he'],[2,'en']]) {
+      await load(level,language);
+      if(language==='he') draw(points()); // ח's second stroke is a 168px straight leg.
+      const before=state(), guide=frame.contentDocument.querySelector('#svg-stroke-path');
+      const pointAt=distance=>guide.getPointAtLength(distance);
+      fire('pointerdown',pointAt(0));fire('pointerup',pointAt(0));
+      for(let hop=0;hop<6 && state().letterIdx===before.letterIdx && state().strokeIdx===before.strokeIdx;hop++) {
+        const progress=state().progressLen;
+        fire('pointerdown',pointAt(progress+30));
+        fire('pointermove',pointAt(progress+32));fire('pointerup',pointAt(progress+32));
+      }
+      check(`forward regrabs cannot skip ink ${language}`,state().letterIdx===before.letterIdx &&
+        state().strokeIdx===before.strokeIdx && state().progressLen===0 && state().mistakes===0,state());
+      draw(points().slice(0,Math.floor(points().length/2)));
+      const checkpoint=state().progressLen;
+      fire('pointerdown',pointAt(checkpoint+30));fire('pointermove',pointAt(checkpoint+32));
+      check(`forward resume waits at saved progress ${language}`,state().progressLen===checkpoint && state().pausedStroke,state());
+      fire('pointermove',pointAt(checkpoint));
+      for(let distance=checkpoint+4;distance<guide.getTotalLength();distance+=4) fire('pointermove',pointAt(distance));
+      fire('pointermove',pointAt(guide.getTotalLength()));fire('pointerup',pointAt(guide.getTotalLength()));
+      check(`rejoining checkpoint resumes held mouse ${language}`,state().letterIdx>before.letterIdx || state().strokeIdx>before.strokeIdx,state());
+    }
 
     await load(2,'he');
     draw(points().reverse());
