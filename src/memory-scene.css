@@ -114,6 +114,8 @@
 }
 #memory-board .memory-card-word { color: #304c54; }
 #memory-board .memory-card-english .memory-card-word { color: #795432; }
+#memory-board .memory-card[data-word-id='forest'] .memory-card-drawing { font-size: clamp(18px, 3vw, 22px); white-space: nowrap; }
+#memory-board .memory-card[data-word-id='pool'] .memory-card-drawing { font-size: clamp(22px, 3vw, 28px); white-space: nowrap; }
 #memory-board .memory-card-sound { width: 44px; height: 44px; background: #e0eeea; border-color: #b8d7ce; box-shadow: 0 3px 0 #a0bfb5; }
 #memory-board .memory-card.is-matched .memory-card-front {
     border-color: #b3d8b8;
