@@ -48,6 +48,8 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
     path.slice(1).forEach(point=>fire('pointermove',point));
     fire('pointerup',path.at(-1));
   };
+  const inkAt = point => frame.contentDocument.querySelector('#paint-canvas').getContext('2d')
+    .getImageData(Math.round(point.x),Math.round(point.y),1,1).data[3];
   try {
     await load(2,'en');
     let path = points();
@@ -57,16 +59,18 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
     check('invalid trace still counts as mistake',state().mistakes===1 && state().strokeIdx===0,state());
     const halfway=Math.floor(path.length/2);
     draw(path.slice(0,halfway));
-    const pausedProgress=state().progressLen;
-    check('finger lift preserves partial line',state().pausedStroke && state().strokeIdx===0 && state().mistakes===1 && pausedProgress>0,state());
+    check('finger lift discards unfinished progress',!state().isDrawing && state().strokeIdx===0 && state().mistakes===1 && state().progressLen===0,state());
+    check('finger lift erases unfinished ink',inkAt(path[Math.floor(halfway/2)])===0);
     const marker=frame.contentDocument.querySelector('#svg-start-dot');
-    check('pink resume marker moves to partial line',Math.hypot(Number(marker.getAttribute('cx'))-path[0].x,
-      Number(marker.getAttribute('cy'))-path[0].y)>10);
+    check('pink marker returns to original start',Math.hypot(Number(marker.getAttribute('cx'))-path[0].x,
+      Number(marker.getAttribute('cy'))-path[0].y)<0.01);
     fire('pointerdown',{x:300,y:300});fire('pointerup',{x:300,y:300});
-    check('stray resume costs no star or progress',state().pausedStroke && state().mistakes===1 && state().progressLen===pausedProgress,state());
+    check('stray retry costs no star or progress',state().mistakes===1 && state().progressLen===0,state());
     fire('pointerdown',path[halfway-1]);
     path.slice(halfway).forEach(point=>fire('pointermove',point));fire('pointerup',path.at(-1));
-    check('quick retry and partial resume keep new ink',state().strokeIdx===1 && state().mistakes===1,state());
+    check('discarded endpoint cannot continue stroke',state().strokeIdx===0 && state().progressLen===0 && state().mistakes===1,state());
+    draw(path);
+    check('continuous retry keeps new ink',state().strokeIdx===1 && state().mistakes===1,state());
     // Starting a second pointer cannot replace the primary stroke.
     path=points(); fire('pointerdown',path[0]);
     fire('pointerdown',{x:300,y:300},2); fire('pointerup',{x:300,y:300},2);
@@ -86,7 +90,8 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
 
     for (const [level,language] of [[1,'he'],[2,'en']]) {
       await load(level,language);
-      if(language==='he') draw(points()); // ח's second stroke is a 168px straight leg.
+      const firstPath=points(),completedPoint=firstPath[Math.floor(firstPath.length/2)];
+      draw(firstPath); // Complete ח's roof or A's first leg before interrupting the next stroke.
       const before=state(), guide=frame.contentDocument.querySelector('#svg-stroke-path');
       const pointAt=distance=>guide.getPointAtLength(distance);
       fire('pointerdown',pointAt(0));fire('pointerup',pointAt(0));
@@ -95,23 +100,24 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
         fire('pointerdown',pointAt(progress+30));
         fire('pointermove',pointAt(progress+32));fire('pointerup',pointAt(progress+32));
       }
-      check(`forward regrabs cannot skip ink ${language}`,state().letterIdx===before.letterIdx &&
+      check(`repeated lifts cannot complete a stroke ${language}`,state().letterIdx===before.letterIdx &&
         state().strokeIdx===before.strokeIdx && state().progressLen===0 && state().mistakes===0,state());
-      draw(points().slice(0,Math.floor(points().length/2)));
-      const checkpoint=state().progressLen;
-      fire('pointerdown',pointAt(checkpoint+30));fire('pointermove',pointAt(checkpoint+32));
-      check(`forward resume waits at saved progress ${language}`,state().progressLen===checkpoint && state().pausedStroke,state());
-      fire('pointermove',pointAt(checkpoint));
-      for(let distance=checkpoint+4;distance<guide.getTotalLength();distance+=4) fire('pointermove',pointAt(distance));
-      fire('pointermove',pointAt(guide.getTotalLength()));fire('pointerup',pointAt(guide.getTotalLength()));
-      check(`rejoining checkpoint resumes held mouse ${language}`,state().letterIdx>before.letterIdx || state().strokeIdx>before.strokeIdx,state());
+      const partial=points().slice(0,Math.floor(points().length/2));
+      draw(partial);
+      check(`interrupted stroke resets without penalty ${language}`,state().progressLen===0 && !state().isDrawing && state().mistakes===0,state());
+      check(`interrupted ink disappears ${language}`,inkAt(partial[Math.floor(partial.length/2)])===0);
+      check(`completed stroke survives release ${language}`,state().completedStrokes===before.completedStrokes && inkAt(completedPoint)>0,state());
+      fire('pointerdown',partial.at(-1));fire('pointermove',pointAt(guide.getTotalLength()));fire('pointerup',pointAt(guide.getTotalLength()));
+      check(`discarded endpoint cannot resume ${language}`,state().progressLen===0 && state().letterIdx===before.letterIdx && state().strokeIdx===before.strokeIdx,state());
+      draw(points());
+      check(`continuous stroke succeeds after release ${language}`,state().letterIdx>before.letterIdx || state().strokeIdx>before.strokeIdx,state());
     }
 
     await load(2,'he');
     draw(points().reverse());
     check('backwards start ignored without penalty',state().strokeIdx===0 && state().mistakes===0,state());
     path=points();fire('pointerdown',path[0]);fire('pointermove',path[5]);fire('pointercancel',path[5]);
-    check('cancelled pointer stops drawing',!state().isDrawing,state());
+    check('cancelled pointer discards incomplete stroke',!state().isDrawing && state().progressLen===0,state());
     draw(points());
     check('retry after pointer cancellation succeeds',state().strokeIdx===1,state());
     frame.contentDocument.querySelector('#painter-back').click();await wait(30);

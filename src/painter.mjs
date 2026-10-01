@@ -97,8 +97,6 @@ let userPathPoints = [];
 let completedStrokes = [];      // strokes of the current letter that passed
 let fadingStroke = null;        // failed attempt fading out {points, color, alpha}; separate from the live attempt
 let isDrawing = false;
-let pausedStroke = false;       // a valid partial stroke can continue after a finger lifts
-let awaitingResumePoint = false; // a nearby regrab must reach the saved checkpoint before adding ink
 let inputLocked = false;        // true between letters, until the next guide and state are loaded
 let letterTransitionTimer = null;
 let firstLetterSpoken = false;
@@ -266,8 +264,6 @@ function loadStroke() {
   drawnLen = 0;
   userPathPoints = [];
   isDrawing = false;
-  pausedStroke = false;
-  awaitingResumePoint = false;
   updateDashMotion();
 }
 
@@ -329,8 +325,7 @@ function paintPoints(points, color, alpha = 1) {
   ctx.beginPath();
   for (let i = 0; i < points.length; i++) {
     const point = points[i];
-    if (point === null) continue;
-    if (i === 0 || points[i - 1] === null) ctx.moveTo(point.x, point.y);
+    if (i === 0) ctx.moveTo(point.x, point.y);
     else ctx.lineTo(point.x, point.y);
   }
   ctx.stroke();
@@ -372,15 +367,12 @@ const FEEDBACK = {
   off: 'אופס! יצאתם מהקו — נסו שוב מהנקודה הוורודה',
   backwards: 'לכיוון החץ, מהנקודה הוורודה אל הכוכב ⭐',
   scribble: 'בקו אחד רגוע לאורך החץ ✏️',
-  continue: 'יופי! המשיכו מהנקודה הוורודה עד הכוכב ⭐',
-  resume: 'חזרו לנקודה הוורודה כדי להמשיך ⭐',
+  lift: 'ציירו קו רצוף מהנקודה עד הכוכב ⭐',
 };
 
 function failStroke(reason) {
   mistakes++;
   isDrawing = false;
-  pausedStroke = false;
-  awaitingResumePoint = false;
   progressLen = 0;
   drawnLen = 0;
   setStartMarker(pathSamples[0]);
@@ -460,32 +452,18 @@ function onDrawDown(e) {
   
   if (letterIdx >= data.letters.length) return;
   const pt = getTouchPos(e);
-  const start = pausedStroke ? get('svg-stroke-path').getPointAtLength(progressLen) : pathSamples[0];
+  const start = pathSamples[0];
 
   if (Math.hypot(pt.x - start.x, pt.y - start.y) > START_RADIUS) {
-    showFeedback(pausedStroke ? FEEDBACK.resume : FEEDBACK.start, false);
+    showFeedback(FEEDBACK.start, false);
     return;
   }
 
-  if (pausedStroke) {
-    const checkpoint = nearestInWindow(pt);
-    if (checkpoint.dist > CORRIDOR || checkpoint.sample.len > progressLen) {
-      awaitingResumePoint = true;
-      showFeedback(FEEDBACK.resume, false);
-      return;
-    }
-  }
-
-  awaitingResumePoint = false;
   clearFeedback();
   isDrawing = true;
-  if (pausedStroke) userPathPoints.push(null, pt);
-  else {
-    progressLen = 0;
-    drawnLen = 0;
-    userPathPoints = [pt];
-  }
-  pausedStroke = false;
+  progressLen = 0;
+  drawnLen = 0;
+  userPathPoints = [pt];
   if (!firstLetterSpoken) {
     firstLetterSpoken = true;
     speakLetter(data.letters[0].char);
@@ -494,10 +472,6 @@ function onDrawDown(e) {
 }
 
 function onDrawMove(e) {
-  if (awaitingResumePoint) {
-    onDrawDown(e);
-    return;
-  }
   if (!isDrawing) return;
   e.preventDefault();
   const target = getTouchPos(e);
@@ -538,17 +512,18 @@ function onDrawMove(e) {
 }
 
 function onDrawUp() {
-  awaitingResumePoint = false;
   if (!isDrawing) return;
   isDrawing = false;
-  pausedStroke = true;
-  setStartMarker(get('svg-stroke-path').getPointAtLength(progressLen));
-  showFeedback(FEEDBACK.continue, false);
+  progressLen = 0;
+  drawnLen = 0;
+  userPathPoints = [];
+  setStartMarker(pathSamples[0]);
+  redrawCanvas();
+  showFeedback(FEEDBACK.lift, false);
 }
 
 function onStrokeSuccess() {
   isDrawing = false;
-  pausedStroke = false;
   clearFeedback();
   playSplashChime();
 
@@ -668,7 +643,7 @@ root.querySelectorAll('.art-layer').forEach(image => { image.src = './prototype/
 resetRound();
 window.render_game_to_text = () => JSON.stringify({
   game: 'magic-painter', language, wordId, word: data.word, letterIdx, strokeIdx,
-  mistakes, inputLocked, isDrawing, pausedStroke, progressLen, completedStrokes: completedStrokes.length,
+  mistakes, inputLocked, isDrawing, progressLen, completedStrokes: completedStrokes.length,
   complete: letterIdx === data.letters.length,
   stroke: letterIdx < data.letters.length ? data.letters[letterIdx].strokes[strokeIdx] : null,
 });

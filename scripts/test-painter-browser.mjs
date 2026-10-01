@@ -57,20 +57,31 @@ function checkMouseAndDialog(language) {
   assert.equal(state().mistakes,1,'off-board mouse drag is rejected');
   assert.equal(evalScript("document.querySelector('#paint-canvas').hasPointerCapture(1)"),false);
 
-  // A valid partial line survives mouse-up. Regrabbing ahead cannot skip it;
-  // moving back to the checkpoint while holding the mouse resumes naturally.
+  // Each stroke must be one continuous drag. Releasing midway clears its ink
+  // and progress; a new drag must begin at the original start marker.
   const length=evalScript("document.querySelector('#svg-stroke-path').getTotalLength()");
   move(mousePoint(0));browser('mouse','down');
   for(let distance=16;distance<length/2;distance+=16) move(mousePoint(distance));
-  browser('mouse','up');
   const checkpoint=state().progressLen;
-  assert.ok(state().pausedStroke && checkpoint>0,'native mouse-up preserves a partial line');
-  move(mousePoint(checkpoint+30));browser('mouse','down');move(mousePoint(checkpoint+32));
-  assert.equal(state().progressLen,checkpoint,'native forward regrab cannot gain progress');
-  move(mousePoint(checkpoint));
-  for(let distance=checkpoint+16;distance<length;distance+=16) move(mousePoint(distance));
-  move(mousePoint(length));browser('mouse','up');
-  assert.ok(state().letterIdx>0 || state().strokeIdx>0,'native mouse can rejoin and complete the stroke');
+  assert.ok(checkpoint>0,'partial native mouse drag makes progress before release');
+  browser('mouse','up');
+  assert.equal(state().progressLen,0,'releasing midway discards progress and requires a continuous stroke');
+  assert.equal(state().isDrawing,false);
+  assert.equal(state().mistakes,1,'releasing midway adds no mistake penalty');
+  assert.ok(evalScript(`(() => {
+    const canvas=document.querySelector('#paint-canvas');
+    return !canvas.getContext('2d').getImageData(0,0,320,320).data.some((value,index)=>index%4===3 && value!==0);
+  })()`),'native mouse-up clears all unfinished ink');
+  assert.ok(evalScript(`(() => {
+    const point=document.querySelector('#svg-stroke-path').getPointAtLength(0),dot=document.querySelector('#svg-start-dot');
+    return Math.hypot(Number(dot.getAttribute('cx'))-point.x,Number(dot.getAttribute('cy'))-point.y)<0.01;
+  })()`),'marker stays at the original stroke start');
+  browser('screenshot',`/tmp/painter-continuous-${language}.png`);
+  move(mousePoint(checkpoint));browser('mouse','down');move(mousePoint(checkpoint+12));browser('mouse','up');
+  assert.equal(state().progressLen,0,'regrabbing the discarded endpoint cannot continue a stroke');
+  assert.equal(state().isDrawing,false);
+  drawStroke();
+  assert.ok(state().letterIdx>0 || state().strokeIdx>0,'one continuous mouse drag completes the stroke');
   assert.equal(evalScript("document.querySelector('#slate-feedback').classList.contains('show')"),false);
 
   for(let attempt=0;!state().complete && attempt<20;attempt++) {
@@ -94,7 +105,7 @@ function checkMouseAndDialog(language) {
   assert.ok(messages[0].stars>=1 && messages[0].stars<=3);
   assert.ok(evalScript("[...document.querySelector('#magic-painter-screen').children].every(child=>!child.inert)"),'completion clears background inertness');
   assertBrowserClean();
-  console.log(`PASS: native mouse capture, partial resume, feedback, and completion keyboard controls (${language}).`);
+  console.log(`PASS: native mouse capture, continuous strokes, feedback, and completion keyboard controls (${language}).`);
 }
 
 function arrowMotion() {
