@@ -48,6 +48,15 @@ export function hebrewUiAudio(clipId: string) {
   return requireHebrewAudio(`./assets/audio/vocabulary/he/ui/${clipId}.mp3`);
 }
 
+export function painterStartAudio(language: 'en' | 'he') {
+  return language === 'en' ? vocabularyUiAudio('painter-start') : hebrewUiAudio('painter-start');
+}
+
+export function painterLetterAudio(language: 'en' | 'he', letter: string) {
+  const path = `./assets/audio/vocabulary/${language}/letters/${letter}.mp3`;
+  return language === 'en' ? requireVocabularyAudio(path) : requireHebrewAudio(path);
+}
+
 function requireVocabularyAudio(path: string) {
   const source = VOCABULARY_AUDIO[path];
   if (!source) {

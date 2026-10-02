@@ -6,6 +6,7 @@ import { resolve } from 'node:path';
 
 import { VOCAB_WORDS } from '../src/words.ts';
 import { GAME_LEVELS, TRAIL_STAGES, getGameLevel } from '../prototype/shared/trail-catalog.mjs';
+import { painterAudioClips } from './painter-audio-clips.mjs';
 
 const MODEL = 'gemini-3.1-flash-tts-preview';
 const VERIFIER_MODEL = 'gemini-3.8-flash';
@@ -99,6 +100,15 @@ async function requestAudio(apiKey, clip) {
       `Director notes: ${uiGuidance} Speak clearly at a slightly slower learning pace, with no added words.`,
       `Transcript: ${transcript}`,
     ]
+    : clip.painterPrompt
+    ? [
+      'Synthesize speech only. Do not speak these instructions.',
+      'Audio profile: a native Israeli Hebrew speaker and warm teacher for children.',
+      clip.relativePath === 'letters/פ.mp3'
+        ? 'Director notes: Say the Hebrew letter name peh with a clear P sound as in pen, not feh. Speak only the exact transcript.'
+        : 'Director notes: Speak the exact painter instruction or Hebrew letter name clearly for a young learner, with no added words.',
+      `Transcript: ${transcript}`,
+    ]
     : [
       'Synthesize speech only. Do not speak these instructions.',
       'Audio profile: a native Israeli Hebrew speaker and warm teacher for children.',
@@ -137,7 +147,9 @@ async function requestAudio(apiKey, clip) {
 }
 
 function clipHash(clip) {
-  const profile = clip.uiId
+  const profile = clip.painterPrompt
+    ? `${GENERATION_PROFILE}:painter`
+    : clip.uiId
     ? `${GENERATION_PROFILE}:${clip.uiId}:${UI_GUIDANCE[clip.uiId]}`
     : `${GENERATION_PROFILE}:word:${clip.english}`;
   return createHash('sha256')
@@ -269,6 +281,7 @@ export function buildHebrewClips(vocabulary = VOCAB_WORDS) {
       english: wordById.get(wordId).english,
     })),
     ...Object.entries(UI_TRANSCRIPTS).map(([id, transcript]) => ({ relativePath: `ui/${id}.mp3`, transcript, uiId: id })),
+    ...painterAudioClips('he'),
   ];
 }
 

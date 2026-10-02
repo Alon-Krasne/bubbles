@@ -39,6 +39,7 @@ export const LANGUAGE_POLICIES = Object.freeze({
 });
 
 const GAME_DEFINITIONS = Object.freeze({
+  painter: Object.freeze({ activity: 'magic-painter', entry: '../index.html', label: 'מכחול הקסם' }),
   reveal: Object.freeze({ activity: 'magic-reveal', entry: '../index.html', label: 'התמונה הקסומה' }),
   memory: Object.freeze({ activity: 'memory-garden', entry: '../index.html', label: 'גן מילים' }),
   shop: Object.freeze({ activity: 'listening-shop', entry: '../index.html', label: 'החנות הקטנה' }),

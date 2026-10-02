@@ -16,7 +16,7 @@ try {
       if (line === 'Local D1 browser acceptance: http://127.0.0.1:8788') resolve();
     });
   });
-  for (const test of ['test-forest-entry.mjs', 'test-forest-chapter.mjs']) {
+  for (const test of ['test-forest-entry.mjs', 'test-forest-chapter.mjs', 'test-forest-friend-switch.mjs']) {
     execFileSync(process.execPath, ['scripts/' + test], { cwd, stdio: 'inherit' });
   }
 } finally {

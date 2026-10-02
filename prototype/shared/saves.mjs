@@ -1,4 +1,5 @@
 import { createSaveClient, SAVE_CACHE_KEY } from './save-client.mjs';
+import { clearRenumberedLevelSaves } from './level-renumber-reset.mjs';
 
 export let saveStorage;
 
@@ -86,6 +87,8 @@ export async function initializeSaves() {
     releaseLock();
     throw error;
   }
+  // Hosted activities reuse this client, so the reset has run before any game reads its saves.
+  clearRenumberedLevelSaves({ local: localStorage, cloud: saveStorage });
   canTransfer = true;
   window.addEventListener('online', () => { void saveStorage.flush(); });
   window.addEventListener('pagehide', () => { void saveStorage.flush(); });

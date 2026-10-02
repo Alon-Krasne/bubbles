@@ -6,6 +6,7 @@ import { resolve } from 'node:path';
 
 import { VOCAB_WORDS } from '../src/words.ts';
 import { GAME_LEVELS, TRAIL_STAGES, getGameLevel } from '../prototype/shared/trail-catalog.mjs';
+import { painterAudioClips } from './painter-audio-clips.mjs';
 
 const MODEL = 'gemini-3.1-flash-tts-preview';
 const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/interactions';
@@ -119,6 +120,13 @@ async function requestAudio(apiKey, clip) {
       `Director notes: ${uiGuidance} Speak clearly at a slightly slower learning pace, with no added words.`,
       `Transcript: ${transcript}`,
     ]
+    : clip.painterPrompt
+    ? [
+      'Synthesize speech only. Do not speak these instructions.',
+      'Audio profile: a warm, youthful, friendly American English teacher for children.',
+      'Director notes: Speak the exact painter instruction or letter name clearly for a young learner, with no added words.',
+      `Transcript: ${transcript}`,
+    ]
     : literacyContext
     ? [
       'Synthesize speech only. Do not speak these instructions.',
@@ -173,7 +181,9 @@ async function requestAudio(apiKey, clip) {
 }
 
 function clipHash(clip) {
-  const profile = clip.uiId
+  const profile = clip.painterPrompt
+    ? 'v1:Leda:painter-English:exact-transcript'
+    : clip.uiId
     ? `v2:Leda:store-fragment:${clip.uiId}:${UI_GUIDANCE[clip.uiId]}`
     : LITERACY_VERB_CONTEXT[clip.transcript]
     ? `v1:Leda:neutral-American-English:${clip.transcript}-present-tense:exact-transcript`
@@ -236,6 +246,7 @@ async function main() {
     ...activeWordIds.map((wordId) => ({ relativePath: `words/${wordId}.mp3`, transcript: wordById.get(wordId).english })),
     ...quantityWordIds.map((wordId) => ({ relativePath: `plurals/${wordId}.mp3`, transcript: pluralize(wordById.get(wordId).english) })),
     ...Object.entries(UI_TRANSCRIPTS).map(([id, transcript]) => ({ relativePath: `ui/${id}.mp3`, transcript, uiId: id })),
+    ...painterAudioClips('en'),
   ];
 
   execFileSync('ffmpeg', ['-version'], { stdio: 'ignore' });

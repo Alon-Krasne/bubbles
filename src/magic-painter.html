@@ -1,0 +1,91 @@
+
+
+<header>
+  <button class="nav-btn" id="painter-back" type="button">← למפה</button><h1>מכחול הקסם</h1>
+
+  <div class="header-controls">
+    <!-- Choose brush color -->
+    <div class="brush-color-picker">
+      <button type="button" class="color-dot dot-red active" data-color="#FF5E62" aria-label="אדום תות" aria-pressed="false"></button>
+      <button type="button" class="color-dot dot-purple" data-color="#9B59B6" aria-label="סגול קסם" aria-pressed="false"></button>
+      <button type="button" class="color-dot dot-blue" data-color="#3498DB" aria-label="כחול שמיים" aria-pressed="false"></button>
+      <button type="button" class="color-dot dot-gold" data-color="#F1C40F" aria-label="זהב מנצנץ" aria-pressed="false"></button>
+    </div>
+
+    <button class="nav-btn" id="painter-sound" type="button" aria-label="האזינו להוראות, למילה ולאות">🔊 הוראות</button>
+  </div>
+</header>
+
+<div class="main-stage">
+  <!-- Word Cards Bar -->
+  <div class="word-banner" id="word-banner">
+    <!-- Populated dynamically -->
+  </div>
+
+  <!-- Left Side: Freehand Magic Brush Tracing (NO TRACKS) -->
+  <div class="slate-card">
+    <div class="slate-instruction">
+      <span>🎨</span>
+      <strong id="slate-instruction-text">ציירו עם האצבע מנקודה ① לאורך החץ של האות A</strong>
+    </div>
+
+    <div class="slate-board" id="slate-board">
+      <!-- Underlying SVG guide with clean letter outline & arrow -->
+      <svg class="guide-svg" id="guide-svg" viewBox="0 0 320 320">
+        <!-- Full letter faint backdrop -->
+        <path id="svg-ghost-letter" class="letter-ghost-line" d=""/>
+        <!-- Dotted centerline guide -->
+        <!-- Trace line: every dash is a small arrow pointing along the stroke -->
+        <g id="svg-stroke-dashes"></g>
+        <!-- Invisible centerline of the current stroke (for sampling & arrow motion) -->
+        <path id="svg-stroke-path" d="" fill="none" stroke="none"/>
+        <!-- Start dot with ① -->
+        <g id="svg-start-group">
+          <circle id="svg-start-dot" class="guide-start-dot" cx="0" cy="0" r="16"/>
+          <text id="svg-start-text" class="guide-start-text" x="0" y="0">1</text>
+        </g>
+        <!-- End Star -->
+        <text id="svg-end-star" class="guide-end-star" x="0" y="0">⭐</text>
+      </svg>
+
+      <!-- Freehand Drawing Canvas -->
+      <canvas id="paint-canvas" width="320" height="320" aria-label="לוח ציור: עברו מהנקודה לאורך החצים אל הכוכב"></canvas>
+
+      <!-- Mistake feedback bubble -->
+      <div class="slate-feedback" id="slate-feedback" role="status"></div>
+    </div>
+
+    <div style="font-size:14px; font-weight:700; color:#888; margin-top:14px;">
+      ציירו בתוך האות, בכיוון החץ, עד הכוכב ⭐
+    </div>
+  </div>
+
+  <!-- Right Side: The Living Coloring Book (Storybook Watercolor Reveal) -->
+  <div class="paint-card">
+    <div class="paint-badge" id="paint-badge">נצבע: 0 / 5</div>
+
+    <div class="art-canvas-wrap">
+      <!-- Layer 1: Sketch Layer -->
+      <img class="art-layer art-sketch"  alt="">
+
+      <!-- Layer 2: Watercolor Painted Layer (revealed via dynamic CSS watercolor masks) -->
+      <div class="art-color-wrap" id="art-color-wrap">
+        <img class="art-layer art-color" id="art-color-img"  alt="הציור שמתגלה">
+      </div>
+    </div>
+
+    <div class="paint-card-caption" id="paint-caption">
+      כל אות שתציירו במדויק תחשוף גל צבעי מים בציור! 🎨
+    </div>
+  </div>
+</div>
+
+<!-- Win Modal -->
+<div class="celebrate-overlay" id="celebrate-overlay" role="dialog" aria-modal="true" aria-label="הציור הושלם">
+  <div class="celebrate-box">
+    <div style="font-size: 64px; margin-bottom: 8px;">🎨✨</div>
+    <div class="celebrate-title">ציור מושלם!</div>
+    <div class="celebrate-sub" id="celebrate-text">ציירתם את כל האותיות והציור התעורר לחיים!</div>
+    <div id="painter-stars" aria-label="כוכבים"></div><button type="button" class="celebrate-btn" id="painter-finish">ממשיכים במסע ←</button>
+  </div>
+</div>

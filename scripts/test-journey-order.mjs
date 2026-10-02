@@ -17,7 +17,7 @@ for (const order of orders) {
   assert.ok(stages.every((stage, index) => stage.chapter === TRAIL_STAGES[index].chapter), 'chapter content stays in its chapter');
   assert.ok(stages.every((stage, index) => stage.x === TRAIL_STAGES[index].x && stage.y === TRAIL_STAGES[index].y), 'map positions stay put');
   assert.ok(stages.every((stage, index) => index < 2 || stage.game !== stages[index - 1].game || stage.game !== stages[index - 2].game), 'at most two consecutive stages of one game');
-  for (const game of ['memory', 'shop', 'house', 'reveal']) {
+  for (const game of ['memory', 'shop', 'house', 'reveal', 'painter']) {
     const ranks = stages.filter(stage => stage.game === game).map(stage => stage.difficultyRank);
     assert.ok(ranks.every((rank, index) => index === 0 || rank >= ranks[index - 1]), `${game} difficulty must not drop`);
   }
@@ -26,3 +26,21 @@ for (const order of orders) {
 
 assert.throws(() => applyJourneyOrder(TRAIL_STAGES, orders[0].slice(1)), /Invalid journey order/);
 console.log('PASS: 100 varied journeys keep chapter content, stable stages, rising difficulty, and a two-game repetition cap.');
+
+// Orders already saved by the four-game trail stay valid; no progress reset.
+const previousGames = [
+  'memory','shop','house','reveal','memory','shop',
+  'house','reveal','memory','reveal','house','shop',
+  'memory','memory','reveal','shop','shop','house',
+  'reveal','reveal','memory','house','house','shop',
+  'shop','memory','reveal','house','memory','house',
+  'reveal','shop','memory','house','shop','reveal',
+];
+const previousStages = TRAIL_STAGES.map((stage, index) => ({...stage, game: previousGames[index]}));
+for (let seed=1; seed<=100; seed++) {
+  const savedOrder = createJourneyOrder(previousStages, random(seed));
+  const restored = applyJourneyOrder(TRAIL_STAGES, savedOrder);
+  assert.deepEqual(restored.map(stage => stage.sourceStageId), savedOrder);
+  assert.equal(restored.filter(stage => stage.game === 'painter').length, 6);
+}
+console.log('PASS: 100 existing four-game journey orders remain usable without resetting progress.');

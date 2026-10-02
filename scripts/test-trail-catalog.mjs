@@ -37,7 +37,7 @@ assert.deepEqual(generatedReport, {
   chapterCount: 6,
   stageCount: 36,
   playableStageCount: 36,
-  gameCount: 4,
+  gameCount: 5,
   maxStars: 108,
 });
 
@@ -60,10 +60,11 @@ for (let i = 1; i < stageGames.length; i += 1) {
 }
 assert.ok(maxConsecutive <= 2, `never more than 2 in a row of the same game (max was ${maxConsecutive})`);
 
-// All 4 games appear balanced across the route
-for (const game of ['memory', 'shop', 'house', 'reveal']) {
+// Six painter activities replace repeated games, one in each chapter.
+const gameCounts = { memory: 7, shop: 8, house: 8, reveal: 7, painter: 6 };
+for (const game of Object.keys(gameCounts)) {
   const count = stageGames.filter((g) => g === game).length;
-  assert.equal(count, 9, `${game} must have 9 stages across the route`);
+  assert.equal(count, gameCounts[game], `${game} stage count`);
 }
 
 // The source chapters do not repeat a fixed 1-2-3-4 cycle.
@@ -76,7 +77,7 @@ assert.ok(
   'every generated stage must belong to its chapter',
 );
 
-for (const game of ['memory', 'shop', 'house', 'reveal']) {
+for (const game of Object.keys(gameCounts)) {
   const ranks = GENERATED_TRAIL_STAGES
     .filter((stage) => stage.game === game)
     .map((stage) => getGameLevel(stage.game, stage.level).difficultyRank);
@@ -160,8 +161,8 @@ for (const level of GENERATED_GAME_LEVELS.shop) {
     `generated Shop level ${level.id} must only stock items with committed artwork`,
   );
 }
-for (const game of ['memory', 'shop', 'house', 'reveal']) {
-  assert.equal(GENERATED_GAME_LEVELS[game].length, 9, `${game} must generate 9 levels`);
+for (const game of Object.keys(gameCounts)) {
+  assert.equal(GENERATED_GAME_LEVELS[game].length, gameCounts[game], `${game} level count`);
 }
 
 // Magic House difficulty must live in its parameters, not only in the rank

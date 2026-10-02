@@ -2,12 +2,17 @@
 // Run against the isolated scripts/serve-save-test.mjs server after npm run build.
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
+import { TRAIL_STAGES } from '../prototype/shared/trail-catalog.mjs';
 const browser=(...args)=>execFileSync('agent-browser',['--session','forest-chapter-check',...args],{encoding:'utf8'});
 const evaluate=code=>JSON.parse(browser('eval',code));
 const url='http://127.0.0.1:8788/prototype/world-map.html';
+// Put all five activities before the stage-5 story, including Painter first.
+const firstFive = [5, 1, 2, 3, 4];
+const testOrder = [...firstFive, ...TRAIL_STAGES.map(stage => stage.id).filter(id => !firstFive.includes(id))];
+const playedActivities = new Set();
 try {
   browser('open',url);browser('wait','.gate-profile-choice');browser('click','.gate-profile-choice[data-profile="lotem"]');browser('wait','#destination-card-forest');
-  evaluate(`(async()=>{const s=window.bubblesSaveClient;for(const k of s.keys())if(k.includes('forest-lotem-en'))s.removeItem(k);s.setItem('forest-route-lotem-en',JSON.stringify({currentStage:1,progress:{},character:null,unlockedVideos:['forest-video-01'],seenVideos:[],contentVersion:2}));localStorage.setItem('bubble_world_map_profile_v1','lotem');await s.flush();return true;})()`);
+  evaluate(`(async()=>{const s=window.bubblesSaveClient;for(const k of s.keys())if(k.includes('forest-lotem-en'))s.removeItem(k);s.setItem('forest-route-lotem-en',JSON.stringify({currentStage:1,progress:{},character:null,stageOrder:${JSON.stringify(testOrder)},unlockedVideos:['forest-video-01'],seenVideos:[],contentVersion:2}));localStorage.setItem('bubble_world_map_profile_v1','lotem');await s.flush();return true;})()`);
   browser('reload');browser('wait','.gate-profile-choice');browser('click','.gate-profile-choice[data-profile="lotem"]');browser('wait','#destination-card-forest');browser('click','#destination-card-forest');browser('click','[data-character="nevet"]');
   const journeyOrder=evaluate(`JSON.parse(window.bubblesSaveClient.getItem('forest-route-lotem-en')).stageOrder`);
   const opening=evaluate(`(async()=>{const v=document.querySelector('#forest-milestone-video');await v.play();await new Promise(r=>setTimeout(r,800));v.pause();return {time:v.currentTime,duration:v.duration,error:v.error,lang:document.querySelector('#forest-caption-language').value};})()`);
@@ -19,15 +24,45 @@ try {
     browser('click','#play-button');
     browser('wait','--fn',`document.querySelector('#activity-overlay').classList.contains('is-visible')`);
     const activity=evaluate(`new URL(document.querySelector('#activity-frame').src).searchParams.get('activity')`);
+    playedActivities.add(activity);
     const setup=`const d=document.querySelector('#activity-frame').contentDocument;const sleep=ms=>new Promise(r=>setTimeout(r,ms));`;
     if(activity==='memory-garden') {
       evaluate(`(async()=>{${setup}const words=new Set([...d.querySelectorAll('.memory-card')].map(c=>c.dataset.wordId));for(const word of words){const cards=[...d.querySelectorAll('.memory-card')].filter(c=>c.dataset.wordId===word);cards[0].click();await sleep(250);cards[1].click();await sleep(1600);}for(let i=0;i<20&&!d.querySelector('#memory-celebration').classList.contains('is-visible');i++)await sleep(300);if(!d.querySelector('#memory-celebration').classList.contains('is-visible'))throw Error('Memory did not complete');d.querySelector('#memory-celebration-next-btn').click();return true;})()`);
     } else if(activity==='magic-reveal') {
-      evaluate(`(()=>{const f=document.querySelector('#activity-frame');const w=f.contentWindow;const d=f.contentDocument;for(let round=0;round<3;round++){const state=JSON.parse(w.render_game_to_text());for(const letter of new Set(state.letters))d.querySelector('[data-letter="'+letter+'"]').click();d.querySelector('#reveal-next').click();}return true;})()`);
+      evaluate(`(async()=>{${setup}const w=document.querySelector('#activity-frame').contentWindow;for(let i=0;i<100;i++){if(!document.querySelector('#activity-overlay').classList.contains('is-visible'))return true;const state=JSON.parse(w.render_game_to_text());if(state.complete){d.querySelector('#reveal-next').click();}else{const letter=state.choices.find(letter=>state.letters.includes(letter)&&!state.guesses.includes(letter));d.querySelector('[data-letter="'+letter+'"]').click();}await sleep(40);}throw Error('Reveal did not complete');})()`);
+    } else if(activity==='magic-painter') {
+      evaluate(`(async()=>{
+        ${setup}
+        const w=document.querySelector('#activity-frame').contentWindow;
+        const state=()=>JSON.parse(w.render_game_to_text());
+        const canvas=d.querySelector('#paint-canvas');
+        const fire=(type,point)=>{
+          const rect=canvas.getBoundingClientRect();
+          canvas.dispatchEvent(new w.PointerEvent(type,{bubbles:true,cancelable:true,pointerId:1,isPrimary:true,pointerType:'mouse',button:0,
+            clientX:rect.left+point.x*rect.width/canvas.width,clientY:rect.top+point.y*rect.height/canvas.height}));
+        };
+        for(let attempt=0;attempt<30&&!state().complete;attempt++){
+          const before=state();
+          const path=d.querySelector('#svg-stroke-path');
+          const length=path.getTotalLength();
+          fire('pointerdown',path.getPointAtLength(0));
+          for(let distance=4;distance<length;distance+=4)fire('pointermove',path.getPointAtLength(distance));
+          fire('pointermove',path.getPointAtLength(length));
+          fire('pointerup',path.getPointAtLength(length));
+          const after=state();
+          if(after.letterIdx===before.letterIdx&&after.strokeIdx===before.strokeIdx)throw Error('Painter stroke rejected');
+          if(after.inputLocked)await sleep(740);
+        }
+        if(!state().complete||state().mistakes!==0)throw Error('Painter did not complete without mistakes');
+        d.querySelector('#painter-finish').click();
+        return true;
+      })()`);
     } else if(activity==='listening-shop') {
       evaluate(`(async()=>{${setup}const w=document.querySelector('#activity-frame').contentWindow;for(let i=0;i<55;i++){if(d.querySelector('#shop-celebration').classList.contains('is-visible')){d.querySelector('#shop-celebration-next-btn').click();return true;}const state=JSON.parse(w.render_game_to_text());const t=state.targets.find(t=>t.served<t.required);if(t){const tile=d.querySelector('[data-item-id="'+t.itemId+'"]');if(!tile.disabled)tile.click();}await sleep(500);}throw Error('Shop did not complete');})()`);
-    } else {
+    } else if(activity==='magic-house') {
       evaluate(`(async()=>{${setup}const w=document.querySelector('#activity-frame').contentWindow;const {MAGIC_HOUSE_REQUESTS}=await import('/prototype/shared/magic-house-content.mjs');for(let i=0;i<55;i++){if(d.querySelector('#celebration').classList.contains('is-visible')){d.querySelector('#replay-button').click();return true;}const state=JSON.parse(w.render_game_to_text());const request=MAGIC_HOUSE_REQUESTS.find(r=>r.id===state.requestIds[state.completedRequests]);if(request){for(const t of request.targets){const object=d.querySelector('.object-button[data-object-id="'+t.objectId+'"]');if(object&&!object.disabled){object.click();d.querySelector('[data-zone="'+t.zoneId+'"]').click();}}}await sleep(500);}throw Error('House did not complete');})()`);
+    } else {
+      throw new Error(`Unsupported forest activity: ${activity}`);
     }
     browser('wait','--fn',`!document.querySelector('#activity-overlay').classList.contains('is-visible')`);
     const progress=evaluate(`JSON.parse(window.bubblesSaveClient.getItem('forest-route-lotem-en'))`);
@@ -36,6 +71,7 @@ try {
     assert.equal(evaluate(`window.bubblesSaveClient.getItem('route-lotem')`),wonderBefore);
     console.log(`PASS stage ${stage}: ${activity}, actual controls and isolated save.`);
   }
+  assert.deepEqual([...playedActivities].sort(), ['magic-painter', 'memory-garden', 'listening-shop', 'magic-house', 'magic-reveal'].sort());
   browser('wait','#forest-milestone-dialog:not([hidden])');
   assert.equal(evaluate(`document.querySelector('#forest-story-select').value`),'forest-video-02');
   const movie=evaluate(`(async()=>{const v=document.querySelector('#forest-milestone-video');await v.play();await new Promise(r=>setTimeout(r,800));v.pause();return {time:v.currentTime,error:v.error,duration:v.duration};})()`);
