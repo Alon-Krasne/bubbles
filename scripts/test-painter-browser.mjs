@@ -142,7 +142,7 @@ try {
   for(const language of ['he','en']) checkMouseAndDialog(language);
   browser('open', 'http://127.0.0.1:8788/');
   evalScript(readFileSync(new URL('./test-painter-browser.js', import.meta.url), 'utf8'));
-  const deadline = Date.now() + 240_000;
+  const deadline = Date.now() + 360_000;
   let result;
   do {
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -153,7 +153,7 @@ try {
   assert.deepEqual(result.failed, [], JSON.stringify(result));
   assert.deepEqual(result.errors, [], JSON.stringify(result));
   assertBrowserClean();
-  console.log(`PASS: ${result.passed} Painter browser checks across 12 words, lowercase/uppercase English and Hebrew.`);
+  console.log(`PASS: ${result.passed} Painter browser checks across 12 words, capital-first/lowercase/uppercase English and Hebrew.`);
 } finally {
   browser('close');
 }

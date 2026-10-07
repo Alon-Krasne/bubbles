@@ -1,6 +1,6 @@
 # Magic Brush Painter illustrations
 
-Twelve vocabulary pictures for the recurring trail activity, two per chapter. Each picture depicts its word directly, unlike the independent reward scenes in Reveal the Magic. The word picker offers cat/panda, apple/soup, sun/moon, boat/bus, map/ruler, and medal/baseball. English starts in lowercase, with an uppercase practice button; Hebrew uses print letters.
+Twelve vocabulary pictures for the recurring trail activity, two per chapter. Each picture depicts its word directly, unlike the independent reward scenes in Reveal the Magic. The word picker offers cat/panda, apple/soup, sun/moon, boat/bus, map/ruler, and medal/baseball. English starts with a capital first letter and lowercase remaining letters (Cat, Panda), with lowercase and uppercase practice buttons; Hebrew uses print letters.
 
 - `apple.webp`: existing watercolor illustration from the reviewed prototype in PR #46, commit `9b71348` (originally generated using Gemini 3 Pro Image).
 - `cat.webp`, `sun.webp`, `boat.webp`: generated using Codex's built-in imagegen tool on 2026-09-27.

@@ -83,9 +83,11 @@ export const PAINTER_WORDS = Object.freeze(Object.fromEntries(PAINTER_CHAPTER_WO
 
 export function getPainterWord(id, language, letterCase = 'uppercase') {
   if (!['en', 'he'].includes(language)) throw new Error(`Unknown painter language ${language}`);
-  if (!['lowercase', 'uppercase'].includes(letterCase)) throw new Error(`Unknown painter letter case ${letterCase}`);
+  if (!['lowercase', 'uppercase', 'titlecase'].includes(letterCase)) throw new Error(`Unknown painter letter case ${letterCase}`);
   const content = PAINTER_WORDS[id];
   if (!content) throw new Error(`Unknown painter word ${id}`);
-  const word = language === 'en' && letterCase === 'lowercase' ? content.en.toLowerCase() : content[language];
+  let word = content[language];
+  if (language === 'en' && letterCase === 'lowercase') word = word.toLowerCase();
+  if (language === 'en' && letterCase === 'titlecase') word = word[0] + word.slice(1).toLowerCase();
   return { id, word, picture: content.picture, letters: [...word].map(letter) };
 }

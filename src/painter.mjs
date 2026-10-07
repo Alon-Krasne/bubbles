@@ -68,7 +68,7 @@ function playDissolveSound() {
 }
 
 let wordId = wordPool[0];
-let letterCase = 'lowercase';
+let letterCase = 'titlecase';
 let data = getPainterWord(wordId, language, letterCase);
 const currentLang = language;
 let totalStrokes = data.letters.reduce((sum, letter) => sum + letter.strokes.length, 0);
@@ -661,7 +661,7 @@ wordChoice.dir = language === 'en' ? 'ltr' : 'rtl';
 for (const id of wordPool) {
   const option = document.createElement('option');
   option.value = id;
-  option.textContent = getPainterWord(id, language, 'lowercase').word;
+  option.textContent = getPainterWord(id, language, 'titlecase').word;
   wordChoice.append(option);
 }
 wordChoice.onchange = () => { wordId = wordChoice.value; changePractice(); };

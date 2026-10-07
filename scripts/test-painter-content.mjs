@@ -12,6 +12,15 @@ assert.notDeepEqual(lowercaseCat.letters[0].strokes, getPainterWord('cat', 'en',
   'lowercase letters have their own formation paths');
 
 const chapterCategories = ['animals', 'food', 'nature', 'transport', 'school', 'sports'];
+for (const id of Object.keys(PAINTER_WORDS)) {
+  const titlecase = getPainterWord(id, 'en', 'titlecase');
+  const lowercase = getPainterWord(id, 'en', 'lowercase');
+  const uppercase = getPainterWord(id, 'en', 'uppercase');
+  assert.equal(titlecase.word, uppercase.word[0] + lowercase.word.slice(1), 'word tracing capitalizes only the first letter');
+  assert.deepEqual(titlecase.letters[0], uppercase.letters[0], 'the first guide uses a capital print letter');
+  assert.deepEqual(titlecase.letters.slice(1), lowercase.letters.slice(1), 'the remaining guides use lowercase print letters');
+  assert.equal(getPainterWord(id, 'he', 'titlecase').word, getPainterWord(id, 'he').word);
+}
 assert.equal(PAINTER_CHAPTER_WORD_POOLS.length, 6);
 for (const [chapterIndex, pool] of PAINTER_CHAPTER_WORD_POOLS.entries()) {
   assert.equal(pool.length, 2, 'every chapter offers two words to trace');
@@ -107,4 +116,4 @@ assert.notDeepEqual(getPainterWord('apple', 'he').letters[0].strokes, getPainter
 assert.throws(() => getPainterWord('missing', 'en'), /Unknown painter word/);
 assert.throws(() => getPainterWord('apple', 'fr'), /Unknown painter language/);
 assert.throws(() => getPainterWord('cat', 'en', 'cursive'), /Unknown painter letter case/);
-console.log('PASS: six Painter stages offer 12 bilingual words, lowercase and uppercase paths, pictures, and committed recordings.');
+console.log('PASS: six Painter stages offer 12 bilingual words, capital-first/lowercase/uppercase paths, pictures, and committed recordings.');

@@ -27,7 +27,8 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
     frame.contentWindow.addEventListener('unhandledrejection', event => errors.push(String(event.reason)));
     check(`load ${level}/${language}`, state().game === 'magic-painter', state());
     if (language === 'en') {
-      check(`lowercase default ${level}`, state().letterCase === 'lowercase' && state().word === state().word.toLowerCase(), state());
+      check(`capital first letter default ${level}`, state().letterCase === 'titlecase' &&
+        state().word === state().word[0].toUpperCase() + state().word.slice(1).toLowerCase(), state());
       frame.contentDocument.querySelector(`[data-letter-case="${letterCase}"]`).click();
     } else {
       check(`Hebrew hides case controls ${level}`, frame.contentDocument.querySelector('#painter-letter-case').hidden);
@@ -222,9 +223,10 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
     check('changing word resets score and reveal',state().mistakes===0 && state().letterIdx===0 &&
       frame.contentDocument.querySelector('#art-color-wrap').style.maskImage.includes('rgba(0, 0, 0, 0)'),state());
 
-    // Original words in lowercase plus every new word in both English cases and Hebrew.
+    // Capital-first words, lowercase practice, and new words in uppercase and Hebrew.
     const pools=[['cat','panda'],['apple','soup'],['sun','moon'],['boat','bus'],['map','ruler'],['medal','baseball']];
     for(let level=1;level<=6;level++) for(const [wordId,language,letterCase] of [
+      [pools[level-1][0],'en','titlecase'],[pools[level-1][1],'en','titlecase'],
       [pools[level-1][0],'en','lowercase'],[pools[level-1][1],'en','lowercase'],
       [pools[level-1][1],'en','uppercase'],[pools[level-1][1],'he','uppercase'],
     ]) {
