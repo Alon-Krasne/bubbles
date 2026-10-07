@@ -1,12 +1,13 @@
-import { PAINTER_CHAPTER_WORDS, getPainterWord } from '../prototype/shared/painter-content.mjs';
+import { PAINTER_WORDS, getPainterWord } from '../prototype/shared/painter-content.mjs';
 
 const HEBREW_NAMES = {
   'ח': 'חית', 'ת': 'תיו', 'ו': 'וו', 'ל': 'למד', 'פ': 'פֵּא', 'ש': 'שין',
   'מ': 'מם', 'ס': 'סמך', 'י': 'יוד', 'ר': 'ריש', 'ה': 'הֵא', 'ד': 'דלת',
+  'א': 'אלף', 'ב': 'בית', 'ג': 'גימל', 'ט': 'טית', 'נ': 'נון', 'ק': 'קוף',
 };
 
 export function painterAudioClips(language) {
-  const letters = [...new Set(PAINTER_CHAPTER_WORDS.flatMap(id =>
+  const letters = [...new Set(Object.keys(PAINTER_WORDS).flatMap(id =>
     getPainterWord(id, language).letters.map(letter => letter.char)))];
   return [
     { relativePath: 'ui/painter-start.mp3', transcript: language === 'en'

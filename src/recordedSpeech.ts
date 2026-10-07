@@ -53,7 +53,9 @@ export function painterStartAudio(language: 'en' | 'he') {
 }
 
 export function painterLetterAudio(language: 'en' | 'he', letter: string) {
-  const path = `./assets/audio/vocabulary/${language}/letters/${letter}.mp3`;
+  // Letter names are shared by the two English cases; recordings use A–Z IDs.
+  const recordingLetter = language === 'en' ? letter.toUpperCase() : letter;
+  const path = `./assets/audio/vocabulary/${language}/letters/${recordingLetter}.mp3`;
   return language === 'en' ? requireVocabularyAudio(path) : requireHebrewAudio(path);
 }
 

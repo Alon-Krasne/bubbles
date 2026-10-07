@@ -2,7 +2,7 @@ import { getPainterWord } from '../prototype/shared/painter-content.mjs';
 import { calculateMasteryStars, formatStarRating } from '../prototype/shared/activity-scoring.mjs';
 
 // Promoted from the reviewed Magic Brush Painter prototype (9b71348).
-export function mountPainter(root, { wordId, language, speakWord, speakGuidance, speakLetter, onExit, onComplete }) {
+export function mountPainter(root, { wordPool, language, speakWord, speakGuidance, speakLetter, onExit, onComplete }) {
 const get = id => root.querySelector('#' + id);
 let disposed = false;
 const timers = new Set();
@@ -67,9 +67,11 @@ function playDissolveSound() {
   }
 }
 
-const data = getPainterWord(wordId, language);
+let wordId = wordPool[0];
+let letterCase = 'lowercase';
+let data = getPainterWord(wordId, language, letterCase);
 const currentLang = language;
-const totalStrokes = data.letters.reduce((sum, letter) => sum + letter.strokes.length, 0);
+let totalStrokes = data.letters.reduce((sum, letter) => sum + letter.strokes.length, 0);
 let mistakes = 0;
 let brushColor = '#FF5E62';
 let letterIdx = 0;
@@ -142,11 +144,14 @@ function resetRound() {
   clearTimeout(letterTransitionTimer);
   letterTransitionTimer = null;
   inputLocked = false;
+  activePointer = null;
+  isDrawing = false;
   fadingStroke = null;
   letterIdx = 0;
   strokeIdx = 0;
   activeMasks = [];
   firstLetterSpoken = false;
+  mistakes = 0;
   updateColorMask();
 
   const colorImg = get('art-color-img');
@@ -597,7 +602,7 @@ function onCompleteWord() {
   get('paint-badge').textContent = `הושלם! ✨`;
   get('painter-stars').textContent = formatStarRating(calculateMasteryStars({ mistakes, challengeSize: totalStrokes }));
   setCompletionModal(true);
-  speakWord();
+  speakWord(wordId);
 }
 
 
@@ -630,7 +635,7 @@ get('painter-back').onclick = () => { dispose(); onExit(); };
 get('painter-sound').onclick = () => {
   if (inputLocked || letterIdx >= data.letters.length) return;
   firstLetterSpoken = true;
-  speakGuidance(data.letters[letterIdx].char);
+  speakGuidance(wordId, data.letters[letterIdx].char);
 };
 get('painter-finish').onclick = () => {
   if (letterIdx !== data.letters.length) return;
@@ -639,10 +644,40 @@ get('painter-finish').onclick = () => {
 };
 root.querySelectorAll('.color-dot').forEach(button => button.addEventListener('click', () => setBrushColor(button.dataset.color, button)));
 root.querySelector('.color-dot.active').setAttribute('aria-pressed', 'true');
+function changePractice() {
+  data = getPainterWord(wordId, language, letterCase);
+  totalStrokes = data.letters.reduce((sum, letter) => sum + letter.strokes.length, 0);
+  root.querySelectorAll('.art-layer').forEach(image => { image.src = './prototype/' + data.picture; });
+  get('art-color-img').alt = data.word;
+  root.querySelectorAll('[data-letter-case]').forEach(button => {
+    button.setAttribute('aria-pressed', String(button.dataset.letterCase === letterCase));
+  });
+  resetRound();
+  speakGuidance(wordId, data.letters[0].char);
+  firstLetterSpoken = true;
+}
+const wordChoice = get('painter-word');
+wordChoice.dir = language === 'en' ? 'ltr' : 'rtl';
+for (const id of wordPool) {
+  const option = document.createElement('option');
+  option.value = id;
+  option.textContent = getPainterWord(id, language, 'lowercase').word;
+  wordChoice.append(option);
+}
+wordChoice.onchange = () => { wordId = wordChoice.value; changePractice(); };
+get('painter-letter-case').hidden = language !== 'en';
+root.querySelectorAll('[data-letter-case]').forEach(button => {
+  button.onclick = () => {
+    if (letterCase === button.dataset.letterCase) return;
+    letterCase = button.dataset.letterCase;
+    changePractice();
+  };
+});
 root.querySelectorAll('.art-layer').forEach(image => { image.src = './prototype/' + data.picture; });
+get('art-color-img').alt = data.word;
 resetRound();
 window.render_game_to_text = () => JSON.stringify({
-  game: 'magic-painter', language, wordId, word: data.word, letterIdx, strokeIdx,
+  game: 'magic-painter', language, letterCase: language === 'en' ? letterCase : null, wordId, word: data.word, letterIdx, strokeIdx,
   mistakes, inputLocked, isDrawing, progressLen, completedStrokes: completedStrokes.length,
   complete: letterIdx === data.letters.length,
   stroke: letterIdx < data.letters.length ? data.letters[letterIdx].strokes[strokeIdx] : null,

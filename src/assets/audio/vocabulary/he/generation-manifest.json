@@ -1174,5 +1174,29 @@
   "letters/ה.mp3": {
     "hash": "ee8dba44bef0ce05b15d7a42696dce716f5b9428f31938e8e630c53dbac13c23",
     "verified": true
+  },
+  "letters/נ.mp3": {
+    "hash": "1a4dbc9eb4ba98e663176ae70be12f9d64de210ac2bd6ee699a631ff19a24b1c",
+    "verified": true
+  },
+  "letters/ט.mp3": {
+    "hash": "14170182a478bb4fda5872e993b47011a7c989b0e4798b21ffeb9e3e4d5ae0ef",
+    "verified": true
+  },
+  "letters/ק.mp3": {
+    "hash": "8878ca65a88eaf631ac2d10b90bed94ed27d97a8e62ad0f5165db9f9af8bef56",
+    "verified": true
+  },
+  "letters/א.mp3": {
+    "hash": "d7207b517b93a05e536ea532d60481b7665e1f9ca82fc879b06df737bc323780",
+    "verified": true
+  },
+  "letters/ג.mp3": {
+    "hash": "e2c934432c55b2f7d71dee265e3929d0e0fb61d589eb3f091c6867e43804626d",
+    "verified": true
+  },
+  "letters/ב.mp3": {
+    "hash": "d9bc55289dadd5e6392e449f48ee7f54d24ffbfe64a6c303bb855c1df72a6b41",
+    "verified": true
   }
 }
