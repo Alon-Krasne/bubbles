@@ -7,7 +7,7 @@
     <title>בועות!</title>
     <script>
         const entryParams = new URLSearchParams(window.location.search);
-        if (entryParams.get('host') !== 'world-map') {
+        if (entryParams.get('host') !== 'world-map' && entryParams.get('activity') !== 'magic-letters') {
             window.location.replace(new URL('prototype/world-map.html', window.location.href));
         }
     </script>
@@ -17,6 +17,7 @@
     <div id="game-container">
         <div id="magic-painter-screen" class="screen"></div>
         <div id="magic-reveal-screen" class="screen"></div>
+        <div id="magic-letters-screen" class="screen"></div>
         <!-- Game Select Screen -->
         <div id="game-select-screen" class="screen active">
             <div class="game-select-decoration game-select-decoration-sun" aria-hidden="true"></div>

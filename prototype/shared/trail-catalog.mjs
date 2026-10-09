@@ -44,6 +44,7 @@ const GAME_DEFINITIONS = Object.freeze({
   memory: Object.freeze({ activity: 'memory-garden', entry: '../index.html', label: 'גן מילים' }),
   shop: Object.freeze({ activity: 'listening-shop', entry: '../index.html', label: 'החנות הקטנה' }),
   house: Object.freeze({ activity: 'magic-house', entry: './magic-house.html', label: 'הבית הקסום' }),
+  letters: Object.freeze({ activity: 'magic-letters', entry: '../index.html', label: 'אותיות הקסם' }),
 });
 
 export function getLanguagePolicy(language) {

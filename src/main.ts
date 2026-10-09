@@ -1,5 +1,6 @@
 import { openMagicPainter } from './magicPainter';
 import { openMagicReveal } from './magicReveal';
+import { openMagicLetters } from './magicLetters';
 import './styles.css';
 import './shop-scene.css';
 import './memory-scene.css';
@@ -46,7 +47,7 @@ const hostedActivitySession = hostedActivityContext
   ? createHostedActivitySession(hostedActivityContext)
   : null;
 
-type ScreenId = 'magic-painter-screen' | 'magic-reveal-screen' | 'game-select-screen' | 'memory-screen' | 'shop-screen' | 'start-screen' | 'game-hud' | 'end-screen';
+type ScreenId = 'magic-letters-screen' | 'magic-painter-screen' | 'magic-reveal-screen' | 'game-select-screen' | 'memory-screen' | 'shop-screen' | 'start-screen' | 'game-hud' | 'end-screen';
 type MemoryDifficulty = 'easy' | 'medium' | 'hard';
 type MemoryCardKind = 'hebrew' | 'english';
 type MemoryLevelId = string;
@@ -582,6 +583,12 @@ function finishMemoryCelebration() {
 
 function openHostedActivity() {
   if (!hostedActivityContext) {
+    return;
+  }
+
+  if (hostedActivityContext.activityId === 'magic-letters') {
+    showScreen('magic-letters-screen');
+    openMagicLetters(hostedActivityContext, requireHostedActivitySession());
     return;
   }
 

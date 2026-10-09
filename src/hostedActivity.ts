@@ -2,7 +2,7 @@ import { GAME_LEVELS, TRAIL_STAGES } from '../prototype/shared/trail-catalog.mjs
 
 export const ACTIVITY_MESSAGE_VERSION = 1;
 
-export type HostedActivityId = 'memory-garden' | 'listening-shop' | 'magic-reveal' | 'magic-painter';
+export type HostedActivityId = 'memory-garden' | 'listening-shop' | 'magic-reveal' | 'magic-painter' | 'magic-letters';
 export type ProfileLanguage = 'en' | 'he';
 export type ProfileCharacter = 'princess' | 'dinosaur' | 'puppy' | 'unicorn';
 
@@ -36,11 +36,27 @@ export interface HostedActivitySession {
 export function readHostedActivityContext(): HostedActivityContext | null {
   const params = new URLSearchParams(window.location.search);
   const host = params.get('host');
+  const activityId = params.get('activity');
+
+  if (!host && activityId === 'magic-letters') {
+    const lang = (params.get('lang') === 'en' ? 'en' : 'he') as ProfileLanguage;
+    return {
+      activityId: 'magic-letters',
+      levelId: 'letters-poc',
+      profileId: 'poc-player',
+      profileName: lang === 'en' ? 'Lotem' : 'לוטם',
+      profileEmoji: '🌸',
+      profileLanguage: lang,
+      profileCharacter: 'princess',
+      stageId: 1,
+      destination: 'wonder',
+    };
+  }
+
   if (!host) {
     return null;
   }
 
-  const activityId = params.get('activity');
   const levelId = params.get('level');
   const profileId = params.get('profile');
   const profileName = params.get('profileName');
@@ -49,10 +65,16 @@ export function readHostedActivityContext(): HostedActivityContext | null {
   const profileCharacter = params.get('profileCharacter');
   const stageId = Number(params.get('stage'));
   const destination = params.get('destination');
-  const supportedActivities = new Set<HostedActivityId>(['memory-garden', 'listening-shop', 'magic-reveal', 'magic-painter']);
+  const supportedActivities = new Set<HostedActivityId>(['memory-garden', 'listening-shop', 'magic-reveal', 'magic-painter', 'magic-letters']);
   const supportedLanguages = new Set<ProfileLanguage>(['en', 'he']);
   const supportedCharacters = new Set<ProfileCharacter>(['princess', 'dinosaur', 'puppy', 'unicorn']);
-  const gameByActivity = { 'memory-garden': 'memory', 'listening-shop': 'shop', 'magic-reveal': 'reveal', 'magic-painter': 'painter' } as const;
+  const gameByActivity = {
+    'memory-garden': 'memory',
+    'listening-shop': 'shop',
+    'magic-reveal': 'reveal',
+    'magic-painter': 'painter',
+    'magic-letters': 'letters',
+  } as const;
   const game = gameByActivity[activityId as HostedActivityId];
 
   if ((destination !== 'wonder' && destination !== 'forest')
@@ -69,8 +91,8 @@ export function readHostedActivityContext(): HostedActivityContext | null {
     || !supportedLanguages.has(profileLanguage as ProfileLanguage)
     || !supportedCharacters.has(profileCharacter as ProfileCharacter)
     || !Number.isInteger(stageId)
-    || !TRAIL_STAGES.some(stage => stage.id === stageId)
-    || !GAME_LEVELS[game]?.some(level => level.id === levelId)
+    || (!TRAIL_STAGES.some(stage => stage.id === stageId) && activityId !== 'magic-letters')
+    || (activityId !== 'magic-letters' && !GAME_LEVELS[game]?.some(level => level.id === levelId))
     || PROFILE_EMOJI_BY_CHARACTER[profileCharacter as ProfileCharacter] !== profileEmoji) {
     throw new Error('Invalid hosted activity context');
   }
