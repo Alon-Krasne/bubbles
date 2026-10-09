@@ -10,17 +10,17 @@ export function openMagicPainter(context: HostedActivityContext, session: Hosted
   const root = document.getElementById('magic-painter-screen')!;
   root.innerHTML = template;
   const language = context.profileLanguage;
-  const wordRecording = language === 'en' ? vocabularyWordAudio(level.wordId) : hebrewWordAudio(level.wordId);
+  const wordRecording = (wordId: string) => language === 'en' ? vocabularyWordAudio(wordId) : hebrewWordAudio(wordId);
   const playNow = (sources: string[]) => {
     stopRecordedSpeech();
     playRecordedSequence(sources);
   };
   mountPainter(root, {
-    wordId: level.wordId,
+    wordPool: level.wordPool,
     language,
-    speakWord: () => playNow([wordRecording]),
-    speakGuidance: (letter: string) => playNow([
-      painterStartAudio(language), wordRecording, painterLetterAudio(language, letter),
+    speakWord: (wordId: string) => playNow([wordRecording(wordId)]),
+    speakGuidance: (wordId: string, letter: string) => playNow([
+      painterStartAudio(language), wordRecording(wordId), painterLetterAudio(language, letter),
     ]),
     speakLetter: (letter: string) => playNow([painterLetterAudio(language, letter)]),
     onExit: () => { stopRecordedSpeech(); session.exit(); },

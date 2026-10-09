@@ -1,4 +1,4 @@
-import { PAINTER_CHAPTER_WORDS } from './painter-content.mjs';
+import { PAINTER_CHAPTER_WORD_POOLS } from './painter-content.mjs';
 import { MAGIC_HOUSE_REQUESTS } from './magic-house-content.mjs';
 import { SHOP_ART_IDS } from './shop-art-ids.mjs';
 import { VOCABULARY } from './vocabulary-catalog.mjs';
@@ -439,7 +439,7 @@ export function generateTrail({ vocabulary = VOCABULARY, magicRequests = MAGIC_H
     } else if (game === 'house') {
       level = createMagicHouseLevelRecipe({ ...recipe, magicRequests });
     } else if (game === 'painter') {
-      level = freezeLevel({ id: levelId, title, difficultyRank: rank, wordId: PAINTER_CHAPTER_WORDS[chapterIndex] });
+      level = freezeLevel({ id: levelId, title, difficultyRank: rank, wordPool: PAINTER_CHAPTER_WORD_POOLS[chapterIndex] });
     } else {
       level = createRevealLevelRecipe(recipe);
     }

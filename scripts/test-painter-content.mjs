@@ -1,32 +1,54 @@
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
-import { PAINTER_WORDS, getPainterWord } from '../prototype/shared/painter-content.mjs';
+import { PAINTER_WORDS, PAINTER_CHAPTER_WORD_POOLS, getPainterWord } from '../prototype/shared/painter-content.mjs';
 import { TRAIL_STAGES, getGameLevel } from '../prototype/shared/trail-catalog.mjs';
 import { VOCABULARY } from '../prototype/shared/vocabulary-catalog.mjs';
 import { painterAudioClips } from './painter-audio-clips.mjs';
 
+const lowercaseCat = getPainterWord('cat', 'en', 'lowercase');
+assert.equal(lowercaseCat.word, 'cat', 'English words can be traced in lowercase print letters');
+assert.equal(lowercaseCat.letters.map(letter => letter.char).join(''), 'cat');
+assert.notDeepEqual(lowercaseCat.letters[0].strokes, getPainterWord('cat', 'en', 'uppercase').letters[0].strokes,
+  'lowercase letters have their own formation paths');
+
 const chapterCategories = ['animals', 'food', 'nature', 'transport', 'school', 'sports'];
+for (const id of Object.keys(PAINTER_WORDS)) {
+  const titlecase = getPainterWord(id, 'en', 'titlecase');
+  const lowercase = getPainterWord(id, 'en', 'lowercase');
+  const uppercase = getPainterWord(id, 'en', 'uppercase');
+  assert.equal(titlecase.word, uppercase.word[0] + lowercase.word.slice(1), 'word tracing capitalizes only the first letter');
+  assert.deepEqual(titlecase.letters[0], uppercase.letters[0], 'the first guide uses a capital print letter');
+  assert.deepEqual(titlecase.letters.slice(1), lowercase.letters.slice(1), 'the remaining guides use lowercase print letters');
+  assert.equal(getPainterWord(id, 'he', 'titlecase').word, getPainterWord(id, 'he').word);
+}
+assert.equal(PAINTER_CHAPTER_WORD_POOLS.length, 6);
+for (const [chapterIndex, pool] of PAINTER_CHAPTER_WORD_POOLS.entries()) {
+  assert.equal(pool.length, 2, 'every chapter offers two words to trace');
+  for (const id of pool) {
+    assert.equal(VOCABULARY.find(word => word.id === id).category, chapterCategories[chapterIndex]);
+  }
+}
 assert.equal(painterAudioClips('he').find(clip => clip.relativePath === 'letters/פ.mp3').transcript,
   'האות פֵּא', 'פ letter-name recording must request peh with a P sound');
 
 const stages = TRAIL_STAGES.filter(stage => stage.game === 'painter');
 assert.equal(stages.length, 6, 'one painter activity per chapter');
 assert.equal(new Set(stages.map(stage => stage.chapterIndex)).size, 6);
-assert.equal(new Set(stages.map(stage => getGameLevel('painter', stage.level).wordId)).size, 6);
+assert.equal(new Set(stages.flatMap(stage => getGameLevel('painter', stage.level).wordPool)).size, 12);
 for (const stage of stages) {
   assert.equal(stage.activity, 'magic-painter');
   const level = getGameLevel('painter', stage.level);
-  assert.equal(VOCABULARY.find(word => word.id === level.wordId).category,
-    chapterCategories[stage.chapterIndex], `chapter ${stage.chapterIndex + 1} Painter word matches its theme`);
-  for (const language of ['en', 'he']) {
-    const word = getPainterWord(level.wordId, language);
+  assert.deepEqual(level.wordPool, PAINTER_CHAPTER_WORD_POOLS[stage.chapterIndex]);
+  for (const wordId of level.wordPool) for (const [language, letterCase] of [['en', 'lowercase'], ['en', 'uppercase'], ['he', 'uppercase']]) {
+    const word = getPainterWord(wordId, language, letterCase);
     assert.ok(word.letters.length >= 3);
     assert.equal(word.letters.map(letter => letter.char).join(''), word.word);
     assert.ok(existsSync(new URL(`../prototype/${word.picture}`, import.meta.url)), word.picture);
     assert.ok(existsSync(new URL(`../src/assets/audio/vocabulary/${language}/words/${word.id}.mp3`, import.meta.url)));
     assert.ok(existsSync(new URL(`../src/assets/audio/vocabulary/${language}/ui/painter-start.mp3`, import.meta.url)));
     for (const letter of word.letters) {
-      assert.ok(existsSync(new URL(`../src/assets/audio/vocabulary/${language}/letters/${letter.char}.mp3`, import.meta.url)),
+      const recordingLetter = language === 'en' ? letter.char.toUpperCase() : letter.char;
+      assert.ok(existsSync(new URL(`../src/assets/audio/vocabulary/${language}/letters/${recordingLetter}.mp3`, import.meta.url)),
         `${language} letter name ${letter.char}`);
       assert.ok(letter.strokes.length > 0, letter.char);
       for (const stroke of letter.strokes) {
@@ -36,7 +58,7 @@ for (const stage of stages) {
     }
   }
 }
-assert.equal(Object.keys(PAINTER_WORDS).length, 6);
+assert.equal(Object.keys(PAINTER_WORDS).length, 12);
 // Ohio State ABC Lessons, p. 16/263: N starts at the top and pulls down.
 const nFirstStroke = getPainterWord('sun', 'en').letters[2].strokes[0];
 assert.equal(nFirstStroke.from.x, nFirstStroke.to.x);
@@ -93,4 +115,5 @@ assert.deepEqual(dStrokes[1].from, dStrokes[0].from, 'D curve starts again at th
 assert.notDeepEqual(getPainterWord('apple', 'he').letters[0].strokes, getPainterWord('apple', 'he').letters[3].strokes);
 assert.throws(() => getPainterWord('missing', 'en'), /Unknown painter word/);
 assert.throws(() => getPainterWord('apple', 'fr'), /Unknown painter language/);
-console.log('PASS: six bilingual painter stages have traceable words, pictures, and committed word recordings.');
+assert.throws(() => getPainterWord('cat', 'en', 'cursive'), /Unknown painter letter case/);
+console.log('PASS: six Painter stages offer 12 bilingual words, capital-first/lowercase/uppercase paths, pictures, and committed recordings.');

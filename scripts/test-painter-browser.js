@@ -17,7 +17,7 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
   const receive = event => { if (event.source === frame.contentWindow) messages.push(event.data); };
   window.addEventListener('message', receive);
   const state = () => JSON.parse(frame.contentWindow.render_game_to_text());
-  const load = async (level, language) => {
+  const load = async (level, language, letterCase = 'uppercase') => {
     const params = new URLSearchParams({ host:'world-map', activity:'magic-painter', level:`trail-painter-${level}`,
       stage: '5', profile:'painter-test', profileName:'בדיקה', profileEmoji:'🦄', profileCharacter:'unicorn',
       profileLanguage: language, destination:'wonder' });
@@ -26,6 +26,13 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
     frame.contentWindow.addEventListener('error', event => errors.push(event.message));
     frame.contentWindow.addEventListener('unhandledrejection', event => errors.push(String(event.reason)));
     check(`load ${level}/${language}`, state().game === 'magic-painter', state());
+    if (language === 'en') {
+      check(`capital first letter default ${level}`, state().letterCase === 'titlecase' &&
+        state().word === state().word[0].toUpperCase() + state().word.slice(1).toLowerCase(), state());
+      frame.contentDocument.querySelector(`[data-letter-case="${letterCase}"]`).click();
+    } else {
+      check(`Hebrew hides case controls ${level}`, frame.contentDocument.querySelector('#painter-letter-case').hidden);
+    }
   };
   const samplePath = path => {
     const length = path.getTotalLength();
@@ -194,6 +201,60 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
       frame.contentDocument.querySelector('#painter-finish').click();
       await wait(40);
       check(`completion once ${level}/${language}`,messages.length===before+1 && messages.at(-1).stars===3,messages.at(-1));
+    }
+
+    // Switching during the 700ms letter transition must cancel the old guide.
+    await load(1,'en','lowercase');
+    draw(points());
+    check('lowercase c completed',state().letterIdx===1 && state().inputLocked,state());
+    const chooseWord = id => {
+      const select=frame.contentDocument.querySelector('#painter-word');
+      select.value=id;
+      select.dispatchEvent(new frame.contentWindow.Event('change',{bubbles:true}));
+    };
+    chooseWord('panda');
+    frame.contentDocument.querySelector('[data-letter-case="uppercase"]').click();
+    await wait(740);
+    check('word and case switching cancel old transition',state().word==='PANDA' && state().letterIdx===0 &&
+      state().strokeIdx===0 && !state().inputLocked && state().mistakes===0,state());
+    path=points();fire('pointerdown',path[0]);fire('pointermove',{x:300,y:300});fire('pointerup',{x:300,y:300});
+    check('new word mistake is tracked',state().mistakes===1,state());
+    chooseWord('cat');
+    check('changing word resets score and reveal',state().mistakes===0 && state().letterIdx===0 &&
+      frame.contentDocument.querySelector('#art-color-wrap').style.maskImage.includes('rgba(0, 0, 0, 0)'),state());
+
+    // Capital-first words, lowercase practice, and new words in uppercase and Hebrew.
+    const pools=[['cat','panda'],['apple','soup'],['sun','moon'],['boat','bus'],['map','ruler'],['medal','baseball']];
+    for(let level=1;level<=6;level++) for(const [wordId,language,letterCase] of [
+      [pools[level-1][0],'en','titlecase'],[pools[level-1][1],'en','titlecase'],
+      [pools[level-1][0],'en','lowercase'],[pools[level-1][1],'en','lowercase'],
+      [pools[level-1][1],'en','uppercase'],[pools[level-1][1],'he','uppercase'],
+    ]) {
+      await load(level,language,letterCase);
+      const select=frame.contentDocument.querySelector('#painter-word');
+      check(`two chapter choices ${level}/${language}`,select.options.length===2 &&
+        [...select.options].map(option=>option.value).join(',')===pools[level-1].join(','));
+      chooseWord(wordId);
+      check(`selected word ${wordId}/${language}/${letterCase}`,state().wordId===wordId && state().letterIdx===0,state());
+      const audio=frame.contentDocument.querySelector('#recorded-speech');
+      for(let retry=0;retry<100 && audio.readyState<2;retry++) await wait(20);
+      check(`recorded guidance ${wordId}/${language}/${letterCase}`,audio.readyState>=2 && !audio.error &&
+        audio.dataset.sequenceLength==='3',{source:audio.src,error:audio.error});
+      let attempts=0;
+      while(!state().complete && attempts++<40) {
+        const before=state();draw(points());const after=state();
+        check(`new stroke ${wordId}/${language}/${letterCase}/${before.letterIdx}/${before.strokeIdx}`,
+          after.letterIdx>before.letterIdx || after.strokeIdx>before.strokeIdx,after);
+        if(after.inputLocked) await wait(740);
+      }
+      check(`new completion ${wordId}/${language}/${letterCase}`,state().complete && state().mistakes===0,state());
+      const img=frame.contentDocument.querySelector('#art-color-img');
+      check(`matching picture ${wordId}/${language}/${letterCase}`,img.naturalWidth>0 &&
+        img.src.endsWith(`/painter/${wordId}.webp`) && img.alt===state().word &&
+        frame.contentDocument.querySelector('#art-color-wrap').style.maskImage==='none');
+      const before=messages.length;
+      frame.contentDocument.querySelector('#painter-finish').click();await wait(40);
+      check(`new award ${wordId}/${language}/${letterCase}`,messages.length===before+1 && messages.at(-1).stars===3,messages.at(-1));
     }
     check('no browser errors',errors.length===0,errors);
     return {passed:results.length,failed:[],errors};
