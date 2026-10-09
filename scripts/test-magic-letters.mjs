@@ -9,6 +9,7 @@ import {
   getLetterHint,
   resetRound,
   dropLetter,
+  isSpellableWord,
 } from '../prototype/shared/magic-letters.mjs';
 
 // 1. normalizeWordLetters
@@ -174,6 +175,48 @@ assert.equal(r.tray.find((t) => t.id === hint.trayItemId).char, 'P');
 assert.equal(r.slots[1].currentChar, null, 'getLetterHint does not place');
 dropLetter(r, { trayItemId: tileFor(r, 'L').id }, 1);
 assert.deepEqual(getLetterHint(r), { type: 'remove', slotIndex: 1 });
+
+// 8e. Only words made purely of letters can be spelled; nothing is silently stripped
+assert.equal(isSpellableWord('פַּרְפַּר', 'he'), true, 'niqqud is allowed');
+assert.equal(isSpellableWord('ג׳ירפה', 'he'), false, 'geresh would misspell the word');
+assert.equal(isSpellableWord('תפוח אדמה', 'he'), false, 'two words');
+assert.equal(isSpellableWord('יו-יו', 'he'), false, 'hyphen');
+assert.equal(isSpellableWord('ילד/ה', 'he'), false, 'slash');
+assert.equal(isSpellableWord('apple', 'en'), true);
+assert.equal(isSpellableWord('ice cream', 'en'), false);
+assert.equal(isSpellableWord('yo-yo', 'en'), false);
+assert.throws(
+  () => createMagicLettersRound({ word: { id: 'giraffe', english: 'giraffe', hebrew: 'ג׳ירפה' }, language: 'he' }),
+  /cannot be spelled/,
+  'a round never strips marks out of a word',
+);
+assert.throws(
+  () => createMagicLettersRound({ word: { id: 'ice-cream', english: 'ice cream', hebrew: 'גלידה' }, language: 'en' }),
+  /cannot be spelled/,
+);
+
+// 8f. The tray never starts out spelling the answer, even with repeated letters
+const butterfly = { id: 'butterfly', english: 'butterfly', hebrew: 'פרפר' };
+for (const [language, rank] of [['he', 3], ['en', 3], ['en', 1]]) {
+  for (let seed = 0; seed < 200; seed += 1) {
+    // mulberry32: well mixed even for small seeds, so 200 seeds cover many orderings
+    let state = seed;
+    const random = () => {
+      state = (state + 0x6d2b79f5) | 0;
+      let t = Math.imul(state ^ (state >>> 15), 1 | state);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    const round = createMagicLettersRound({ word: butterfly, language, rank, random });
+    const answer = round.slots.filter((s) => !s.locked).map((s) => s.targetChar).join('');
+    const trayText = round.tray.map((t) => t.char).join('');
+    assert.notEqual(trayText, answer, `${language} rank ${rank} seed ${seed}: tray spells the answer`);
+  }
+}
+// A shuffle that keeps the original order is still forced out of order
+const identity = () => 0.999999;
+const unshuffled = createMagicLettersRound({ word: butterfly, language: 'he', rank: 3, random: identity });
+assert.notEqual(unshuffled.tray.map((t) => t.char).join(''), 'פרפר');
 
 // 9. Activity scoring integration
 import { calculateMasteryStars } from '../prototype/shared/activity-scoring.mjs';

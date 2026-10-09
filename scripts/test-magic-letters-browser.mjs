@@ -171,6 +171,12 @@ try {
     state = readState();
     assert.equal(state.hints, 2);
     assert.equal(placedCount(state), 0, `${language}: hint does not place a letter`);
+
+    // Pressing the lamp again while the same hint shows costs nothing
+    browser('click', '#ml-hint-btn');
+    browser('click', '#ml-hint-btn');
+    state = readState();
+    assert.equal(state.hints, 2, `${language}: repeating a showing hint is free`);
     const marks = hintMarks();
     const hintedSlot = state.slots.find((s) => s.currentChar === null);
     assert.equal(marks.slot, String(hintedSlot.index), `${language}: hint marks the next empty slot`);

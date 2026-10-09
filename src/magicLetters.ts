@@ -11,6 +11,7 @@ import {
   returnSlotItem,
   checkWordCompletion,
   getLetterHint,
+  isSpellableWord,
   normalizeWordLetters,
   resetRound,
 } from '../prototype/shared/magic-letters.mjs';
@@ -57,15 +58,15 @@ export function openMagicLetters(
     throw new Error('Element #magic-letters-screen not found');
   }
 
-  const language = context.profileLanguage || 'he';
+  const language = context.profileLanguage;
   const wordDir = language === 'en' ? 'ltr' : 'rtl';
   const rank = options.rank ?? 1;
   const wordsCount = options.wordsCount ?? 3;
 
-  // Filter words that have at least 4 letters in the profile language
+  // Single words of letters only, at least 4 letters long, in the learning language
   const eligibleWords = VOCAB_WORDS.filter((word) => {
-    const letters = normalizeWordLetters(language === 'en' ? word.english : word.hebrew, language);
-    return letters.length >= 4;
+    const text = language === 'en' ? word.english : word.hebrew;
+    return isSpellableWord(text, language) && normalizeWordLetters(text, language).length >= 4;
   });
 
   // Pick wordsCount words (deterministic or varied by profile/stage)
@@ -251,6 +252,8 @@ export function openMagicLetters(
       if (progress.phase !== 'solving' || isResetting) return;
       const hint = getLetterHint(currentRound);
       if (!hint) return;
+      // The same hint is already showing: pressing again must not cost another hint
+      if (JSON.stringify(hint) === JSON.stringify(activeHint)) return;
       progress.hints += 1;
       activeHint = hint;
       setStatus(hint.type === 'place' ? TEXT.hintPlace : TEXT.hintRemove, hint.type === 'place' ? 'normal' : 'warning');

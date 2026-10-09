@@ -9,6 +9,15 @@ export function normalizeWordLetters(wordText, language) {
   return [...wordText].filter((ch) => !/[\u0591-\u05C7\s]/.test(ch) && /[\u05D0-\u05EA]/.test(ch));
 }
 
+// A word can be spelled only if it is letters alone (Hebrew niqqud allowed). Spaces,
+// hyphens, slashes and geresh are part of the spelling, so such words are left out
+// instead of being stripped into a wrong spelling (ג׳ירפה is not גירפה).
+export function isSpellableWord(wordText, language) {
+  if (!wordText) return false;
+  if (language === 'en') return /^[A-Za-z]+$/.test(wordText);
+  return /^[\u05D0-\u05EA]+$/.test(wordText.replace(/[\u0591-\u05C7]/g, ''));
+}
+
 export function getAnchorIndices(letterCount, rank = 1) {
   if (letterCount < 4) return [];
   if (rank <= 1) {
@@ -39,6 +48,9 @@ export function createMagicLettersRound({
   random = Math.random,
 }) {
   const rawText = language === 'en' ? word.english : word.hebrew;
+  if (!isSpellableWord(rawText, language)) {
+    throw new Error(`Magic Letters word "${rawText}" cannot be spelled with letter tiles`);
+  }
   const letters = normalizeWordLetters(rawText, language);
 
   if (letters.length < 4) {
@@ -70,12 +82,11 @@ export function createMagicLettersRound({
 
   let tray = shuffleArray(trayPool, random);
 
-  // If shuffle happened to produce the exact original order and there's >1 tile, swap first two
-  if (
-    tray.length > 1 &&
-    tray.every((item, i) => item.originalIndex === trayPool[i].originalIndex)
-  ) {
-    [tray[0], tray[1]] = [tray[1], tray[0]];
+  // Compare letters, not tiles: with repeated letters (פרפר) different tiles can still
+  // spell the answer. Rotating by one always changes the letters unless all are identical.
+  const spellsAnswer = (items) => items.every((item, i) => item.char === trayPool[i].char);
+  if (tray.length > 1 && spellsAnswer(tray)) {
+    tray = [...tray.slice(1), tray[0]];
   }
 
   return {
