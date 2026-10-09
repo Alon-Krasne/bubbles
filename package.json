@@ -1,6 +1,6 @@
 {
   "name": "bubbles-game",
-  "version": "7.29.1",
+  "version": "7.30.0",
   "description": "בועות! - A cooperative bubble-catching game for two players",
   "main": "index.html",
   "scripts": {
@@ -9,7 +9,10 @@
     "dev": "vite",
     "start": "vite",
     "preview": "vite preview",
-    "test:trail": "node --experimental-strip-types scripts/test-trail-catalog.mjs && node scripts/test-journey-order.mjs && node scripts/test-magic-reveal.mjs",
+    "test:trail": "node --experimental-strip-types scripts/test-trail-catalog.mjs && node scripts/test-journey-order.mjs && node scripts/test-magic-reveal.mjs && node scripts/test-magic-letters.mjs",
+    "test:magic-letters": "node scripts/test-magic-letters.mjs",
+    "pretest:magic-letters-browser": "npm run build",
+    "test:magic-letters-browser": "node scripts/run-magic-letters-browser.mjs",
     "test:destinations": "node scripts/test-destination-saves.mjs",
     "test:track": "node scripts/test-track-progress.mjs",
     "test:vocabulary": "node --experimental-strip-types scripts/test-vocabulary.mjs",

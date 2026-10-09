@@ -1,0 +1,599 @@
+/* Magic Letters (אותיות הקסם) - Word spelling & letter ordering puzzle */
+
+#magic-letters-screen {
+  --ml-ink: #1e3a34;
+  --ml-paper: #fffdf7;
+  --ml-paper-gold: #fff5dc;
+  --ml-gold: #e2c275;
+  --ml-gold-dark: #b89543;
+  --ml-teal: #2a5a58;
+  --ml-teal-dark: #122c2b;
+  --ml-success: #78c973;
+  --ml-success-bg: #e6f7e4;
+  --ml-wrong: #f27272;
+  --ml-wrong-bg: #fde8e8;
+  --ml-shadow: rgba(10, 28, 25, 0.25);
+  
+  display: none;
+  flex-direction: column;
+  min-height: 100vh;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: radial-gradient(ellipse at 50% 0%, #2f5f66 0%, #152b36 75%);
+  color: #fff8ec;
+  font-family: 'Rubik', sans-serif;
+  padding: 16px 24px 32px;
+}
+
+#magic-letters-screen.active {
+  display: flex;
+}
+
+/* :where() keeps this reset at zero specificity so the class rules below can set spacing */
+:where(#magic-letters-screen *) {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Header */
+/* Same layout as the other activities: the shared hint lamp is fixed top-right,
+   so the header leaves room for it and the back button sits beside it. */
+.ml-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto 16px;
+  gap: 24px;
+  padding-inline-start: 120px;
+  flex-shrink: 0;
+}
+
+.ml-header h1 {
+  font-family: 'Secular One', 'Rubik', sans-serif;
+  font-size: clamp(24px, 3.5vw, 36px);
+  color: #ffe5a3;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.ml-btn {
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 16px;
+  min-height: 46px;
+  padding: 10px 18px;
+  border-radius: 16px;
+  border: 1px solid var(--ml-gold);
+  border-bottom: 4px solid var(--ml-gold-dark);
+  background: var(--ml-paper);
+  color: var(--ml-ink);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform 0.12s ease, background 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 12px var(--ml-shadow);
+}
+
+.ml-btn:hover {
+  transform: translateY(-2px);
+  background: #ffffff;
+}
+
+.ml-btn:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.ml-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.ml-btn:focus-visible {
+  outline: 3px solid #ffe5a3;
+  outline-offset: 3px;
+}
+
+/* Stage Container */
+.ml-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  gap: 20px;
+}
+
+/* Word Card / Preview Card */
+.ml-card-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 580px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 2px solid rgba(255, 225, 160, 0.35);
+  border-radius: 28px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+}
+
+.ml-clue-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ml-clue-drawing {
+  font-size: clamp(52px, 8vw, 76px);
+  line-height: 1;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.35));
+  animation: ml-float 3s ease-in-out infinite;
+}
+
+.ml-audio-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--ml-gold);
+  border-bottom: 3px solid var(--ml-gold-dark);
+  background: var(--ml-paper);
+  color: var(--ml-ink);
+  font-size: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px var(--ml-shadow);
+  transition: transform 0.15s ease;
+}
+
+.ml-audio-btn:hover {
+  transform: scale(1.08);
+}
+
+.ml-audio-btn:active {
+  transform: scale(0.95);
+}
+
+/* Preview Mode Banner */
+.ml-preview-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+
+.ml-preview-word {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 6px 0;
+}
+
+.ml-preview-tile {
+  width: clamp(52px, 7.5vw, 68px);
+  height: clamp(62px, 8.5vw, 78px);
+  background: var(--ml-paper-gold);
+  border: 2px solid var(--ml-gold);
+  border-bottom: 5px solid var(--ml-gold-dark);
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Secular One', 'Rubik', sans-serif;
+  font-size: clamp(28px, 4.5vw, 38px);
+  color: var(--ml-ink);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  animation: ml-pop-in 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28) backwards;
+}
+
+.ml-ready-btn {
+  font-size: 19px;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, #ffe28a, #f7c752);
+  border-color: #fcebb8;
+  border-bottom-color: #bd891d;
+  color: #4a3400;
+  box-shadow: 0 6px 20px rgba(247, 199, 82, 0.4);
+}
+
+.ml-ready-btn:hover {
+  background: linear-gradient(135deg, #ffea9f, #fad068);
+}
+
+/* Slots Row (Assembly Phase) */
+.ml-slots-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 10px 0;
+  min-height: 84px;
+}
+
+.ml-slot {
+  width: clamp(54px, 7.5vw, 70px);
+  height: clamp(64px, 8.5vw, 82px);
+  border-radius: 18px;
+  border: 2px dashed rgba(255, 230, 160, 0.55);
+  background: rgba(10, 30, 32, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: default;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+}
+
+.ml-slot.has-char {
+  border-style: solid;
+  cursor: pointer;
+  background: var(--ml-paper);
+  border-color: var(--ml-gold);
+  border-bottom: 5px solid var(--ml-gold-dark);
+  box-shadow: 0 6px 16px var(--ml-shadow);
+}
+
+.ml-slot.has-char:hover:not(.locked) {
+  transform: translateY(-2px);
+  border-color: #ffd885;
+}
+
+.ml-slot.has-char:active:not(.locked) {
+  transform: translateY(1px);
+}
+
+.ml-slot.locked {
+  background: #eef8ee;
+  border-color: #8ed086;
+  border-bottom: 5px solid #5a9e52;
+  color: #1a4e1b;
+  cursor: default;
+}
+
+.ml-slot-char {
+  font-family: 'Secular One', 'Rubik', sans-serif;
+  font-size: clamp(28px, 4.5vw, 38px);
+  font-weight: 700;
+  color: var(--ml-ink);
+  pointer-events: none;
+}
+
+.ml-slot.locked .ml-slot-char {
+  color: #174f1d;
+}
+
+.ml-slot.locked::after {
+  content: '★';
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 11px;
+  color: #489b43;
+  opacity: 0.85;
+}
+
+.ml-slot.empty-dot::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 225, 150, 0.35);
+}
+
+.ml-slot.correct {
+  background: var(--ml-success-bg);
+  border-color: var(--ml-success);
+  border-bottom-color: #4e9c49;
+  animation: ml-bounce-success 0.4s ease;
+}
+
+.ml-slot.misplaced {
+  background: var(--ml-wrong-bg);
+  border-color: var(--ml-wrong);
+  border-bottom-color: #be4343;
+  animation: ml-shake 0.35s ease;
+}
+
+/* Tray of Shuffled Letters */
+.ml-tray-panel {
+  width: 100%;
+  max-width: 600px;
+  background: rgba(14, 38, 42, 0.7);
+  border: 1px solid rgba(255, 230, 160, 0.25);
+  border-radius: 24px;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
+}
+
+.ml-tray-items {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  min-height: 80px;
+  align-items: center;
+}
+
+.ml-tile-btn {
+  width: clamp(56px, 7.5vw, 70px);
+  height: clamp(64px, 8.5vw, 82px);
+  border-radius: 18px;
+  border: 2px solid var(--ml-gold);
+  border-bottom: 5px solid var(--ml-gold-dark);
+  background: var(--ml-paper);
+  color: var(--ml-ink);
+  font-family: 'Secular One', 'Rubik', sans-serif;
+  font-size: clamp(28px, 4.5vw, 38px);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 16px var(--ml-shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
+}
+
+.ml-tile-btn:hover:not(:disabled) {
+  transform: translateY(-4px) scale(1.03);
+  background: #ffffff;
+}
+
+.ml-tile-btn:active:not(:disabled) {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.ml-tile-btn:disabled {
+  opacity: 0.18;
+  transform: scale(0.92);
+  cursor: default;
+  border-style: dashed;
+}
+
+.ml-tile-btn.hint-highlight {
+  border-color: #ff9b26;
+  background: #fff0d4;
+  box-shadow: 0 0 20px #ffa834;
+  animation: ml-pulse 0.8s infinite alternate;
+}
+
+/* Hint marks: the hint points at the move, the child makes it */
+.ml-slot.hint-target {
+  border-style: solid;
+  border-color: #ff9b26;
+  background: rgba(255, 168, 52, 0.25);
+  animation: ml-pulse 0.8s infinite alternate;
+}
+
+.ml-slot.hint-remove {
+  border-color: var(--ml-wrong);
+  box-shadow: 0 0 18px var(--ml-wrong);
+  animation: ml-shake 0.5s ease 2;
+}
+
+/* Success sparkles burst once from the finished word */
+.ml-board {
+  position: relative;
+}
+
+.ml-sparkles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ml-sparkle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 24px;
+  color: #ffe08a;
+  text-shadow: 0 0 10px #ffd04d;
+  opacity: 0;
+  animation: ml-sparkle-burst 1s ease-out var(--delay) both;
+}
+
+/* Drag and drop */
+.ml-tile-btn:not(:disabled),
+.ml-slot.has-char:not(.locked) {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.ml-tile-btn.drag-source,
+.ml-slot.drag-source {
+  opacity: 0.3;
+}
+
+.ml-slot.drop-target {
+  border-style: solid;
+  border-color: #ffd885;
+  background: rgba(255, 216, 133, 0.28);
+  transform: scale(1.08);
+}
+
+.ml-tray-panel.drop-target {
+  border-color: rgba(255, 230, 160, 0.8);
+  background: rgba(24, 62, 68, 0.85);
+}
+
+.ml-drag-ghost {
+  position: fixed;
+  z-index: 10001;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  border: 2px solid #e2c275;
+  border-bottom: 5px solid #b89543;
+  background: #ffffff;
+  color: #1e3a34;
+  font-family: 'Secular One', 'Rubik', sans-serif;
+  font-size: clamp(28px, 4.5vw, 38px);
+  font-weight: 700;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.35);
+  transform: scale(1.1) rotate(-4deg);
+}
+
+/* Message & Guidance */
+.ml-status-text {
+  min-height: 36px;
+  text-align: center;
+  font-size: clamp(16px, 2.2vw, 19px);
+  font-weight: 500;
+  color: #fceec5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.ml-status-text.success {
+  color: #a4f29d;
+  font-weight: 700;
+}
+
+.ml-status-text.warning {
+  color: #ffb8b8;
+}
+
+/* Footer / Progress */
+.ml-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 600px;
+  margin-top: 8px;
+  padding: 0 8px;
+}
+
+.ml-progress-pill {
+  background: rgba(255, 255, 255, 0.12);
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #cce5df;
+}
+
+.ml-next-btn {
+  background: #d4f4c7;
+  color: #174c1a;
+  border-color: #8ed684;
+  border-bottom-color: #4ea843;
+  padding: 10px 22px;
+  font-size: 17px;
+}
+
+.ml-next-btn:hover {
+  background: #e4f9db;
+}
+
+/* Animations */
+@keyframes ml-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes ml-pop-in {
+  0% { transform: scale(0.4); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes ml-bounce-success {
+  0% { transform: scale(1); }
+  40% { transform: translateY(-8px) scale(1.12); }
+  70% { transform: translateY(2px) scale(0.97); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+@keyframes ml-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+@keyframes ml-sparkle-burst {
+  0% { opacity: 1; transform: translate(-50%, -50%) rotate(var(--angle)) translateY(0) scale(0.4); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--angle)) translateY(-130px) scale(1.1); }
+}
+
+/* Glow only: the hinted letter must stay still so small fingers can grab it */
+@keyframes ml-pulse {
+  0% { box-shadow: 0 0 8px #ffa834; }
+  100% { box-shadow: 0 0 26px #ff8214; }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .ml-clue-drawing { animation: none; }
+  .ml-preview-tile { animation: none; }
+  .ml-slot.correct { animation: none; }
+  .ml-slot.misplaced { animation: none; }
+  .ml-tile-btn.hint-highlight { animation: none; }
+  .ml-slot.hint-target, .ml-slot.hint-remove { animation: none; }
+  .ml-sparkle {
+    animation: none;
+    opacity: 0.9;
+    transform: translate(-50%, -50%) rotate(var(--angle)) translateY(-110px);
+  }
+  .ml-btn, .ml-tile-btn, .ml-slot { transition: none; }
+}
+
+/* Small Screens / Mobile Responsive */
+@media (max-width: 600px) {
+  #magic-letters-screen {
+    padding: 12px 14px 24px;
+  }
+  .ml-header {
+    margin-bottom: 12px;
+    padding-inline-start: 0;
+    padding-top: 60px;
+  }
+  .ml-card-wrap {
+    padding: 16px 12px;
+    border-radius: 22px;
+  }
+  .ml-clue-drawing {
+    font-size: 48px;
+  }
+  .ml-slots-row {
+    gap: 6px;
+  }
+  .ml-tray-panel {
+    padding: 14px 10px;
+  }
+  .ml-tray-items {
+    gap: 8px;
+  }
+}
