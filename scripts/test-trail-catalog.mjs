@@ -90,7 +90,7 @@ const heLen = (w) => [...w.hebrew].filter((c) => /[א-ת]/.test(c)).length;
 const vocabById = new Map(VOCAB_WORDS.map((w) => [w.id, w]));
 
 for (const level of GENERATED_GAME_LEVELS.reveal) {
-  const activeWords = level.wordPool.slice(0, level.wordCount).map((id) => vocabById.get(id));
+  const activeWords = level.wordPool.map((id) => vocabById.get(id));
   if (level.difficultyRank === 1) {
     assert.ok(
       activeWords.every((w) => enLen(w) <= 4 && heLen(w) <= 4),
