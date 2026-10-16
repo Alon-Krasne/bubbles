@@ -12,6 +12,8 @@ const fixtures = [
   ['magic-house','trail-house-1','3','.object-button'],
   ['magic-reveal','trail-reveal-1','4','#reveal-keyboard'],
 ];
+// Repeat a draw to check that repeated names are valid, then cover middle/end choices.
+const customerDraws = [[0,'נוני'],[0,'נוני'],[3/8,'לילי'],[6/8,'קיקי'],[0.999,'בוני']];
 try {
   for (const language of ['en','he']) for (const [activity,level,stage,selector] of fixtures) {
     const snapshots=[];
@@ -25,9 +27,29 @@ try {
       const snapshot=evaluate(`(() => {
         const ids = selector => [...document.querySelectorAll(selector)].map(el => ({...el.dataset}));
         return { memory:ids('.memory-card'), shelf:ids('.shop-item-tile'), drawer:ids('.object-button'),
-          state:window.render_game_to_text ? JSON.parse(window.render_game_to_text()) : null,
-          customer:document.querySelector('#shop-customer-name')?.textContent };
+          state:window.render_game_to_text ? JSON.parse(window.render_game_to_text()) : null };
       })()`);
+      if(activity==='listening-shop') {
+        snapshot.customer=evaluate(`(async () => {
+          const originalRandom=Math.random;
+          Math.random=()=>${customerDraws[replay][0]};
+          try {
+            const order=JSON.parse(window.render_game_to_text());
+            for(const target of order.targets) for(let item=target.served;item<target.required;item++) {
+              document.querySelector('[data-item-id="'+target.itemId+'"]').click();
+            }
+            const deadline=Date.now()+10000;
+            while(Date.now()<deadline) {
+              const state=JSON.parse(window.render_game_to_text());
+              if(state.servedCustomers===1 && state.targets.every(target=>target.served===0)) {
+                return document.querySelector('#shop-customer-name').textContent;
+              }
+              await new Promise(resolve=>setTimeout(resolve,25));
+            }
+            throw new Error('Shop did not advance to the controlled customer');
+          } finally { Math.random=originalRandom; }
+        })()`);
+      }
       snapshots.push(snapshot);
     }
     const unique = values => new Set(values.map(value=>JSON.stringify(value))).size;
@@ -37,7 +59,8 @@ try {
     } else if(activity==='listening-shop') {
       assert.ok(unique(snapshots.map(s=>s.state.targets))>1,'Shop must vary requested products');
       assert.ok(unique(snapshots.map(s=>s.shelf))>1,'Shop must vary shelf content and order');
-      assert.ok(unique(snapshots.map(s=>s.customer))>1,'Shop must vary customers');
+      assert.deepEqual(snapshots.map(s=>s.customer),customerDraws.map(([,name])=>name),
+        'Shop customer names must follow controlled draws, including repeated names');
     } else if(activity==='magic-house') {
       assert.ok(unique(snapshots.map(s=>s.state.requestIds))>1,'House must vary request order');
       assert.ok(unique(snapshots.map(s=>s.state.requestIds.toSorted()))>1,'House must vary request sets');
