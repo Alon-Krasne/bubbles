@@ -153,7 +153,7 @@ try {
   assert.deepEqual(result.failed, [], JSON.stringify(result));
   assert.deepEqual(result.errors, [], JSON.stringify(result));
   assertBrowserClean();
-  console.log(`PASS: ${result.passed} Painter browser checks across 12 words, capital-first/lowercase/uppercase English and Hebrew.`);
+  console.log(`PASS: ${result.passed} Painter browser checks across all six randomized stages, both languages and destinations.`);
 } finally {
   browser('close');
 }

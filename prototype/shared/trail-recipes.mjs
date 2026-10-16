@@ -1,4 +1,4 @@
-import { PAINTER_CHAPTER_WORD_POOLS } from './painter-content.mjs';
+import { PAINTER_WORD_IDS } from './painter-content.mjs';
 import { MAGIC_HOUSE_REQUESTS } from './magic-house-content.mjs';
 import { SHOP_ART_IDS } from './shop-art-ids.mjs';
 import { VOCABULARY } from './vocabulary-catalog.mjs';
@@ -253,8 +253,8 @@ export function createShopLevelRecipe({ levelId, rank, title, categories, index,
 }
 
 export function createMagicHouseLevelRecipe({ levelId, rank, title, magicRequests = MAGIC_HOUSE_REQUESTS }) {
-  // Every level draws from the whole authored request pool so the two six-request
-  // room layouts stay compatible; difficulty comes from requestCount and help.
+  // Every level draws from the whole recorded request pool; room layouts keep
+  // placements compatible, while difficulty comes from requestCount and help.
   const requestIds = unique(magicRequests.map((request) => request.id));
   const requestCount = Math.min(6, 2 + rank, requestIds.length);
   const drawerSize = Math.min(8, Math.max(getLargestMagicHouseTargetCount(requestIds, requestCount), requestCount + 2));
@@ -304,16 +304,11 @@ export function createRevealLevelRecipe({ levelId, rank, title, categories, inde
     throw new Error(`Reveal level ${levelId} needs ${count} words at rank ${rank}, found ${candidates.length}`);
   }
 
-  const shift = ((offset % candidates.length) + candidates.length) % candidates.length;
-  const rotated = [...candidates.slice(shift), ...candidates.slice(0, shift)];
-  const selected = rotated.slice(0, count);
-  const pool = unique([...selected, ...sorted]);
-
   return Object.freeze({
     id: levelId,
     title,
     difficultyRank: rank,
-    wordPool: pool,
+    wordPool: Object.freeze(candidates),
     wordCount: count,
     picture: ((offset) % 8) + 2,
   });
@@ -439,7 +434,8 @@ export function generateTrail({ vocabulary = VOCABULARY, magicRequests = MAGIC_H
     } else if (game === 'house') {
       level = createMagicHouseLevelRecipe({ ...recipe, magicRequests });
     } else if (game === 'painter') {
-      level = freezeLevel({ id: levelId, title, difficultyRank: rank, wordPool: PAINTER_CHAPTER_WORD_POOLS[chapterIndex] });
+      level = freezeLevel({ id: levelId, title, difficultyRank: rank,
+        wordCount: Math.ceil(rank / 2), wordPool: PAINTER_WORD_IDS });
     } else {
       level = createRevealLevelRecipe(recipe);
     }

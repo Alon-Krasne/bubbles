@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
-import { PAINTER_WORDS, PAINTER_CHAPTER_WORD_POOLS, getPainterWord } from '../prototype/shared/painter-content.mjs';
+import { PAINTER_WORDS, PAINTER_WORD_IDS, getPainterWord } from '../prototype/shared/painter-content.mjs';
 import { TRAIL_STAGES, getGameLevel } from '../prototype/shared/trail-catalog.mjs';
 import { VOCABULARY } from '../prototype/shared/vocabulary-catalog.mjs';
 import { painterAudioClips } from './painter-audio-clips.mjs';
@@ -11,7 +11,6 @@ assert.equal(lowercaseCat.letters.map(letter => letter.char).join(''), 'cat');
 assert.notDeepEqual(lowercaseCat.letters[0].strokes, getPainterWord('cat', 'en', 'uppercase').letters[0].strokes,
   'lowercase letters have their own formation paths');
 
-const chapterCategories = ['animals', 'food', 'nature', 'transport', 'school', 'sports'];
 for (const id of Object.keys(PAINTER_WORDS)) {
   const titlecase = getPainterWord(id, 'en', 'titlecase');
   const lowercase = getPainterWord(id, 'en', 'lowercase');
@@ -21,24 +20,18 @@ for (const id of Object.keys(PAINTER_WORDS)) {
   assert.deepEqual(titlecase.letters.slice(1), lowercase.letters.slice(1), 'the remaining guides use lowercase print letters');
   assert.equal(getPainterWord(id, 'he', 'titlecase').word, getPainterWord(id, 'he').word);
 }
-assert.equal(PAINTER_CHAPTER_WORD_POOLS.length, 6);
-for (const [chapterIndex, pool] of PAINTER_CHAPTER_WORD_POOLS.entries()) {
-  assert.equal(pool.length, 2, 'every chapter offers two words to trace');
-  for (const id of pool) {
-    assert.equal(VOCABULARY.find(word => word.id === id).category, chapterCategories[chapterIndex]);
-  }
-}
+assert.ok(PAINTER_WORD_IDS.every(id => VOCABULARY.some(word => word.id === id)));
 assert.equal(painterAudioClips('he').find(clip => clip.relativePath === 'letters/פ.mp3').transcript,
   'האות פֵּא', 'פ letter-name recording must request peh with a P sound');
 
 const stages = TRAIL_STAGES.filter(stage => stage.game === 'painter');
 assert.equal(stages.length, 6, 'one painter activity per chapter');
 assert.equal(new Set(stages.map(stage => stage.chapterIndex)).size, 6);
-assert.equal(new Set(stages.flatMap(stage => getGameLevel('painter', stage.level).wordPool)).size, 12);
+assert.equal(new Set(stages.flatMap(stage => getGameLevel('painter', stage.level).wordPool)).size, 13);
 for (const stage of stages) {
   assert.equal(stage.activity, 'magic-painter');
   const level = getGameLevel('painter', stage.level);
-  assert.deepEqual(level.wordPool, PAINTER_CHAPTER_WORD_POOLS[stage.chapterIndex]);
+  assert.deepEqual(level.wordPool, PAINTER_WORD_IDS, 'stages draw from the full illustrated vocabulary');
   for (const wordId of level.wordPool) for (const [language, letterCase] of [['en', 'lowercase'], ['en', 'uppercase'], ['he', 'uppercase']]) {
     const word = getPainterWord(wordId, language, letterCase);
     assert.ok(word.letters.length >= 3);
@@ -58,7 +51,7 @@ for (const stage of stages) {
     }
   }
 }
-assert.equal(Object.keys(PAINTER_WORDS).length, 12);
+assert.equal(Object.keys(PAINTER_WORDS).length, 13);
 // Ohio State ABC Lessons, p. 16/263: N starts at the top and pulls down.
 const nFirstStroke = getPainterWord('sun', 'en').letters[2].strokes[0];
 assert.equal(nFirstStroke.from.x, nFirstStroke.to.x);
@@ -116,4 +109,4 @@ assert.notDeepEqual(getPainterWord('apple', 'he').letters[0].strokes, getPainter
 assert.throws(() => getPainterWord('missing', 'en'), /Unknown painter word/);
 assert.throws(() => getPainterWord('apple', 'fr'), /Unknown painter language/);
 assert.throws(() => getPainterWord('cat', 'en', 'cursive'), /Unknown painter letter case/);
-console.log('PASS: six Painter stages offer 12 bilingual words, capital-first/lowercase/uppercase paths, pictures, and committed recordings.');
+console.log('PASS: six Painter stages offer 13 bilingual words, capital-first/lowercase/uppercase paths, pictures, and committed recordings.');
