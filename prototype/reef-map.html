@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#c8ebe6">
+  <title>השונית הזוהרת · מפת המסע</title>
+  <link rel="stylesheet" href="./reef-map.css">
+</head>
+<body>
+  <svg class="icon-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="icon-memory" viewBox="0 0 32 32"><rect x="5" y="5" width="16" height="21" rx="4" transform="rotate(-12 13 15)"/><rect x="13" y="7" width="15" height="21" rx="4"/><path d="m18 17 3 3 4-6"/></symbol>
+    <symbol id="icon-shop" viewBox="0 0 32 32"><path d="M5 13v15h22V13M3 13l4-8h18l4 8M3 13c0 5 7 5 7 0 0 5 6 5 6 0 0 5 6 5 6 0 0 5 7 5 7 0M12 28V18h8v10"/></symbol>
+    <symbol id="icon-house" viewBox="0 0 32 32"><path d="m3 14 13-11 13 11M7 12v16h18V12M13 28V18h6v10"/><path d="m23 3 1 3 3 1-3 1-1 3-1-3-3-1 3-1Z"/></symbol>
+    <symbol id="icon-reveal" viewBox="0 0 32 32"><rect x="4" y="5" width="24" height="22" rx="5"/><path d="m7 24 7-9 5 6 3-4 5 7"/><circle cx="22" cy="11" r="2"/></symbol>
+    <symbol id="icon-painter" viewBox="0 0 32 32"><path d="M11 20 24 4c3-3 7 1 4 4L14 23M12 20c-6-3-5 5-9 7 5 3 13 0 11-5Z"/></symbol>
+    <symbol id="icon-play" viewBox="0 0 32 32"><path d="m12 7 15 9-15 9Z"/></symbol>
+    <symbol id="icon-compass" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12"/><path d="m20 10-3 9-7 3 3-9Z"/></symbol>
+    <symbol id="icon-lock" viewBox="0 0 32 32"><rect x="7" y="14" width="18" height="14" rx="4"/><path d="M11 14V9a5 5 0 0 1 10 0v5M16 20v3"/></symbol>
+    <symbol id="icon-shell" viewBox="0 0 32 32"><path d="M16 28C-6 18 6-5 16 7 26-5 38 18 16 28ZM16 28V8M16 28 7 10M16 28l9-18"/></symbol>
+  </svg>
+
+  <main class="reef-screen">
+    <header class="map-header">
+      <a class="round-control back-link" href="./world-map.html" aria-label="חזרה למפת העולמות" title="חזרה לעולמות">↗</a>
+      <div class="heading"><p>עולם 2 · מסע חדש מתחת למים</p><h1>השונית הזוהרת</h1></div>
+      <button class="album-button" id="open-album" type="button" aria-label="סיפורי השונית" title="סיפורי השונית"><svg aria-hidden="true"><use href="#icon-play"/></svg><span>סיפורי השונית</span><small>10</small></button>
+    </header>
+
+    <section class="map-viewport" id="map-viewport" aria-label="מפת השונית, 36 תחנות. אפשר לגלול כדי לחקור את המפה" tabindex="0">
+      <div class="map-stage" id="map-stage">
+        <img class="map-art" src="./assets/reef/map.webp" alt="שונית אלמוגים עם ספינה טבועה, אצות ופנסים, גשר זוהר ומגדלור בצורת קונכייה" draggable="false">
+        <div class="sea-light light-one" aria-hidden="true"></div><div class="sea-light light-two" aria-hidden="true"></div>
+        <svg class="route-art" viewBox="0 0 1600 1073" preserveAspectRatio="none" aria-hidden="true"><path id="route-shadow"/><path id="route-base"/><path id="route-thread"/></svg>
+        <div id="chapter-labels" aria-hidden="true"></div>
+        <nav id="stage-stops" aria-label="תחנות המסע"></nav>
+        <div class="traveller" aria-hidden="true"><img src="./assets/reef/nevet.webp" alt=""><span>כאן מתחילים!</span></div>
+        <div class="map-sparkles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+    </section>
+
+    <nav class="map-tools" aria-label="ניווט במפה">
+      <button type="button" id="go-start" title="לתחילת המסע"><svg aria-hidden="true"><use href="#icon-compass"/></svg><span>לתחילת המסע</span></button>
+      <button type="button" id="go-finish" title="אל מגדלור הפנינה"><svg aria-hidden="true"><use href="#icon-shell"/></svg><span>אל המגדלור</span></button>
+    </nav>
+
+    <section class="stage-card" aria-labelledby="stage-title">
+      <div class="activity-token" id="activity-token"><svg aria-hidden="true"><use id="activity-icon" href="#icon-memory"/></svg></div>
+      <div class="stage-copy"><p id="stage-kicker"></p><h2 id="stage-title"></h2><p id="stage-description"></p></div>
+      <button class="story-button" id="stage-story" type="button"><svg aria-hidden="true"><use href="#icon-play"/></svg><span>הסיפור בדרך</span></button>
+      <p class="preview-note"><span aria-hidden="true">✦</span> סיור במפה · המשחקים ייפתחו בהמשך</p>
+    </section>
+    <p class="map-caption">36 תחנות קטנות. שלושה חברים. שונית אחת שמחכה לאור.</p>
+  </main>
+
+  <dialog class="story-dialog" id="story-dialog" aria-labelledby="album-title">
+    <header><div><p>כל החברים, כל הסיפורים</p><h2 id="album-title">סיפורי השונית</h2></div><button class="round-control" id="close-album" type="button" aria-label="סגירת סיפורי השונית">×</button></header>
+    <div class="album-content"><div class="story-screen"><video id="story-video" controls playsinline preload="none"></video><h3 id="story-title"></h3><p id="story-when"></p><p class="video-error" id="video-error" role="alert" hidden>הסרטון לא נטען. אפשר לפתוח אותו שוב מהרשימה.</p></div><nav class="story-list" id="story-list" aria-label="בחירת סיפור"></nav></div>
+    <p class="album-note">תצוגה מקדימה: אפשר לצפות בכל הסיפורים. אין שינוי בהתקדמות במשחק.</p>
+  </dialog>
+  <script type="module" src="./reef-map.js"></script>
+</body>
+</html>
