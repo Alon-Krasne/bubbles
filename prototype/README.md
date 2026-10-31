@@ -14,6 +14,16 @@ The root opens with a profile chooser. Profiles have a stable ID, name, one of f
 
 Memory Garden and Listening Shop run inside the trail's hosted activity shell. Their normal standalone navigation remains unchanged, while hosted completion and exit events use the shared same-origin protocol in `src/hostedActivity.ts`. English-learning activities use spoken English with image choices and keep English answer cards free of drawings. Hebrew-learning activities use written Hebrew prompts and choices without answer images or pre-answer speech.
 
+## Reef map preview
+
+Open `http://127.0.0.1:5173/prototype/reef-map.html` with `npm run dev` running.
+
+This standalone World 2 map has 36 selectable information stops across six chapters, the shared activity rotation (with the Reef storybook's Memory → Shop → House finale), a drawn pearl trail, and a local album containing the bridge and nine reef videos. Drag/scroll to explore; the compass returns to the start and the shell button goes to the lighthouse. Stage selection opens information, not unfinished activities. Arrow keys move between stops; the album supports Escape, returns focus to its opener, and pauses video when closed.
+
+It does not read or write profiles, route progress, unlock flags or saved stars. The opening Nevet portrait is a preview illustration, not a new world-specific friend selection. All ten stories are accessible for review; runtime milestone gating and captions are not implemented here. Existing Forest/Wonder screens are unchanged.
+
+Artwork and media provenance: `assets/reef/README.md`. Presentation data: `shared/reef-map.mjs`. Run `npm run test:reef-map` for route spacing, milestone order, media presence and preview isolation checks. `npm run build` includes this page and its assets in `dist/prototype/` through the existing copy step.
+
 ## Magic House
 
 Open `http://127.0.0.1:5173/prototype/magic-house.html` to test the bedroom directly.
