@@ -1,6 +1,6 @@
 # Glowing Reef map and stories
 
-These assets serve World 2 of the Forest journey at `prototype/reef-map.html`.
+These assets serve stages 37–72 of the Forest journey at `prototype/world-map.html`.
 
 - `map.webp`: one new 3:2 painterly environment generated with `gemini-3.1-flash-image` through Google's Interactions API, then resized to 2400px width and encoded as WebP quality 88. Generated output estimate: $0.101, excluding reference/text tokens. Reference scenery comes from the project's approved Reef artwork. The map has no baked-in labels, route, characters or stage numbers; those remain live DOM/SVG elements.
 - `nevet.webp`, `adva.webp`, `zohar.webp`: cropped from the approved `trio-underwater-v5.png` reference sheet. The map shows the companion selected on the player's Forest track.

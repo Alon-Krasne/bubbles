@@ -1,4 +1,4 @@
-import { getDestinationGameLevels, REEF_TRAIL_STAGES, TRAIL_STAGES } from '../prototype/shared/trail-catalog.mjs';
+import { getDestinationGameLevels, REEF_JOURNEY_STAGES, TRAIL_STAGES } from '../prototype/shared/trail-catalog.mjs';
 
 export const ACTIVITY_MESSAGE_VERSION = 1;
 
@@ -56,7 +56,7 @@ export function readHostedActivityContext(): HostedActivityContext | null {
   const game = gameByActivity[activityId as HostedActivityId];
   const destinationValid = destination === 'wonder' || destination === 'forest' || destination === 'reef';
   const levels = destinationValid ? getDestinationGameLevels(destination) : null;
-  const route = destination === 'reef' ? REEF_TRAIL_STAGES : TRAIL_STAGES;
+  const route = destination === 'reef' ? REEF_JOURNEY_STAGES : TRAIL_STAGES;
 
   if (!destinationValid
     || host !== 'world-map'

@@ -1,7 +1,9 @@
 import { openGallery } from './gallery.js';
 import { getGalleryKey } from './shared/gallery.mjs';
 import { FOREST_CAPTIONS } from './shared/forest-captions.mjs';
-import { LEGACY_TRAIL_STAGES, TRAIL_CHAPTERS, TRAIL_STAGES } from './shared/trail-catalog.mjs';
+import { REEF_CAPTIONS } from './shared/reef-captions.mjs';
+import { REEF_CHAPTERS, REEF_STORIES } from './shared/reef-map.mjs';
+import { LEGACY_TRAIL_STAGES, REEF_JOURNEY_STAGES, TRAIL_CHAPTERS, TRAIL_STAGES } from './shared/trail-catalog.mjs';
 import { createJourneyOrder, applyJourneyOrder } from './shared/journey-order.mjs';
 import {
   TRAIL_CONTENT_VERSION,
@@ -10,7 +12,7 @@ import {
   normalizeTrackProgress,
 } from './shared/track-progress.mjs';
 import { getTravellerPosition } from './shared/traveller-position.mjs';
-import { isForestFinalePending, isReefUnlocked, openReefRoute, readReefRoute } from './shared/reef-progress.mjs';
+import { completeReefStage, isReefUnlocked, markReefStorySeen, openReefRoute, pendingReefStory, readReefRoute } from './shared/reef-progress.mjs';
 import { formatStarRating } from './shared/activity-scoring.mjs';
 import { saveStorage } from './shared/saves.mjs';
 import {
@@ -28,9 +30,14 @@ import {
 } from './shared/destinations.mjs';
 
 let stages = TRAIL_STAGES;
-const availableStages = stages.filter((stage) => stage.available);
-const availableStarTotal = availableStages.length * 3;
-const lastAvailableStageId = availableStages[availableStages.length - 1].id;
+let journeyStages = stages;
+let reefProgress = null;
+const FIRST_REGION_LENGTH = TRAIL_STAGES.length;
+const JOURNEY_CHAPTERS = [...TRAIL_CHAPTERS, ...REEF_CHAPTERS.map(chapter => ({ ...chapter, subtitle: chapter.topic, symbol: '🐚' }))];
+const REEF_MILESTONES = new Map(REEF_STORIES.map(story => [story.id, {
+  ...story, videoId: story.id, triggerStage: FIRST_REGION_LENGTH + (story.after ?? 0),
+}]));
+const JOURNEY_MILESTONES = [...FOREST_MILESTONES, ...REEF_MILESTONES.values()];
 
 const DEFAULT_PROFILES = [
   { id: 'lotem', name: 'לוטם', character: 'princess', learningLanguage: 'en' },
@@ -57,6 +64,7 @@ const PROFILE_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i;
 const world = document.getElementById('world');
 const route = document.getElementById('route');
 const mapScroll = document.querySelector('.map-scroll');
+const mapStage = document.querySelector('.map-stage');
 const chapterLabels = document.getElementById('chapter-labels');
 const stagePanel = document.getElementById('stage-panel');
 const panelClose = document.getElementById('panel-close');
@@ -116,7 +124,6 @@ const destinationAvatar = document.getElementById('destination-avatar');
 const destinationPlayerName = document.getElementById('destination-player-name');
 const destinationCardWonder = document.getElementById('destination-card-wonder');
 const destinationCardForest = document.getElementById('destination-card-forest');
-const destinationCardReef = document.getElementById('destination-card-reef');
 const wonderStarsCount = document.getElementById('wonder-stars-count');
 const wonderStageLabel = document.getElementById('wonder-stage-label');
 const forestStarsCount = document.getElementById('forest-stars-count');
@@ -152,8 +159,7 @@ let forestProgress = loadForestProgress();
 let activeProfileId = loadActiveProfileId();
 validateWorldState();
 upgradeCompletedFrontier();
-stages = applyJourneyOrder(TRAIL_STAGES, getRouteProgress(activeProfileId).stageOrder);
-let selectedStage = stages.find((stage) => stage.id === getRouteProgress(activeProfileId).currentStage);
+let selectedStage = null;
 let editingProfileId = null;
 let editorReturnsToGate = true;
 let activeLaunch = null;
@@ -214,7 +220,7 @@ function upgradeCompletedFrontier() {
 
   profiles.forEach((profile) => {
     const progress = getRouteProgress(profile.id);
-    while (progress.progress[progress.currentStage] > 0 && progress.currentStage < lastAvailableStageId) {
+    while (progress.progress[progress.currentStage] > 0 && progress.currentStage < FIRST_REGION_LENGTH) {
       progress.currentStage += 1;
       changed = true;
     }
@@ -343,21 +349,58 @@ function getCharacterAsset(character, pose) {
   return `../src/assets/characters/${option.directory}/${option.directory}_${pose}_1.webp`;
 }
 
+function loadJourneyStages() {
+  const profile = getProfile();
+  stages = applyJourneyOrder(TRAIL_STAGES, getRouteProgress().stageOrder);
+  reefProgress = activeDestination === 'forest' && isReefUnlocked(profile, saveStorage)
+    ? openReefRoute(profile, saveStorage)
+    : null;
+  journeyStages = reefProgress ? [...stages, ...REEF_JOURNEY_STAGES] : stages;
+  mapStage.classList.toggle('has-reef', Boolean(reefProgress));
+}
+
+function getCurrentStage() {
+  const progress = getRouteProgress();
+  const id = reefProgress && progress.progress[FIRST_REGION_LENGTH] > 0
+    ? FIRST_REGION_LENGTH + reefProgress.currentStage
+    : progress.currentStage;
+  return journeyStages[id - 1];
+}
+
+function isReefStage(stage) {
+  return stage.id > FIRST_REGION_LENGTH;
+}
+
+function stageStars(stage) {
+  return (isReefStage(stage) ? reefProgress.progress[stage.id - FIRST_REGION_LENGTH] : getRouteProgress().progress[stage.id]) || 0;
+}
+
+function canPlayStage(stage) {
+  if (isReefStage(stage)) return isStageUnlocked(stage, FIRST_REGION_LENGTH + reefProgress.currentStage);
+  const progress = getRouteProgress();
+  return isStageUnlocked(stage, progress.currentStage);
+}
+
+function mapY(stage, y = stage.y) {
+  if (!reefProgress) return y;
+  return (isReefStage(stage) ? y : 100 + y) / 2;
+}
+
 function renderRoute() {
   route.innerHTML = '';
   renderTrail();
-  const progress = getRouteProgress();
+  const current = getCurrentStage();
 
-  stages.forEach((stage) => {
-    const stars = progress.progress[stage.id] || 0;
+  journeyStages.forEach((stage) => {
+    const stars = stageStars(stage);
     // A stage opens once the player has cleared every stage before it, so the
     // frontier is the current stage and everything past it stays locked.
-    const unlocked = isStageUnlocked(stage, progress.currentStage);
+    const unlocked = canPlayStage(stage);
     const state = !unlocked
       ? 'locked'
       : stars > 0
         ? 'complete'
-        : stage.id === progress.currentStage
+        : stage.id === current.id
           ? 'current'
           : 'future';
     const button = document.createElement('button');
@@ -370,7 +413,7 @@ function renderRoute() {
     button.dataset.level = stage.level;
     button.dataset.difficulty = String(stage.difficultyRank);
     button.style.left = `${stage.x}%`;
-    button.style.top = `${stage.y}%`;
+    button.style.top = `${mapY(stage)}%`;
     button.disabled = !unlocked;
     button.setAttribute('aria-label', state === 'locked'
       ? `שלב ${stage.id}, ${stage.title}, נעול`
@@ -423,8 +466,8 @@ function placeChapterLabel(label, rects, bounds, placed) {
     label.style.left = `${candidate.x}%`;
     label.style.top = `${candidate.y}%`;
     const rect = label.getBoundingClientRect();
-    const inside = rect.left >= 6 && rect.right <= bounds.width - 6
-      && rect.top >= 6 && rect.bottom <= bounds.height - 6;
+    const inside = rect.left >= bounds.left + 6 && rect.right <= bounds.right - 6
+      && rect.top >= bounds.top + 6 && rect.bottom <= bounds.bottom - 6;
     const clear = !rects.nodes.some((node) => rectanglesOverlap(rect, node))
       && !placed.some((other) => rectanglesOverlap(rect, other));
     if (inside && clear) {
@@ -446,16 +489,17 @@ function renderChapterLabels() {
   }
   const nodes = [...route.querySelectorAll('.world-stage')].map((node) => node.getBoundingClientRect());
   const placed = [];
-  TRAIL_CHAPTERS.forEach((chapter, index) => {
-    const chapterStages = stages.filter((stage) => stage.chapterIndex === index);
+  JOURNEY_CHAPTERS.forEach((chapter, index) => {
+    const chapterStages = journeyStages.filter((stage) => stage.chapterIndex === index);
     if (chapterStages.length === 0) {
       return;
     }
+    const positionsY = chapterStages.map(stage => mapY(stage));
     const rects = {
       centerX: chapterStages.reduce((total, stage) => total + stage.x, 0) / chapterStages.length,
-      centerY: chapterStages.reduce((total, stage) => total + stage.y, 0) / chapterStages.length,
-      topY: Math.min(...chapterStages.map((stage) => stage.y)),
-      bottomY: Math.max(...chapterStages.map((stage) => stage.y)),
+      centerY: positionsY.reduce((total, y) => total + y, 0) / chapterStages.length,
+      topY: Math.min(...positionsY),
+      bottomY: Math.max(...positionsY),
       leftX: Math.min(...chapterStages.map((stage) => stage.x)),
       rightX: Math.max(...chapterStages.map((stage) => stage.x)),
       nodes,
@@ -510,17 +554,16 @@ function renderTrail() {
   if (!trailRouteBase) {
     return;
   }
-  const allPoints = stages.map((stage) => ({ x: stage.x, y: stage.y }));
+  const allPoints = journeyStages.map((stage) => ({ x: stage.x, y: mapY(stage) }));
   const fullPath = smoothTrailPath(allPoints);
   trailRouteShadow.setAttribute('d', fullPath);
   trailRouteBase.setAttribute('d', fullPath);
   trailRouteBaseCore.setAttribute('d', fullPath);
   trailRouteDust.setAttribute('d', fullPath);
 
-  const progress = getRouteProgress();
-  const travelledPoints = stages
-    .filter((stage) => stage.id <= progress.currentStage)
-    .map((stage) => ({ x: stage.x, y: stage.y }));
+  const travelledPoints = journeyStages
+    .slice(0, getCurrentStage().id)
+    .map((stage) => ({ x: stage.x, y: mapY(stage) }));
   const travelledPath = smoothTrailPath(travelledPoints);
   trailRouteGlow.setAttribute('d', travelledPath);
   trailRouteProgress.setAttribute('d', travelledPath);
@@ -530,8 +573,7 @@ function renderTrail() {
 function selectStage(stage) {
   selectedStage = stage;
   const profile = getProfile();
-  const progress = getRouteProgress();
-  const stars = progress.progress[stage.id] || 0;
+  const stars = stageStars(stage);
   renderActivityIcon(panelIcon, stage);
   panelKicker.textContent = `${stage.gameLabel} · ${stage.difficultyLabel} · שלב ${stage.id} · ${languageOptions[profile.learningLanguage].label}`;
   panelTitle.textContent = stage.title;
@@ -564,7 +606,7 @@ function updateWorldDestinationChrome() {
   const titleEl = document.querySelector('.world-title strong');
   const journeyEl = document.getElementById('journey-label');
   if (titleEl) {
-    titleEl.textContent = dest.title;
+    titleEl.textContent = reefProgress ? 'מסע הבועות' : dest.title;
   }
   if (journeyEl) {
     if (activeDestination === 'forest') {
@@ -585,16 +627,20 @@ function setJourneyCharacter(image, profile, destination) {
   const isForest = destination === 'forest';
   image.hidden = isForest; portrait.hidden = !isForest;
   if (isForest) setCompanionPortrait(portrait, forestProgress[profile.id].character);
+  else if (destination === 'reef') image.src = `./assets/reef/${forestProgress[profile.id].character}.webp`;
   else image.src = getCharacterAsset(profile.character, 'celebrate');
 }
 
 function updateTravellerAsset(pose = 'idle') {
   const profile = getProfile();
+  const reef = isReefStage(getCurrentStage());
+  traveller.classList.toggle('reef-portrait', reef);
   if (activeDestination === 'forest') {
     const friendId = forestProgress[profile.id].character;
-    travellerImage.hidden = true;
-    traveller.classList.add('forest-portrait');
-    setCompanionPortrait(traveller, friendId);
+    travellerImage.hidden = !reef;
+    traveller.classList.toggle('forest-portrait', !reef);
+    if (reef) travellerImage.src = `./assets/reef/${friendId}.webp`;
+    else setCompanionPortrait(traveller, friendId);
   } else {
     travellerImage.hidden = false;
     traveller.classList.remove('forest-portrait');
@@ -622,15 +668,12 @@ function openDestinationGate() {
 
   // Update Forest stats
   const forestProg = getRouteProgress(profile.id, 'forest');
-  const forestStars = Object.values(forestProg.progress).reduce((total, stars) => total + stars, 0);
-  forestStarsCount.textContent = String(forestStars);
-  forestStageLabel.textContent = forestProg.character ? `שלב ${forestProg.currentStage}` : 'מסע חדש';
-  const reefUnlocked = isReefUnlocked(profile, saveStorage);
-  destinationCardReef.disabled = !reefUnlocked;
   const reef = readReefRoute(profile, saveStorage);
-  document.getElementById('reef-stars-count').textContent = reef ? String(Object.values(reef.progress).reduce((total, stars) => total + stars, 0)) : '0';
-  document.getElementById('reef-stage-label').textContent = reefUnlocked ? `שלב ${reef?.currentStage ?? 1}` : 'נפתחת בסיום שלב 36 ביער';
-  document.getElementById('reef-card-cta').textContent = reefUnlocked ? 'ממשיכים אל השונית! ←' : 'עוד הרפתקה מחכה לנו 🔒';
+  forestStarsCount.textContent = String(getEarnedStarTotal(forestProg) + (reef ? getEarnedStarTotal(reef) : 0));
+  const forestStage = forestProg.progress[FIRST_REGION_LENGTH] > 0
+    ? FIRST_REGION_LENGTH + (reef?.currentStage ?? 1)
+    : forestProg.currentStage;
+  forestStageLabel.textContent = forestProg.character ? `שלב ${forestStage}` : 'מסע חדש';
 }
 
 function closeDestinationGate() {
@@ -641,17 +684,6 @@ function closeDestinationGate() {
 }
 
 function chooseDestination(destId) {
-  if (destId === 'reef') {
-    const profile = getProfile();
-    if (!isReefUnlocked(profile, saveStorage)) throw new Error('Reef is locked');
-    const forest = getRouteProgress(profile.id, 'forest');
-    if (isForestFinalePending(forest)) {
-      chooseDestination('forest');
-      return;
-    }
-    location.assign('./reef-map.html');
-    return;
-  }
   if (destId === 'forest') {
     const profile = getProfile(activeProfileId);
     if (!forestProgress[profile.id].character) {
@@ -663,20 +695,21 @@ function chooseDestination(destId) {
 
   activeDestination = destId;
   setActiveDestination(destId);
-  stages = applyJourneyOrder(TRAIL_STAGES, getRouteProgress(activeProfileId, destId).stageOrder);
   closeDestinationGate();
+  renderJourneyFrontier();
+  if (destId === 'forest') showPendingJourneyStory();
+}
+
+function renderJourneyFrontier() {
+  loadJourneyStages();
   updateWorldDestinationChrome();
-  const progress = getRouteProgress();
-  updateStarTotal(progress);
-  updateTravellerAsset('idle');
+  updateStarTotal();
+  updateTravellerAsset();
+  const stage = getCurrentStage();
   renderRoute();
-  selectedStage = stages.find((s) => s.id === progress.currentStage) || stages[0];
-  positionTraveller(selectedStage);
-  selectStage(selectedStage);
-  if (destId === 'forest') {
-    const pending = getPendingForestMilestone(progress);
-    if (pending) showForestMilestone(pending, true);
-  }
+  positionTraveller(stage);
+  selectStage(stage);
+  renderChapterLabels();
 }
 
 // 'onboarding' opens over the destination gate before the forest starts;
@@ -727,19 +760,20 @@ function chooseForestCompanion(characterId) {
 }
 
 function showForestMilestone(milestone, isPending = false) {
+  const reefStory = REEF_MILESTONES.has(milestone.videoId);
   isPendingMilestonePresentation = isPending;
   if (isPending) pendingMilestoneVideoId = milestone.videoId;
   activeMilestoneVideoId = milestone.videoId;
-  forestMilestoneDialog.setAttribute('aria-label', isPending ? 'סרטון מסע חדש נפתח' : 'סיפורי היער');
+  forestMilestoneDialog.setAttribute('aria-label', isPending ? 'סרטון מסע חדש נפתח' : 'סיפורי המסע');
   forestMilestoneTitle.textContent = milestone.title;
   if (isPending) {
     forestMilestoneDesc.textContent = milestone.triggerStage > 0
-      ? `רגע מיוחד נפתח בעלילת היער הלוחש לאחר סיום שלב ${milestone.triggerStage}!`
-      : 'רגע מיוחד נפתח בעלילת היער הלוחש. מוכנים לגלות מה קרה?';
+      ? `סיפור חדש נפתח לאחר סיום שלב ${milestone.triggerStage}!`
+      : 'מוכנים לגלות מה קרה בתחילת המסע?';
   } else {
     forestMilestoneDesc.textContent = 'צפייה חוזרת בסיפור מהמסע. אפשר לבחור סיפור אחר למעלה.';
   }
-  const media = getForestVideoMedia(milestone.videoId);
+  const media = reefStory ? milestone : getForestVideoMedia(milestone.videoId);
   forestMilestoneVideo.hidden = false;
   forestMilestoneVideo.poster = media.poster;
   forestMilestoneVideo.src = media.src;
@@ -753,12 +787,13 @@ function showForestMilestone(milestone, isPending = false) {
   }
   for (const [lang, track] of Object.entries(forestCaptionTracks)) {
     while (track.cues.length) track.removeCue(track.cues[0]);
-    for (const cue of FOREST_CAPTIONS[milestone.videoId]) track.addCue(new VTTCue(cue.start, cue.end, cue[lang]));
+    const captions = reefStory ? REEF_CAPTIONS : FOREST_CAPTIONS;
+    for (const cue of captions[milestone.videoId]) track.addCue(new VTTCue(cue.start, cue.end, cue[lang]));
   }
   forestCaptionLanguage.value = getProfile().learningLanguage;
   updateForestCaptions();
-  const unlockedVideos = getRouteProgress().unlockedVideos;
-  forestStorySelect.replaceChildren(...FOREST_MILESTONES.filter(m => unlockedVideos.includes(m.videoId)).map((m, index) => {
+  forestStorySelect.hidden = isPending && (reefStory || milestone.triggerStage === FIRST_REGION_LENGTH);
+  forestStorySelect.replaceChildren(...getUnlockedJourneyMilestones().map((m, index) => {
     const option = document.createElement('option'); option.value = m.videoId; option.textContent = `${index + 1}. ${m.title}`; return option;
   }));
   forestStorySelect.value = milestone.videoId;
@@ -769,32 +804,54 @@ function showForestMilestone(milestone, isPending = false) {
   forestMilestonePlayBtn.focus({ preventScroll: true });
 }
 
+function getUnlockedJourneyMilestones() {
+  const unlocked = new Set([...getRouteProgress().unlockedVideos, ...(reefProgress ? reefProgress.unlockedVideos : [])]);
+  return JOURNEY_MILESTONES.filter(milestone => unlocked.has(milestone.videoId));
+}
+
+function showPendingJourneyStory() {
+  const forestStory = getPendingForestMilestone(getRouteProgress());
+  const reefStory = reefProgress && pendingReefStory(reefProgress);
+  const milestone = forestStory || (reefStory && REEF_MILESTONES.get(reefStory.id));
+  if (!milestone) return false;
+  showForestMilestone(milestone, true);
+  return true;
+}
+
+function acknowledgePendingMilestone() {
+  if (!isPendingMilestonePresentation) return;
+  const profile = getProfile();
+  if (REEF_MILESTONES.has(activeMilestoneVideoId)) {
+    reefProgress = markReefStorySeen(profile, activeMilestoneVideoId, saveStorage);
+    return;
+  }
+  const forest = getRouteProgress();
+  if (!forest.seenVideos.includes(activeMilestoneVideoId)) {
+    markVideoSeen(profile.id, profile.learningLanguage, activeMilestoneVideoId, saveStorage);
+    forest.seenVideos.push(activeMilestoneVideoId);
+  }
+}
+
 function closeForestMilestone() {
   forestMilestoneVideo.pause();
   forestMilestoneVideo.removeAttribute('src');
   forestMilestoneVideo.load();
   const finishedVideoId = activeMilestoneVideoId;
   const wasPending = isPendingMilestonePresentation;
+  acknowledgePendingMilestone();
   activeMilestoneVideoId = null;
   isPendingMilestonePresentation = false;
   pendingMilestoneVideoId = null;
 
-  if (finishedVideoId && wasPending) {
-    const profile = getProfile();
-    markVideoSeen(profile.id, profile.learningLanguage, finishedVideoId, saveStorage);
-    const progress = getRouteProgress(profile.id, 'forest');
-    if (!progress.seenVideos.includes(finishedVideoId)) {
-      progress.seenVideos.push(finishedVideoId);
-    }
-  }
-
   forestMilestoneDialog.hidden = true;
   world.inert = false;
 
-  if (finishedVideoId === 'forest-video-09' && wasPending) {
-    const profile = getProfile();
-    showWorldComplete(profile, getRouteProgress(profile.id, 'forest'));
-    return;
+  if (wasPending && reefProgress) {
+    if (finishedVideoId === REEF_STORIES.at(-1).id && getRouteProgress().progress[FIRST_REGION_LENGTH] > 0) {
+      showWorldComplete(getProfile());
+      return;
+    }
+    if (showPendingJourneyStory()) return;
   }
 
   playButton.focus();
@@ -809,32 +866,21 @@ function updateForestCaptions() {
 function setProfile(profileId) {
   activeProfileId = profileId;
   localStorage.setItem(WORLD_ACTIVE_PROFILE_STORAGE_KEY, profileId);
-  stages = applyJourneyOrder(TRAIL_STAGES, getRouteProgress().stageOrder);
   const profile = getProfile();
-  const progress = getRouteProgress();
   document.getElementById('profile-avatar').src = getCharacterAsset(profile.character, 'idle');
   document.getElementById('profile-name').textContent = profile.name;
   document.getElementById('profile-language').textContent = languageOptions[profile.learningLanguage].label;
-  updateWorldDestinationChrome();
-  updateStarTotal(progress);
-  updateTravellerAsset('idle');
-  traveller.setAttribute('aria-label', `${profile.name} בשלב ${progress.currentStage}`);
-
-  const stage = stages.find((candidate) => candidate.id === progress.currentStage);
-  positionTraveller(stage);
-  selectedStage = stage;
-  renderRoute();
-  selectStage(stage);
+  renderJourneyFrontier();
   renderProfileMenu();
   closeProfileMenu();
-  renderChapterLabels();
 }
 
 function positionTraveller(stage) {
   const position = getTravellerPosition(stage);
   traveller.dataset.stage = String(stage.id);
-  traveller.style.left = `${position.x}%`;
-  traveller.style.top = `${position.y}%`;
+  traveller.setAttribute('aria-label', `${getProfile().name} בשלב ${stage.id}`);
+  traveller.style.left = `${position.x + (isReefStage(stage) ? 4 : 0)}%`;
+  traveller.style.top = `${mapY(stage, position.y)}%`;
   centerStageInMap(stage);
 }
 
@@ -850,7 +896,7 @@ function centerStageInMap(stage) {
     return;
   }
   const left = (stage.x / 100) * mapScroll.scrollWidth - mapScroll.clientWidth / 2;
-  const top = (stage.y / 100) * mapScroll.scrollHeight - mapScroll.clientHeight / 2;
+  const top = (mapY(stage) / 100) * mapScroll.scrollHeight - mapScroll.clientHeight / 2;
   mapScroll.scrollTo({
     left: canScrollX ? Math.max(0, left) : mapScroll.scrollLeft,
     top: canScrollY ? Math.max(0, top) : mapScroll.scrollTop,
@@ -998,8 +1044,9 @@ function closeProfileEditor(resumeJourney = true) {
 }
 
 function renderTrackResetOptions(profileId) {
-  const currentStage = getRouteProgress(profileId).currentStage;
-  trackStageSelect.replaceChildren(...stages.map((stage) => {
+  const progress = getRouteProgress(profileId);
+  const currentStage = progress.currentStage;
+  trackStageSelect.replaceChildren(...applyJourneyOrder(TRAIL_STAGES, progress.stageOrder).map((stage) => {
     const option = document.createElement('option');
     option.value = String(stage.id);
     option.textContent = `שלב ${stage.id}: ${stage.title}${stage.id === currentStage ? ' (השלב הנוכחי)' : ''}`;
@@ -1030,7 +1077,9 @@ function updateTrackResetCopy() {
   if (stageId === 1) {
     trackResetButton.textContent = 'איפוס להתחלה';
     confirmTrackResetButton.textContent = 'כן, מאפסים עכשיו';
-    trackResetCopy.textContent = 'כל הכוכבים יימחקו והמסלול יתחיל משלב 1.';
+    trackResetCopy.textContent = activeDestination === 'forest'
+      ? 'כוכבי היער יימחקו והיער יתחיל משלב 1.'
+      : 'כל הכוכבים יימחקו והמסלול יתחיל משלב 1.';
     return;
   }
   trackResetButton.textContent = 'עדכון ההתקדמות';
@@ -1060,14 +1109,14 @@ function resetEditedProfileTrack() {
     const unlockedVideos = FOREST_MILESTONES.filter(m => m.triggerStage < stageId).map(m => m.videoId);
     forestProgress[editingProfileId] = {
       ...fresh,
-      ...createTrackProgress(stageId, stages.length),
+      ...createTrackProgress(stageId, FIRST_REGION_LENGTH),
       stageOrder: stageId === 1 ? fresh.stageOrder : previous.stageOrder,
       unlockedVideos,
       seenVideos: stageId === 1 ? [] : previous.seenVideos.filter(id => unlockedVideos.includes(id)),
     };
   } else {
     routeProgress[editingProfileId] = {
-      ...createTrackProgress(stageId, stages.length),
+      ...createTrackProgress(stageId, FIRST_REGION_LENGTH),
       stageOrder: stageId === 1 ? createJourneyOrder(TRAIL_STAGES) : routeProgress[editingProfileId].stageOrder,
     };
   }
@@ -1143,7 +1192,7 @@ function saveProfileFromEditor(event) {
       learningLanguage,
     };
     profiles.push(profile);
-    routeProgress[profile.id] = { ...createTrackProgress(1, stages.length), stageOrder: createJourneyOrder(TRAIL_STAGES) };
+    routeProgress[profile.id] = { ...createTrackProgress(1, FIRST_REGION_LENGTH), stageOrder: createJourneyOrder(TRAIL_STAGES) };
     forestProgress[profile.id] = createForestProgress();
     activeProfileId = profile.id;
     saveWorldProgress('wonder');
@@ -1208,7 +1257,7 @@ function confirmProfileDeletion() {
 }
 
 function launchSelectedStage() {
-  if (!selectedStage) {
+  if (!selectedStage || !canPlayStage(selectedStage)) {
     return;
   }
 
@@ -1223,11 +1272,11 @@ function launchSelectedStage() {
     profileEmoji: characterOptions[profile.character].emoji,
     profileLanguage: profile.learningLanguage,
     profileCharacter: profile.character,
-    destination: activeDestination,
+    destination: isReefStage(stage) ? 'reef' : activeDestination,
   };
   const launch = activeLaunch;
   setWorldInteractionLocked(true);
-  setJourneyCharacter(launchCharacter, profile, activeDestination);
+  setJourneyCharacter(launchCharacter, profile, launch.destination);
   document.getElementById('launch-title').textContent = stage.title;
   launchOverlay.classList.add('is-visible');
   launchOverlay.setAttribute('aria-hidden', 'false');
@@ -1302,6 +1351,12 @@ function setWorldInteractionLocked(locked) {
 function completeLaunchedStage(launch, stars = 3) {
   const profile = getProfile(launch.profileId);
   const destination = launch.destination;
+  if (destination === 'reef') {
+    completeReefStage(profile, launch.stageId - FIRST_REGION_LENGTH, stars, saveStorage);
+    renderJourneyFrontier();
+    showPendingJourneyStory();
+    return { worldComplete: false };
+  }
   const progress = getRouteProgress(launch.profileId, destination);
   const completedStage = stages.find((stage) => stage.id === launch.stageId);
   if (!completedStage) {
@@ -1315,7 +1370,7 @@ function completeLaunchedStage(launch, stars = 3) {
     : null;
   const worldComplete = previousStars === 0
     && isCurrentStage
-    && completedStage.id === lastAvailableStageId
+    && completedStage.id === FIRST_REGION_LENGTH
     && !nextStage;
 
   let unlockedMilestone = null;
@@ -1325,14 +1380,15 @@ function completeLaunchedStage(launch, stars = 3) {
 
   if (!nextStage) {
     saveWorldProgress(destination);
-    if (worldComplete && destination === 'forest') openReefRoute(profile, saveStorage);
-    if (launch.profileId === activeProfileId) {
-      updateStarTotal(progress);
+    if (worldComplete && destination === 'forest') {
+      renderJourneyFrontier();
+    } else if (launch.profileId === activeProfileId) {
+      updateStarTotal();
       renderRoute();
       selectStage(completedStage);
     }
     if (unlockedMilestone) showForestMilestone(unlockedMilestone, true);
-    return { worldComplete };
+    return { worldComplete: worldComplete && destination === 'wonder' };
   }
 
   progress.currentStage = nextStage.id;
@@ -1340,12 +1396,11 @@ function completeLaunchedStage(launch, stars = 3) {
   if (launch.profileId !== activeProfileId) {
     return { worldComplete: false };
   }
-  updateStarTotal(progress);
+  updateStarTotal();
   renderRoute();
 
   updateTravellerAsset('walk');
   positionTraveller(nextStage);
-  traveller.setAttribute('aria-label', `${profile.name} בשלב ${progress.currentStage}`);
 
   window.setTimeout(() => {
     updateTravellerAsset('idle');
@@ -1355,11 +1410,11 @@ function completeLaunchedStage(launch, stars = 3) {
   return { worldComplete: false };
 }
 
-function showWorldComplete(profile, progress) {
-  setJourneyCharacter(worldCompleteCharacter, profile, activeDestination);
-  document.getElementById('world-complete-stage-copy').textContent = `סיימתם את כל ${availableStages.length} שלבי המסלול.`;
-  document.getElementById('world-complete-score').textContent = `${getEarnedStarTotal(progress)} / ${availableStarTotal}`;
-  worldCompleteButton.textContent = activeDestination === 'forest' ? 'ממשיכים אל השונית ←' : 'חזרה למסלול';
+function showWorldComplete(profile) {
+  setJourneyCharacter(worldCompleteCharacter, profile, reefProgress ? 'reef' : activeDestination);
+  document.getElementById('world-complete-title').textContent = reefProgress ? 'המסע הושלם!' : 'הפרק הראשון הושלם!';
+  document.getElementById('world-complete-stage-copy').textContent = `סיימתם את כל ${journeyStages.length} שלבי המסלול.`;
+  document.getElementById('world-complete-score').textContent = `${getJourneyStarTotal()} / ${journeyStages.length * 3}`;
   setWorldInteractionLocked(true);
   worldCompleteOverlay.inert = false;
   worldCompleteOverlay.classList.add('is-visible');
@@ -1391,7 +1446,7 @@ function handleActivityMessage(event) {
   }
 
   if (message.type === 'bubbles.activity.exit') {
-    const exitedStage = stages.find((stage) => stage.id === activeLaunch.stageId);
+    const exitedStage = journeyStages.find((stage) => stage.id === activeLaunch.stageId);
     if (!exitedStage) {
       throw new Error(`Missing exited stage ${activeLaunch.stageId}`);
     }
@@ -1408,11 +1463,10 @@ function handleActivityMessage(event) {
   closeActivity();
   const result = completeLaunchedStage(completedLaunch, message.stars);
   if (result.worldComplete) {
-    if (completedLaunch.destination !== 'forest') {
-      showWorldComplete(getProfile(completedLaunch.profileId), getRouteProgress(completedLaunch.profileId));
-    }
+    showWorldComplete(getProfile(completedLaunch.profileId));
     return;
   }
+  if (!forestMilestoneDialog.hidden) return;
 
   setJourneyCharacter(launchCharacter, getProfile(completedLaunch.profileId), completedLaunch.destination);
   document.getElementById('launch-title').textContent = 'כל הכבוד!';
@@ -1428,8 +1482,13 @@ function getEarnedStarTotal(progress) {
   return Object.values(progress.progress).reduce((total, stars) => total + stars, 0);
 }
 
-function updateStarTotal(progress) {
-  const earnedStars = getEarnedStarTotal(progress);
+function getJourneyStarTotal() {
+  return getEarnedStarTotal(getRouteProgress()) + (reefProgress ? getEarnedStarTotal(reefProgress) : 0);
+}
+
+function updateStarTotal() {
+  const earnedStars = getJourneyStarTotal();
+  const availableStarTotal = journeyStages.length * 3;
   document.getElementById('star-total').textContent = String(earnedStars);
   document.getElementById('star-total-max').textContent = `/${availableStarTotal}`;
   document.querySelector('.star-total').setAttribute('aria-label', `${earnedStars} מתוך ${availableStarTotal} כוכבים`);
@@ -1466,10 +1525,7 @@ profileNameInput.addEventListener('input', () => profileNameInput.setCustomValid
 panelClose.addEventListener('click', () => stagePanel.classList.remove('is-open'));
 playButton.addEventListener('click', launchSelectedStage);
 activityFrame.addEventListener('load', revealLoadedActivity);
-worldCompleteButton.addEventListener('click', () => {
-  if (activeDestination === 'forest') chooseDestination('reef');
-  else closeWorldComplete();
-});
+worldCompleteButton.addEventListener('click', closeWorldComplete);
 
 
 destinationsNavButton.addEventListener('click', openDestinationGate);
@@ -1479,7 +1535,6 @@ destinationProfilePill.addEventListener('click', () => {
 });
 destinationCardWonder.addEventListener('click', () => chooseDestination('wonder'));
 destinationCardForest.addEventListener('click', () => chooseDestination('forest'));
-destinationCardReef.addEventListener('click', () => chooseDestination('reef'));
 
 forestFriendCards.forEach((btn) => {
   btn.addEventListener('click', () => chooseForestCompanion(btn.dataset.character));
@@ -1497,6 +1552,7 @@ forestMilestonePlayBtn.addEventListener('click', () => {
 
 forestCaptionLanguage.addEventListener('change', updateForestCaptions);
 forestMilestoneVideo.addEventListener('ended', () => {
+  acknowledgePendingMilestone();
   forestMilestonePlayBtn.textContent = isPendingMilestonePresentation ? 'ממשיכים במסע ←' : 'חזרה למפה ←';
 });
 forestMilestoneVideo.addEventListener('error', () => {
@@ -1517,12 +1573,11 @@ if (forestMilestoneRetryBtn) {
   });
 }
 forestStorySelect.addEventListener('change', () => {
-  const milestone = FOREST_MILESTONES.find(m => m.videoId === forestStorySelect.value);
+  const milestone = getUnlockedJourneyMilestones().find(m => m.videoId === forestStorySelect.value);
   if (milestone) showForestMilestone(milestone, milestone.videoId === pendingMilestoneVideoId);
 });
 forestStoriesButton.addEventListener('click', () => {
-  const unlocked = getRouteProgress().unlockedVideos;
-  const milestone = FOREST_MILESTONES.find(m => m.videoId === unlocked[unlocked.length - 1]);
+  const milestone = getUnlockedJourneyMilestones().at(-1);
   if (milestone) showForestMilestone(milestone, false);
 });
 
@@ -1530,7 +1585,7 @@ document.addEventListener('keydown', (event) => {
   if (document.querySelector('.collection-gallery[open]')) return;
   const modal = !forestMilestoneDialog.hidden ? forestMilestoneDialog : !forestCharacterPicker.hidden ? forestCharacterPicker : null;
   if (modal && event.key === 'Tab') {
-    const controls = [...modal.querySelectorAll('button, select, video[controls]')];
+    const controls = [...modal.querySelectorAll('button, select, video[controls]')].filter(control => control.getClientRects().length);
     const first = controls[0], last = controls[controls.length - 1];
     if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
@@ -1571,7 +1626,7 @@ window.addEventListener('resize', () => {
   cancelAnimationFrame(labelLayoutFrame);
   labelLayoutFrame = requestAnimationFrame(() => {
     renderChapterLabels();
-    const currentStage = stages.find((stage) => stage.id === getRouteProgress().currentStage);
+    const currentStage = getCurrentStage();
     if (currentStage) centerStageInMap(currentStage);
   });
 });

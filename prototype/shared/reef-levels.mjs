@@ -1,4 +1,4 @@
-import { buildVocabularyIndex, createMemoryLevelRecipe, createShopLevelRecipe, createMagicHouseLevelRecipe, createRevealLevelRecipe } from './trail-recipes.mjs';
+import { TRAIL_GAME_SEQUENCE, buildVocabularyIndex, createMemoryLevelRecipe, createShopLevelRecipe, createMagicHouseLevelRecipe, createRevealLevelRecipe } from './trail-recipes.mjs';
 import { PAINTER_CHAPTER_WORD_POOLS } from './painter-content.mjs';
 import { VOCABULARY } from './vocabulary-catalog.mjs';
 import { REEF_STAGES, REEF_CHAPTERS } from './reef-map.mjs';
@@ -17,7 +17,7 @@ export const REEF_LEVEL_STAGES = Object.freeze(REEF_STAGES.map(stage => {
   const chapter = REEF_CHAPTERS[stage.chapter - 1];
   const game = stage.activity;
   const id = `reef-${game}-${++appearances[game]}`;
-  const title = `${chapter.title} · ${stage.id}`;
+  const title = `${chapter.title} · ${TRAIL_GAME_SEQUENCE.length + stage.id}`;
   const recipe = { levelId: id, rank: chapter.rank, title, categories: categories[stage.chapter - 1], index, offset: stage.id - 1 };
   let level;
   if (game === 'memory') level = createMemoryLevelRecipe(recipe);

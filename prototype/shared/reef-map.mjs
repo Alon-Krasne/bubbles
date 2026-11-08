@@ -57,9 +57,6 @@ export const REEF_STAGES = Object.freeze(REEF_CHAPTERS.flatMap((chapter, chapter
   }),
 ));
 
-const pixel = point => `${point[0] * REEF_MAP_SIZE.width / 100},${point[1] * REEF_MAP_SIZE.height / 100}`;
-export const REEF_ROUTE_PATH = `M ${pixel(REEF_CHAPTERS[0].curve[0])} ` + REEF_CHAPTERS.map(({ curve }) => `C ${curve.slice(1).map(pixel).join(' ')}`).join(' ');
-
 export function getReefStage(id) {
   const stage = REEF_STAGES.find(item => item.id === id);
   if (!stage) throw new Error(`Unknown Reef stage: ${id}`);

@@ -1,21 +1,13 @@
-import { FOREST_MILESTONES, getRouteKey } from './destinations.mjs';
+import { getRouteKey } from './destinations.mjs';
 import { REEF_STORIES, getReefStage } from './reef-map.mjs';
 
 export function readReefRoute(profile, storage) {
   return JSON.parse(storage.getItem(getRouteKey(profile.id, 'reef', profile.learningLanguage)));
 }
 
-export function readReefForestRoute(profile, storage) {
-  return JSON.parse(storage.getItem(getRouteKey(profile.id, 'forest', profile.learningLanguage)));
-}
-
-export function isForestFinalePending(forest) {
-  const finale = FOREST_MILESTONES.at(-1).videoId;
-  return forest.unlockedVideos.includes(finale) && !forest.seenVideos.includes(finale);
-}
-
 export function isReefUnlocked(profile, storage) {
-  return readReefRoute(profile, storage)?.unlocked === true || readReefForestRoute(profile, storage)?.progress[36] > 0;
+  const forest = JSON.parse(storage.getItem(getRouteKey(profile.id, 'forest', profile.learningLanguage)));
+  return readReefRoute(profile, storage)?.unlocked === true || forest?.progress[36] > 0;
 }
 
 export function openReefRoute(profile, storage) {

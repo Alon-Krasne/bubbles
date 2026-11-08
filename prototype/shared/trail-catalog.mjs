@@ -250,6 +250,11 @@ export const TRAIL_STAGES = GENERATED_TRAIL_STAGES;
 const ALL_LEVEL_MAPS = Object.fromEntries(Object.keys(GAME_LEVELS).map(game => [game, new Map([...GAME_LEVELS[game], ...REEF_GAME_LEVELS[game]].map(level => [level.id, level]))]));
 
 export const REEF_TRAIL_STAGES = Object.freeze(REEF_LEVEL_STAGES.map(stage => createTrailStage(stage)));
+export const REEF_JOURNEY_STAGES = Object.freeze(REEF_TRAIL_STAGES.map(stage => Object.freeze({
+  ...stage,
+  id: TRAIL_STAGES.length + stage.id,
+  chapterIndex: TRAIL_CHAPTERS.length + stage.chapterIndex,
+})));
 
 export function getDestinationGameLevels(destination) {
   if (destination === 'reef') return REEF_GAME_LEVELS;

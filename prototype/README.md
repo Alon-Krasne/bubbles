@@ -16,11 +16,11 @@ Memory Garden and Listening Shop run inside the trail's hosted activity shell. T
 
 ## The Glowing Reef
 
-The Glowing Reef opens after stage 36 of the Whispering Forest on the active profile and learning track. Continue from the Forest finale or select the Reef card on the world chooser. The Forest companion joins the Reef map in a bubble helmet.
+The Glowing Reef extends the Whispering Forest journey on the same map. Complete stage 36 to reveal stages 37–72. The Forest companion continues in a bubble helmet.
 
 The route has 36 stops across six chapters. It uses the existing recorded vocabulary and five activities at Reef difficulty ranks, with Memory, Shop and Magic House at the lighthouse. The separate Tier 2 vocabulary and Reef-specific activity scenery remain in development.
 
-The bridge and opening are presented in order on entry. The remaining stories unlock after stages 5, 10, 15, 20, 25, 30, 35 and 36. Start playback from the video controls, choose English or Hebrew captions, or skip ahead. The album keeps unlocked stories for replay. The map saves Reef stars and story progress separately from the Forest, per profile and language.
+The Forest finale leads into the bridge and Reef opening. The remaining Reef stories unlock after stages 41, 46, 51, 56, 61, 66, 71 and 72. Start playback from the video controls, choose English or Hebrew captions, or skip ahead. The journey album keeps unlocked stories for replay. The map combines Forest and Reef stars for the active profile and language.
 
 See `assets/reef/README.md` for the artwork and media sources. Run `npm run test:reef-map` for route, media, captions and progress checks. To exercise the built journey in a browser, run `npm run build`, start `node scripts/serve-save-test.mjs`, then run `node scripts/test-reef-browser.mjs`.
 

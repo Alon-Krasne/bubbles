@@ -10,7 +10,7 @@ import {
   MAGIC_HOUSE_ZONES,
 } from './shared/magic-house-room.mjs';
 import { selectVariedRequestIds } from './shared/magic-house-variation.mjs';
-import { MAGIC_HOUSE_PRACTICE_LEVEL, TRAIL_STAGES, REEF_TRAIL_STAGES, getDestinationGameLevels, getGameLevel } from './shared/trail-catalog.mjs';
+import { MAGIC_HOUSE_PRACTICE_LEVEL, TRAIL_STAGES, REEF_JOURNEY_STAGES, getDestinationGameLevels, getGameLevel } from './shared/trail-catalog.mjs';
 import { applyEnglishLearningTranslationHint } from './shared/translation-hint.mjs';
 import { saveStorage } from './shared/saves.mjs';
 import { snapshotHouseRound, restoreHouseRound } from './shared/magic-house-save.mjs';
@@ -144,7 +144,7 @@ function readHostContext() {
   const characterAssets = CHARACTER_ASSETS[profileCharacter];
   const destinationValid = ['forest', 'wonder', 'reef'].includes(destination);
   const levels = destinationValid ? getDestinationGameLevels(destination) : null;
-  const route = destination === 'reef' ? REEF_TRAIL_STAGES : TRAIL_STAGES;
+  const route = destination === 'reef' ? REEF_JOURNEY_STAGES : TRAIL_STAGES;
   if (!destinationValid
     || host !== 'world-map'
     || activityId !== 'magic-house'
