@@ -21,6 +21,13 @@ function validateState(state, poolIds) {
   }
 }
 
+export function drawSavedVocabularyRound({ storage, key, pool, count }) {
+  const saved = storage.getItem(key);
+  const result = drawVocabularyRound({ pool, count, state: saved ? JSON.parse(saved) : null });
+  storage.setItem(key, JSON.stringify(result.state));
+  return result.selection;
+}
+
 export function drawVocabularyRound({ pool, count, state, random = Math.random }) {
   if (!Array.isArray(pool) || pool.length === 0 || new Set(pool).size !== pool.length) {
     throw new Error('Invalid vocabulary pool');

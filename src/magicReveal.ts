@@ -6,11 +6,14 @@ import type { HostedActivitySession, HostedActivityContext } from './hostedActiv
 import './magic-reveal.css';
 import { saveStorage } from '../prototype/shared/saves.mjs';
 import { collectPicture, getCollectedPictures, getPictureOrder } from '../prototype/shared/gallery.mjs';
+import { drawSavedVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
 
 
 export function openMagicReveal(context: HostedActivityContext, session: HostedActivitySession) {
   const level = getGameLevel('reveal', context.levelId);
-  const wordIds = level.wordPool.slice(0, level.wordCount);
+  const wordIds = drawSavedVocabularyRound({ storage: saveStorage,
+    key: `reveal-deck-${context.destination}-${context.profileLanguage}-${context.profileId}-${level.id}`,
+    pool: level.wordPool, count: level.wordCount });
   const progress = { round: 0, guesses: [] as string[], mistakes: 0, hints: 0 };
   const alphabet = context.profileLanguage === 'en' ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' : 'אבגדהוזחטיכךלמםנןסעפףצץקרשת';
   const pictures = getPictureOrder(getCollectedPictures(context.profileId, saveStorage));

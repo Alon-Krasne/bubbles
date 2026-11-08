@@ -2,7 +2,7 @@ import { getPainterWord } from '../prototype/shared/painter-content.mjs';
 import { calculateMasteryStars, formatStarRating } from '../prototype/shared/activity-scoring.mjs';
 
 // Promoted from the reviewed Magic Brush Painter prototype (9b71348).
-export function mountPainter(root, { wordPool, language, speakWord, speakGuidance, speakLetter, onExit, onComplete }) {
+export function mountPainter(root, { wordPool, initialWord, language, speakWord, speakGuidance, speakLetter, onExit, onComplete }) {
 const get = id => root.querySelector('#' + id);
 let disposed = false;
 const timers = new Set();
@@ -67,7 +67,7 @@ function playDissolveSound() {
   }
 }
 
-let wordId = wordPool[0];
+let wordId = initialWord;
 let letterCase = 'titlecase';
 let data = getPainterWord(wordId, language, letterCase);
 const currentLang = language;
@@ -664,6 +664,7 @@ for (const id of wordPool) {
   option.textContent = getPainterWord(id, language, 'titlecase').word;
   wordChoice.append(option);
 }
+wordChoice.value = wordId;
 wordChoice.onchange = () => { wordId = wordChoice.value; changePractice(); };
 get('painter-letter-case').hidden = language !== 'en';
 root.querySelectorAll('[data-letter-case]').forEach(button => {
