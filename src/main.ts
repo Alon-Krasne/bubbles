@@ -19,7 +19,7 @@ import {
   type ProfileLanguage,
 } from './hostedActivity';
 import { calculateMasteryStars, formatStarRating } from '../prototype/shared/activity-scoring.mjs';
-import { GAME_LEVELS, getLanguagePolicy } from '../prototype/shared/trail-catalog.mjs';
+import { getDestinationGameLevels, getLanguagePolicy } from '../prototype/shared/trail-catalog.mjs';
 import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
 import { hebrewWordAudio, playRecordedSequence, stopRecordedSpeech, vocabularyWordAudio } from './recordedSpeech';
 import { waitForMemoryBoardReveal } from './memoryCompletion';
@@ -92,7 +92,7 @@ const MEMORY_MAP_ACTIVE_PATH_POINT_COUNT = 3;
 const MEMORY_WORDS: MemoryWord[] = VOCAB_WORDS;
 const MEMORY_WORD_BY_ID = new Map(MEMORY_WORDS.map((word) => [word.id, word]));
 
-const MEMORY_LEVELS = GAME_LEVELS.memory as readonly MemoryLevel[];
+const MEMORY_LEVELS = getDestinationGameLevels(hostedActivityContext ? hostedActivityContext.destination : 'wonder').memory as readonly MemoryLevel[];
 const MEMORY_ROUTE_POINTS: MemoryRoutePoint[] = [
   { x: 16, y: 62 },
   { x: 30, y: 44 },
@@ -615,7 +615,7 @@ function openHostedActivity() {
     return;
   }
 
-  const shopLevelIds = GAME_LEVELS.shop.map((level) => level.id as ShopLevelId);
+  const shopLevelIds = getDestinationGameLevels(hostedActivityContext.destination).shop.map((level) => level.id as ShopLevelId);
   if (!shopLevelIds.includes(hostedActivityContext.levelId as ShopLevelId)) {
     throw new Error(`Invalid hosted shop level ${hostedActivityContext.levelId}`);
   }

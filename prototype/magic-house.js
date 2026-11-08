@@ -10,7 +10,7 @@ import {
   MAGIC_HOUSE_ZONES,
 } from './shared/magic-house-room.mjs';
 import { selectVariedRequestIds } from './shared/magic-house-variation.mjs';
-import { MAGIC_HOUSE_PRACTICE_LEVEL, TRAIL_STAGES, GAME_LEVELS, getGameLevel } from './shared/trail-catalog.mjs';
+import { MAGIC_HOUSE_PRACTICE_LEVEL, TRAIL_STAGES, REEF_TRAIL_STAGES, getDestinationGameLevels, getGameLevel } from './shared/trail-catalog.mjs';
 import { applyEnglishLearningTranslationHint } from './shared/translation-hint.mjs';
 import { saveStorage } from './shared/saves.mjs';
 import { snapshotHouseRound, restoreHouseRound } from './shared/magic-house-save.mjs';
@@ -142,11 +142,15 @@ function readHostContext() {
   const stageId = Number(params.get('stage'));
   const destination = params.get('destination');
   const characterAssets = CHARACTER_ASSETS[profileCharacter];
-  if ((destination !== 'forest' && destination !== 'wonder')
+  const destinationValid = ['forest', 'wonder', 'reef'].includes(destination);
+  const levels = destinationValid ? getDestinationGameLevels(destination) : null;
+  const route = destination === 'reef' ? REEF_TRAIL_STAGES : TRAIL_STAGES;
+  if (!destinationValid
     || host !== 'world-map'
     || activityId !== 'magic-house'
-    || !TRAIL_STAGES.some(stage => stage.id === stageId)
-    || !GAME_LEVELS.house.some(level => level.id === levelId)
+    || !route.some(stage => stage.id === stageId)
+    || !levels?.house.some(level => level.id === levelId)
+    || (destination === 'reef' && !route.some(stage => stage.id === stageId && stage.level === levelId && stage.game === 'house'))
     || !profileId
     || profileId.length > 64
     || !PROFILE_ID_PATTERN.test(profileId)

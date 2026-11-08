@@ -1,6 +1,6 @@
 import { TRAIL_GAME_SEQUENCE } from './trail-recipes.mjs';
 
-// Presentation-only route. No vocabulary recipes, playable levels or save state.
+// Map geometry and story ordering. Activity recipes live in reef-levels.mjs.
 export const REEF_MAP_SIZE = Object.freeze({ width: 1600, height: 1073 });
 // Reef storybook locks its final three gameplay beats to Memory → Shop → House.
 export const REEF_MAP_GAME_SEQUENCE = Object.freeze([...TRAIL_GAME_SEQUENCE.slice(0, 33), 'memory', 'shop', 'house']);
@@ -53,7 +53,7 @@ function spacedPoints(curve, includeEnd) {
 export const REEF_STAGES = Object.freeze(REEF_CHAPTERS.flatMap((chapter, chapterIndex) =>
   spacedPoints(chapter.curve, chapterIndex === 5).map((position, i) => {
     const id = chapterIndex * 6 + i + 1;
-    return Object.freeze({ id, chapter: chapter.id, activity: REEF_MAP_GAME_SEQUENCE[id - 1], position: Object.freeze(position), playable: false });
+    return Object.freeze({ id, chapter: chapter.id, activity: REEF_MAP_GAME_SEQUENCE[id - 1], position: Object.freeze(position), playable: true });
   }),
 ));
 

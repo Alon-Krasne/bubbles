@@ -2311,6 +2311,12 @@ body {
   width: 100%;
 }
 
+.destination-card-reef .destination-card-badge { background: #369d9b; }
+.destination-card-reef .destination-card-cta { background: #d7f1eb; color: #246e70; }
+.destination-card-reef:disabled { cursor: default; filter: saturate(.7); }
+.destination-card-reef:disabled:hover { transform: none; }
+.destination-gate { align-items: start; }
+
 .destination-card {
   position: relative;
   display: flex;

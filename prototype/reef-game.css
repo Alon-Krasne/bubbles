@@ -1,0 +1,17 @@
+.reef-activity { position:fixed; inset:0; z-index:50; background:#fff9ec; }
+.reef-activity iframe { width:100%; height:100%; border:0; display:block; }
+.reef-locked { min-height:100dvh; display:grid; align-content:center; justify-items:center; gap:16px; padding:24px; text-align:center; background:#def2e9; }
+.reef-locked a { color:#216e70; }
+.stage-stop.is-locked { background:#dce7df; color:#687b74; opacity:.85; }
+.stage-stop.is-locked .stop-activity { background:#d8e0d5; }
+.stage-stop.is-locked::after { content:'🔒'; position:absolute; bottom:-7px; left:-5px; font-size:12px; }
+.stage-stop.is-complete { background:#cfecdc; color:#317468; }
+.stage-stop.is-complete::after { content:'★'; position:absolute; bottom:-9px; left:-4px; color:#c48e36; text-shadow:0 1px #fff; }
+.stage-stop.is-current { box-shadow:0 4px #b29653,0 0 0 5px #fff4b3b3; }
+.story-dialog.is-pending .album-content { grid-template-columns:minmax(0, 1fr); }
+.story-button:disabled { cursor:default; background:#a9bdb3; box-shadow:0 4px #879d92; }
+.story-choice:disabled { opacity:.55; cursor:default; min-height:55px; grid-template-columns:1fr; }
+.album-footer { display:flex; justify-content:space-between; align-items:center; gap:15px; margin-top:20px; font-size:12px; }
+.album-footer label { display:flex; align-items:center; gap:8px; }
+.album-footer select { font:inherit; padding:9px; border:1px solid #b9d5c4; border-radius:10px; background:#fffcf0; color:#416b65; }
+.album-footer .story-button { margin:0; }

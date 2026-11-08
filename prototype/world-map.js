@@ -10,6 +10,7 @@ import {
   normalizeTrackProgress,
 } from './shared/track-progress.mjs';
 import { getTravellerPosition } from './shared/traveller-position.mjs';
+import { isForestFinalePending, isReefUnlocked, openReefRoute, readReefRoute } from './shared/reef-progress.mjs';
 import { formatStarRating } from './shared/activity-scoring.mjs';
 import { saveStorage } from './shared/saves.mjs';
 import {
@@ -115,6 +116,7 @@ const destinationAvatar = document.getElementById('destination-avatar');
 const destinationPlayerName = document.getElementById('destination-player-name');
 const destinationCardWonder = document.getElementById('destination-card-wonder');
 const destinationCardForest = document.getElementById('destination-card-forest');
+const destinationCardReef = document.getElementById('destination-card-reef');
 const wonderStarsCount = document.getElementById('wonder-stars-count');
 const wonderStageLabel = document.getElementById('wonder-stage-label');
 const forestStarsCount = document.getElementById('forest-stars-count');
@@ -623,6 +625,12 @@ function openDestinationGate() {
   const forestStars = Object.values(forestProg.progress).reduce((total, stars) => total + stars, 0);
   forestStarsCount.textContent = String(forestStars);
   forestStageLabel.textContent = forestProg.character ? `שלב ${forestProg.currentStage}` : 'מסע חדש';
+  const reefUnlocked = isReefUnlocked(profile, saveStorage);
+  destinationCardReef.disabled = !reefUnlocked;
+  const reef = readReefRoute(profile, saveStorage);
+  document.getElementById('reef-stars-count').textContent = reef ? String(Object.values(reef.progress).reduce((total, stars) => total + stars, 0)) : '0';
+  document.getElementById('reef-stage-label').textContent = reefUnlocked ? `שלב ${reef?.currentStage ?? 1}` : 'נפתחת בסיום שלב 36 ביער';
+  document.getElementById('reef-card-cta').textContent = reefUnlocked ? 'ממשיכים אל השונית! ←' : 'עוד הרפתקה מחכה לנו 🔒';
 }
 
 function closeDestinationGate() {
@@ -633,6 +641,17 @@ function closeDestinationGate() {
 }
 
 function chooseDestination(destId) {
+  if (destId === 'reef') {
+    const profile = getProfile();
+    if (!isReefUnlocked(profile, saveStorage)) throw new Error('Reef is locked');
+    const forest = getRouteProgress(profile.id, 'forest');
+    if (isForestFinalePending(forest)) {
+      chooseDestination('forest');
+      return;
+    }
+    location.assign('./reef-map.html');
+    return;
+  }
   if (destId === 'forest') {
     const profile = getProfile(activeProfileId);
     if (!forestProgress[profile.id].character) {
@@ -1171,6 +1190,7 @@ function confirmProfileDeletion() {
   saveStorage.removeItem(getGalleryKey(deletedId));
   for (const lang of Object.keys(languageOptions)) {
     saveStorage.removeItem(getRouteKey(deletedId, 'forest', lang));
+    saveStorage.removeItem(getRouteKey(deletedId, 'reef', lang));
   }
   profiles.splice(deletedIndex, 1);
   delete routeProgress[deletedId];
@@ -1305,6 +1325,7 @@ function completeLaunchedStage(launch, stars = 3) {
 
   if (!nextStage) {
     saveWorldProgress(destination);
+    if (worldComplete && destination === 'forest') openReefRoute(profile, saveStorage);
     if (launch.profileId === activeProfileId) {
       updateStarTotal(progress);
       renderRoute();
@@ -1338,6 +1359,7 @@ function showWorldComplete(profile, progress) {
   setJourneyCharacter(worldCompleteCharacter, profile, activeDestination);
   document.getElementById('world-complete-stage-copy').textContent = `סיימתם את כל ${availableStages.length} שלבי המסלול.`;
   document.getElementById('world-complete-score').textContent = `${getEarnedStarTotal(progress)} / ${availableStarTotal}`;
+  worldCompleteButton.textContent = activeDestination === 'forest' ? 'ממשיכים אל השונית ←' : 'חזרה למסלול';
   setWorldInteractionLocked(true);
   worldCompleteOverlay.inert = false;
   worldCompleteOverlay.classList.add('is-visible');
@@ -1444,7 +1466,10 @@ profileNameInput.addEventListener('input', () => profileNameInput.setCustomValid
 panelClose.addEventListener('click', () => stagePanel.classList.remove('is-open'));
 playButton.addEventListener('click', launchSelectedStage);
 activityFrame.addEventListener('load', revealLoadedActivity);
-worldCompleteButton.addEventListener('click', closeWorldComplete);
+worldCompleteButton.addEventListener('click', () => {
+  if (activeDestination === 'forest') chooseDestination('reef');
+  else closeWorldComplete();
+});
 
 
 destinationsNavButton.addEventListener('click', openDestinationGate);
@@ -1454,6 +1479,7 @@ destinationProfilePill.addEventListener('click', () => {
 });
 destinationCardWonder.addEventListener('click', () => chooseDestination('wonder'));
 destinationCardForest.addEventListener('click', () => chooseDestination('forest'));
+destinationCardReef.addEventListener('click', () => chooseDestination('reef'));
 
 forestFriendCards.forEach((btn) => {
   btn.addEventListener('click', () => chooseForestCompanion(btn.dataset.character));

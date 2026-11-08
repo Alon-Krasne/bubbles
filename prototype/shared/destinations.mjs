@@ -71,8 +71,8 @@ export function getForestVideoMedia(videoId) {
 }
 
 export function getRouteKey(profileId, destination = 'wonder', language = 'en') {
-  if (destination === 'forest') {
-    return `forest-route-${profileId}-${language}`;
+  if (destination === 'forest' || destination === 'reef') {
+    return `${destination}-route-${profileId}-${language}`;
   }
   return `route-${profileId}`;
 }
@@ -163,5 +163,5 @@ export function getPendingForestMilestone(progress) {
 }
 
 export function getActivitySavePrefix(profileId, destination, language) {
-  return destination === 'forest' ? `forest-${profileId}-${language}` : profileId;
+  return destination === 'forest' || destination === 'reef' ? `${destination}-${profileId}-${language}` : profileId;
 }

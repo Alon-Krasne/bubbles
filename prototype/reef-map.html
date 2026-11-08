@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#c8ebe6">
   <title>השונית הזוהרת · מפת המסע</title>
   <link rel="stylesheet" href="./reef-map.css">
+  <link rel="stylesheet" href="./reef-game.css">
 </head>
 <body>
   <svg class="icon-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -20,11 +21,11 @@
     <symbol id="icon-shell" viewBox="0 0 32 32"><path d="M16 28C-6 18 6-5 16 7 26-5 38 18 16 28ZM16 28V8M16 28 7 10M16 28l9-18"/></symbol>
   </svg>
 
-  <main class="reef-screen">
+  <main class="reef-screen" id="reef-screen" hidden inert>
     <header class="map-header">
       <a class="round-control back-link" href="./world-map.html" aria-label="חזרה למפת העולמות" title="חזרה לעולמות">↗</a>
-      <div class="heading"><p>עולם 2 · מסע חדש מתחת למים</p><h1>השונית הזוהרת</h1></div>
-      <button class="album-button" id="open-album" type="button" aria-label="סיפורי השונית" title="סיפורי השונית"><svg aria-hidden="true"><use href="#icon-play"/></svg><span>סיפורי השונית</span><small>10</small></button>
+      <div class="heading"><p id="journey-title"></p><h1>השונית הזוהרת</h1></div>
+      <button class="album-button" id="open-album" type="button" aria-label="סיפורי השונית" title="סיפורי השונית"><svg aria-hidden="true"><use href="#icon-play"/></svg><span>סיפורי השונית</span><small id="album-count"></small></button>
     </header>
 
     <section class="map-viewport" id="map-viewport" aria-label="מפת השונית, 36 תחנות. אפשר לגלול כדי לחקור את המפה" tabindex="0">
@@ -47,17 +48,20 @@
     <section class="stage-card" aria-labelledby="stage-title">
       <div class="activity-token" id="activity-token"><svg aria-hidden="true"><use id="activity-icon" href="#icon-memory"/></svg></div>
       <div class="stage-copy"><p id="stage-kicker"></p><h2 id="stage-title"></h2><p id="stage-description"></p></div>
-      <button class="story-button" id="stage-story" type="button"><svg aria-hidden="true"><use href="#icon-play"/></svg><span>הסיפור בדרך</span></button>
-      <p class="preview-note"><span aria-hidden="true">✦</span> סיור במפה · המשחקים ייפתחו בהמשך</p>
+      <button class="story-button" id="play-stage" type="button"><svg aria-hidden="true"><use href="#icon-play"/></svg><span>שחקו</span></button>
+      <p class="preview-note" id="stage-stars"></p>
     </section>
-    <p class="map-caption">36 תחנות קטנות. שלושה חברים. שונית אחת שמחכה לאור.</p>
+    <p class="map-caption" id="map-progress"></p>
   </main>
+
+  <section class="reef-locked" id="reef-locked" hidden><h1>עוד הרפתקה מחכה לנו</h1><p>השונית נפתחת אחרי סיום שלב 36 ביער הלוחש.</p><a href="./world-map.html">חזרה לעולמות ←</a></section>
+  <section class="reef-activity" id="reef-activity" hidden aria-label="משחק פעיל"><iframe id="activity-frame" title="המשחק בשונית" allow="autoplay"></iframe></section>
 
   <dialog class="story-dialog" id="story-dialog" aria-labelledby="album-title">
     <header><div><p>כל החברים, כל הסיפורים</p><h2 id="album-title">סיפורי השונית</h2></div><button class="round-control" id="close-album" type="button" aria-label="סגירת סיפורי השונית">×</button></header>
     <div class="album-content"><div class="story-screen"><video id="story-video" controls playsinline preload="none"></video><h3 id="story-title"></h3><p id="story-when"></p><p class="video-error" id="video-error" role="alert" hidden>הסרטון לא נטען. אפשר לפתוח אותו שוב מהרשימה.</p></div><nav class="story-list" id="story-list" aria-label="בחירת סיפור"></nav></div>
-    <p class="album-note">תצוגה מקדימה: אפשר לצפות בכל הסיפורים. אין שינוי בהתקדמות במשחק.</p>
+    <footer class="album-footer"><label>כתוביות <select id="caption-language"><option value="he">עברית</option><option value="en">English</option><option value="off">ללא</option></select></label><button class="story-button" id="continue-story" type="button">חזרה למפה ←</button></footer>
   </dialog>
-  <script type="module" src="./reef-map.js"></script>
+  <script type="module" src="./reef-map-bootstrap.js"></script>
 </body>
 </html>

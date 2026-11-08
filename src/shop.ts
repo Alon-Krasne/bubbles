@@ -5,7 +5,7 @@ import { VOCAB_WORDS, type VocabWord } from './words';
 import { createShopItemArt } from './shop-art';
 import type { HostedActivitySession } from './hostedActivity';
 import { calculateMasteryStars, formatStarRating } from '../prototype/shared/activity-scoring.mjs';
-import { GAME_LEVELS } from '../prototype/shared/trail-catalog.mjs';
+import { getDestinationGameLevels } from '../prototype/shared/trail-catalog.mjs';
 import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
 import { applyEnglishLearningTranslationHint, removeHebrewTranslationHint } from '../prototype/shared/translation-hint.mjs';
 import {
@@ -123,9 +123,8 @@ const PLURALS: Record<string, string> = {
 };
 const SHOP_ITEMS: ShopItem[] = VOCAB_WORDS.filter((word) => word.shoppable);
 
-const SHOP_LEVELS = GAME_LEVELS.shop as readonly ShopLevel[];
-
 export function initShopGame(deps: ShopDeps) {
+  const SHOP_LEVELS = getDestinationGameLevels(deps.hostedSession ? deps.hostedSession.context.destination : 'wonder').shop as readonly ShopLevel[];
   const hostedRoundRecords = new Map<string, string>();
   const state = {
     activeLevel: SHOP_LEVELS[0],

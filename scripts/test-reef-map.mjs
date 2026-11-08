@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { REEF_ACTIVITIES, REEF_CHAPTERS, REEF_STAGES, REEF_STORIES, getReefStage, getStoryBeforeReefStage } from '../prototype/shared/reef-map.mjs';
 import { TRAIL_GAME_SEQUENCE } from '../prototype/shared/trail-recipes.mjs';
+import { REEF_TRAIL_STAGES, getGameLevel, getDestinationGameLevels } from '../prototype/shared/trail-catalog.mjs';
+import { REEF_CAPTIONS } from '../prototype/shared/reef-captions.mjs';
+import { VOCABULARY } from '../prototype/shared/vocabulary-catalog.mjs';
+const vocabularyIds = new Set(VOCABULARY.map(word => word.id));
 
 assert.equal(REEF_CHAPTERS.length, 6);
 assert.equal(REEF_STAGES.length, 36);
@@ -13,7 +16,13 @@ for (const stage of REEF_STAGES) {
   assert(stage.position && Number.isFinite(stage.position.x) && Number.isFinite(stage.position.y), `Stage ${stage.id}: finite position`);
   assert(stage.position.x > 3 && stage.position.x < 97 && stage.position.y > 3 && stage.position.y < 97);
   assert(REEF_ACTIVITIES[stage.activity]);
-  assert.equal(stage.playable, false, 'Map preview must not enable unfinished activities');
+  assert.equal(stage.playable, true);
+  const activity = REEF_TRAIL_STAGES.find(item => item.id === stage.id);
+  assert(activity.available && activity.entry && activity.activity);
+  const level = getGameLevel(activity.game, activity.level);
+  assert.equal(level.difficultyRank, REEF_CHAPTERS[stage.chapter - 1].rank);
+  assert(getDestinationGameLevels('reef')[activity.game].includes(level));
+  for (const id of level.wordPool || level.itemPool || []) assert(vocabularyIds.has(id), `Unrecorded vocabulary reference ${id}`);
   assert.equal(getReefStage(stage.id), stage);
 }
 for (const chapter of REEF_CHAPTERS) assert.equal(REEF_STAGES.filter(stage => stage.chapter === chapter.id).length, 6);
@@ -33,11 +42,11 @@ assert.equal(getStoryBeforeReefStage(36).id, 'reef-video-08', 'Finale belongs af
 assert.deepEqual(REEF_STORIES.map(story => story.after), [null, 0, 5, 10, 15, 20, 25, 30, 35, 36]);
 assert.equal(REEF_STORIES.length, 10);
 for (const story of REEF_STORIES) {
+  assert(REEF_CAPTIONS[story.id].length > 0);
+  for (const cue of REEF_CAPTIONS[story.id]) assert(cue.start >= 0 && cue.end > cue.start && cue.he && cue.en);
   for (const file of [story.src, story.poster]) {
     const url = new URL(`../prototype/${file}`, import.meta.url);
     assert(fs.statSync(url).size > 0, `Missing media: ${file}`);
   }
 }
-const screen = fs.readFileSync(fileURLToPath(new URL('../prototype/reef-map.js', import.meta.url)), 'utf8');
-assert(!/localStorage|saveStorage|sessionStorage|postMessage/.test(screen), 'Isolated preview must not write saves or post gameplay completions');
-console.log('Reef map: 36 spaced stops, six chapters, shared rotation with Reef finale, ten local stories and preview isolation passed.');
+console.log('Reef map: 36 playable activity recipes, spaced stops, six chapters, ten local stories and bilingual caption coverage passed.');

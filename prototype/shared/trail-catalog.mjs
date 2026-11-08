@@ -1,4 +1,5 @@
 import { MAGIC_HOUSE_REQUESTS } from './magic-house-content.mjs';
+import { REEF_GAME_LEVELS, REEF_LEVEL_STAGES } from './reef-levels.mjs';
 import {
   DIFFICULTY_LABELS,
   GENERATED_TRAIL,
@@ -246,8 +247,20 @@ export const GENERATED_TRAIL_STAGES = Object.freeze(GENERATED_TRAIL.stages.map((
 export const GAME_LEVELS = GENERATED_GAME_LEVELS;
 export const TRAIL_STAGES = GENERATED_TRAIL_STAGES;
 
+const ALL_LEVEL_MAPS = Object.fromEntries(Object.keys(GAME_LEVELS).map(game => [game, new Map([...GAME_LEVELS[game], ...REEF_GAME_LEVELS[game]].map(level => [level.id, level]))]));
+
+export const REEF_TRAIL_STAGES = Object.freeze(REEF_LEVEL_STAGES.map(stage => createTrailStage(stage)));
+
+export function getDestinationGameLevels(destination) {
+  if (destination === 'reef') return REEF_GAME_LEVELS;
+  if (destination === 'wonder' || destination === 'forest') return GAME_LEVELS;
+  throw new Error(`Unknown activity destination ${destination}`);
+}
+
 export function getGameLevel(game, levelId) {
-  return getGeneratedGameLevel(game, levelId);
+  const level = ALL_LEVEL_MAPS[game]?.get(levelId);
+  if (!level) throw new Error(`Unknown ${game} level ${levelId}`);
+  return level;
 }
 
 export function validateTrailCatalog({ vocabularyIds, magicRequestIds }) {
