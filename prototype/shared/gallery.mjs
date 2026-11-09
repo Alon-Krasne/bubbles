@@ -1,4 +1,6 @@
 import { FOREST_MILESTONES, getForestVideoMedia, getRouteKey } from './destinations.mjs';
+import { REEF_STORIES } from './reef-map.mjs';
+import { readReefRoute } from './reef-progress.mjs';
 
 export const REVEAL_PICTURES = [
   ['strawberry-island', 'אי התותים'], ['pearl-village', 'כפר הפנינים'],
@@ -27,6 +29,10 @@ export function getGalleryItems(profileId, storage) {
   for (const language of ['en', 'he']) {
     const saved = storage.getItem(getRouteKey(profileId, 'forest', language));
     if (saved !== null) for (const id of JSON.parse(saved).unlockedVideos) videos.add(id);
+    const reef = readReefRoute({ id: profileId, learningLanguage: language }, storage);
+    if (reef?.seenVideos.includes(REEF_STORIES[0].id)) {
+      for (const id of reef.unlockedVideos) videos.add(id);
+    }
   }
   return [
     ...REVEAL_PICTURES.map(picture => ({ ...picture, type: 'picture', unlocked: pictures.includes(picture.id), hint: 'מגלים מילה במשחק התמונה הקסומה' })),
@@ -35,6 +41,7 @@ export function getGalleryItems(profileId, storage) {
       ...getForestVideoMedia(milestone.videoId), unlocked: videos.has(milestone.videoId),
       hint: milestone.triggerStage === 0 ? 'יוצאים למסע ביער הלוחש' : `מסיימים את שלב ${milestone.triggerStage} ביער הלוחש`,
     })),
+    ...REEF_STORIES.filter(story => videos.has(story.id)).map(story => ({ ...story, type: 'video', unlocked: true })),
   ];
 }
 

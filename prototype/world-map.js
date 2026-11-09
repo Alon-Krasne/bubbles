@@ -12,7 +12,7 @@ import {
   normalizeTrackProgress,
 } from './shared/track-progress.mjs';
 import { getTravellerPosition } from './shared/traveller-position.mjs';
-import { completeReefStage, markReefStorySeen, openReefRoute, pendingReefStory, readReefRoute } from './shared/reef-progress.mjs';
+import { completeReefStage, markReefStorySeen, openReefRoute, pendingReefStory, readReefRoute, setReefNextStage } from './shared/reef-progress.mjs';
 import { formatStarRating } from './shared/activity-scoring.mjs';
 import { saveStorage } from './shared/saves.mjs';
 import {
@@ -35,6 +35,7 @@ let reefProgress = null;
 const FIRST_REGION_LENGTH = TRAIL_STAGES.length;
 const FOREST_FINALE = FOREST_MILESTONES.at(-1);
 const REEF_BRIDGE_ID = REEF_STORIES[0].id;
+const MAP_WORLD_TITLES = { wonder: DESTINATIONS.wonder.title, forest: DESTINATIONS.forest.title, reef: 'השונית הזוהרת' };
 const JOURNEY_CHAPTERS = [...TRAIL_CHAPTERS, ...REEF_CHAPTERS.map(chapter => ({ ...chapter, subtitle: chapter.topic, symbol: '🐚' }))];
 const REEF_MILESTONES = new Map(REEF_STORIES.map(story => [story.id, {
   ...story, videoId: story.id, triggerStage: FIRST_REGION_LENGTH + (story.after ?? 0),
@@ -111,6 +112,8 @@ const deleteConfirmCopy = document.getElementById('delete-confirm-copy');
 const cancelDeleteButton = document.getElementById('cancel-delete-button');
 const confirmDeleteButton = document.getElementById('confirm-delete-button');
 const trackResetSection = document.getElementById('track-reset-section');
+const trackResetLegend = document.getElementById('track-reset-legend');
+const trackWorldSelect = document.getElementById('track-world-select');
 const trackStageSelect = document.getElementById('track-stage-select');
 const trackResetButton = document.getElementById('track-reset-button');
 const trackResetConfirm = document.getElementById('track-reset-confirm');
@@ -149,6 +152,7 @@ const forestStoriesButton = document.getElementById('forest-stories-button');
 const forestCaptionTracks = Object.fromEntries(['he','en'].map(lang => [lang, forestMilestoneVideo.addTextTrack('subtitles', lang === 'he' ? 'עברית' : 'English', lang)]));
 
 let activeDestination = getActiveDestination();
+let visitingCompletedForest = false;
 let destinationGateWasOpen = false;
 let activeMilestoneVideoId = null;
 let isPendingMilestonePresentation = false;
@@ -164,6 +168,8 @@ upgradeCompletedFrontier();
 let selectedStage = null;
 let editingProfileId = null;
 let editorReturnsToGate = true;
+let editorJourneyWorld = null;
+const editorEntryWorlds = new Map();
 let activeLaunch = null;
 let launchTimer = null;
 let launchStartedAt = 0;
@@ -363,7 +369,8 @@ function loadJourneyStages() {
   reefProgress = activeDestination === 'forest' && progress.progress[FIRST_REGION_LENGTH] > 0
     ? openReefRoute(getProfile(), saveStorage)
     : null;
-  mapWorld = hasFinishedWorldHandoff(progress, reefProgress) ? 'reef' : activeDestination;
+  mapWorld = !visitingCompletedForest && progress.character && hasFinishedWorldHandoff(progress, reefProgress)
+    ? 'reef' : activeDestination;
   screenStages = mapWorld === 'reef' ? REEF_JOURNEY_STAGES : stages;
   world.dataset.mapWorld = mapWorld;
   const hash = mapWorld === 'reef' ? '#reef' : '';
@@ -604,11 +611,10 @@ function updateWorldDestinationChrome() {
   world.dataset.destination = activeDestination;
   forestStoriesButton.hidden = activeDestination !== 'forest';
   forestFriendButton.hidden = activeDestination !== 'forest';
-  const dest = DESTINATIONS[activeDestination];
   const titleEl = document.querySelector('.world-title strong');
   const journeyEl = document.getElementById('journey-label');
   if (titleEl) {
-    titleEl.textContent = mapWorld === 'reef' ? 'השונית הזוהרת' : dest.title;
+    titleEl.textContent = MAP_WORLD_TITLES[mapWorld];
   }
   if (journeyEl) {
     if (activeDestination === 'forest') {
@@ -674,7 +680,7 @@ function openDestinationGate() {
   const reachedReef = hasFinishedWorldHandoff(forestProg, reef);
   forestStarsCount.textContent = String(getEarnedStarTotal(forestProg) + (reachedReef ? getEarnedStarTotal(reef) : 0));
   const forestStage = reachedReef ? FIRST_REGION_LENGTH + reef.currentStage : forestProg.currentStage;
-  forestStageLabel.textContent = forestProg.character ? `שלב ${forestStage}` : 'מסע חדש';
+  forestStageLabel.textContent = forestProg.character || forestStage > 1 ? `שלב ${forestStage}` : 'מסע חדש';
 }
 
 function closeDestinationGate() {
@@ -684,9 +690,12 @@ function closeDestinationGate() {
   destinationsNavButton.focus();
 }
 
-function chooseDestination(destId) {
+function chooseDestination(destId, requestedWorld = null) {
+  visitingCompletedForest = false;
   if (destId === 'forest') {
     const profile = getProfile(activeProfileId);
+    visitingCompletedForest = requestedWorld === 'forest'
+      && hasFinishedWorldHandoff(forestProgress[profile.id], readReefRoute(profile, saveStorage));
     if (!forestProgress[profile.id].character) {
       openDestinationGate();
       openForestCharacterPicker();
@@ -756,7 +765,8 @@ function chooseForestCompanion(characterId) {
     updateWorldDestinationChrome();
     updateTravellerAsset('idle');
   } else {
-    chooseDestination('forest');
+    if (visitingCompletedForest) chooseDestination('forest', 'forest');
+    else chooseDestination('forest');
   }
 }
 
@@ -820,7 +830,7 @@ function showPendingJourneyStory() {
   const forestStories = reefProgress ? [FOREST_FINALE] : FOREST_MILESTONES.slice(0, -1);
   const forestStory = forestStories.find(milestone =>
     forest.unlockedVideos.includes(milestone.videoId) && !forest.seenVideos.includes(milestone.videoId));
-  const reefStory = reefProgress && pendingReefStory(reefProgress);
+  const reefStory = reefProgress && !visitingCompletedForest && pendingReefStory(reefProgress);
   const milestone = forestStory || (reefStory && REEF_MILESTONES.get(reefStory.id));
   if (!milestone) return false;
   showForestMilestone(milestone, true);
@@ -876,6 +886,7 @@ function updateForestCaptions() {
 }
 
 function setProfile(profileId) {
+  if (profileId !== activeProfileId) visitingCompletedForest = false;
   activeProfileId = profileId;
   localStorage.setItem(WORLD_ACTIVE_PROFILE_STORAGE_KEY, profileId);
   const profile = getProfile();
@@ -935,10 +946,7 @@ function renderProfileMenu() {
     language.textContent = languageOptions[profile.learningLanguage].label;
     copy.append(name, language);
     button.append(image, copy);
-    button.addEventListener('click', () => {
-      setProfile(profile.id);
-      chooseDestination(activeDestination);
-    });
+    button.addEventListener('click', () => enterTrail(profile.id));
     profileMenuList.append(button);
   });
 }
@@ -985,15 +993,28 @@ function openGate() {
   renderGateProfiles();
 }
 
+function getEditorEntryWorld(profileId) {
+  const selection = editorEntryWorlds.get(profileId);
+  if (!selection || (selection.world !== 'wonder' && selection.language !== getProfile(profileId).learningLanguage)) return null;
+  return selection.world;
+}
+
 function enterTrail(profileId) {
   setProfile(profileId);
   profileGate.hidden = true;
+  const requestedWorld = getEditorEntryWorld(profileId);
+  editorEntryWorlds.delete(profileId);
+  if (requestedWorld) {
+    destinationGateWasOpen = false;
+    chooseDestination(requestedWorld === 'reef' ? 'forest' : requestedWorld, requestedWorld);
+    return;
+  }
   if (destinationGateWasOpen) {
     destinationGateWasOpen = false;
     openDestinationGate();
     return;
   }
-  chooseDestination(activeDestination);
+  chooseDestination(activeDestination, mapWorld);
 }
 
 function toggleProfileMenu() {
@@ -1008,6 +1029,7 @@ function closeProfileMenu() {
 }
 
 function openProfileEditor(profileId) {
+  closeProfileMenu();
   editingProfileId = profileId;
   editorReturnsToGate = !profileGate.hidden;
   world.inert = true;
@@ -1031,8 +1053,18 @@ function openProfileEditor(profileId) {
   trackResetConfirm.hidden = true;
   trackResetButton.disabled = false;
   trackResetStatus.textContent = '';
+  editorJourneyWorld = editorReturnsToGate ? activeDestination : mapWorld;
   if (!isCreating) {
-    renderTrackResetOptions(profileId);
+    const profile = getProfile(profileId);
+    if (editorReturnsToGate) {
+      const requestedWorld = getEditorEntryWorld(profileId);
+      if (requestedWorld) editorJourneyWorld = requestedWorld;
+      else if (activeDestination === 'forest' && hasFinishedWorldHandoff(forestProgress[profileId], readReefRoute(profile, saveStorage))) {
+        editorJourneyWorld = 'reef';
+      }
+    }
+    trackWorldSelect.value = editorJourneyWorld;
+    renderTrackResetOptions();
   }
   profileEditor.hidden = false;
   profileEditor.setAttribute('aria-hidden', 'false');
@@ -1051,52 +1083,76 @@ function closeProfileEditor(resumeJourney = true) {
     profileGate.removeAttribute('aria-hidden');
     addProfileButton.focus();
   } else if (resumeJourney) {
-    chooseDestination(activeDestination);
+    chooseDestination(editorJourneyWorld === 'reef' ? 'forest' : editorJourneyWorld, editorJourneyWorld);
   }
 }
 
-function renderTrackResetOptions(profileId) {
-  const progress = getRouteProgress(profileId);
-  const currentStage = progress.currentStage;
-  trackStageSelect.replaceChildren(...applyJourneyOrder(TRAIL_STAGES, progress.stageOrder).map((stage) => {
+function getEditedTrack() {
+  const profile = getProfile(editingProfileId);
+  const world = trackWorldSelect.value;
+  if (world === 'reef') {
+    const reef = readReefRoute(profile, saveStorage);
+    return {
+      profile, world, stages: REEF_JOURNEY_STAGES, offset: FIRST_REGION_LENGTH,
+      progress: reef ?? createTrackProgress(1, REEF_JOURNEY_STAGES.length),
+      needsHandoff: !hasFinishedWorldHandoff(forestProgress[profile.id], reef),
+    };
+  }
+  const progress = getRouteProgress(profile.id, world);
+  return { profile, world, stages: applyJourneyOrder(TRAIL_STAGES, progress.stageOrder), offset: 0, progress, needsHandoff: false };
+}
+
+function renderTrackResetOptions() {
+  const { profile, world, stages, progress, offset } = getEditedTrack();
+  const language = world === 'wonder' ? 'כל שפות הלימוד' : languageOptions[profile.learningLanguage].label;
+  trackResetLegend.textContent = `התקדמות במסלול · ${language}`;
+  const currentStage = progress.currentStage + offset;
+  trackStageSelect.replaceChildren(...stages.map((stage) => {
     const option = document.createElement('option');
     option.value = String(stage.id);
     option.textContent = `שלב ${stage.id}: ${stage.title}${stage.id === currentStage ? ' (השלב הנוכחי)' : ''}`;
     return option;
   }));
   trackStageSelect.value = String(currentStage);
-  updateTrackResetCopy();
-  updateTrackResetAvailability();
+  syncTrackResetControls();
+}
+
+function getTrackResetSelection() {
+  const track = getEditedTrack();
+  const { stages, offset, progress } = track;
+  const stageId = Number(trackStageSelect.value);
+  const reset = createTrackProgress(stageId - offset, stages.length);
+  const hasSameStars = stages.every((stage) => (
+    (progress.progress[stage.id - offset] || 0) === (reset.progress[stage.id - offset] || 0)
+  ));
+  const switchesWorld = track.world !== editorJourneyWorld;
+  const changesProgress = progress.currentStage !== reset.currentStage || (!switchesWorld && !hasSameStars);
+  return { ...track, reset, stageId, changesProgress, switchesWorld };
 }
 
 function updateTrackResetAvailability() {
-  if (editingProfileId === null) {
-    trackResetButton.disabled = true;
-    return;
-  }
-  const stageId = Number(trackStageSelect.value);
-  const current = getRouteProgress(editingProfileId);
-  const reset = createTrackProgress(stageId, stages.length);
-  const hasSameStars = stages.every((stage) => (
-    (current.progress[stage.id] || 0) === (reset.progress[stage.id] || 0)
-  ));
-  trackResetButton.disabled = current.currentStage === reset.currentStage && hasSameStars;
+  const { changesProgress, needsHandoff, switchesWorld } = getTrackResetSelection();
+  trackResetButton.disabled = !changesProgress && !needsHandoff && !switchesWorld;
 }
 
 function updateTrackResetCopy() {
-  const stageId = Number(trackStageSelect.value);
-  confirmTrackResetButton.classList.toggle('is-destructive', stageId === 1);
-  if (stageId === 1) {
+  const { world, stageId, offset, reset, changesProgress, needsHandoff } = getTrackResetSelection();
+  const title = MAP_WORLD_TITLES[world];
+  const handoffCopy = needsHandoff ? ' היער יסומן כהושלם וקטעי המעבר יהיו זמינים לצפייה חוזרת.' : '';
+  const resetsWorld = changesProgress && reset.currentStage === 1;
+  confirmTrackResetButton.classList.toggle('is-destructive', resetsWorld);
+  if (resetsWorld) {
     trackResetButton.textContent = 'איפוס להתחלה';
     confirmTrackResetButton.textContent = 'כן, מאפסים עכשיו';
-    trackResetCopy.textContent = activeDestination === 'forest'
-      ? 'כוכבי היער יימחקו והיער יתחיל משלב 1.'
-      : 'כל הכוכבים יימחקו והמסלול יתחיל משלב 1.';
+    trackResetCopy.textContent = `הכוכבים בעולם ״${title}״ יימחקו והמסלול יתחיל משלב ${stageId}.${handoffCopy}`;
     return;
   }
-  trackResetButton.textContent = 'עדכון ההתקדמות';
-  confirmTrackResetButton.textContent = 'כן, מעדכנים עכשיו';
-  trackResetCopy.textContent = `שלבים 1 עד ${stageId - 1} יקבלו 3 כוכבים, ושלב ${stageId} ייפתח למשחק.`;
+  const advancesTrack = changesProgress || needsHandoff;
+  trackResetButton.textContent = advancesTrack ? 'עדכון ההתקדמות' : 'מעבר לעולם';
+  confirmTrackResetButton.textContent = advancesTrack ? 'כן, מעדכנים עכשיו' : 'כן, עוברים עכשיו';
+  const starsCopy = changesProgress && reset.currentStage > 1
+    ? ` שלבים ${offset + 1} עד ${stageId - 1} יקבלו 3 כוכבים. כוכבים משלב ${stageId} והלאה יימחקו.` : '';
+  trackResetCopy.textContent = `השלב הבא בעולם ״${title}״ יהיה ${stageId}.${starsCopy}${handoffCopy}`;
 }
 
 function requestTrackReset() {
@@ -1108,61 +1164,81 @@ function requestTrackReset() {
   confirmTrackResetButton.focus();
 }
 
+function prepareForestForReef(profile) {
+  const previous = forestProgress[profile.id];
+  const completed = createTrackProgress(FIRST_REGION_LENGTH, FIRST_REGION_LENGTH);
+  const stories = FOREST_MILESTONES.map(milestone => milestone.videoId);
+  forestProgress[profile.id] = {
+    ...previous,
+    currentStage: completed.currentStage,
+    progress: { ...completed.progress, [FIRST_REGION_LENGTH]: 3, ...previous.progress },
+    unlockedVideos: stories,
+    seenVideos: stories,
+  };
+  saveStorage.setItem(getRouteKey(profile.id, 'forest', profile.learningLanguage), JSON.stringify(forestProgress[profile.id]));
+}
+
 function resetEditedProfileTrack() {
-  if (editingProfileId === null) {
-    throw new Error('Cannot reset a profile before it is created');
-  }
-  const stageId = Number(trackStageSelect.value);
-  const profile = getProfile(editingProfileId);
-  clearProfileRounds(editingProfileId, activeDestination, profile.learningLanguage);
-  if (activeDestination === 'forest') {
-    const previous = forestProgress[editingProfileId];
-    const fresh = createForestProgress(previous.character);
-    const unlockedVideos = FOREST_MILESTONES.filter(m => m.triggerStage < stageId).map(m => m.videoId);
-    const finale = FOREST_MILESTONES.at(-1);
-    // The Forest reset returns to its map and keeps the earned finale in the album.
-    if (previous.progress[finale.triggerStage] > 0 || previous.unlockedVideos.includes(finale.videoId)) {
-      unlockedVideos.push(finale.videoId);
+  const { profile, world, stageId, reset, progress, changesProgress, needsHandoff } = getTrackResetSelection();
+  if (changesProgress) clearProfileRounds(profile.id, world, profile.learningLanguage);
+  if (world === 'reef') {
+    if (needsHandoff) prepareForestForReef(profile);
+    if (changesProgress || needsHandoff) setReefNextStage(profile, changesProgress ? reset : progress, saveStorage);
+  } else if (changesProgress) {
+    const next = { ...progress, ...reset, contentVersion: TRAIL_CONTENT_VERSION };
+    if (reset.currentStage === 1) next.stageOrder = createJourneyOrder(TRAIL_STAGES);
+    if (world === 'forest') {
+      const hadFinale = progress.progress[FIRST_REGION_LENGTH] > 0 || progress.unlockedVideos.includes(FOREST_FINALE.videoId);
+      next.unlockedVideos = FOREST_MILESTONES
+        .filter(m => m.triggerStage < stageId || (m === FOREST_FINALE && hadFinale)).map(m => m.videoId);
+      next.seenVideos = progress.seenVideos
+        .filter(id => next.unlockedVideos.includes(id) && (stageId !== 1 || id === FOREST_FINALE.videoId));
+      forestProgress[profile.id] = next;
+    } else {
+      routeProgress[profile.id] = next;
     }
-    forestProgress[editingProfileId] = {
-      ...fresh,
-      ...createTrackProgress(stageId, FIRST_REGION_LENGTH),
-      stageOrder: stageId === 1 ? fresh.stageOrder : previous.stageOrder,
-      unlockedVideos,
-      seenVideos: previous.seenVideos.filter(id => unlockedVideos.includes(id) && (stageId !== 1 || id === finale.videoId)),
-    };
-  } else {
-    routeProgress[editingProfileId] = {
-      ...createTrackProgress(stageId, FIRST_REGION_LENGTH),
-      stageOrder: stageId === 1 ? createJourneyOrder(TRAIL_STAGES) : routeProgress[editingProfileId].stageOrder,
-    };
+    saveStorage.setItem(getRouteKey(profile.id, world, profile.learningLanguage), JSON.stringify(next));
   }
-  saveWorldProgress();
-  if (editingProfileId === activeProfileId) {
-    setProfile(editingProfileId);
-  }
+  if (editorReturnsToGate) editorEntryWorlds.set(profile.id, { world, language: profile.learningLanguage });
+  editorJourneyWorld = world;
   trackResetConfirm.hidden = true;
-  trackResetButton.disabled = false;
   profileForm.classList.remove('is-confirming-track-reset');
-  renderTrackResetOptions(editingProfileId);
-  trackResetStatus.textContent = stageId === 1
-    ? 'המסלול אופס ונשמר מיד. אין צורך ללחוץ על שמירה.'
-    : `ההתקדמות עד שלב ${stageId} נשמרה מיד. אין צורך ללחוץ על שמירה.`;
-  trackResetButton.focus();
+  renderTrackResetOptions();
+  trackResetStatus.textContent = changesProgress || needsHandoff
+    ? `ההתקדמות בעולם ״${MAP_WORLD_TITLES[world]}״ נשמרה מיד. אין צורך ללחוץ על שמירה.`
+    : `המסע ימשיך בעולם ״${MAP_WORLD_TITLES[world]}״.`;
+  trackStageSelect.focus();
 }
 
 function clearProfileRounds(profileId, destination = null, language = null) {
   const destinations = destination === null ? ['wonder', 'forest', 'reef'] : [destination];
   const languages = language === null ? Object.keys(languageOptions) : [language];
   const localKeys = Array.from({ length: localStorage.length }, (_, index) => localStorage.key(index));
+  const houseHistoryPrefix = `magic-house-previous-requests-v1:${profileId}:`;
   for (const key of localKeys) {
     const isActivityDeck = destinations.some(place => languages.some(lang => (
       key === `shop-decks-${place}-${lang}-${profileId}`
       || key.startsWith(`painter-deck-${profileId}-${place}-${lang}-`)
       || key.startsWith(`reveal-deck-${profileId}-${place}-${lang}-`)
+      || (place === 'reef' && key.startsWith(`${houseHistoryPrefix}reef-house-`) && key.endsWith(`:${lang}`))
     )));
-    if (isActivityDeck) localStorage.removeItem(key);
+    if (isActivityDeck || (destination === null && key.startsWith(houseHistoryPrefix))) localStorage.removeItem(key);
   }
+  if (destinations.includes('reef')) {
+    const deckKey = 'bubble_memory_word_decks_v1';
+    const decks = JSON.parse(localStorage.getItem(deckKey));
+    const profileDecks = decks?.[profileId];
+    if (profileDecks) {
+      if (destination === null) delete decks[profileId];
+      else {
+        for (const key of Object.keys(profileDecks)) {
+          if (key.startsWith('reef-memory-') && languages.some(lang => key.endsWith(`:${lang}`))) delete profileDecks[key];
+        }
+      }
+      localStorage.setItem(deckKey, JSON.stringify(decks));
+    }
+  }
+  if (destination === 'reef') return;
   for (const key of saveStorage.keys()) {
     if (key.startsWith(`magic-reveal-forest-${profileId}-`) || key.startsWith(`magic-reveal-wonder-${profileId}-`)) {
       const matchDestination = destination === null || key.startsWith(`magic-reveal-${destination}-${profileId}-`);
@@ -1262,6 +1338,7 @@ function confirmProfileDeletion() {
 
   const deletedIndex = profiles.findIndex((profile) => profile.id === editingProfileId);
   const deletedId = profiles[deletedIndex].id;
+  editorEntryWorlds.delete(deletedId);
   clearProfileRounds(deletedId);
   saveStorage.removeItem(`route-${deletedId}`);
   saveStorage.removeItem(getGalleryKey(deletedId));
@@ -1272,14 +1349,12 @@ function confirmProfileDeletion() {
   profiles.splice(deletedIndex, 1);
   delete routeProgress[deletedId];
   delete forestProgress[deletedId];
-  if (activeProfileId === deletedId) {
-    activeProfileId = profiles[Math.min(deletedIndex, profiles.length - 1)].id;
-    localStorage.setItem(WORLD_ACTIVE_PROFILE_STORAGE_KEY, activeProfileId);
-  }
+  const nextProfileId = activeProfileId === deletedId
+    ? profiles[Math.min(deletedIndex, profiles.length - 1)].id : activeProfileId;
   saveProfiles();
   saveWorldProgress('wonder');
   saveWorldProgress('forest');
-  setProfile(activeProfileId);
+  setProfile(nextProfileId);
   closeProfileEditor(false);
   openGate();
 }
@@ -1381,10 +1456,12 @@ function completeLaunchedStage(launch, stars = 3) {
   const profile = getProfile(launch.profileId);
   const destination = launch.destination;
   if (destination === 'reef') {
-    completeReefStage(profile, launch.stageId - FIRST_REGION_LENGTH, stars, saveStorage);
+    const stageId = launch.stageId - FIRST_REGION_LENGTH;
+    const worldComplete = stageId === REEF_JOURNEY_STAGES.length && !reefProgress.progress[stageId];
+    completeReefStage(profile, stageId, stars, saveStorage);
     renderJourneyFrontier();
-    showPendingJourneyStory();
-    return { worldComplete: false };
+    const showingStory = showPendingJourneyStory();
+    return { worldComplete: worldComplete && !showingStory };
   }
   const progress = getRouteProgress(launch.profileId, destination);
   const completedStage = stages.find((stage) => stage.id === launch.stageId);
@@ -1532,20 +1609,23 @@ editProfileButton.addEventListener('click', () => openProfileEditor(activeProfil
 chooseProfileButton.addEventListener('click', openGate);
 addProfileButton.addEventListener('click', () => openProfileEditor(null));
 profileForm.addEventListener('submit', saveProfileFromEditor);
-editorClose.addEventListener('click', closeProfileEditor);
+editorClose.addEventListener('click', () => closeProfileEditor());
 deleteProfileButton.addEventListener('click', deleteEditedProfile);
 cancelDeleteButton.addEventListener('click', () => {
   deleteConfirm.hidden = true;
   deleteProfileButton.focus();
 });
 confirmDeleteButton.addEventListener('click', confirmProfileDeletion);
-trackStageSelect.addEventListener('change', () => {
+function syncTrackResetControls() {
   updateTrackResetCopy();
   trackResetConfirm.hidden = true;
   updateTrackResetAvailability();
   profileForm.classList.remove('is-confirming-track-reset');
   trackResetStatus.textContent = '';
-});
+}
+trackWorldSelect.replaceChildren(...Object.entries(MAP_WORLD_TITLES).map(([world, title]) => new Option(title, world)));
+trackWorldSelect.addEventListener('change', renderTrackResetOptions);
+trackStageSelect.addEventListener('change', syncTrackResetControls);
 trackResetButton.addEventListener('click', requestTrackReset);
 cancelTrackResetButton.addEventListener('click', () => {
   trackResetConfirm.hidden = true;
@@ -1637,7 +1717,7 @@ document.addEventListener('keydown', (event) => {
       return;
     }
     if (!destinationGate.hidden) {
-      chooseDestination(activeDestination);
+      chooseDestination(activeDestination, mapWorld);
       return;
     }
     if (worldCompleteOverlay.classList.contains('is-visible')) {

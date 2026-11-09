@@ -24,7 +24,9 @@ Each screen shows its own 36 stops. The Reef opens with its story, then continue
 
 Resetting the Forest returns to its map and keeps the earned finale, Reef stories, and Reef progress. Clear stage 36 again to resume the Reef.
 
-See `assets/reef/README.md` for the artwork and media sources. Run `npm run test:reef-map` for route, media, captions and progress checks. To exercise the built journey in a browser, run `npm run build`, start `node scripts/serve-save-test.mjs`, then run `node scripts/test-reef-browser.mjs`.
+Edit Profile lets you choose a world and set its next stage. Progress changes are saved immediately for the displayed learning language. Wonder shares progress across languages. Choosing another world at its saved stage preserves its stars. A confirmed jump to the Reef prepares the Forest handoff and keeps the skipped stories available for replay.
+
+See `assets/reef/README.md` for the artwork and media sources. Run `npm run test:reef-map` for route, media, captions and progress checks. To exercise the built journey and profile editor in a browser, run `npm run build`, start `node scripts/serve-save-test.mjs`, then run `node scripts/test-reef-browser.mjs` and `node scripts/test-world-progress-editor.mjs`.
 
 ## Magic House
 

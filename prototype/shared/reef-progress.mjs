@@ -1,5 +1,6 @@
 import { FOREST_MILESTONES, getRouteKey } from './destinations.mjs';
-import { REEF_STORIES, getReefStage } from './reef-map.mjs';
+import { REEF_STAGES, REEF_STORIES, getReefStage } from './reef-map.mjs';
+import { createTrackProgress } from './track-progress.mjs';
 
 export function readReefRoute(profile, storage) {
   return JSON.parse(storage.getItem(getRouteKey(profile.id, 'reef', profile.learningLanguage)));
@@ -13,21 +14,32 @@ export function isReefUnlocked(profile, storage) {
     || forest?.unlockedVideos.includes(finale.videoId) === true;
 }
 
-export function openReefRoute(profile, storage) {
-  if (!isReefUnlocked(profile, storage)) throw new Error('Reef world is locked until Forest stage 36 is completed');
-  const key = getRouteKey(profile.id, 'reef', profile.learningLanguage);
-  const saved = readReefRoute(profile, storage);
-  if (saved) return saved;
-  const route = {
-    currentStage: 1,
-    progress: {},
+function createReefProgress(stageId) {
+  return {
+    ...createTrackProgress(stageId, REEF_STAGES.length),
     unlocked: true,
-    unlockedVideos: REEF_STORIES.filter(story => story.after === null || story.after === 0).map(story => story.id),
+    unlockedVideos: REEF_STORIES.filter(story => story.after === null || story.after < stageId).map(story => story.id),
     seenVideos: [],
     contentVersion: 1,
   };
-  storage.setItem(key, JSON.stringify(route));
+}
+
+export function openReefRoute(profile, storage) {
+  if (!isReefUnlocked(profile, storage)) throw new Error('Reef world is locked until Forest stage 36 is completed');
+  const saved = readReefRoute(profile, storage);
+  if (saved) return saved;
+  const route = createReefProgress(1);
+  storage.setItem(getRouteKey(profile.id, 'reef', profile.learningLanguage), JSON.stringify(route));
   return route;
+}
+
+export function setReefNextStage(profile, progress, storage) {
+  if (!isReefUnlocked(profile, storage)) throw new Error('Reef world is locked until Forest stage 36 is completed');
+  const saved = readReefRoute(profile, storage);
+  const route = { ...createReefProgress(progress.currentStage), ...progress };
+  if (saved) route.unlockedVideos = [...new Set([...route.unlockedVideos, ...saved.unlockedVideos])];
+  route.seenVideos = [...route.unlockedVideos];
+  storage.setItem(getRouteKey(profile.id, 'reef', profile.learningLanguage), JSON.stringify(route));
 }
 
 export function completeReefStage(profile, stageId, stars, storage) {
@@ -37,7 +49,7 @@ export function completeReefStage(profile, stageId, stars, storage) {
   if (stageId > route.currentStage) throw new Error(`Reef stage ${stageId} is locked`);
   const previousStars = route.progress[stageId] || 0;
   route.progress[stageId] = Math.max(previousStars, stars);
-  if (stageId === route.currentStage && stageId < 36) route.currentStage++;
+  if (stageId === route.currentStage && stageId < REEF_STAGES.length) route.currentStage++;
   if (previousStars === 0) {
     const story = REEF_STORIES.find(item => item.after === stageId);
     if (story && !route.unlockedVideos.includes(story.id)) route.unlockedVideos.push(story.id);

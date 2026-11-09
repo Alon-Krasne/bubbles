@@ -1,5 +1,8 @@
 import { getGalleryItems } from './shared/gallery.mjs';
 import { FOREST_CAPTIONS } from './shared/forest-captions.mjs';
+import { REEF_CAPTIONS } from './shared/reef-captions.mjs';
+
+const captions = { ...FOREST_CAPTIONS, ...REEF_CAPTIONS };
 
 export function openGallery(profile, storage) {
   const items = getGalleryItems(profile.id, storage);
@@ -38,7 +41,7 @@ export function openGallery(profile, storage) {
       const tracks = {};
       for (const language of ['he', 'en']) {
         const track = element.addTextTrack('captions', language === 'he' ? 'עברית' : 'English', language);
-        for (const cue of FOREST_CAPTIONS[item.id]) track.addCue(new VTTCue(cue.start, cue.end, cue[language]));
+        for (const cue of captions[item.id]) track.addCue(new VTTCue(cue.start, cue.end, cue[language]));
         track.mode = language === profile.learningLanguage ? 'showing' : 'hidden';
         tracks[language] = track;
       }
