@@ -15,9 +15,11 @@ try {
       if (line === 'Local D1 browser acceptance: http://127.0.0.1:8788') resolve();
     });
   });
-  const test = spawn(process.execPath, ['scripts/test-painter-browser.mjs'], { cwd, stdio: 'inherit' });
-  const [code, signal] = await once(test, 'exit');
-  if (code !== 0) throw new Error(`Painter browser acceptance failed: ${signal ?? code}`);
+  for (const script of ['scripts/test-painter-browser.mjs', 'scripts/test-game-variation-browser.mjs']) {
+    const test = spawn(process.execPath, [script], { cwd, stdio: 'inherit' });
+    const [code, signal] = await once(test, 'exit');
+    if (code !== 0) throw new Error(`${script} failed: ${signal ?? code}`);
+  }
 } finally {
   lines.close();
   if (server.exitCode === null && server.signalCode === null) {

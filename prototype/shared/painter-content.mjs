@@ -71,15 +71,25 @@ function letter(char) {
   })) });
 }
 
-export const PAINTER_CHAPTER_WORD_POOLS = Object.freeze([
-  ['cat', 'panda'], ['apple', 'soup'], ['sun', 'moon'],
-  ['boat', 'bus'], ['map', 'ruler'], ['medal', 'baseball'],
-].map(pool => Object.freeze(pool)));
-export const PAINTER_WORDS = Object.freeze(Object.fromEntries(PAINTER_CHAPTER_WORD_POOLS.flat().map(id => {
+export const PAINTER_WORD_IDS = Object.freeze([
+  'cat', 'panda', 'apple', 'soup', 'sun', 'moon', 'boat', 'bus', 'map', 'ruler', 'medal', 'baseball', 'umbrella',
+]);
+export const PAINTER_WORDS = Object.freeze(Object.fromEntries(PAINTER_WORD_IDS.map(id => {
   const vocabulary = VOCABULARY.find(word => word.id === id);
   return [id, Object.freeze({ id, en: vocabulary.english.toUpperCase(), he: vocabulary.hebrew,
     picture: `assets/painter/${id}.webp` })];
 })));
+
+export function getPainterWordPool(level, language) {
+  const minimumLength = [0, 3, 3, 4, 4, 5][level.difficultyRank];
+  const maximumLength = [0, 4, 5, 6, Infinity, Infinity][level.difficultyRank];
+  const pool = level.wordPool.filter(id => {
+    const length = getPainterWord(id, language).letters.length;
+    return length >= minimumLength && length <= maximumLength;
+  });
+  if (pool.length < level.wordCount) throw new Error(`Not enough Painter words for ${level.id}/${language}`);
+  return pool;
+}
 
 export function getPainterWord(id, language, letterCase = 'uppercase') {
   if (!['en', 'he'].includes(language)) throw new Error(`Unknown painter language ${language}`);
