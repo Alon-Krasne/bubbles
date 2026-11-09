@@ -810,7 +810,12 @@ function getUnlockedJourneyMilestones() {
 }
 
 function showPendingJourneyStory() {
-  const forestStory = getPendingForestMilestone(getRouteProgress());
+  const forest = getRouteProgress();
+  // Once the Forest is complete, older stories stay in the album and the finale leads into the bridge.
+  const forestStory = forest.progress[FIRST_REGION_LENGTH] > 0
+    ? FOREST_MILESTONES.find(milestone => milestone.triggerStage === FIRST_REGION_LENGTH
+      && forest.unlockedVideos.includes(milestone.videoId) && !forest.seenVideos.includes(milestone.videoId))
+    : getPendingForestMilestone(forest);
   const reefStory = reefProgress && pendingReefStory(reefProgress);
   const milestone = forestStory || (reefStory && REEF_MILESTONES.get(reefStory.id));
   if (!milestone) return false;
@@ -854,7 +859,7 @@ function closeForestMilestone() {
     if (showPendingJourneyStory()) return;
   }
 
-  playButton.focus();
+  (wasPending ? playButton : forestStoriesButton).focus({ preventScroll: true });
 }
 
 function updateForestCaptions() {
@@ -1107,12 +1112,17 @@ function resetEditedProfileTrack() {
     const previous = forestProgress[editingProfileId];
     const fresh = createForestProgress(previous.character);
     const unlockedVideos = FOREST_MILESTONES.filter(m => m.triggerStage < stageId).map(m => m.videoId);
+    const finale = FOREST_MILESTONES.at(-1);
+    // Keep the earned handoff in this same save so a partial cloud sync cannot relock the Reef.
+    if (previous.progress[finale.triggerStage] > 0 || previous.unlockedVideos.includes(finale.videoId)) {
+      unlockedVideos.push(finale.videoId);
+    }
     forestProgress[editingProfileId] = {
       ...fresh,
       ...createTrackProgress(stageId, FIRST_REGION_LENGTH),
       stageOrder: stageId === 1 ? fresh.stageOrder : previous.stageOrder,
       unlockedVideos,
-      seenVideos: stageId === 1 ? [] : previous.seenVideos.filter(id => unlockedVideos.includes(id)),
+      seenVideos: previous.seenVideos.filter(id => unlockedVideos.includes(id) && (stageId !== 1 || id === finale.videoId)),
     };
   } else {
     routeProgress[editingProfileId] = {
@@ -1340,6 +1350,7 @@ function closeActivity() {
   activityFrame.removeAttribute('src');
   activeLaunch = null;
   setWorldInteractionLocked(false);
+  playButton.focus({ preventScroll: true });
 }
 
 function setWorldInteractionLocked(locked) {

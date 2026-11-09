@@ -805,12 +805,15 @@ function selectMemoryWords(level: MemoryLevel) {
 
   const decks = JSON.parse(localStorage.getItem(MEMORY_WORD_DECK_STORAGE_KEY) || '{}');
   const profileDecks = decks[activeProfileId] || {};
+  const deckKey = hostedActivityContext?.destination === 'reef'
+    ? `${level.id}:${hostedActivityContext.profileLanguage}`
+    : level.id;
   const result = drawVocabularyRound({
     pool: level.wordPool,
     count: level.pairs,
-    state: profileDecks[level.id] || null,
+    state: profileDecks[deckKey] || null,
   });
-  profileDecks[level.id] = result.state;
+  profileDecks[deckKey] = result.state;
   decks[activeProfileId] = profileDecks;
   localStorage.setItem(MEMORY_WORD_DECK_STORAGE_KEY, JSON.stringify(decks));
   return result.selection.map(getMemoryWord);

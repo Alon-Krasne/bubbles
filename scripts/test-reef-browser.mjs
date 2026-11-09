@@ -16,6 +16,45 @@ const enterJourney = () => {
   browser('click', '#destination-card-forest');
 };
 
+async function finishPainter() {
+  const frame = document.querySelector('#activity-frame');
+  const activity = frame.contentDocument;
+  const canvas = activity.querySelector('#paint-canvas');
+  const state = () => JSON.parse(frame.contentWindow.render_game_to_text());
+  const fire = (type, point) => {
+    const rect = canvas.getBoundingClientRect();
+    canvas.dispatchEvent(new frame.contentWindow.PointerEvent(type, {
+      bubbles: true, cancelable: true, pointerId: 1, isPrimary: true, pointerType: 'mouse', button: 0,
+      clientX: rect.left + point.x * rect.width / canvas.width,
+      clientY: rect.top + point.y * rect.height / canvas.height,
+    }));
+  };
+  for (let attempt = 0; attempt < 30 && !state().complete; attempt++) {
+    const path = activity.querySelector('#svg-stroke-path');
+    const length = path.getTotalLength();
+    fire('pointerdown', path.getPointAtLength(0));
+    for (let distance = 4; distance < length; distance += 4) fire('pointermove', path.getPointAtLength(distance));
+    fire('pointermove', path.getPointAtLength(length));
+    fire('pointerup', path.getPointAtLength(length));
+    if (state().inputLocked) await new Promise(resolve => setTimeout(resolve, 740));
+  }
+  if (!state().complete) throw Error('Painter did not complete');
+  activity.querySelector('#painter-finish').click();
+  return true;
+}
+
+function returnWithKeyboard(back) {
+  const focused = evaluate(`(() => {
+    const activity = document.querySelector('#activity-frame').contentDocument;
+    activity.querySelector('${back}').focus();
+    return activity.activeElement.id;
+  })()`);
+  assert.equal(focused, back.slice(1), 'The activity return control receives keyboard focus');
+  browser('press', 'Enter');
+  browser('wait', '--fn', "!document.querySelector('#activity-overlay').classList.contains('is-visible')");
+  assert.equal(evaluate('document.activeElement.id'), 'play-button');
+}
+
 try {
   browser('open', mapUrl);
   browser('wait', '.gate-profile-choice');
@@ -31,7 +70,8 @@ try {
     route.currentStage = 36;
     route.stageOrder = TRAIL_STAGES.map(stage => stage.id);
     route.progress = Object.fromEntries(Array.from({ length: 35 }, (_, i) => [i + 1, 3]));
-    route.unlockedVideos = route.seenVideos = FOREST_MILESTONES.slice(0, -1).map(story => story.videoId);
+    route.unlockedVideos = FOREST_MILESTONES.slice(0, -1).map(story => story.videoId);
+    route.seenVideos = route.unlockedVideos.slice(0, -1);
     saves.setItem('forest-route-${profileId}-en', JSON.stringify(route));
     await saves.flush();
     return true;
@@ -42,36 +82,14 @@ try {
   assert.equal(evaluate("document.querySelectorAll('.world-stage').length"), 36);
   assert.equal(evaluate("document.querySelector('#traveller').dataset.stage"), '36');
   assert.equal(readReef(), null);
+  assert.equal(storyId(), 'forest-video-08');
+  browser('select', '#forest-story-select', 'forest-video-07');
+  browser('click', '#forest-milestone-play-btn');
 
   browser('click', '#play-button');
   browser('wait', '#activity-overlay.is-visible');
   browser('wait', '--fn', "document.querySelector('#activity-frame').contentDocument?.querySelector('#svg-stroke-path')");
-  evaluate(`(async () => {
-    const frame = document.querySelector('#activity-frame');
-    const activity = frame.contentDocument;
-    const canvas = activity.querySelector('#paint-canvas');
-    const state = () => JSON.parse(frame.contentWindow.render_game_to_text());
-    const fire = (type, point) => {
-      const rect = canvas.getBoundingClientRect();
-      canvas.dispatchEvent(new frame.contentWindow.PointerEvent(type, {
-        bubbles: true, cancelable: true, pointerId: 1, isPrimary: true, pointerType: 'mouse', button: 0,
-        clientX: rect.left + point.x * rect.width / canvas.width,
-        clientY: rect.top + point.y * rect.height / canvas.height,
-      }));
-    };
-    for (let attempt = 0; attempt < 30 && !state().complete; attempt++) {
-      const path = activity.querySelector('#svg-stroke-path');
-      const length = path.getTotalLength();
-      fire('pointerdown', path.getPointAtLength(0));
-      for (let distance = 4; distance < length; distance += 4) fire('pointermove', path.getPointAtLength(distance));
-      fire('pointermove', path.getPointAtLength(length));
-      fire('pointerup', path.getPointAtLength(length));
-      if (state().inputLocked) await new Promise(resolve => setTimeout(resolve, 740));
-    }
-    if (!state().complete) throw Error('Forest stage 36 did not complete');
-    activity.querySelector('#painter-finish').click();
-    return true;
-  })()`);
+  evaluate(`(${finishPainter.toString()})()`);
   browser('wait', '#forest-milestone-dialog:not([hidden])');
   assert.equal(storyId(), 'forest-video-09');
   assert.equal(browser('get', 'url').trim(), mapUrl);
@@ -82,6 +100,9 @@ try {
   assert.equal(evaluate("document.querySelector('#traveller').dataset.stage"), '37');
   assert.equal(evaluate("document.querySelector('#star-total-max').textContent"), '/216');
   assert.equal(evaluate("document.querySelector('#world-complete-overlay').classList.contains('is-visible')"), false);
+  browser('reload');
+  enterJourney();
+  assert.equal(storyId(), 'forest-video-09', 'Refresh at the finale does not resume an older Forest story');
   browser('click', '#forest-milestone-play-btn');
   assert.equal(storyId(), 'bridge-forest-reef');
   assert.equal(evaluate("document.querySelector('#forest-story-select').hidden"), true);
@@ -108,6 +129,11 @@ try {
   browser('wait', '--fn', "document.querySelector('#forest-milestone-dialog').hidden");
 
   const forestBefore = evaluate(`window.bubblesSaveClient.getItem('forest-route-${profileId}-en')`);
+  assert.equal(JSON.parse(forestBefore).seenVideos.includes('forest-video-08'), false);
+  browser('click', '#forest-stories-button');
+  browser('select', '#forest-story-select', 'forest-video-08');
+  assert.equal(storyId(), 'forest-video-08', 'Earlier stories remain available in the journey album');
+  browser('click', '#forest-milestone-play-btn');
   browser('click', '#play-button');
   browser('wait', '#activity-overlay.is-visible');
   browser('wait', '--fn', "document.querySelector('#activity-frame').contentDocument?.querySelectorAll('.memory-card').length > 0");
@@ -127,8 +153,7 @@ try {
     return true;
   })()`);
   browser('wait', '--fn', "document.querySelector('#activity-frame').contentDocument?.querySelector('#memory-celebration').classList.contains('is-visible')");
-  evaluate("document.querySelector('#activity-frame').contentDocument.querySelector('#memory-celebration-next-btn').click(); true");
-  browser('wait', '--fn', "!document.querySelector('#activity-overlay').classList.contains('is-visible')");
+  returnWithKeyboard('#memory-celebration-next-btn');
   assert.equal(readReef().currentStage, 2);
   assert.ok(readReef().progress[1] > 0);
   assert.equal(evaluate("document.querySelector('#traveller').dataset.stage"), '38');
@@ -148,7 +173,7 @@ try {
   browser('set', 'viewport', '390', '844');
   assert.equal(browser('is', 'enabled', '.world-stage[data-stage="72"]').trim(), 'false');
   for (const [stage, ready, back] of [
-    [38, '#shop-screen.active', '#shop-back-btn'],
+    [38, '#shop-screen.active', '#shop-level-list-btn'],
     [39, '.object-button', '#trail-back-button'],
     [40, '#reveal-keyboard button', '#reveal-back'],
     [41, '#paint-canvas', '#painter-back'],
@@ -157,12 +182,105 @@ try {
     browser('click', '#play-button');
     browser('wait', '#activity-overlay.is-visible');
     browser('wait', '--fn', `document.querySelector('#activity-frame').contentDocument?.querySelector('${ready}')`);
-    evaluate(`document.querySelector('#activity-frame').contentDocument.querySelector('${back}').click(); true`);
-    browser('wait', '--fn', "!document.querySelector('#activity-overlay').classList.contains('is-visible')");
+    returnWithKeyboard(back);
   }
   assert.equal(readReef().currentStage, 5, 'Exiting a game leaves progress at the same stop');
+
+  browser('click', '#play-button');
+  browser('wait', '#activity-overlay.is-visible');
+  browser('wait', '--fn', "document.querySelector('#activity-frame').contentDocument?.querySelector('#svg-stroke-path')");
+  evaluate(`(${finishPainter.toString()})()`);
+  browser('wait', '#forest-milestone-dialog:not([hidden])');
+  assert.equal(storyId(), 'reef-video-02', 'Finishing stage 41 presents the first Reef reward');
+  assert.equal(readReef().currentStage, 6);
+  assert.equal(evaluate('document.activeElement.id'), 'forest-milestone-play-btn');
+  browser('click', '#forest-milestone-play-btn');
+  browser('click', '#panel-close');
+  browser('click', '#forest-stories-button');
+  browser('select', '#forest-story-select', 'reef-video-02');
+  assert.equal(storyId(), 'reef-video-02');
+  browser('press', 'Escape');
+  assert.equal(evaluate('document.activeElement.id'), 'forest-stories-button');
+  assert.equal(readReef().seenVideos.filter(id => id === 'reef-video-02').length, 1);
+
+  const readMemoryDeck = language => evaluate(`JSON.parse(localStorage.getItem('bubble_memory_word_decks_v1'))['${profileId}']['reef-memory-1:${language}']`);
+  const readHouseHistory = language => evaluate(`JSON.parse(localStorage.getItem('magic-house-previous-requests-v1:${profileId}:reef-house-1:${language}'))`);
+  const englishMemoryDeck = readMemoryDeck('en');
+  const englishHouseHistory = readHouseHistory('en');
+  assert.ok(englishMemoryDeck.previous.length > 0);
+  assert.ok(englishHouseHistory.length > 0);
+  evaluate(`(async () => {
+    const saves = window.bubblesSaveClient;
+    const { markReefStorySeen, completeReefStage } = await import('/prototype/shared/reef-progress.mjs');
+    const forest = JSON.parse(saves.getItem('forest-route-${profileId}-en'));
+    saves.setItem('forest-route-${profileId}-he', JSON.stringify({ ...forest, seenVideos: forest.unlockedVideos }));
+    const profile = { id: '${profileId}', learningLanguage: 'he' };
+    for (const story of ['bridge-forest-reef', 'reef-video-01']) markReefStorySeen(profile, story, saves);
+    for (const stage of [1, 2]) completeReefStage(profile, stage, 3, saves);
+    await saves.flush();
+    return true;
+  })()`);
+  browser('click', '#profile-button');
+  browser('click', '#edit-profile-button');
+  browser('click', 'label:has(input[name="learningLanguage"][value="he"])');
+  browser('click', '.save-profile-button');
+  for (const [stage, ready, back] of [
+    [37, '.memory-card', '#memory-back-btn'],
+    [39, '.object-button', '#trail-back-button'],
+  ]) {
+    browser('click', `.world-stage[data-stage="${stage}"]`);
+    browser('click', '#play-button');
+    browser('wait', '#activity-overlay.is-visible');
+    browser('wait', '--fn', `document.querySelector('#activity-frame').contentDocument?.querySelector('${ready}')`);
+    returnWithKeyboard(back);
+  }
+  assert.ok(readMemoryDeck('he').previous.length > 0);
+  assert.ok(readHouseHistory('he').length > 0);
+  assert.deepEqual(readMemoryDeck('en'), englishMemoryDeck);
+  assert.deepEqual(readHouseHistory('en'), englishHouseHistory);
+
+  const resetId = `${profileId}-reset`;
+  const resetReef = () => evaluate(`JSON.parse(window.bubblesSaveClient.getItem('reef-route-${resetId}-en'))`);
+  evaluate(`(async () => {
+    const saves = window.bubblesSaveClient;
+    const key = 'bubble_world_map_profiles_v1';
+    const profiles = JSON.parse(saves.getItem(key));
+    profiles.push({ id: '${resetId}', name: 'Reset QA', character: 'puppy', learningLanguage: 'en' });
+    saves.setItem(key, JSON.stringify(profiles));
+    const forest = JSON.parse(saves.getItem('forest-route-${profileId}-en'));
+    forest.seenVideos = forest.seenVideos.filter(id => id !== 'forest-video-09');
+    saves.setItem('forest-route-${resetId}-en', JSON.stringify(forest));
+    await saves.flush();
+    return true;
+  })()`);
+  browser('reload');
+  browser('click', `.gate-profile-card:has([data-profile="${resetId}"]) .gate-profile-edit`);
+  assert.equal(resetReef(), null);
+  browser('select', '#track-stage-select', '1');
+  browser('click', '#track-reset-button');
+  browser('click', '#confirm-track-reset-button');
+  const resetForest = evaluate(`JSON.parse(window.bubblesSaveClient.getItem('forest-route-${resetId}-en'))`);
+  assert.equal(resetForest.currentStage, 1);
+  assert.deepEqual(resetForest.unlockedVideos, ['forest-video-01', 'forest-video-09']);
+  assert.deepEqual(resetForest.seenVideos, []);
+  assert.equal(resetReef(), null, 'The Forest save alone must retain the Reef unlock');
+  const cloudForest = evaluate(`(async () => {
+    await window.bubblesSaveClient.flush();
+    const response = await fetch('/api/saves/forest-route-${resetId}-en');
+    return JSON.parse((await response.json()).value);
+  })()`);
+  assert.deepEqual(cloudForest, resetForest);
+  browser('click', '#editor-close');
+  browser('click', `.gate-profile-choice[data-profile="${resetId}"]`);
+  browser('click', '#destination-card-forest');
+  assert.equal(browser('is', 'enabled', '.world-stage[data-stage="37"]').trim(), 'true');
+  for (const story of ['forest-video-01', 'forest-video-09', 'bridge-forest-reef', 'reef-video-01']) {
+    assert.equal(storyId(), story);
+    browser('click', '#forest-milestone-play-btn');
+  }
+
   assert.equal(browser('errors').trim(), '');
-  console.log('PASS: completing stage 36 extends the same map to 72, with stories, saved stage 37, and all five Reef activity entry points.');
+  console.log('PASS: continuous map, ordered stories and replay, real stages 36/37/41, keyboard returns, separate activity histories, and durable Reef unlock.');
 } finally {
   browser('close');
 }

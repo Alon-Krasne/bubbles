@@ -2754,7 +2754,7 @@ body {
 .forest-portrait[data-friend='adva'] { background-image: url('./assets/forest/companion-adva.webp'); }
 .forest-portrait[data-friend='zohar'] { background-image: url('./assets/forest/companion-zohar.webp'); }
 .traveller.forest-portrait { width: 84px; height: 98px; }
-.traveller.reef-portrait { width: 64px; height: 74px; }
+.traveller.reef-portrait { z-index: 7; width: 64px; height: 74px; }
 .traveller.reef-portrait img { border-radius: 50%; }
 .traveller img[hidden], .launch-overlay img[hidden], .world-complete-overlay img[hidden] { display: none; }
 .launch-overlay .forest-portrait { width: 155px; height: 180px; }
@@ -2906,6 +2906,7 @@ body {
   padding: 4px 9px;
   border-radius: 14px;
   background: #16313fed;
+  color: #ffe2a6;
 }
 :root[data-time-of-day="night"] .profile-gate .gate-profile-card {
   border-color: #ecdcbb;

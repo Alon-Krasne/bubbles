@@ -225,7 +225,8 @@ function selectLevelRequests(level, profileId) {
   if (allowedRequests.length !== level.requestIds.length) {
     throw new Error(`Magic House level ${level.id} has missing requests`);
   }
-  const storageKey = `${PREVIOUS_REQUESTS_STORAGE_PREFIX}:${profileId}:${level.id}`;
+  const levelKey = hostContext?.destination === 'reef' ? `${level.id}:${hostContext.profileLanguage}` : level.id;
+  const storageKey = `${PREVIOUS_REQUESTS_STORAGE_PREFIX}:${profileId}:${levelKey}`;
   const savedPreviousIds = localStorage.getItem(storageKey);
   const previousIds = savedPreviousIds ? JSON.parse(savedPreviousIds) : null;
   const selectedIds = selectVariedRequestIds({
