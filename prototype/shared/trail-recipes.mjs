@@ -306,14 +306,11 @@ export function createRevealLevelRecipe({ levelId, rank, title, categories, inde
 
   const shift = ((offset % candidates.length) + candidates.length) % candidates.length;
   const rotated = [...candidates.slice(shift), ...candidates.slice(0, shift)];
-  const selected = rotated.slice(0, count);
-  const pool = unique([...selected, ...sorted]);
-
   return Object.freeze({
     id: levelId,
     title,
     difficultyRank: rank,
-    wordPool: pool,
+    wordPool: rotated,
     wordCount: count,
     picture: ((offset) % 8) + 2,
   });

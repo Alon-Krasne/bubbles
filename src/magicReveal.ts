@@ -11,7 +11,7 @@ import { drawSavedVocabularyRound } from '../prototype/shared/vocabulary-deck.mj
 
 export function openMagicReveal(context: HostedActivityContext, session: HostedActivitySession) {
   const level = getGameLevel('reveal', context.levelId);
-  const wordIds = drawSavedVocabularyRound({ storage: saveStorage,
+  const wordIds = drawSavedVocabularyRound({ storage: localStorage,
     key: `reveal-deck-${context.destination}-${context.profileLanguage}-${context.profileId}-${level.id}`,
     pool: level.wordPool, count: level.wordCount });
   const progress = { round: 0, guesses: [] as string[], mistakes: 0, hints: 0 };

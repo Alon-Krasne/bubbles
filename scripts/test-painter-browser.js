@@ -17,7 +17,7 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
   const receive = event => { if (event.source === frame.contentWindow) messages.push(event.data); };
   window.addEventListener('message', receive);
   const state = () => JSON.parse(frame.contentWindow.render_game_to_text());
-  const load = async (level, language, letterCase = 'uppercase') => {
+  const load = async (level, language, letterCase = 'uppercase', fixtureWord = null) => {
     const params = new URLSearchParams({ host:'world-map', activity:'magic-painter', level:`trail-painter-${level}`,
       stage: '5', profile:'painter-test', profileName:'בדיקה', profileEmoji:'🦄', profileCharacter:'unicorn',
       profileLanguage: language, destination:'wonder' });
@@ -32,6 +32,11 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
       frame.contentDocument.querySelector(`[data-letter-case="${letterCase}"]`).click();
     } else {
       check(`Hebrew hides case controls ${level}`, frame.contentDocument.querySelector('#painter-letter-case').hidden);
+    }
+    if (fixtureWord) {
+      const select = frame.contentDocument.querySelector('#painter-word');
+      select.value = fixtureWord;
+      select.dispatchEvent(new frame.contentWindow.Event('change', {bubbles:true}));
     }
   };
   const samplePath = path => {
@@ -58,7 +63,7 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
   const inkAt = point => frame.contentDocument.querySelector('#paint-canvas').getContext('2d')
     .getImageData(Math.round(point.x),Math.round(point.y),1,1).data[3];
   try {
-    await load(2,'en');
+    await load(2,'en','uppercase','apple');
     let path = points();
     fire('pointerdown',{x:300,y:300});fire('pointerup',{x:300,y:300});
     check('stray touch costs no star',state().mistakes===0 && !state().isDrawing,state());
@@ -96,7 +101,7 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
     check('P curve accepted after immediate retry',state().letterIdx===2,state());
 
     for (const [level,language] of [[1,'he'],[2,'en']]) {
-      await load(level,language);
+      await load(level,language,'uppercase', level === 1 ? 'cat' : 'apple');
       const firstPath=points(),completedPoint=firstPath[Math.floor(firstPath.length/2)];
       draw(firstPath); // Complete ח's roof or A's first leg before interrupting the next stroke.
       const before=state(), guide=frame.contentDocument.querySelector('#svg-stroke-path');
@@ -120,7 +125,7 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
       check(`continuous stroke succeeds after release ${language}`,state().letterIdx>before.letterIdx || state().strokeIdx>before.strokeIdx,state());
     }
 
-    await load(2,'he');
+    await load(2,'he','uppercase','apple');
     draw(points().reverse());
     check('backwards start ignored without penalty',state().strokeIdx===0 && state().mistakes===0,state());
     path=points();fire('pointerdown',path[0]);fire('pointermove',path[5]);fire('pointercancel',path[5]);
@@ -130,7 +135,7 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
     frame.contentDocument.querySelector('#painter-back').click();await wait(30);
     check('early exit awards no stars',messages.at(-1).type==='bubbles.activity.exit' && !('stars' in messages.at(-1)),messages.at(-1));
 
-    await load(3,'en');
+    await load(3,'en','uppercase','sun');
     draw(points()); await wait(740); // S
     draw(points()); await wait(740); // U
     check('worksheet N test reaches N',state().letterIdx===2,state());
@@ -139,7 +144,7 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
     draw(nDown);
     check('worksheet N downward first stroke accepted',state().strokeIdx===1 && state().mistakes===0,state());
 
-    await load(3,'he');
+    await load(3,'he','uppercase','sun');
     // Yo-yoo worksheet 60673: right leg down, curve left, left leg up.
     const shin = frame.contentDocument.createElementNS('http://www.w3.org/2000/svg','path');
     shin.setAttribute('d','M255 72 L232 210 Q225 240 195 240 L125 240 Q95 240 90 220 L65 72');
@@ -148,7 +153,7 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
     draw(points());
     check('ש middle stroke completes the letter',state().letterIdx===1 && state().mistakes===0,state());
 
-    await load(4,'he');
+    await load(4,'he','uppercase','boat');
     // Yo-yoo print worksheet 60679: across the roof to the right, down and
     // around, then up the left edge. Draw from independent geometric landmarks.
     const samekh = frame.contentDocument.createElementNS('http://www.w3.org/2000/svg','path');
@@ -156,15 +161,16 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
     draw(samplePath(samekh));
     check('worksheet ס clockwise closed stroke accepted',state().letterIdx===1 && state().mistakes===0,state());
 
-    await load(5,'he');
+    await load(5,'he','uppercase','map');
     const mem = frame.contentDocument.createElementNS('http://www.w3.org/2000/svg','path');
     mem.setAttribute('d','M82 238 L116 130 C119 94 138 73 169 73 C204 73 220 88 220 115');
     draw(samplePath(mem));
     check('worksheet מ arch rises before right leg',state().strokeIdx===1 && state().mistakes===0,state());
 
     const hebrewWords=['חתול','תפוח','שמש','סירה','מפה','מדליה'];
+    const fixtureWords=['cat','apple','sun','boat','map','medal'];
     for(const language of ['en','he']) for(let level=1;level<=6;level++) {
-      await load(level,language);
+      await load(level,language,'uppercase',fixtureWords[level-1]);
       if(language==='he') {
         check(`Hebrew word spelling ${level}`,state().word===hebrewWords[level-1],state());
         const banner=frame.contentDocument.querySelector('#word-banner');
@@ -204,7 +210,7 @@ window.painterAcceptance = { status: 'running', progress: 'starting' };
     }
 
     // Switching during the 700ms letter transition must cancel the old guide.
-    await load(1,'en','lowercase');
+    await load(1,'en','lowercase','cat');
     draw(points());
     check('lowercase c completed',state().letterIdx===1 && state().inputLocked,state());
     const chooseWord = id => {

@@ -590,9 +590,9 @@ export function initShopGame(deps: ShopDeps) {
       const { destination, profileLanguage, profileId } = deps.hostedSession.context;
       const deckKey = `shop-decks-${destination}-${profileLanguage}-${profileId}`;
       return {
-        getItem: (key: string) => key === SHOP_WORD_DECK_STORAGE_KEY ? saveStorage.getItem(deckKey) : hostedRoundRecords.get(key) ?? null,
+        getItem: (key: string) => key === SHOP_WORD_DECK_STORAGE_KEY ? localStorage.getItem(deckKey) : hostedRoundRecords.get(key) ?? null,
         setItem: (key: string, value: string) => {
-          if (key === SHOP_WORD_DECK_STORAGE_KEY) saveStorage.setItem(deckKey, value);
+          if (key === SHOP_WORD_DECK_STORAGE_KEY) localStorage.setItem(deckKey, value);
           else hostedRoundRecords.set(key, value);
         },
       };

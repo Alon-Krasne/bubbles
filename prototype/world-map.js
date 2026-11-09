@@ -1067,18 +1067,18 @@ function resetEditedProfileTrack() {
 }
 
 function clearProfileRounds(profileId, destination = null, language = null) {
-  for (const key of saveStorage.keys()) {
-    const destinations = destination === null ? ['wonder', 'forest'] : [destination];
-    const languages = language === null ? Object.keys(languageOptions) : [language];
+  const destinations = destination === null ? ['wonder', 'forest'] : [destination];
+  const languages = language === null ? Object.keys(languageOptions) : [language];
+  const localKeys = Array.from({ length: localStorage.length }, (_, index) => localStorage.key(index));
+  for (const key of localKeys) {
     const isActivityDeck = destinations.some(place => languages.some(lang => (
       key === `shop-decks-${place}-${lang}-${profileId}`
       || key.startsWith(`painter-deck-${place}-${lang}-${profileId}-`)
       || key.startsWith(`reveal-deck-${place}-${lang}-${profileId}-`)
     )));
-    if (isActivityDeck) {
-      saveStorage.removeItem(key);
-      continue;
-    }
+    if (isActivityDeck) localStorage.removeItem(key);
+  }
+  for (const key of saveStorage.keys()) {
     if (key.startsWith(`magic-reveal-forest-${profileId}-`) || key.startsWith(`magic-reveal-wonder-${profileId}-`)) {
       const matchDestination = destination === null || key.startsWith(`magic-reveal-${destination}-${profileId}-`);
       const matchLanguage = language === null || key.startsWith(`magic-reveal-${destination ?? 'forest'}-${profileId}-${language}-`) || key.startsWith(`magic-reveal-${destination ?? 'wonder'}-${profileId}-${language}-`);
