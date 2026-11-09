@@ -99,26 +99,13 @@ body {
 }
 
 .map-stage {
-  --region-height: max(100vh, 1125px);
   position: relative;
   width: max(100vw, 1500px);
-  height: var(--region-height);
+  height: max(100vh, 1125px);
   background-image: url('../src/assets/memory/moonlit-trail-map.webp');
-  background-position: center bottom;
+  background-position: center;
   background-repeat: no-repeat;
-  background-size: 100% var(--region-height);
-}
-
-.map-stage.has-reef {
-  height: calc(2 * var(--region-height));
-}
-
-.map-stage.has-reef::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto;
-  height: var(--region-height);
-  background: url('./assets/reef/map.webp') center / 100% 100% no-repeat;
+  background-size: 100% 100%;
 }
 
 .world-chrome {
@@ -2856,6 +2843,13 @@ body {
 :root[data-time-of-day="day"] .map-stage {
   background-image: url('./assets/sunlit-trail-map.webp');
 }
+.world[data-map-world="reef"] .map-stage {
+  background-image: url('./assets/reef/map.webp');
+}
+.world[data-map-world="reef"] .map-scroll {
+  padding-bottom: 180px;
+  background-color: #efe3cd;
+}
 :root[data-time-of-day="day"] .profile-gate {
   background: linear-gradient(#fff8e933, #e8f8df55), url('./assets/sunlit-trail-map.webp') center / cover no-repeat;
 }
@@ -2902,7 +2896,7 @@ body {
   backdrop-filter: none;
 }
 :root[data-time-of-day="night"] .world-chrome .star-total { height: auto; min-width: 0; }
-.world:has(.map-stage.has-reef) .star-total {
+.world[data-map-world="reef"] .world-chrome .star-total {
   padding: 4px 9px;
   border-radius: 14px;
   background: #16313fed;
@@ -2940,6 +2934,14 @@ body {
     justify-content: flex-end;
   }
   .world-chrome .star-total { margin-right: auto; }
+  .world[data-map-world="reef"] .world-title {
+    display: block;
+    grid-column: 1;
+    grid-row: 2;
+    text-align: right;
+  }
+  .world[data-map-world="reef"] .world-title span { display: none; }
+  .world[data-map-world="reef"] .world-actions { grid-row: 3; }
   .stage-panel { top: auto; bottom: 16px; height: auto; min-height: 106px; }
 }
 

@@ -34,6 +34,6 @@ assert.equal(storage.getItem(forestKey), forest, 'Forest saves must be untouched
 assert.equal(isReefUnlocked({ ...profile, learningLanguage: 'he' }, storage), false);
 assert.equal(isReefUnlocked({ ...profile, id: 'tom' }, storage), false);
 storage.setItem(forestKey, JSON.stringify({ currentStage: 1, progress: {} }));
-assert.equal(isReefUnlocked(profile, storage), true, 'An opened world remains open even after a Forest reset');
+assert.equal(isReefUnlocked(profile, storage), true, 'The Reef save retains its earned unlock after a Forest reset');
 assert.equal(openReefRoute(profile, storage).seenVideos.includes('bridge-forest-reef'), true);
 console.log('PASS: Reef unlock, bridge-once, 36-stage progression, milestones, replays, language/profile isolation and Forest preservation.');

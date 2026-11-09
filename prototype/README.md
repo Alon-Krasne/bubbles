@@ -16,11 +16,13 @@ Memory Garden and Listening Shop run inside the trail's hosted activity shell. T
 
 ## The Glowing Reef
 
-The Glowing Reef extends the Whispering Forest journey on the same map. Complete stage 36 to reveal stages 37–72. The Forest companion continues in a bubble helmet.
+The Glowing Reef is the next screen in the Whispering Forest journey. Complete stage 36 to open the Forest finale and bridge cutscenes. When the bridge finishes or is skipped, the Reef screen replaces the Forest screen. The companion continues in a bubble helmet at stage 37.
 
 The route has 36 stops across six chapters. It uses the existing recorded vocabulary and five activities at Reef difficulty ranks, with Memory, Shop and Magic House at the lighthouse. The separate Tier 2 vocabulary and Reef-specific activity scenery remain in development.
 
-The Forest finale leads into the bridge and Reef opening. The remaining Reef stories unlock after stages 41, 46, 51, 56, 61, 66, 71 and 72. Start playback from the video controls, choose English or Hebrew captions, or skip ahead. The journey album keeps unlocked stories for replay. The map combines Forest and Reef stars for the active profile and language.
+Each screen shows its own 36 stops. The Reef opens with its story, then continues through stage 72. The remaining Reef stories unlock after stages 41, 46, 51, 56, 61, 66, 71 and 72. Start playback from the video controls, choose English or Hebrew captions, or skip ahead. The journey album keeps unlocked stories for replay. The Reef screen shows the combined stars for the active profile and language.
+
+Resetting the Forest returns to its map and keeps the earned finale, Reef stories, and Reef progress. Clear stage 36 again to resume the Reef.
 
 See `assets/reef/README.md` for the artwork and media sources. Run `npm run test:reef-map` for route, media, captions and progress checks. To exercise the built journey in a browser, run `npm run build`, start `node scripts/serve-save-test.mjs`, then run `node scripts/test-reef-browser.mjs`.
 

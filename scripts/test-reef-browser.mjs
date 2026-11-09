@@ -4,13 +4,21 @@ import { execFileSync } from 'node:child_process';
 
 const origin = 'http://127.0.0.1:8788';
 const profileId = `reef-qa-${Date.now()}`;
-const profileChoice = `.gate-profile-choice[data-profile="${profileId}"]`;
 const mapUrl = `${origin}/prototype/world-map.html`;
+const reefUrl = `${mapUrl}#reef`;
 const browser = (...args) => execFileSync('agent-browser', ['--session', profileId, ...args], { encoding: 'utf8', timeout: 35_000 });
 const evaluate = code => JSON.parse(browser('eval', code));
 const storyId = () => evaluate("document.querySelector('#forest-milestone-video').src.split('/').at(-1).replace('.mp4', '')");
 const readReef = () => evaluate(`JSON.parse(window.bubblesSaveClient.getItem('reef-route-${profileId}-en'))`);
-const enterJourney = () => {
+const mapHeight = () => evaluate("document.querySelector('.map-stage').clientHeight");
+const playToEnd = () => evaluate(`(async () => {
+  const video = document.querySelector('#forest-milestone-video');
+  await video.play();
+  video.currentTime = video.duration - 0.5;
+  return true;
+})()`);
+const enterJourney = (id = profileId) => {
+  const profileChoice = `.gate-profile-choice[data-profile="${id}"]`;
   browser('wait', profileChoice);
   browser('click', profileChoice);
   browser('click', '#destination-card-forest');
@@ -77,9 +85,12 @@ try {
     return true;
   })()`);
 
+  browser('open', reefUrl);
   browser('reload');
   enterJourney();
+  assert.equal(browser('get', 'url').trim(), mapUrl, 'The Reef URL stays locked before Forest stage 36 is cleared');
   assert.equal(evaluate("document.querySelectorAll('.world-stage').length"), 36);
+  const forestMapHeight = mapHeight();
   assert.equal(evaluate("document.querySelector('#traveller').dataset.stage"), '36');
   assert.equal(readReef(), null);
   assert.equal(storyId(), 'forest-video-08');
@@ -93,36 +104,50 @@ try {
   browser('wait', '#forest-milestone-dialog:not([hidden])');
   assert.equal(storyId(), 'forest-video-09');
   assert.equal(browser('get', 'url').trim(), mapUrl);
-  assert.equal(evaluate("document.querySelectorAll('.map-stage').length"), 1);
-  assert.equal(evaluate("document.querySelectorAll('.world-stage').length"), 72);
-  assert.equal(browser('is', 'enabled', '.world-stage[data-stage="36"]').trim(), 'true');
-  assert.equal(evaluate("document.querySelector('.world-stage[data-stage=\"37\"]').offsetTop < document.querySelector('.world-stage[data-stage=\"36\"]').offsetTop"), true);
-  assert.equal(evaluate("document.querySelector('#traveller').dataset.stage"), '37');
-  assert.equal(evaluate("document.querySelector('#star-total-max').textContent"), '/216');
+  assert.equal(evaluate("document.querySelectorAll('.world-stage').length"), 36, 'The finale stays on the Forest screen');
+  assert.equal(evaluate("document.querySelector('#traveller').dataset.stage"), '36');
+  assert.equal(evaluate("document.querySelector('#star-total-max').textContent"), '/108');
   assert.equal(evaluate("document.querySelector('#world-complete-overlay').classList.contains('is-visible')"), false);
   browser('reload');
   enterJourney();
   assert.equal(storyId(), 'forest-video-09', 'Refresh at the finale does not resume an older Forest story');
   browser('click', '#forest-milestone-play-btn');
   assert.equal(storyId(), 'bridge-forest-reef');
+  assert.equal(browser('get', 'url').trim(), mapUrl);
+  assert.equal(browser('get', 'count', '.world-stage[data-stage="37"]').trim(), '0');
   assert.equal(evaluate("document.querySelector('#forest-story-select').hidden"), true);
-  assert.match(evaluate("document.querySelector('#traveller-image').src"), /adva\.webp$/);
   assert.equal(evaluate("document.querySelector('#forest-caption-language').value"), 'en');
   browser('select', '#forest-caption-language', 'he');
   assert.deepEqual(evaluate("Array.from(document.querySelector('#forest-milestone-video').textTracks, track => track.mode)"), ['showing', 'hidden']);
-  browser('press', 'Escape');
+  browser('reload');
+  enterJourney();
+  assert.equal(storyId(), 'bridge-forest-reef', 'Interrupted bridge resumes on the Forest screen');
+  assert.equal(browser('get', 'url').trim(), mapUrl);
+  playToEnd();
+  browser('wait', '--fn', "document.querySelector('#forest-milestone-video').src.endsWith('/reef-video-01.mp4')");
   assert.equal(storyId(), 'reef-video-01');
+  assert.equal(browser('get', 'url').trim(), reefUrl);
+  assert.equal(evaluate("document.querySelector('#world').dataset.mapWorld"), 'reef');
+  assert.equal(evaluate("document.querySelectorAll('.world-stage').length"), 36);
+  assert.equal(browser('get', 'count', '.world-stage[data-stage="36"]').trim(), '0');
+  assert.equal(mapHeight(), forestMapHeight, 'The viewport only scrolls within the active world');
+  assert.equal(evaluate("document.querySelector('#traveller').dataset.stage"), '37');
+  assert.match(evaluate("document.querySelector('#traveller-image').src"), /adva\.webp$/);
+  assert.equal(evaluate("document.querySelector('#star-total-max').textContent"), '/216');
+  browser('set', 'viewport', '390', '844');
+  browser('wait', '--fn', `(() => {
+    const stop = document.querySelector('.world-stage[data-stage="37"]').getBoundingClientRect();
+    const panel = document.querySelector('#stage-panel').getBoundingClientRect();
+    return stop.top >= 0 && stop.bottom <= panel.top;
+  })()`);
+  browser('set', 'viewport', '1280', '720');
   browser('reload');
   enterJourney();
   browser('wait', '#forest-milestone-dialog:not([hidden])');
   assert.equal(storyId(), 'reef-video-01', 'Interrupted playback offers the opening again');
+  assert.equal(browser('get', 'url').trim(), reefUrl);
   assert.deepEqual(readReef().seenVideos, ['bridge-forest-reef']);
-  evaluate(`(async () => {
-    const video = document.querySelector('#forest-milestone-video');
-    await video.play();
-    video.currentTime = video.duration - 0.5;
-    return true;
-  })()`);
+  playToEnd();
   browser('wait', '--fn', "document.querySelector('#forest-milestone-video').ended");
   assert.deepEqual(readReef().seenVideos, ['bridge-forest-reef', 'reef-video-01']);
   browser('click', '#forest-milestone-play-btn');
@@ -241,6 +266,7 @@ try {
 
   const resetId = `${profileId}-reset`;
   const resetReef = () => evaluate(`JSON.parse(window.bubblesSaveClient.getItem('reef-route-${resetId}-en'))`);
+  const savedReef = readReef();
   evaluate(`(async () => {
     const saves = window.bubblesSaveClient;
     const key = 'bubble_world_map_profiles_v1';
@@ -250,12 +276,13 @@ try {
     const forest = JSON.parse(saves.getItem('forest-route-${profileId}-en'));
     forest.seenVideos = forest.seenVideos.filter(id => id !== 'forest-video-09');
     saves.setItem('forest-route-${resetId}-en', JSON.stringify(forest));
+    saves.setItem('reef-route-${resetId}-en', saves.getItem('reef-route-${profileId}-en'));
     await saves.flush();
     return true;
   })()`);
   browser('reload');
   browser('click', `.gate-profile-card:has([data-profile="${resetId}"]) .gate-profile-edit`);
-  assert.equal(resetReef(), null);
+  assert.deepEqual(resetReef(), savedReef);
   browser('select', '#track-stage-select', '1');
   browser('click', '#track-reset-button');
   browser('click', '#confirm-track-reset-button');
@@ -263,24 +290,61 @@ try {
   assert.equal(resetForest.currentStage, 1);
   assert.deepEqual(resetForest.unlockedVideos, ['forest-video-01', 'forest-video-09']);
   assert.deepEqual(resetForest.seenVideos, []);
-  assert.equal(resetReef(), null, 'The Forest save alone must retain the Reef unlock');
+  assert.deepEqual(resetReef(), savedReef, 'Reset preserves the existing Reef save');
   const cloudForest = evaluate(`(async () => {
     await window.bubblesSaveClient.flush();
     const response = await fetch('/api/saves/forest-route-${resetId}-en');
     return JSON.parse((await response.json()).value);
   })()`);
   assert.deepEqual(cloudForest, resetForest);
-  browser('click', '#editor-close');
-  browser('click', `.gate-profile-choice[data-profile="${resetId}"]`);
-  browser('click', '#destination-card-forest');
-  assert.equal(browser('is', 'enabled', '.world-stage[data-stage="37"]').trim(), 'true');
-  for (const story of ['forest-video-01', 'forest-video-09', 'bridge-forest-reef', 'reef-video-01']) {
-    assert.equal(storyId(), story);
-    browser('click', '#forest-milestone-play-btn');
-  }
+  browser('open', reefUrl);
+  browser('reload');
+  enterJourney(resetId);
+  assert.equal(browser('get', 'url').trim(), mapUrl, 'The Reef URL does not bypass Forest progress');
+  assert.equal(browser('get', 'count', '.world-stage[data-stage="37"]').trim(), '0');
+  assert.equal(storyId(), 'forest-video-01');
+  browser('click', '#forest-milestone-play-btn');
+  browser('click', '#forest-stories-button');
+  browser('select', '#forest-story-select', 'reef-video-01');
+  assert.equal(storyId(), 'reef-video-01', 'Earned stories remain available after resetting the Forest');
+  browser('click', '#forest-milestone-play-btn');
+  assert.equal(browser('get', 'url').trim(), mapUrl, 'Replaying a story does not change the map');
+  assert.deepEqual(resetReef(), savedReef);
+
+  // Save rows can reach another device in different orders.
+  evaluate(`(async () => {
+    const saves = window.bubblesSaveClient;
+    const forest = JSON.parse(saves.getItem('forest-route-${profileId}-en'));
+    forest.seenVideos = forest.seenVideos.filter(id => id !== 'forest-video-09');
+    saves.setItem('forest-route-${resetId}-en', JSON.stringify(forest));
+    await saves.flush();
+    return true;
+  })()`);
+  browser('reload');
+  enterJourney(resetId);
+  assert.equal(storyId(), 'forest-video-09');
+  assert.equal(browser('get', 'url').trim(), mapUrl, 'A synced bridge acknowledgement waits for the finale');
+  browser('click', '#forest-milestone-play-btn');
+  assert.equal(browser('get', 'url').trim(), reefUrl);
+  assert.deepEqual(resetReef(), savedReef);
+
+  evaluate(`(async () => {
+    const saves = window.bubblesSaveClient;
+    saves.removeItem('reef-route-${resetId}-en');
+    await saves.flush();
+    return true;
+  })()`);
+  browser('reload');
+  enterJourney(resetId);
+  assert.equal(storyId(), 'bridge-forest-reef');
+  browser('click', '#forest-milestone-play-btn');
+  assert.equal(storyId(), 'reef-video-01');
+  assert.equal(browser('get', 'url').trim(), reefUrl, 'Skipping the bridge changes the screen too');
+  assert.equal(evaluate("document.querySelector('#traveller').dataset.stage"), '37');
+  assert.equal(evaluate('document.activeElement.id'), 'forest-milestone-play-btn');
 
   assert.equal(browser('errors').trim(), '');
-  console.log('PASS: continuous map, ordered stories and replay, real stages 36/37/41, keyboard returns, separate activity histories, and durable Reef unlock.');
+  console.log('PASS: separate world screens, bridge playback and skip, out-of-order save sync, real stages 36/37/41, keyboard returns, separate activity histories, and Reef save preservation.');
 } finally {
   browser('close');
 }
