@@ -13,7 +13,7 @@ export const REEF_ACTIVITIES = Object.freeze({
 });
 
 export const REEF_CHAPTERS = Object.freeze([
-  { id: 1, title: 'שונית החברים', topic: 'ים וחיות', rank: 3, label: { x: 88, y: 75 }, curve: [[81, 91], [82, 73], [71, 75], [66, 60]] },
+  { id: 1, title: 'שונית החברים', topic: 'ים וחיות', rank: 3, label: { x: 88, y: 75 }, curve: [[88, 82], [81, 78], [71, 74], [66, 60]] },
   { id: 2, title: 'המזווה של הספינה', topic: 'מטבח ואוכל', rank: 3, label: { x: 47, y: 94 }, curve: [[66, 60], [56, 58], [43, 66], [32, 62]] },
   { id: 3, title: 'סמטת הפנסים', topic: 'מוזיקה וצבעים', rank: 4, label: { x: 17, y: 76 }, curve: [[32, 62], [26, 54], [31, 42], [48, 37]] },
   { id: 4, title: 'מזג האוויר בים', topic: 'מזג אוויר, טבע ובגדים', rank: 5, label: { x: 49, y: 57 }, curve: [[48, 37], [60, 34], [63, 53], [74, 57]] },

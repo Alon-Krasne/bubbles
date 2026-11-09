@@ -2,7 +2,7 @@ import { getPainterWord } from '../prototype/shared/painter-content.mjs';
 import { calculateMasteryStars, formatStarRating } from '../prototype/shared/activity-scoring.mjs';
 
 // Promoted from the reviewed Magic Brush Painter prototype (9b71348).
-export function mountPainter(root, { wordPool, language, speakWord, speakGuidance, speakLetter, onExit, onComplete }) {
+export function mountPainter(root, { wordIds, language, speakWord, speakGuidance, speakLetter, onExit, onComplete }) {
 const get = id => root.querySelector('#' + id);
 let disposed = false;
 const timers = new Set();
@@ -67,11 +67,13 @@ function playDissolveSound() {
   }
 }
 
-let wordId = wordPool[0];
-let letterCase = 'titlecase';
+let wordIndex = 0;
+let wordId = wordIds[wordIndex];
+const letterCase = 'titlecase';
 let data = getPainterWord(wordId, language, letterCase);
 const currentLang = language;
-let totalStrokes = data.letters.reduce((sum, letter) => sum + letter.strokes.length, 0);
+const totalStrokes = wordIds.reduce((sum, id) => sum + getPainterWord(id, language, letterCase).letters
+  .reduce((strokes, letter) => strokes + letter.strokes.length, 0), 0);
 let mistakes = 0;
 let brushColor = '#FF5E62';
 let letterIdx = 0;
@@ -151,8 +153,8 @@ function resetRound() {
   strokeIdx = 0;
   activeMasks = [];
   firstLetterSpoken = false;
-  mistakes = 0;
   updateColorMask();
+  get('painter-progress').textContent = `ציור ${wordIndex + 1} מתוך ${wordIds.length}`;
 
   const colorImg = get('art-color-img');
   colorImg.classList.remove('bloom-pop');
@@ -600,7 +602,11 @@ function setCompletionModal(open) {
 function onCompleteWord() {
   playFanfare();
   get('paint-badge').textContent = `הושלם! ✨`;
-  get('painter-stars').textContent = formatStarRating(calculateMasteryStars({ mistakes, challengeSize: totalStrokes }));
+  const isLastWord = wordIndex === wordIds.length - 1;
+  get('celebrate-text').textContent = isLastWord ? 'כל הציורים התעוררו לחיים!' : 'עוד ציור מחכה למכחול הקסם שלכם!';
+  get('painter-finish').textContent = isLastWord ? 'ממשיכים במסע ←' : 'לציור הבא ←';
+  get('painter-stars').textContent = isLastWord
+    ? formatStarRating(calculateMasteryStars({ mistakes, challengeSize: totalStrokes })) : '';
   setCompletionModal(true);
   speakWord(wordId);
 }
@@ -639,47 +645,34 @@ get('painter-sound').onclick = () => {
 };
 get('painter-finish').onclick = () => {
   if (letterIdx !== data.letters.length) return;
+  if (wordIndex < wordIds.length - 1) {
+    wordIndex++;
+    wordId = wordIds[wordIndex];
+    data = getPainterWord(wordId, language, letterCase);
+    loadPicture();
+    resetRound();
+    speakGuidance(wordId, data.letters[0].char);
+    firstLetterSpoken = true;
+    get('painter-sound').focus();
+    return;
+  }
   const stars = calculateMasteryStars({ mistakes, challengeSize: totalStrokes });
   dispose(); onComplete(stars);
 };
 root.querySelectorAll('.color-dot').forEach(button => button.addEventListener('click', () => setBrushColor(button.dataset.color, button)));
 root.querySelector('.color-dot.active').setAttribute('aria-pressed', 'true');
-function changePractice() {
-  data = getPainterWord(wordId, language, letterCase);
-  totalStrokes = data.letters.reduce((sum, letter) => sum + letter.strokes.length, 0);
+function loadPicture() {
   root.querySelectorAll('.art-layer').forEach(image => { image.src = './prototype/' + data.picture; });
   get('art-color-img').alt = data.word;
-  root.querySelectorAll('[data-letter-case]').forEach(button => {
-    button.setAttribute('aria-pressed', String(button.dataset.letterCase === letterCase));
-  });
-  resetRound();
-  speakGuidance(wordId, data.letters[0].char);
-  firstLetterSpoken = true;
 }
-const wordChoice = get('painter-word');
-wordChoice.dir = language === 'en' ? 'ltr' : 'rtl';
-for (const id of wordPool) {
-  const option = document.createElement('option');
-  option.value = id;
-  option.textContent = getPainterWord(id, language, 'titlecase').word;
-  wordChoice.append(option);
-}
-wordChoice.onchange = () => { wordId = wordChoice.value; changePractice(); };
-get('painter-letter-case').hidden = language !== 'en';
-root.querySelectorAll('[data-letter-case]').forEach(button => {
-  button.onclick = () => {
-    if (letterCase === button.dataset.letterCase) return;
-    letterCase = button.dataset.letterCase;
-    changePractice();
-  };
-});
-root.querySelectorAll('.art-layer').forEach(image => { image.src = './prototype/' + data.picture; });
-get('art-color-img').alt = data.word;
+loadPicture();
 resetRound();
 window.render_game_to_text = () => JSON.stringify({
   game: 'magic-painter', language, letterCase: language === 'en' ? letterCase : null, wordId, word: data.word, letterIdx, strokeIdx,
   mistakes, inputLocked, isDrawing, progressLen, completedStrokes: completedStrokes.length,
-  complete: letterIdx === data.letters.length,
+  wordIndex, wordCount: wordIds.length,
+  wordComplete: letterIdx === data.letters.length,
+  complete: wordIndex === wordIds.length - 1 && letterIdx === data.letters.length,
   stroke: letterIdx < data.letters.length ? data.letters[letterIdx].strokes[strokeIdx] : null,
 });
 window.advanceTime = milliseconds => new Promise(resolve => schedule(resolve, milliseconds));

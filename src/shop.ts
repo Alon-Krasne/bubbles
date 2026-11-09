@@ -173,7 +173,6 @@ export function initShopGame(deps: ShopDeps) {
 
   function openShop() {
     deps.showScreen('shop-screen');
-    renderLevelList();
     showLevelList();
   }
 
@@ -587,13 +586,17 @@ export function initShopGame(deps: ShopDeps) {
 
   function getShopStorage() {
     if (deps.hostedSession) {
+      const { destination, profileLanguage, profileId } = deps.hostedSession.context;
+      const deckKey = `shop-decks-${destination}-${profileLanguage}-${profileId}`;
       return {
-        getItem: (key: string) => hostedRoundRecords.get(key) ?? null,
-        setItem: (key: string, value: string) => { hostedRoundRecords.set(key, value); },
+        getItem: (key: string) => key === SHOP_WORD_DECK_STORAGE_KEY ? localStorage.getItem(deckKey) : hostedRoundRecords.get(key) ?? null,
+        setItem: (key: string, value: string) => {
+          if (key === SHOP_WORD_DECK_STORAGE_KEY) localStorage.setItem(deckKey, value);
+          else hostedRoundRecords.set(key, value);
+        },
       };
     }
-    const destination = deps.hostedSession ? deps.hostedSession.context.destination : 'wonder';
-    const prefix = getActivitySavePrefix(deps.getActiveProfile().id, destination, getLearningLanguage());
+    const prefix = getActivitySavePrefix(deps.getActiveProfile().id, 'wonder', getLearningLanguage());
     return {
       getItem: (key: string) => saveStorage.getItem(`${prefix}-${key}`),
       setItem: (key: string, value: string) => saveStorage.setItem(`${prefix}-${key}`, value),

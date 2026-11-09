@@ -37,7 +37,8 @@ async function finishPainter() {
       clientY: rect.top + point.y * rect.height / canvas.height,
     }));
   };
-  for (let attempt = 0; attempt < 30 && !state().complete; attempt++) {
+  const maxStrokes = state().wordCount * 30;
+  for (let attempt = 0; attempt < maxStrokes; attempt++) {
     const path = activity.querySelector('#svg-stroke-path');
     const length = path.getTotalLength();
     fire('pointerdown', path.getPointAtLength(0));
@@ -45,10 +46,13 @@ async function finishPainter() {
     fire('pointermove', path.getPointAtLength(length));
     fire('pointerup', path.getPointAtLength(length));
     if (state().inputLocked) await new Promise(resolve => setTimeout(resolve, 740));
+    const { wordComplete, complete } = state();
+    if (wordComplete) {
+      activity.querySelector('#painter-finish').click();
+      if (complete) return true;
+    }
   }
-  if (!state().complete) throw Error('Painter did not complete');
-  activity.querySelector('#painter-finish').click();
-  return true;
+  throw Error('Painter did not complete');
 }
 
 function returnWithKeyboard(back) {
@@ -131,6 +135,7 @@ try {
   assert.equal(evaluate("document.querySelectorAll('.world-stage').length"), 36);
   assert.equal(browser('get', 'count', '.world-stage[data-stage="36"]').trim(), '0');
   assert.equal(mapHeight(), forestMapHeight, 'The viewport only scrolls within the active world');
+  assert.equal(evaluate("document.querySelector('.map-scroll').scrollHeight"), mapHeight(), 'Reef scrolling ends at the edge of the artwork');
   assert.equal(evaluate("document.querySelector('#traveller').dataset.stage"), '37');
   assert.match(evaluate("document.querySelector('#traveller-image').src"), /adva\.webp$/);
   assert.equal(evaluate("document.querySelector('#star-total-max').textContent"), '/216');

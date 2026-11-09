@@ -201,4 +201,12 @@ export const MAGIC_HOUSE_REQUESTS = Object.freeze([
 export const MAGIC_HOUSE_REQUEST_LAYOUTS = Object.freeze([
   Object.freeze(['request-1', 'request-2', 'request-3', 'request-4', 'request-5', 'request-6']),
   Object.freeze(['request-7', 'request-8', 'request-9', 'request-10', 'request-11', 'request-12']),
+  Object.freeze(['request-1', 'request-2', 'request-3', 'request-5', 'request-6', 'request-10']),
+  Object.freeze(['request-1', 'request-2', 'request-4', 'request-5', 'request-6', 'request-11']),
+  Object.freeze(['request-1', 'request-2', 'request-4', 'request-5', 'request-9', 'request-11']),
+  Object.freeze(['request-1', 'request-2', 'request-5', 'request-6', 'request-10', 'request-11']),
+  Object.freeze(['request-1', 'request-2', 'request-5', 'request-9', 'request-10', 'request-11']),
+  Object.freeze(['request-1', 'request-4', 'request-5', 'request-7', 'request-9', 'request-11']),
+  Object.freeze(['request-1', 'request-4', 'request-7', 'request-8', 'request-9', 'request-11']),
+  Object.freeze(['request-1', 'request-5', 'request-7', 'request-9', 'request-10', 'request-11']),
 ]);

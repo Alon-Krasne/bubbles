@@ -1,5 +1,4 @@
-import { TRAIL_GAME_SEQUENCE, buildVocabularyIndex, createMemoryLevelRecipe, createShopLevelRecipe, createMagicHouseLevelRecipe, createRevealLevelRecipe } from './trail-recipes.mjs';
-import { PAINTER_CHAPTER_WORD_POOLS } from './painter-content.mjs';
+import { TRAIL_GAME_SEQUENCE, buildVocabularyIndex, createMemoryLevelRecipe, createShopLevelRecipe, createMagicHouseLevelRecipe, createRevealLevelRecipe, createPainterLevelRecipe } from './trail-recipes.mjs';
 import { VOCABULARY } from './vocabulary-catalog.mjs';
 import { REEF_STAGES, REEF_CHAPTERS } from './reef-map.mjs';
 
@@ -24,7 +23,7 @@ export const REEF_LEVEL_STAGES = Object.freeze(REEF_STAGES.map(stage => {
   else if (game === 'shop') level = createShopLevelRecipe(recipe);
   else if (game === 'house') level = createMagicHouseLevelRecipe(recipe);
   else if (game === 'reveal') level = createRevealLevelRecipe(recipe);
-  else level = Object.freeze({ id, title, difficultyRank: chapter.rank, wordPool: PAINTER_CHAPTER_WORD_POOLS[stage.chapter - 1] });
+  else level = createPainterLevelRecipe(recipe);
   levels[game].push(level);
   return Object.freeze({ id: stage.id, x: stage.position.x, y: stage.position.y, game, level: id, title, description: chapter.topic, chapter: `reef-chapter-${stage.chapter}`, chapterIndex: stage.chapter - 1 });
 }));

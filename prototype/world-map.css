@@ -2846,10 +2846,6 @@ body {
 .world[data-map-world="reef"] .map-stage {
   background-image: url('./assets/reef/map.webp');
 }
-.world[data-map-world="reef"] .map-scroll {
-  padding-bottom: 180px;
-  background-color: #efe3cd;
-}
 :root[data-time-of-day="day"] .profile-gate {
   background: linear-gradient(#fff8e933, #e8f8df55), url('./assets/sunlit-trail-map.webp') center / cover no-repeat;
 }

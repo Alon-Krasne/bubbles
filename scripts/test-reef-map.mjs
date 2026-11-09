@@ -4,6 +4,7 @@ import { REEF_ACTIVITIES, REEF_CHAPTERS, REEF_STAGES, REEF_STORIES, getReefStage
 import { TRAIL_GAME_SEQUENCE } from '../prototype/shared/trail-recipes.mjs';
 import { REEF_TRAIL_STAGES, getGameLevel, getDestinationGameLevels } from '../prototype/shared/trail-catalog.mjs';
 import { REEF_CAPTIONS } from '../prototype/shared/reef-captions.mjs';
+import { getPainterWordPool } from '../prototype/shared/painter-content.mjs';
 import { VOCABULARY } from '../prototype/shared/vocabulary-catalog.mjs';
 const vocabularyIds = new Set(VOCABULARY.map(word => word.id));
 
@@ -22,6 +23,10 @@ for (const stage of REEF_STAGES) {
   const level = getGameLevel(activity.game, activity.level);
   assert.equal(level.difficultyRank, REEF_CHAPTERS[stage.chapter - 1].rank);
   assert(getDestinationGameLevels('reef')[activity.game].includes(level));
+  if (activity.game === 'painter') {
+    assert.equal(level.wordCount, Math.ceil(level.difficultyRank / 2));
+    for (const language of ['en', 'he']) assert(getPainterWordPool(level, language).length >= level.wordCount);
+  }
   for (const id of level.wordPool || level.itemPool || []) assert(vocabularyIds.has(id), `Unrecorded vocabulary reference ${id}`);
   assert.equal(getReefStage(stage.id), stage);
 }
