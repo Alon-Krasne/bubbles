@@ -1,3 +1,5 @@
+import { VOCABULARY } from '../prototype/shared/vocabulary-catalog.mjs';
+
 export interface StoredShopOrder {
   sentence: string;
   audioSources: string[];
@@ -26,6 +28,7 @@ interface StorageLike {
 type StoredShopSessions = Record<string, Record<string, ShopSessionSnapshot>>;
 
 const SHOP_SESSION_STORAGE_KEY = 'bubble_shop_sessions_v1';
+const SHOP_ITEM_IDS = new Set(VOCABULARY.filter((word: { shoppable: boolean }) => word.shoppable).map((word: { id: string }) => word.id));
 
 export function loadShopSession(
   storage: StorageLike,
@@ -87,16 +90,35 @@ function isShopSessionSnapshot(value: unknown): value is ShopSessionSnapshot {
   if (!isPlainRecord(value)) {
     return false;
   }
-  const order = (value as { currentOrder?: unknown }).currentOrder;
+  const order = value.currentOrder;
   if (!isPlainRecord(order)) {
     return false;
   }
+  const shelfItemIds = order.shelfItemIds;
   return (
-    typeof order.sentence === 'string'
+    isNonNegativeInteger(value.servedCustomers)
+    && isNonNegativeInteger(value.mistakes)
+    && isNonNegativeInteger(value.roundCoins)
+    && typeof value.customerEmoji === 'string'
+    && typeof value.customerName === 'string'
+    && typeof order.sentence === 'string'
     && Array.isArray(order.audioSources)
-    && Array.isArray(order.shelfItemIds)
+    && order.audioSources.every((source: unknown) => typeof source === 'string')
+    && Array.isArray(shelfItemIds)
+    && shelfItemIds.length > 0
+    && shelfItemIds.every((id: unknown) => typeof id === 'string' && SHOP_ITEM_IDS.has(id))
     && Array.isArray(order.targets)
+    && order.targets.length > 0
+    && order.targets.every((target: unknown) => isPlainRecord(target)
+      && typeof target.itemId === 'string' && SHOP_ITEM_IDS.has(target.itemId)
+      && shelfItemIds.includes(target.itemId)
+      && typeof target.required === 'number' && Number.isInteger(target.required) && target.required > 0
+      && isNonNegativeInteger(target.served) && target.served <= target.required)
   );
+}
+
+function isNonNegativeInteger(value: unknown): value is number {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
 }
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
