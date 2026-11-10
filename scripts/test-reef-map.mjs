@@ -24,7 +24,7 @@ for (const stage of REEF_STAGES) {
   assert.equal(level.difficultyRank, REEF_CHAPTERS[stage.chapter - 1].rank);
   assert(getDestinationGameLevels('reef')[activity.game].includes(level));
   if (activity.game === 'painter') {
-    assert.equal(level.wordCount, Math.ceil(level.difficultyRank / 2));
+    assert.equal(level.wordCount, level.difficultyRank - 2);
     for (const language of ['en', 'he']) assert(getPainterWordPool(level, language).length >= level.wordCount);
   }
   for (const id of level.wordPool || level.itemPool || []) assert(vocabularyIds.has(id), `Unrecorded vocabulary reference ${id}`);

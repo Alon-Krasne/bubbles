@@ -2,14 +2,13 @@ import { getActivitySavePrefix } from './shared/destinations.mjs';
 import { calculateMasteryStars, formatStarRating } from './shared/activity-scoring.mjs';
 import {
   MAGIC_HOUSE_OBJECTS,
-  MAGIC_HOUSE_REQUEST_LAYOUTS,
   MAGIC_HOUSE_REQUESTS,
 } from './shared/magic-house-content.mjs';
 import {
   MAGIC_HOUSE_PLACEMENTS,
   MAGIC_HOUSE_ZONES,
 } from './shared/magic-house-room.mjs';
-import { selectVariedRequestIds } from './shared/magic-house-variation.mjs';
+import { selectMagicHouseLevelRequests } from './shared/magic-house-variation.mjs';
 import { MAGIC_HOUSE_PRACTICE_LEVEL, TRAIL_STAGES, REEF_JOURNEY_STAGES, getDestinationGameLevels, getGameLevel } from './shared/trail-catalog.mjs';
 import { applyEnglishLearningTranslationHint } from './shared/translation-hint.mjs';
 import { saveStorage } from './shared/saves.mjs';
@@ -229,12 +228,7 @@ function selectLevelRequests(level, profileId) {
   const storageKey = `${PREVIOUS_REQUESTS_STORAGE_PREFIX}:${profileId}:${levelKey}`;
   const savedPreviousIds = localStorage.getItem(storageKey);
   const previousIds = savedPreviousIds ? JSON.parse(savedPreviousIds) : null;
-  const selectedIds = selectVariedRequestIds({
-    requestIds: level.requestIds,
-    requestLayouts: MAGIC_HOUSE_REQUEST_LAYOUTS,
-    count: level.requestCount,
-    previousIds,
-  });
+  const selectedIds = selectMagicHouseLevelRequests(level, previousIds);
   localStorage.setItem(storageKey, JSON.stringify(selectedIds));
   const requestById = new Map(allowedRequests.map((request) => [request.id, request]));
   return selectedIds.map((requestId) => requestById.get(requestId));

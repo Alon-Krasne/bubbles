@@ -11,6 +11,9 @@ export const DIFFICULTY_LABELS = Object.freeze({
   3: 'מתקדם',
   4: 'מאתגר',
   5: 'אליפות',
+  6: 'מומחים',
+  7: 'אלופי השונית',
+  8: 'אגדת השונית',
 });
 
 export const MAGIC_REQUEST_TARGET_IDS = Object.freeze(Object.fromEntries(
@@ -18,24 +21,26 @@ export const MAGIC_REQUEST_TARGET_IDS = Object.freeze(Object.fromEntries(
 ));
 
 export const TRAIL_GAME_SEQUENCE = Object.freeze([
-  // Chapter 1 (stages 1-6) - Rank 1
+  // Chapter 1 (stages 1-6)
   'memory', 'shop', 'house', 'reveal', 'painter', 'shop',
-  // Chapter 2 (stages 7-12) - Rank 1-2
+  // Chapter 2 (stages 7-12)
   'house', 'reveal', 'memory', 'painter', 'house', 'shop',
-  // Chapter 3 (stages 13-18) - Rank 2-3
+  // Chapter 3 (stages 13-18)
   'memory', 'memory', 'reveal', 'shop', 'painter', 'house',
-  // Chapter 4 (stages 19-24) - Rank 3-4
+  // Chapter 4 (stages 19-24)
   'reveal', 'reveal', 'memory', 'house', 'painter', 'shop',
-  // Chapter 5 (stages 25-30) - Rank 4-5
+  // Chapter 5 (stages 25-30)
   'shop', 'memory', 'reveal', 'house', 'painter', 'house',
-  // Chapter 6 (stages 31-36) - Rank 5
+  // Chapter 6 (stages 31-36)
   'reveal', 'shop', 'memory', 'house', 'shop', 'painter',
 ]);
 export const STAGES_PER_CHAPTER = 6;
+const RANK_BY_CHAPTER = Object.freeze([1, 2, 3, 4, 5, 5, 6, 6, 7, 7, 8, 8]);
 const LEVEL_ID_PREFIX = Object.freeze({ memory: 'trail-memory', shop: 'trail-shop', house: 'trail-house', reveal: 'trail-reveal', painter: 'trail-painter' });
 
 const LEVEL_DIFFICULTY_BY_RANK = Object.freeze({ 1: 'easy', 2: 'medium', 3: 'medium', 4: 'hard', 5: 'hard' });
 const SHOP_MODE_BY_RANK = Object.freeze({ 1: 'single', 2: 'single', 3: 'quantity', 4: 'color', 5: 'double' });
+const MEMORY_PAIRS_BY_RANK = Object.freeze([0, 4, 5, 6, 7, 8, 9, 10, 12]);
 
 // Quantity orders speak recorded plural words, so quantity-mode Shop levels may
 // only stock items that already have a committed plural clip.
@@ -158,8 +163,10 @@ export function createMagicHouseLevel({ id, difficultyRank, title, requestIds, r
   });
 }
 
-function difficultyRankForStage(stageIndex) {
-  return Math.max(1, Math.min(5, 1 + Math.floor(stageIndex / 7.2)));
+export function difficultyRankForStage(stageId) {
+  const rank = RANK_BY_CHAPTER[Math.floor((stageId - 1) / STAGES_PER_CHAPTER)];
+  if (!Number.isInteger(stageId) || rank === undefined) throw new Error(`Invalid journey stage ${stageId}`);
+  return rank;
 }
 
 function rotate(items, offset) {
@@ -202,11 +209,11 @@ function poolForCategories(index, categories, minimum, offset) {
 }
 
 export function createMemoryLevelRecipe({ levelId, rank, title, categories, index, offset }) {
-  const pairs = 3 + rank;
+  const pairs = MEMORY_PAIRS_BY_RANK[rank];
   const pool = poolForCategories(index, categories, pairs, offset);
   return createMemoryLevel({
     id: levelId,
-    difficulty: LEVEL_DIFFICULTY_BY_RANK[rank],
+    difficulty: LEVEL_DIFFICULTY_BY_RANK[Math.min(rank, 5)],
     difficultyRank: rank,
     title,
     subtitle: `${pairs} זוגות`,
@@ -218,9 +225,9 @@ export function createMemoryLevelRecipe({ levelId, rank, title, categories, inde
 }
 
 export function createShopLevelRecipe({ levelId, rank, title, categories, index, offset, vocabulary = VOCABULARY }) {
-  const mode = SHOP_MODE_BY_RANK[rank];
+  const mode = SHOP_MODE_BY_RANK[Math.min(rank, 5)];
   const shelfSize = Math.min(8, 3 + rank);
-  const customerCount = Math.min(7, 3 + rank);
+  const customerCount = rank <= 5 ? Math.min(7, 3 + rank) : rank + 2;
   const shoppableSet = new Set(index.shopArt);
   const colorIds = vocabulary.filter((word) => word.category === 'colors').map((word) => word.id);
   let source;
@@ -276,11 +283,11 @@ function getLetterCount(str, isHebrew) {
 
 export function createPainterLevelRecipe({ levelId, rank, title }) {
   return freezeLevel({ id: levelId, title, difficultyRank: rank,
-    wordCount: Math.ceil(rank / 2), wordPool: PAINTER_WORD_IDS });
+    wordCount: rank >= 6 ? rank - 2 : Math.ceil(rank / 2), wordPool: PAINTER_WORD_IDS });
 }
 
 export function createRevealLevelRecipe({ levelId, rank, title, categories, index, offset }) {
-  const count = Math.min(5, 2 + rank);
+  const count = rank <= 5 ? Math.min(5, 2 + rank) : rank;
   const words = poolForCategories(index, categories, count + 4, offset);
   const wordScore = (id) => {
     const item = index.wordById.get(id);
@@ -426,7 +433,7 @@ export function generateTrail({ vocabulary = VOCABULARY, magicRequests = MAGIC_H
     const chapterIndex = Math.floor(stageIndex / STAGES_PER_CHAPTER);
     const chapter = TRAIL_CHAPTERS[chapterIndex];
     const game = TRAIL_GAME_SEQUENCE[stageIndex];
-    const rank = difficultyRankForStage(stageIndex);
+    const rank = difficultyRankForStage(stageId);
     appearanceCount[game] += 1;
     const levelId = `${LEVEL_ID_PREFIX[game]}-${appearanceCount[game]}`;
     const title = `${chapter.title} · ${stageId}`;

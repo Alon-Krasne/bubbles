@@ -77,9 +77,7 @@
     grid-template-columns: repeat(var(--memory-columns), minmax(0, 1fr));
 }
 #memory-board .memory-card { min-height: clamp(132px, 20vh, 185px); border-radius: 18px; }
-#memory-board[data-pairs='8'] .memory-card,
-#memory-board[data-pairs='9'] .memory-card,
-#memory-board[data-pairs='10'] .memory-card { min-height: clamp(108px, 14vh, 136px); }
+#memory-board:is([data-pairs='8'], [data-pairs='9'], [data-pairs='10'], [data-pairs='12']) .memory-card { min-height: clamp(108px, 14vh, 136px); }
 #memory-board .memory-card-back,
 #memory-board .memory-card-front { border-radius: 18px; }
 #memory-board .memory-card-back {

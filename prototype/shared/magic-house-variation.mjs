@@ -1,3 +1,21 @@
+import { MAGIC_HOUSE_REQUEST_LAYOUTS, MAGIC_HOUSE_REQUESTS } from './magic-house-content.mjs';
+
+const compoundRequests = new Set(MAGIC_HOUSE_REQUESTS.filter(request => request.targets.length > 1).map(request => request.id));
+const alternatePlacements = new Set(['request-8', 'request-9', 'request-10']);
+const compoundLayouts = MAGIC_HOUSE_REQUEST_LAYOUTS.filter(layout => layout.some(id => compoundRequests.has(id)));
+const advancedLayouts = compoundLayouts.filter(layout => layout.some(id => alternatePlacements.has(id)));
+
+export function selectMagicHouseLevelRequests(level, previousIds, random = Math.random) {
+  const { difficultyRank, requestIds, requestCount } = level;
+  const requestLayouts = difficultyRank >= 7 ? advancedLayouts : difficultyRank === 6 ? compoundLayouts : MAGIC_HOUSE_REQUEST_LAYOUTS;
+  const selected = selectVariedRequestIds({ requestIds, requestLayouts, count: requestCount, previousIds, random });
+  if (difficultyRank === 8) {
+    const compoundIndex = selected.findIndex(id => compoundRequests.has(id));
+    selected.unshift(...selected.splice(compoundIndex, 1));
+  }
+  return selected;
+}
+
 function shuffle(items, random) {
   const shuffled = [...items];
   for (let index = shuffled.length - 1; index > 0; index -= 1) {

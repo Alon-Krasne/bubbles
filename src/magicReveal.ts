@@ -6,12 +6,12 @@ import type { HostedActivitySession, HostedActivityContext } from './hostedActiv
 import './magic-reveal.css';
 import { saveStorage } from '../prototype/shared/saves.mjs';
 import { collectPicture, getCollectedPictures, getPictureOrder } from '../prototype/shared/gallery.mjs';
-import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
+import { drawVocabularyRound, vocabularyDeckKey } from '../prototype/shared/vocabulary-deck.mjs';
 
 
 export function openMagicReveal(context: HostedActivityContext, session: HostedActivitySession) {
   const level = getGameLevel('reveal', context.levelId);
-  const deckKey = `reveal-deck-${context.profileId}-${context.destination}-${context.profileLanguage}-${level.id}`;
+  const deckKey = `reveal-deck-${context.profileId}-${context.destination}-${context.profileLanguage}-${vocabularyDeckKey(level.id, level.wordPool)}`;
   const savedDeck = localStorage.getItem(deckKey);
   const round = drawVocabularyRound({ pool: level.wordPool, count: level.wordCount,
     state: savedDeck ? JSON.parse(savedDeck) : null });

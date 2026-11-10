@@ -169,6 +169,7 @@ try {
   browser('wait', '--fn', "document.querySelector('#activity-frame').contentDocument?.querySelectorAll('.memory-card').length > 0");
   assert.equal(evaluate("new URL(document.querySelector('#activity-frame').src).searchParams.get('level')"), 'reef-memory-1');
   assert.equal(evaluate("new URL(document.querySelector('#activity-frame').src).searchParams.get('stage')"), '37');
+  assert.equal(evaluate("document.querySelector('#activity-frame').contentDocument.querySelectorAll('.memory-card').length"), 18);
   evaluate(`(async () => {
     const activity = document.querySelector('#activity-frame').contentDocument;
     const cards = Array.from(activity.querySelectorAll('.memory-card'));

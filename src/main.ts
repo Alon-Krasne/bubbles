@@ -832,7 +832,9 @@ function renderMemoryBoard() {
   board.innerHTML = '';
   board.dataset.difficulty = memoryDifficulty;
   board.dataset.pairs = String(activeMemoryLevel.pairs);
-  board.style.setProperty('--memory-columns', activeMemoryLevel.pairs === 9 ? '6' : activeMemoryLevel.pairs >= 10 ? '5' : '4');
+  const pairs = activeMemoryLevel.pairs;
+  const columns = pairs === 9 || pairs === 12 ? 6 : pairs === 10 ? 5 : 4;
+  board.style.setProperty('--memory-columns', String(columns));
 
   memoryCards.forEach((card) => {
     const button = document.createElement('div');

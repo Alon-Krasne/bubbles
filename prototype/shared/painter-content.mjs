@@ -81,11 +81,14 @@ export const PAINTER_WORDS = Object.freeze(Object.fromEntries(PAINTER_WORD_IDS.m
 })));
 
 export function getPainterWordPool(level, language) {
-  const minimumLength = [0, 3, 3, 4, 4, 5][level.difficultyRank];
-  const maximumLength = [0, 4, 5, 6, Infinity, Infinity][level.difficultyRank];
+  const minimumLength = [0, 3, 3, 4, 4, 5, 5, 4, 4][level.difficultyRank];
+  const maximumLength = [0, 4, 5, 6, Infinity, Infinity, Infinity, Infinity, Infinity][level.difficultyRank];
+  // A four-word Reef opening round can include up to two familiar shorter words.
+  const reefOpeningWords = language === 'en' ? ['boat', 'moon'] : ['boat', 'cat'];
   const pool = level.wordPool.filter(id => {
     const length = getPainterWord(id, language).letters.length;
-    return length >= minimumLength && length <= maximumLength;
+    return length >= minimumLength && length <= maximumLength
+      || (level.difficultyRank === 6 && reefOpeningWords.includes(id));
   });
   if (pool.length < level.wordCount) throw new Error(`Not enough Painter words for ${level.id}/${language}`);
   return pool;
