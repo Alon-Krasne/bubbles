@@ -1,4 +1,5 @@
 import { openGallery } from './gallery.js';
+import { bindWorldSettings } from './world-settings.js';
 import { getGalleryKey } from './shared/gallery.mjs';
 import { FOREST_CAPTIONS } from './shared/forest-captions.mjs';
 import { REEF_CAPTIONS } from './shared/reef-captions.mjs';
@@ -1699,7 +1700,7 @@ forestStoriesButton.addEventListener('click', () => {
 });
 
 document.addEventListener('keydown', (event) => {
-  if (document.querySelector('.collection-gallery[open]')) return;
+  if (document.querySelector('dialog[open]')) return;
   const modal = !forestMilestoneDialog.hidden ? forestMilestoneDialog : !forestCharacterPicker.hidden ? forestCharacterPicker : null;
   if (modal && event.key === 'Tab') {
     const controls = [...modal.querySelectorAll('button, select, video[controls]')].filter(control => control.getClientRects().length);
@@ -1750,6 +1751,18 @@ window.addEventListener('resize', () => {
 setProfile(activeProfileId);
 destinationGateWasOpen = true;
 openGate();
+
+bindWorldSettings({
+  canEnterReef: () => {
+    const profile = getProfile();
+    return hasFinishedWorldHandoff(forestProgress[profile.id], readReefRoute(profile, saveStorage));
+  },
+  enterWorld: world => {
+    closeProfileMenu();
+    chooseDestination(world === 'reef' ? 'forest' : world, world);
+  },
+  getLearningLanguage: () => getProfile().learningLanguage,
+});
 
 for (const id of ['gallery-button', 'destination-gallery-button']) {
   document.getElementById(id).addEventListener('click', () => openGallery(getProfile(), saveStorage));

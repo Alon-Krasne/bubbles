@@ -26,7 +26,9 @@ Resetting the Forest returns to its map and keeps the earned finale, Reef storie
 
 Edit Profile lets you choose a world and set its next stage. Progress changes are saved immediately for the displayed learning language. Wonder shares progress across languages. Choosing another world at its saved stage preserves its stars. A confirmed jump to the Reef prepares the Forest handoff and keeps the skipped stories available for replay.
 
-See `assets/reef/README.md` for the artwork and media sources. Run `npm run test:reef-map` for route, media, captions and progress checks. To exercise the built journey and profile editor in a browser, run `npm run build`, start `node scripts/serve-save-test.mjs`, then run `node scripts/test-reef-browser.mjs` and `node scripts/test-world-progress-editor.mjs`.
+Settings offers world selection from the destination screen and profile menu. Before the Forest handoff, choosing the Reef opens a scrollable art tour and its opening story. The tour keeps the player's journey progress unchanged. After the handoff, the Reef choice opens the playable map.
+
+See `assets/reef/README.md` for the artwork and media sources. Run `npm run test:reef-map` for route, media, captions and progress checks. To exercise the built journey, profile editor, and Settings in a browser, run `npm run build`, start `node scripts/serve-save-test.mjs`, then run `node scripts/test-reef-browser.mjs`, `node scripts/test-world-progress-editor.mjs`, and `node scripts/test-world-settings.mjs`.
 
 ## Magic House
 
