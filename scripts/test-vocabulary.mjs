@@ -9,7 +9,7 @@ const englishWords = new Set(VOCAB_WORDS.map((word) => word.english));
 const hebrewWords = new Set(VOCAB_WORDS.map((word) => word.hebrew));
 const niqqudPattern = /[\u0591-\u05bd\u05bf-\u05c7]/;
 
-assert.ok(VOCAB_WORDS.length >= 210, `expected at least 210 vocabulary entries, received ${VOCAB_WORDS.length}`);
+assert.ok(VOCAB_WORDS.length >= 333, `expected at least 333 vocabulary entries, received ${VOCAB_WORDS.length}`);
 assert.equal(vocabularyIds.size, VOCAB_WORDS.length, 'vocabulary ids must be unique');
 assert.equal(englishWords.size, VOCAB_WORDS.length, 'English vocabulary text must be unique');
 assert.equal(hebrewWords.size, VOCAB_WORDS.length, 'Hebrew vocabulary text must be unique');
