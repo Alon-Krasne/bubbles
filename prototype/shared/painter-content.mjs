@@ -1,4 +1,5 @@
 import { VOCABULARY } from './vocabulary-catalog.mjs';
+import { getVocabularyPool } from './vocabulary-progression.mjs';
 
 // Print-letter centerlines. Contiguous bends belong to one stroke.
 // Hebrew direction reference: https://www.yo-yoo.co.il/limodim/ (numbered print diagrams).
@@ -85,7 +86,7 @@ export function getPainterWordPool(level, language) {
   const maximumLength = [0, 4, 5, 6, Infinity, Infinity, Infinity, Infinity, Infinity][level.difficultyRank];
   // A four-word Reef opening round can include up to two familiar shorter words.
   const reefOpeningWords = language === 'en' ? ['boat', 'moon'] : ['boat', 'cat'];
-  const pool = level.wordPool.filter(id => {
+  const pool = getVocabularyPool({ pool: level.wordPool, rank: level.difficultyRank, language, activity: 'painter' }).filter(id => {
     const length = getPainterWord(id, language).letters.length;
     return length >= minimumLength && length <= maximumLength
       || (level.difficultyRank === 6 && reefOpeningWords.includes(id));

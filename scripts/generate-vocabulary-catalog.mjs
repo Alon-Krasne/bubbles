@@ -21,19 +21,23 @@ export function buildCatalogEntries(words = VOCAB_WORDS) {
       throw new Error(`Duplicate vocabulary id ${word.id}`);
     }
     seen.add(word.id);
+    if (!['en', 'he'].every(language => [1, 2, 3, 4].includes(word.difficulty?.[language]))) {
+      throw new Error(`Vocabulary word ${word.id} needs English and Hebrew difficulty grades`);
+    }
     return {
       id: word.id,
       category: word.category,
       shoppable: Boolean(word.shoppable),
       english: word.english,
       hebrew: word.hebrew,
+      difficulty: word.difficulty,
     };
   });
 }
 
 export function renderCatalogModule(entries) {
   const body = entries
-    .map((entry) => `  Object.freeze({ id: ${JSON.stringify(entry.id)}, category: ${JSON.stringify(entry.category)}, shoppable: ${entry.shoppable}, english: ${JSON.stringify(entry.english)}, hebrew: ${JSON.stringify(entry.hebrew)} }),`)
+    .map((entry) => `  Object.freeze({ id: ${JSON.stringify(entry.id)}, category: ${JSON.stringify(entry.category)}, shoppable: ${entry.shoppable}, english: ${JSON.stringify(entry.english)}, hebrew: ${JSON.stringify(entry.hebrew)}, difficulty: Object.freeze(${JSON.stringify(entry.difficulty)}) }),`)
     .join('\n');
   return `// AUTO-GENERATED FILE. Do not edit by hand.
 // Source: src/words.ts

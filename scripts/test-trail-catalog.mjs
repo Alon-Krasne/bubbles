@@ -21,6 +21,8 @@ import {
 } from '../prototype/shared/trail-catalog.mjs';
 
 const vocabularyIds = new Set(VOCAB_WORDS.map((word) => word.id));
+assert.throws(() => buildCatalogEntries([{ ...VOCAB_WORDS[0], difficulty: { en: 1 } }]), /difficulty grades/);
+assert.throws(() => buildCatalogEntries([{ ...VOCAB_WORDS[0], difficulty: { en: 0, he: 1 } }]), /difficulty grades/);
 const magicRequestIds = new Set(MAGIC_HOUSE_REQUESTS.map((request) => request.id));
 
 // The legacy 15-stage route is retained as a reference and must stay valid.

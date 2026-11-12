@@ -20,7 +20,8 @@ import {
 } from './hostedActivity';
 import { calculateMasteryStars, formatStarRating } from '../prototype/shared/activity-scoring.mjs';
 import { getDestinationGameLevels, getLanguagePolicy } from '../prototype/shared/trail-catalog.mjs';
-import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
+import { drawVocabularyRound, vocabularyDeckKey } from '../prototype/shared/vocabulary-deck.mjs';
+import { getVocabularyPool } from '../prototype/shared/vocabulary-progression.mjs';
 import { hebrewWordAudio, playRecordedSequence, stopRecordedSpeech, vocabularyWordAudio } from './recordedSpeech';
 import { waitForMemoryBoardReveal } from './memoryCompletion';
 import {
@@ -799,17 +800,17 @@ function shuffleMemoryCards(cards: MemoryCard[]): MemoryCard[] {
 }
 
 function selectMemoryWords(level: MemoryLevel) {
-  if (level.wordPool.length < level.pairs) {
+  const language = getMemoryLearningLanguage();
+  const pool = getVocabularyPool({ pool: level.wordPool, rank: level.difficultyRank, language, activity: 'memory' });
+  if (pool.length < level.pairs) {
     throw new Error(`Memory level ${level.id} needs at least ${level.pairs} words`);
   }
 
   const decks = JSON.parse(localStorage.getItem(MEMORY_WORD_DECK_STORAGE_KEY) || '{}');
   const profileDecks = decks[activeProfileId] || {};
-  const deckKey = hostedActivityContext?.destination === 'reef'
-    ? `${level.id}:${hostedActivityContext.profileLanguage}`
-    : level.id;
+  const deckKey = `${vocabularyDeckKey(level.id, pool)}:${language}`;
   const result = drawVocabularyRound({
-    pool: level.wordPool,
+    pool,
     count: level.pairs,
     state: profileDecks[deckKey] || null,
   });

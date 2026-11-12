@@ -72,3 +72,22 @@ npm run test:trail
 ```
 
 The test verifies all stage references, vocabulary IDs, request IDs, launch metadata, difficulty ordering, language policies, and the 45-star route total.
+
+## Vocabulary progression
+
+Each word in `src/words.ts` has explicit `difficulty.en` and `difficulty.he` grades: 1 foundational, 2 everyday, 3 extended, 4 specialist or compound vocabulary. These are editorial game grades, not standardized proficiency scores. They consider familiarity and the actual word in each language; for example, `strawberry` is grade 3 in English and `תות` is grade 1 in Hebrew. Regenerate `prototype/shared/vocabulary-catalog.mjs` with `node --experimental-strip-types scripts/generate-vocabulary-catalog.mjs` after editing grades. Generation rejects missing or invalid grades.
+
+The shared `vocabulary-progression.mjs` applies the active learning language and the stage's difficulty rank across both worlds:
+
+| Stages | Available grades for Memory and spoken Shop targets |
+| --- | --- |
+| 1–6 | 1 |
+| 7–12 | 1–2 |
+| 13–24 | 1–3 |
+| 25–36 | 1–4 |
+| 37–60 | 2–4 |
+| 61–72 | 3–4 |
+
+Shop shelf distractors may include previously introduced vocabulary; requested words follow the advancing grade floor. All items retain their recorded audio and existing artwork. Reveal and Painter use the same introduction ceilings and retain familiar-word review within their spelling/tracing length constraints. Painter keeps its 13 illustrated words; House keeps its recorded instruction progression.
+
+Word-rotation keys include the effective pool and learning language, so revised grades do not reuse incompatible saved queues. Route stars, stage order, earned stories and other profiles are unchanged. All 333 words remain reachable over the complete 72-stage route in either language. Run `npm run test:vocabulary-progression` to check the actual graded pools, replay variation and coverage; the journey difficulty browser check also exercises early and late boards/orders with old queues present.

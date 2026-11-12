@@ -234,7 +234,8 @@ try {
   assert.equal(evaluate('document.activeElement.id'), 'forest-stories-button');
   assert.equal(readReef().seenVideos.filter(id => id === 'reef-video-02').length, 1);
 
-  const readMemoryDeck = language => evaluate(`JSON.parse(localStorage.getItem('bubble_memory_word_decks_v1'))['${profileId}']['reef-memory-1:${language}']`);
+  const readMemoryDeck = language => evaluate(`Object.entries(JSON.parse(localStorage.getItem('bubble_memory_word_decks_v1'))['${profileId}'])
+    .find(([key]) => key.startsWith('reef-memory-1:') && key.endsWith(':${language}'))[1]`);
   const readHouseHistory = language => evaluate(`JSON.parse(localStorage.getItem('magic-house-previous-requests-v1:${profileId}:reef-house-1:${language}'))`);
   const englishMemoryDeck = readMemoryDeck('en');
   const englishHouseHistory = readHouseHistory('en');
