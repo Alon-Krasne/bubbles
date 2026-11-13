@@ -14,6 +14,24 @@ The root opens with a profile chooser. Profiles have a stable ID, name, one of f
 
 Memory Garden and Listening Shop run inside the trail's hosted activity shell. Their normal standalone navigation remains unchanged, while hosted completion and exit events use the shared same-origin protocol in `src/hostedActivity.ts`. English-learning activities use spoken English with image choices and keep English answer cards free of drawings. Hebrew-learning activities use written Hebrew prompts and choices without answer images or pre-answer speech.
 
+## The Glowing Reef
+
+The Glowing Reef is the next screen in the Whispering Forest journey. Complete stage 36 to open the Forest finale and bridge cutscenes. When the bridge finishes or is skipped, the Reef screen replaces the Forest screen. The companion continues in a bubble helmet at stage 37.
+
+The route has 36 stops across six chapters. Difficulty follows the stage number across both worlds, even when the Forest shuffles its activities. Forest uses ranks 1–5 and the Reef continues at ranks 6–8. The Reef uses the existing bilingual recordings, with larger Memory boards, more Shop orders and words to reveal or trace, and two-object Magic House requests. Memory, Shop and Magic House close the journey at the lighthouse.
+
+The separate Tier 2 vocabulary and Reef-specific activity scenery remain in development.
+
+Each screen shows its own 36 stops. The Reef opens with its story, then continues through stage 72. The remaining Reef stories unlock after stages 41, 46, 51, 56, 61, 66, 71 and 72. Start playback from the video controls, choose English or Hebrew captions, or skip ahead. The journey album keeps unlocked stories for replay. The Reef screen shows the combined stars for the active profile and language.
+
+Resetting the Forest returns to its map and keeps the earned finale, Reef stories, and Reef progress. Clear stage 36 again to resume the Reef.
+
+Edit Profile lets you choose a world and set its next stage. Progress changes are saved immediately for the displayed learning language. Wonder shares progress across languages. Choosing another world at its saved stage preserves its stars. A confirmed jump to the Reef prepares the Forest handoff and keeps the skipped stories available for replay.
+
+Settings offers world selection from the destination screen and profile menu. Before the Forest handoff, choosing the Reef opens a scrollable art tour and its opening story. The tour keeps the player's journey progress unchanged. After the handoff, the Reef choice opens the playable map.
+
+See `assets/reef/README.md` for the artwork and media sources. Run `npm run test:reef-map` for route, difficulty, media, captions, and progress checks. For browser checks, run `npm run build` and start `node scripts/serve-save-test.mjs`. Run `node scripts/test-reef-browser.mjs` for the handoff, `node scripts/test-journey-difficulty-browser.mjs` for harder activity rounds, and the world progress editor and Settings scripts for those controls.
+
 ## Magic House
 
 Open `http://127.0.0.1:5173/prototype/magic-house.html` to test the bedroom directly.

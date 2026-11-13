@@ -69,6 +69,24 @@ body {
   color: var(--ink);
 }
 
+.world-loading {
+  display: none;
+}
+
+body[data-loading] .world-loading {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--panel);
+  font-size: clamp(20px, 4vw, 32px);
+}
+
+body[data-loading] #world,
+body[data-loading] #profile-gate {
+  visibility: hidden;
+}
+
 .world {
   width: 100%;
   height: 100%;
@@ -1644,12 +1662,22 @@ body {
 
 .track-reset-controls {
   display: grid;
-  grid-template-columns: auto minmax(250px, 1fr) auto;
-  align-items: center;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto;
+  align-items: end;
   gap: 10px;
   color: var(--teal);
   font-size: 17px;
   font-weight: 900;
+}
+
+.track-reset-controls label {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+@media (max-width: 600px) {
+  .track-reset-controls { grid-template-columns: minmax(0, 1fr); }
 }
 
 .track-reset select {
@@ -2202,6 +2230,79 @@ body {
   line-height: 1;
 }
 
+.destination-tools {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.world-settings .gallery-header h2 {
+  margin: 0;
+  font: clamp(23px, 4vw, 34px) 'Secular One', sans-serif;
+}
+
+.reef-art-visit {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: #16313f;
+  color: #fff3d3;
+  overflow: hidden;
+}
+
+.reef-art-visit[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.reef-visit-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 10px 14px;
+}
+
+.reef-visit-header h2 {
+  margin: 0 auto 0 0;
+  font: clamp(21px, 4vw, 29px) 'Secular One', sans-serif;
+}
+
+.reef-visit-header button {
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.reef-visit-map {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  direction: ltr;
+}
+
+.reef-visit-map img {
+  display: block;
+  width: max(100%, 1120px);
+  height: auto;
+  min-height: 100%;
+  object-fit: cover;
+}
+
+.reef-art-visit video {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  object-fit: contain;
+}
+
 /* Destination Gate (איפה נטייל היום?) */
 .destination-gate {
   position: fixed;
@@ -2741,6 +2842,8 @@ body {
 .forest-portrait[data-friend='adva'] { background-image: url('./assets/forest/companion-adva.webp'); }
 .forest-portrait[data-friend='zohar'] { background-image: url('./assets/forest/companion-zohar.webp'); }
 .traveller.forest-portrait { width: 84px; height: 98px; }
+.traveller.reef-portrait { z-index: 7; width: 64px; height: 74px; }
+.traveller.reef-portrait img { border-radius: 50%; }
 .traveller img[hidden], .launch-overlay img[hidden], .world-complete-overlay img[hidden] { display: none; }
 .launch-overlay .forest-portrait { width: 155px; height: 180px; }
 /* The cream card sits on the moonlit skin, so it must not inherit the skin's light ink. */
@@ -2841,6 +2944,9 @@ body {
 :root[data-time-of-day="day"] .map-stage {
   background-image: url('./assets/sunlit-trail-map.webp');
 }
+.world[data-map-world="reef"] .map-stage {
+  background-image: url('./assets/reef/map.webp');
+}
 :root[data-time-of-day="day"] .profile-gate {
   background: linear-gradient(#fff8e933, #e8f8df55), url('./assets/sunlit-trail-map.webp') center / cover no-repeat;
 }
@@ -2887,6 +2993,12 @@ body {
   backdrop-filter: none;
 }
 :root[data-time-of-day="night"] .world-chrome .star-total { height: auto; min-width: 0; }
+.world[data-map-world="reef"] .world-chrome .star-total {
+  padding: 4px 9px;
+  border-radius: 14px;
+  background: #16313fed;
+  color: #ffe2a6;
+}
 :root[data-time-of-day="night"] .profile-gate .gate-profile-card {
   border-color: #ecdcbb;
   background: #fff8e9;
@@ -2919,6 +3031,14 @@ body {
     justify-content: flex-end;
   }
   .world-chrome .star-total { margin-right: auto; }
+  .world[data-map-world="reef"] .world-title {
+    display: block;
+    grid-column: 1;
+    grid-row: 2;
+    text-align: right;
+  }
+  .world[data-map-world="reef"] .world-title span { display: none; }
+  .world[data-map-world="reef"] .world-actions { grid-row: 3; }
   .stage-panel { top: auto; bottom: 16px; height: auto; min-height: 106px; }
 }
 

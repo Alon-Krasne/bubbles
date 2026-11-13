@@ -5,8 +5,9 @@ import { VOCAB_WORDS, type VocabWord } from './words';
 import { createShopItemArt } from './shop-art';
 import type { HostedActivitySession } from './hostedActivity';
 import { calculateMasteryStars, formatStarRating } from '../prototype/shared/activity-scoring.mjs';
-import { GAME_LEVELS } from '../prototype/shared/trail-catalog.mjs';
-import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
+import { getDestinationGameLevels } from '../prototype/shared/trail-catalog.mjs';
+import { drawVocabularyRound, vocabularyDeckKey } from '../prototype/shared/vocabulary-deck.mjs';
+import { getVocabularyPool } from '../prototype/shared/vocabulary-progression.mjs';
 import { applyEnglishLearningTranslationHint, removeHebrewTranslationHint } from '../prototype/shared/translation-hint.mjs';
 import {
   clearShopSession,
@@ -123,9 +124,8 @@ const PLURALS: Record<string, string> = {
 };
 const SHOP_ITEMS: ShopItem[] = VOCAB_WORDS.filter((word) => word.shoppable);
 
-const SHOP_LEVELS = GAME_LEVELS.shop as readonly ShopLevel[];
-
 export function initShopGame(deps: ShopDeps) {
+  const SHOP_LEVELS = getDestinationGameLevels(deps.hostedSession ? deps.hostedSession.context.destination : 'wonder').shop as readonly ShopLevel[];
   const hostedRoundRecords = new Map<string, string>();
   const state = {
     activeLevel: SHOP_LEVELS[0],
@@ -291,7 +291,6 @@ export function initShopGame(deps: ShopDeps) {
     if (!level) {
       throw new Error(`Missing shop level ${levelId}`);
     }
-
     state.activeLevel = level;
     state.currentOrder = null;
     state.servedCustomers = 0;
@@ -310,7 +309,15 @@ export function initShopGame(deps: ShopDeps) {
     setFeedback('קונה חדש/ה בדרך לחנות');
     updateHud();
     const savedSession = loadShopSession(getShopStorage(), deps.getActiveProfile().id, level.id);
-    if (savedSession) {
+    const targetPool = getVocabularyPool({ pool: level.itemPool,
+      rank: level.difficultyRank, language: getLearningLanguage(), activity: 'shop' });
+    const shelfPool = getLevelTargetSource(level).map(item => item.id);
+    if (savedSession
+      && savedSession.currentOrder.shelfItemIds.length === level.shelfSize
+      && savedSession.currentOrder.shelfItemIds.every(id => shelfPool.includes(id))
+      && savedSession.currentOrder.targets.every(target => targetPool.includes(target.itemId))
+      && savedSession.currentOrder.targets.length === (level.mode === 'double' ? 2 : 1)
+      && savedSession.currentOrder.targets.every(target => target.required <= (level.mode === 'quantity' ? 3 : 1))) {
       restoreShopSession(savedSession);
       if (isOrderComplete(requireCurrentOrder())) {
         nextCustomer();
@@ -728,19 +735,23 @@ export function initShopGame(deps: ShopDeps) {
     const decks = JSON.parse(getShopStorage().getItem(SHOP_WORD_DECK_STORAGE_KEY) || '{}');
     const profileId = deps.getActiveProfile().id;
     const profileDecks = decks[profileId] || {};
+    const { id, itemPool, difficultyRank } = state.activeLevel;
+    const pool = getVocabularyPool({ pool: itemPool, rank: difficultyRank, language: getLearningLanguage(), activity: 'shop' });
+    const deckKey = vocabularyDeckKey(id, pool);
     const result = drawVocabularyRound({
-      pool: state.activeLevel.itemPool,
+      pool,
       count,
-      state: profileDecks[state.activeLevel.id] || null,
+      state: profileDecks[deckKey] || null,
     });
-    profileDecks[state.activeLevel.id] = result.state;
+    profileDecks[deckKey] = result.state;
     decks[profileId] = profileDecks;
     getShopStorage().setItem(SHOP_WORD_DECK_STORAGE_KEY, JSON.stringify(decks));
     return result.selection.map(getShopItem);
   }
 
   function getLevelTargetSource(level: ShopLevel) {
-    return getShopItems(level.itemPool);
+    return getShopItems(getVocabularyPool({ pool: level.itemPool, rank: level.difficultyRank,
+      language: getLearningLanguage(), activity: 'shop-shelf' }));
   }
 
   function isLevelLocked(index: number) {

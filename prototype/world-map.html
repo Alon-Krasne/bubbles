@@ -8,7 +8,8 @@
   <link rel="stylesheet" href="./world-map.css">
   <link rel="stylesheet" href="./gallery.css">
 </head>
-<body data-prototype="unified-world-map">
+<body data-prototype="unified-world-map" data-loading>
+  <div class="world-loading" role="status">טוענים את המסע…</div>
   <main class="world" id="world" aria-label="מפת עולם הבועות" aria-hidden="true" inert>
     <div class="map-canvas">
       <header class="world-chrome">
@@ -24,6 +25,10 @@
         <div class="profile-menu" id="profile-menu" hidden>
           <div class="profile-menu-list" id="profile-menu-list"></div>
           <div class="profile-menu-actions">
+            <button class="profile-menu-command" id="world-settings-button" type="button" aria-haspopup="dialog">
+              <span aria-hidden="true">⚙️</span>
+              <strong>הגדרות</strong>
+            </button>
             <button class="profile-menu-command" id="edit-profile-button" type="button">
               <span aria-hidden="true">✎</span>
               <strong>עריכת הפרופיל</strong>
@@ -46,7 +51,7 @@
 
         <div class="world-actions">
           <button id="gallery-button" class="destinations-nav-button" type="button">הגלריה שלי 🖼️</button>
-          <button id="forest-stories-button" class="destinations-nav-button" type="button" hidden>סיפורי היער ▶</button>
+          <button id="forest-stories-button" class="destinations-nav-button" type="button" hidden>סיפורי המסע ▶</button>
           <button class="destinations-nav-button" id="destinations-nav-button" type="button" aria-label="בחירת יעד למסע: איפה נטייל היום?" title="בחירת יעד למסע">
             <span class="destinations-nav-icon" aria-hidden="true">🗺️</span>
             <span class="destinations-nav-label">איפה נטייל?</span>
@@ -212,10 +217,10 @@
       </fieldset>
 
       <fieldset class="track-reset" id="track-reset-section">
-        <legend>התקדמות במסלול</legend>
+        <legend id="track-reset-legend">התקדמות במסלול</legend>
         <div class="track-reset-controls">
-          <label for="track-stage-select">השלב הבא למשחק</label>
-          <select id="track-stage-select"></select>
+          <label for="track-world-select">עולם<select id="track-world-select"></select></label>
+          <label for="track-stage-select">השלב הבא למשחק<select id="track-stage-select"></select></label>
           <button id="track-reset-button" type="button">עדכון ההתקדמות</button>
         </div>
         <div class="track-reset-confirm" id="track-reset-confirm" hidden>
@@ -255,7 +260,10 @@
         </button>
         <span class="destination-kicker">יוצאים להרפתקה</span>
         <h1>איפה נטייל היום?</h1>
-        <button id="destination-gallery-button" class="destinations-nav-button" type="button">הגלריה שלי 🖼️</button>
+        <div class="destination-tools">
+          <button id="destination-gallery-button" class="destinations-nav-button" type="button">הגלריה שלי 🖼️</button>
+          <button id="destination-settings-button" class="destinations-nav-button" type="button" aria-haspopup="dialog">הגדרות ⚙️</button>
+        </div>
       </header>
 
       <div class="destination-cards" aria-label="יעדים לבחירה">
@@ -298,6 +306,40 @@
     </div>
   </section>
 
+  <dialog class="collection-gallery world-settings" id="world-settings" aria-labelledby="world-settings-title">
+    <header class="gallery-header">
+      <h2 id="world-settings-title">הגדרות · בחירת עולם</h2>
+      <button class="world-settings-action" id="world-settings-close" type="button">סגירה</button>
+    </header>
+    <p class="gallery-guide">בחרו עולם לטייל בו. אפשר לבקר בשונית ולצפות בסיפור הפתיחה שלה גם לפני שמגיעים אליה במסע.</p>
+    <div class="gallery-grid">
+      <button class="gallery-card" type="button" data-settings-world="wonder">
+        <span class="gallery-card-art"><img src="./assets/destinations/wonder-preview.webp" alt="" loading="lazy"></span>
+        <strong>עולם הפלאים</strong>
+      </button>
+      <button class="gallery-card" type="button" data-settings-world="forest">
+        <span class="gallery-card-art"><img src="./assets/destinations/forest-preview.jpg" alt="" loading="lazy"></span>
+        <strong>היער הלוחש</strong>
+      </button>
+      <button class="gallery-card" type="button" data-settings-world="reef">
+        <span class="gallery-card-art"><img src="./assets/reef/map.webp" alt="" loading="lazy"></span>
+        <strong>השונית הזוהרת</strong>
+      </button>
+    </div>
+  </dialog>
+
+  <dialog class="reef-art-visit" id="reef-art-visit" aria-labelledby="reef-visit-title">
+    <header class="reef-visit-header">
+      <h2 id="reef-visit-title">סיור בשונית הזוהרת</h2>
+      <button class="world-settings-action" id="reef-visit-story" type="button" aria-controls="reef-visit-video" aria-expanded="false">▶ סיפור הפתיחה</button>
+      <button class="world-settings-action" id="reef-visit-close" type="button">חזרה למסע ←</button>
+    </header>
+    <div class="reef-visit-map" id="reef-visit-map" tabindex="0" role="region" aria-label="מפת השונית הזוהרת. אפשר לגלול לכל הכיוונים">
+      <img src="./assets/reef/map.webp" width="1600" height="1073" alt="שונית צבעונית עם ספינה טבועה, צדפות ומגדלור" loading="lazy">
+    </div>
+    <video id="reef-visit-video" controls playsinline preload="none" aria-label="סיפור הפתיחה של השונית הזוהרת" hidden></video>
+  </dialog>
+
   <section class="forest-character-picker" id="forest-character-picker" aria-label="בחירת חבר למסע ביער" hidden>
     <div class="forest-picker-backdrop" id="forest-picker-backdrop" aria-hidden="true"></div>
     <div class="forest-picker-dialog" role="dialog" aria-modal="true" aria-labelledby="forest-picker-title">
@@ -337,7 +379,7 @@
     <div class="forest-milestone-backdrop" aria-hidden="true"></div>
     <div class="forest-milestone-content">
       <div class="forest-milestone-header">
-        <span class="forest-milestone-badge" id="forest-milestone-badge">סיפורי היער</span>
+        <span class="forest-milestone-badge" id="forest-milestone-badge">סיפורי המסע</span>
         <select id="forest-story-select" class="forest-story-select" aria-labelledby="forest-milestone-badge"></select>
         <label class="forest-caption-picker">כתוביות <select id="forest-caption-language"><option value="he">עברית</option><option value="en">English</option><option value="off">ללא</option></select></label>
       </div>

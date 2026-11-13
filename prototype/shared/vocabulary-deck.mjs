@@ -1,3 +1,7 @@
+export function vocabularyDeckKey(levelId, pool) {
+  return `${levelId}:${[...pool].sort().join(',')}`;
+}
+
 function shuffle(items, random) {
   const result = [...items];
   for (let index = result.length - 1; index > 0; index -= 1) {

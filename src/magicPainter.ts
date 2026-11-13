@@ -5,16 +5,17 @@ import { getGameLevel } from '../prototype/shared/trail-catalog.mjs';
 import { playRecordedSequence, stopRecordedSpeech, vocabularyWordAudio, hebrewWordAudio, painterStartAudio, painterLetterAudio } from './recordedSpeech';
 import type { HostedActivityContext, HostedActivitySession } from './hostedActivity';
 import { getPainterWordPool } from '../prototype/shared/painter-content.mjs';
-import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
+import { drawVocabularyRound, vocabularyDeckKey } from '../prototype/shared/vocabulary-deck.mjs';
 
 export function openMagicPainter(context: HostedActivityContext, session: HostedActivitySession) {
   const level = getGameLevel('painter', context.levelId);
   const root = document.getElementById('magic-painter-screen')!;
   root.innerHTML = template;
   const language = context.profileLanguage;
-  const deckKey = `painter-deck-${context.profileId}-${context.destination}-${language}-${level.id}`;
+  const pool = getPainterWordPool(level, language);
+  const deckKey = `painter-deck-${context.profileId}-${context.destination}-${language}-${vocabularyDeckKey(level.id, pool)}`;
   const savedDeck = localStorage.getItem(deckKey);
-  const round = drawVocabularyRound({ pool: getPainterWordPool(level, language), count: level.wordCount,
+  const round = drawVocabularyRound({ pool, count: level.wordCount,
     state: savedDeck ? JSON.parse(savedDeck) : null });
   localStorage.setItem(deckKey, JSON.stringify(round.state));
   const wordRecording = (wordId: string) => language === 'en' ? vocabularyWordAudio(wordId) : hebrewWordAudio(wordId);

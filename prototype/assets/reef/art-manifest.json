@@ -1,0 +1,113 @@
+{
+  "map": {
+    "model": "gemini-3.1-flash-image",
+    "prompt": "One landscape 3:2 GAME WORLD MAP BACKGROUND, no interface. A premium hand-painted gouache storybook map of the Glowing Reef, viewed from a high gentle three-quarter angle so we see the tops and fronts of the landmarks. The whole picture is entirely underwater, no land, no sky. Warm sunbeams fall through luminous pale turquoise water at the top; the bottom is aquamarine. A coherent magical miniature world on pale creamy sandy terraces with lush pink, peach and lavender coral, small shells, soft rounded rocks and flowing green-gold seagrass. Quiet spacious sandy clearings and wide meandering sandy passages between the landmarks leave room for stage buttons to be added later, no drawn route line. Exact geography: BOTTOM RIGHT around 84 percent across and 82 percent down, a welcoming shallow coral cove with a big open pearly clam and tiny pink flowers; LOWER MIDDLE around 43 percent across and 68 percent down, the tilted hull of a cozy sunken wooden ship with warm brass portholes, a little open porthole hatch and rope rigging; LEFT MIDDLE around 15 percent across and 48 percent down, a dense dreamy forest of tall kelp hung with small glowing pastel lanterns, small shell musical instruments at its base; CENTER around 48 percent across and 40 percent down, a small shell-covered rock grotto with a brass compass rose and chart-stone, a gentle rest stop; RIGHT MIDDLE around 84 percent across and 28 percent down, a shallow lavender sandy ravine crossed by a broad safe iridescent light bridge, no abyss; UPPER MIDDLE LEFT around 48 percent across and 16 percent down, a little circular plaza of three giant shell seats and closed soft pink anemones; TOP RIGHT around 77 percent across and 10 percent down, the main destination, a tall elegant ivory spiral-shell lighthouse on a rocky reef peak with a carved round door and a very small pearl at the top. Keep lighthouse recognizable, not a castle. Soft painterly depth and tactile cut-paper brushwork, rounded shapes, beautiful restrained light, airy spacious composition, subtle sparkles, safe and inviting for young children. Match reference colors, ship and spiral-shell architecture, but no characters whatsoever. Absolutely no people, animals, fish, mascots, faces, text, letters, numbers, labels, signs, markers, circles, stage buttons, UI, borders or watermarks. Every landmark should be separated by generous clean sandy space, not cluttered together.",
+    "references": [
+      {
+        "file": "docs/visual-explainer/reef-song/production/art-pass-01/bridge-ref-reef-scenery.png",
+        "sha256": "a44a2e357d79b5b646eb0bfbb23b9eb07e7ae9d55a55f20e802b49b95727754f"
+      },
+      {
+        "file": "docs/visual-explainer/reef-song/production/art-pass-01/reef09-shot3-start.png",
+        "sha256": "afa033692e597e0a119b6da139e2c3d1871301f87b288a58ce6b5c8062938256"
+      }
+    ],
+    "source": {
+      "file": "docs/visual-explainer/reef-song/production/art-pass-01/reef-world-map-v1.png",
+      "sha256": "5d6c75c80352fae6cb85eb96bb877c59c645ad5c921c7be4403623653383ed3f"
+    },
+    "output": {
+      "file": "map.webp",
+      "sha256": "d7a34970d4d475d80483baca6ed34009190d49512b08faa05c03cbc99e7cddac"
+    },
+    "conversion": "resize 2400px wide; WebP quality 88"
+  },
+  "companion": {
+    "source": "docs/visual-explainer/reef-song/production/art-pass-01/trio-underwater-v5.png",
+    "sourceSha256": "6c3a4be0200763f15ffeb894c5078da9728dd0f0addc506c6715a0ff945728b0",
+    "crop": "850x1010+0+0; resize width 360px; WebP quality 88",
+    "outputSha256": "b045251af8edcde31f7fe1772963f7026993a45bf8d681ece74463ef467323e5"
+  },
+  "media": [
+    {
+      "file": "bridge-forest-reef.jpg",
+      "sha256": "1cfa130879d12d72e42b247ac45b0f6894f66dd6ee2803eed164699db63763c7"
+    },
+    {
+      "file": "bridge-forest-reef.mp4",
+      "sha256": "d3659fdd5f1419c65d067072aad844d427927ad9f76f095a4cb71593b41f5f8b"
+    },
+    {
+      "file": "reef-video-01.jpg",
+      "sha256": "f0ca2d30f863d31a7e5076b08315fb58b27c56cde608e927e4cf38e443cd4ea6"
+    },
+    {
+      "file": "reef-video-01.mp4",
+      "sha256": "15fe767e747d8d041247a83049f8aefa6118ffea98490572772f6eb896e4382c"
+    },
+    {
+      "file": "reef-video-02.jpg",
+      "sha256": "34660574a7cdda60fe7cbb4af5418100a99eade332bd61e3dd44203257aa3772"
+    },
+    {
+      "file": "reef-video-02.mp4",
+      "sha256": "617c2a7cb40d3887dd7e8e3506b07c02c83103f5d6c43b369c0eb5b2e5c7c04c"
+    },
+    {
+      "file": "reef-video-03.jpg",
+      "sha256": "1fbf141514adf6708bcec5d1b6ee248e22ac9c49049968036a2ee3bd696be823"
+    },
+    {
+      "file": "reef-video-03.mp4",
+      "sha256": "2330aa4b9f420c8cc3f0cd6477a7a23dfbef2a0629dbb3a7e4ff0da6841513cd"
+    },
+    {
+      "file": "reef-video-04.jpg",
+      "sha256": "9cddc3dd25087d60f9657302b005f307f69d36e05f4182872b47c6208811cb2a"
+    },
+    {
+      "file": "reef-video-04.mp4",
+      "sha256": "6772854f788b5aa775fb9a4d717191cf70d871c649079a18bb420ec4ab925a7d"
+    },
+    {
+      "file": "reef-video-05.jpg",
+      "sha256": "c2a06cfc0a030247a082c21e6685f424d4795e130e7dd26ec088a04fabf62e6f"
+    },
+    {
+      "file": "reef-video-05.mp4",
+      "sha256": "da53747cb100362f39fbbf497c2767fa2b8421868e87e4f957e97fe430ba3255"
+    },
+    {
+      "file": "reef-video-06.jpg",
+      "sha256": "e0d0185a47f18feb896d954e13599679840f8a7dbf28cc3af94b2a3fdd3c9835"
+    },
+    {
+      "file": "reef-video-06.mp4",
+      "sha256": "89e8a71a3f3fe5b85774bc361f9339dd7c0a96f9ed3ad62afc22f8df320806a7"
+    },
+    {
+      "file": "reef-video-07.jpg",
+      "sha256": "8253eed7f414da3968dc36b4e5f7e206647f761b2f4b4b90a3a183753b4428f1"
+    },
+    {
+      "file": "reef-video-07.mp4",
+      "sha256": "db342af2fbf1d480ba7ed364faed4ca31f77e6f3aacfa8b1f7d0657ad0474f4c"
+    },
+    {
+      "file": "reef-video-08.jpg",
+      "sha256": "3a2afd7bf40ab07f0a2f3d3930aa72eb31112cb92a4e1c0078d5916eb1ce13cf"
+    },
+    {
+      "file": "reef-video-08.mp4",
+      "sha256": "4af3b519b6e52b1e578360c1251dd07935ffaa17273b1c31c238eed458186b75"
+    },
+    {
+      "file": "reef-video-09.jpg",
+      "sha256": "e64f813472e4ec7414fe2adc5f3fa6aaa23ff1ea344e61968a5f1d92b74f2e93"
+    },
+    {
+      "file": "reef-video-09.mp4",
+      "sha256": "bb7be935e9dedf0797854ba5b62957e2a24cfebe768945d3a82671f2d8d19b33"
+    }
+  ]
+}

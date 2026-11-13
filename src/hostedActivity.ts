@@ -1,4 +1,4 @@
-import { GAME_LEVELS, TRAIL_STAGES } from '../prototype/shared/trail-catalog.mjs';
+import { getDestinationGameLevels, REEF_JOURNEY_STAGES, TRAIL_STAGES } from '../prototype/shared/trail-catalog.mjs';
 
 export const ACTIVITY_MESSAGE_VERSION = 1;
 
@@ -24,7 +24,7 @@ export interface HostedActivityContext {
   profileLanguage: ProfileLanguage;
   profileCharacter: ProfileCharacter;
   stageId: number;
-  destination: 'wonder' | 'forest';
+  destination: 'wonder' | 'forest' | 'reef';
 }
 
 export interface HostedActivitySession {
@@ -54,8 +54,11 @@ export function readHostedActivityContext(): HostedActivityContext | null {
   const supportedCharacters = new Set<ProfileCharacter>(['princess', 'dinosaur', 'puppy', 'unicorn']);
   const gameByActivity = { 'memory-garden': 'memory', 'listening-shop': 'shop', 'magic-reveal': 'reveal', 'magic-painter': 'painter' } as const;
   const game = gameByActivity[activityId as HostedActivityId];
+  const destinationValid = destination === 'wonder' || destination === 'forest' || destination === 'reef';
+  const levels = destinationValid ? getDestinationGameLevels(destination) : null;
+  const route = destination === 'reef' ? REEF_JOURNEY_STAGES : TRAIL_STAGES;
 
-  if ((destination !== 'wonder' && destination !== 'forest')
+  if (!destinationValid
     || host !== 'world-map'
     || !supportedActivities.has(activityId as HostedActivityId)
     || !levelId
@@ -69,8 +72,9 @@ export function readHostedActivityContext(): HostedActivityContext | null {
     || !supportedLanguages.has(profileLanguage as ProfileLanguage)
     || !supportedCharacters.has(profileCharacter as ProfileCharacter)
     || !Number.isInteger(stageId)
-    || !TRAIL_STAGES.some(stage => stage.id === stageId)
-    || !GAME_LEVELS[game]?.some(level => level.id === levelId)
+    || !route.some(stage => stage.id === stageId)
+    || !levels?.[game]?.some(level => level.id === levelId)
+    || (destination === 'reef' && !route.some(stage => stage.id === stageId && stage.level === levelId && stage.activity === activityId))
     || PROFILE_EMOJI_BY_CHARACTER[profileCharacter as ProfileCharacter] !== profileEmoji) {
     throw new Error('Invalid hosted activity context');
   }

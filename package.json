@@ -1,6 +1,6 @@
 {
   "name": "bubbles-game",
-  "version": "7.31.0",
+  "version": "7.33.0",
   "description": "בועות! - A cooperative bubble-catching game for two players",
   "main": "index.html",
   "scripts": {
@@ -13,6 +13,7 @@
     "test:destinations": "node scripts/test-destination-saves.mjs",
     "test:track": "node scripts/test-track-progress.mjs",
     "test:vocabulary": "node --experimental-strip-types scripts/test-vocabulary.mjs",
+    "test:vocabulary-progression": "node scripts/test-vocabulary-progression.mjs",
     "test:translations": "node --experimental-strip-types scripts/test-translation-hints.mjs && node scripts/test-translation-hint-control.mjs",
     "test:vocabulary-deck": "node scripts/test-vocabulary-deck.mjs",
     "test:route-vocabulary": "node --experimental-strip-types scripts/test-route-vocabulary.mjs",
@@ -39,6 +40,7 @@
     "test:magic-house-audio": "node scripts/test-magic-house-audio.mjs",
     "test:traveller-position": "node scripts/test-traveller-position.mjs",
     "test:world-map-layout": "node scripts/run-world-map-layout.mjs",
+    "test:reef-map": "node scripts/test-reef-map.mjs && node scripts/test-reef-progress.mjs && node scripts/test-journey-difficulty.mjs",
     "build": "vite build && node scripts/copy-prototype.js",
     "generate:magic-house-tts": "node scripts/generate-magic-house-tts.js",
     "generate:vocabulary-tts": "node --experimental-strip-types scripts/generate-vocabulary-tts.mjs",
@@ -48,6 +50,7 @@
     "test:forest": "node scripts/run-forest-acceptance.mjs",
     "test:gallery": "node scripts/test-gallery.mjs",
     "test:profile-gate": "node scripts/test-profile-gate.mjs",
+    "test:world-startup": "node scripts/test-world-startup.mjs",
     "test:painter": "node scripts/test-painter-content.mjs && node scripts/test-game-variation.mjs && node --experimental-strip-types scripts/test-painter-host.mjs && node scripts/test-level-renumber-reset.mjs",
     "pretest:painter-browser": "npm run build",
     "test:painter-browser": "node scripts/run-painter-acceptance.mjs"

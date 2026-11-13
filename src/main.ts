@@ -19,8 +19,9 @@ import {
   type ProfileLanguage,
 } from './hostedActivity';
 import { calculateMasteryStars, formatStarRating } from '../prototype/shared/activity-scoring.mjs';
-import { GAME_LEVELS, getLanguagePolicy } from '../prototype/shared/trail-catalog.mjs';
-import { drawVocabularyRound } from '../prototype/shared/vocabulary-deck.mjs';
+import { getDestinationGameLevels, getLanguagePolicy } from '../prototype/shared/trail-catalog.mjs';
+import { drawVocabularyRound, vocabularyDeckKey } from '../prototype/shared/vocabulary-deck.mjs';
+import { getVocabularyPool } from '../prototype/shared/vocabulary-progression.mjs';
 import { hebrewWordAudio, playRecordedSequence, stopRecordedSpeech, vocabularyWordAudio } from './recordedSpeech';
 import { waitForMemoryBoardReveal } from './memoryCompletion';
 import {
@@ -92,7 +93,7 @@ const MEMORY_MAP_ACTIVE_PATH_POINT_COUNT = 3;
 const MEMORY_WORDS: MemoryWord[] = VOCAB_WORDS;
 const MEMORY_WORD_BY_ID = new Map(MEMORY_WORDS.map((word) => [word.id, word]));
 
-const MEMORY_LEVELS = GAME_LEVELS.memory as readonly MemoryLevel[];
+const MEMORY_LEVELS = getDestinationGameLevels(hostedActivityContext ? hostedActivityContext.destination : 'wonder').memory as readonly MemoryLevel[];
 const MEMORY_ROUTE_POINTS: MemoryRoutePoint[] = [
   { x: 16, y: 62 },
   { x: 30, y: 44 },
@@ -615,7 +616,7 @@ function openHostedActivity() {
     return;
   }
 
-  const shopLevelIds = GAME_LEVELS.shop.map((level) => level.id as ShopLevelId);
+  const shopLevelIds = getDestinationGameLevels(hostedActivityContext.destination).shop.map((level) => level.id as ShopLevelId);
   if (!shopLevelIds.includes(hostedActivityContext.levelId as ShopLevelId)) {
     throw new Error(`Invalid hosted shop level ${hostedActivityContext.levelId}`);
   }
@@ -799,18 +800,21 @@ function shuffleMemoryCards(cards: MemoryCard[]): MemoryCard[] {
 }
 
 function selectMemoryWords(level: MemoryLevel) {
-  if (level.wordPool.length < level.pairs) {
+  const language = getMemoryLearningLanguage();
+  const pool = getVocabularyPool({ pool: level.wordPool, rank: level.difficultyRank, language, activity: 'memory' });
+  if (pool.length < level.pairs) {
     throw new Error(`Memory level ${level.id} needs at least ${level.pairs} words`);
   }
 
   const decks = JSON.parse(localStorage.getItem(MEMORY_WORD_DECK_STORAGE_KEY) || '{}');
   const profileDecks = decks[activeProfileId] || {};
+  const deckKey = `${vocabularyDeckKey(level.id, pool)}:${language}`;
   const result = drawVocabularyRound({
-    pool: level.wordPool,
+    pool,
     count: level.pairs,
-    state: profileDecks[level.id] || null,
+    state: profileDecks[deckKey] || null,
   });
-  profileDecks[level.id] = result.state;
+  profileDecks[deckKey] = result.state;
   decks[activeProfileId] = profileDecks;
   localStorage.setItem(MEMORY_WORD_DECK_STORAGE_KEY, JSON.stringify(decks));
   return result.selection.map(getMemoryWord);
@@ -829,7 +833,9 @@ function renderMemoryBoard() {
   board.innerHTML = '';
   board.dataset.difficulty = memoryDifficulty;
   board.dataset.pairs = String(activeMemoryLevel.pairs);
-  board.style.setProperty('--memory-columns', activeMemoryLevel.pairs === 9 ? '6' : activeMemoryLevel.pairs >= 10 ? '5' : '4');
+  const pairs = activeMemoryLevel.pairs;
+  const columns = pairs === 9 || pairs === 12 ? 6 : pairs === 10 ? 5 : 4;
+  board.style.setProperty('--memory-columns', String(columns));
 
   memoryCards.forEach((card) => {
     const button = document.createElement('div');

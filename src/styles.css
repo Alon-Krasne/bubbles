@@ -1699,24 +1699,20 @@ canvas {
     grid-template-columns: repeat(var(--memory-columns, 4), minmax(82px, 1fr));
 }
 
-.memory-board[data-pairs="9"] .memory-card,
-.memory-board[data-pairs="10"] .memory-card {
+.memory-board:is([data-pairs="9"], [data-pairs="10"], [data-pairs="12"]) .memory-card {
     min-height: clamp(72px, 8vw, 84px);
 }
 
-.memory-board[data-pairs="9"],
-.memory-board[data-pairs="10"] {
+.memory-board:is([data-pairs="9"], [data-pairs="10"], [data-pairs="12"]) {
     gap: 12px;
     padding: 12px;
 }
 
-.memory-board[data-pairs="9"] .memory-card-word,
-.memory-board[data-pairs="10"] .memory-card-word {
+.memory-board:is([data-pairs="9"], [data-pairs="10"], [data-pairs="12"]) .memory-card-word {
     font-size: clamp(17px, 2.2vw, 24px);
 }
 
-.memory-board[data-pairs="9"] .memory-card-drawing,
-.memory-board[data-pairs="10"] .memory-card-drawing {
+.memory-board:is([data-pairs="9"], [data-pairs="10"], [data-pairs="12"]) .memory-card-drawing {
     margin-bottom: 2px;
     font-size: clamp(27px, 3.3vw, 36px);
 }
