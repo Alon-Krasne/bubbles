@@ -107,6 +107,26 @@
 .shop-order-item[data-item-color="brown"] { color: #754627; }
 .shop-order-item[data-item-color="white"] { color: #fffdf7; background-color: var(--shop-ink); border-radius: 4px; }
 
+@media (forced-colors: none) {
+  .shop-order-item:not([data-item-color]) {
+    background: linear-gradient(100deg, #a61d69, #a64517, #805d00, #16704e, #2259b3, #7136a6, #a61d69) 0 50% / 240% 100%;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 3px #a61d6929);
+    animation: shopOrderRainbow 5s ease-in-out infinite alternate;
+  }
+
+  .shop-order-item:nth-of-type(2):not([data-item-color]) {
+    background-position: 62% 50%;
+    animation-delay: -2.5s;
+  }
+}
+
+@keyframes shopOrderRainbow {
+  from { background-position: 0 50%; }
+  to { background-position: 100% 50%; }
+}
+
 .shop-counter { position: absolute; left: 2%; top: 51%; width: 18%; height: 16%; }
 .shop-basket { position: relative; width: 100%; height: 100%; }
 .shop-basket-icon { position: absolute; inset: 0; display: grid; place-items: center; }
