@@ -383,7 +383,7 @@ export function initShopGame(deps: ShopDeps) {
     customer.style.backgroundPosition = `${customerIndex % 4 / 3 * 100}% ${Math.floor(customerIndex / 4) * 100}%`;
     requireElement<HTMLElement>('shop-customer-name').textContent = state.customerName;
     removeHebrewTranslationHint(orderPrompt);
-    orderPrompt.textContent = order.sentence;
+    orderPrompt.replaceChildren(renderOrderSentence(order, language));
     orderPrompt.lang = language;
     orderPrompt.dir = isEnglishLearning ? 'ltr' : 'rtl';
     orderPrompt.tabIndex = isEnglishLearning ? 0 : -1;
@@ -858,6 +858,27 @@ function createEnglishRequest(phrase: SpokenPhrase): EnglishRequest {
   ]);
 }
 
+function renderOrderSentence({ sentence, targets }: ShopOrder, language: 'en' | 'he') {
+  const prompt = document.createElement('span');
+  let offset = 0;
+
+  for (const { item, required } of targets) {
+    const word = language === 'he' ? item.hebrew : englishOrderItemName(item, required);
+    const start = sentence.indexOf(word, offset);
+    if (start === -1) continue;
+
+    const highlight = document.createElement('span');
+    highlight.className = 'shop-order-item';
+    highlight.textContent = word;
+    if (item.category === 'colors') highlight.dataset.itemColor = item.id.split('-')[0];
+    prompt.append(sentence.slice(offset, start), highlight);
+    offset = start + word.length;
+  }
+
+  prompt.append(sentence.slice(offset));
+  return prompt;
+}
+
 function createHebrewRequestSentence(targets: ShopOrderTarget[]) {
   if (targets.length === 2) {
     return `אפשר בבקשה ${targets[0].item.hebrew} וגם ${targets[1].item.hebrew}?`;
@@ -925,12 +946,16 @@ function definitePhrase(item: ShopItem) {
 
 function quantityPhrase(item: ShopItem, quantity: number) {
   return {
-    text: `${NUMBER_WORDS[quantity]} ${quantity === 1 ? item.english : pluralize(item.english)}`,
+    text: `${NUMBER_WORDS[quantity]} ${englishOrderItemName(item, quantity)}`,
     audioSources: [
       vocabularyUiAudio(NUMBER_WORDS[quantity]),
       quantity === 1 ? vocabularyWordAudio(item.id) : vocabularyPluralAudio(item.id),
     ],
   };
+}
+
+function englishOrderItemName(item: ShopItem, quantity: number) {
+  return quantity === 1 ? item.english : pluralize(item.english);
 }
 
 function joinPhrases(first: SpokenPhrase, second: SpokenPhrase): SpokenPhrase {
