@@ -109,22 +109,29 @@
 
 @media (forced-colors: none) {
   .shop-order-item:not([data-item-color]) {
-    background: linear-gradient(100deg, #a61d69, #a64517, #805d00, #16704e, #2259b3, #7136a6, #a61d69) 0 50% / 240% 100%;
+    background: repeating-linear-gradient(90deg,
+      #211349 0% 4%, #bb005c 8%, #a34700 12%, #8b6200 16%,
+      #00734d 20%, #1749d8 24%, #7a00bc 28%, #211349 34% 50%
+    ) 75% 50% / 300% 100%;
     background-clip: text;
     color: transparent;
-    filter: drop-shadow(0 0 3px #a61d6929);
-    animation: shopOrderRainbow 5s ease-in-out infinite alternate;
+    filter: drop-shadow(0 0 4px #8c31d45c);
+    animation: shopOrderRainbow 1.6s linear infinite;
   }
 
   .shop-order-item:nth-of-type(2):not([data-item-color]) {
-    background-position: 62% 50%;
-    animation-delay: -2.5s;
+    background-position: 37.5% 50%;
+    animation-delay: -.8s;
+  }
+
+  .shop-order-prompt[dir="rtl"] .shop-order-item:not([data-item-color]) {
+    animation-direction: reverse;
   }
 }
 
 @keyframes shopOrderRainbow {
-  from { background-position: 0 50%; }
-  to { background-position: 100% 50%; }
+  from { background-position: 75% 50%; }
+  to { background-position: 0 50%; }
 }
 
 .shop-counter { position: absolute; left: 2%; top: 51%; width: 18%; height: 16%; }
