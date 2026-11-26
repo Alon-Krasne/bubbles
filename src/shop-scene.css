@@ -96,6 +96,43 @@
 .shop-order-replay-btn { order: -1; background: #e4efea; }
 .shop-order-prompt { position: relative; min-width: 0; flex: 1; font-size: clamp(19px, 2.5cqw, 32px); font-weight: 700; line-height: 1.3; text-align: center; }
 .shop-order-prompt > .hebrew-translation-hint { min-width: 0; width: max-content; max-width: 100%; }
+.shop-order-item { color: #a61d69; }
+.shop-order-item:nth-of-type(2) { color: #2259b3; }
+.shop-order-item[data-item-color="red"] { color: #ad2837; }
+.shop-order-item[data-item-color="blue"] { color: #2259b3; }
+.shop-order-item[data-item-color="yellow"] { color: #775700; }
+.shop-order-item[data-item-color="green"] { color: #156641; }
+.shop-order-item[data-item-color="purple"] { color: #6738a5; }
+.shop-order-item[data-item-color="orange"] { color: #944012; }
+.shop-order-item[data-item-color="brown"] { color: #754627; }
+.shop-order-item[data-item-color="white"] { color: #fffdf7; background-color: var(--shop-ink); border-radius: 4px; }
+
+@media (forced-colors: none) {
+  .shop-order-item:not([data-item-color]) {
+    background: repeating-linear-gradient(90deg,
+      #211349 0% 4%, #bb005c 8%, #a34700 12%, #8b6200 16%,
+      #00734d 20%, #1749d8 24%, #7a00bc 28%, #211349 34% 50%
+    ) 75% 50% / 300% 100%;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 4px #8c31d45c);
+    animation: shopOrderRainbow 1.6s linear infinite;
+  }
+
+  .shop-order-item:nth-of-type(2):not([data-item-color]) {
+    background-position: 37.5% 50%;
+    animation-delay: -.8s;
+  }
+
+  .shop-order-prompt[dir="rtl"] .shop-order-item:not([data-item-color]) {
+    animation-direction: reverse;
+  }
+}
+
+@keyframes shopOrderRainbow {
+  from { background-position: 75% 50%; }
+  to { background-position: 0 50%; }
+}
 
 .shop-counter { position: absolute; left: 2%; top: 51%; width: 18%; height: 16%; }
 .shop-basket { position: relative; width: 100%; height: 100%; }
